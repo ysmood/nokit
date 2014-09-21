@@ -9,6 +9,11 @@ node_verion = +process.versions.node.match(/\d+\.(\d+)\.\d+/)[1]
 
 Q.longStackSupport = process.env.NODE_ENV == 'development'
 
+###*
+ * All the async functions in `kit` return promise object.
+ * Most time I use it to handle files and system staffs.
+ * @type {Object}
+###
 kit = {}
 
 ###*
