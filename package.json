@@ -4,7 +4,7 @@
   "description": "Nokit is a collection of commonly used functions.",
   "main": "kit.js",
   "scripts": {
-    "test": "npm test"
+    "test": "cake test"
   },
   "repository": {
     "type": "git",
