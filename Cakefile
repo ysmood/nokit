@@ -1,11 +1,20 @@
 kit = require './kit'
 
 task 'build', 'Build project.', build = ->
-	kit.spawn 'coffee', [
-		'-cb', 'kit.coffee'
+	start = kit.compose [
+		kit.spawn 'coffee', [
+			'-cb', 'kit.coffee'
+		]
+		kit.readFile 'kit.coffee'
+		(code) ->
+			kit.parse_comment 'kit', code, 'kit.coffee'
+		(mod) ->
+			kit.log mod
+		->
+			kit.log 'Build done.'
 	]
-	.done ->
-		kit.log 'Build done.'
+
+	start().done()
 
 task 'clean', 'Remove temp files.', clean = ->
 	kit.remove 'kit.js'

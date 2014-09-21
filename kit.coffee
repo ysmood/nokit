@@ -148,7 +148,10 @@ _.extend kit, {
 		fns = fns[0] if _.isArray fns[0]
 
 		fns.reduce (pre_fn, fn) ->
-			pre_fn.then fn
+			if Q.isPromise fn
+				pre_fn.then -> fn
+			else
+				pre_fn.then fn
 		, Q(val)
 
 	###*
