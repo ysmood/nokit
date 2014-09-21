@@ -1,0 +1,13 @@
+build: false
+
+environment:
+  matrix:
+    - nodejs_version: "0.10"
+
+install:
+  - npm install
+
+test_script:
+  - node --version
+  - npm --version
+  - npm test

@@ -276,9 +276,8 @@ _.extend kit, {
 			dest_dir: null
 			data: {}
 			compile: (str, data, path) ->
-				ejs = kit.require 'ejs'
 				data.filename = path
-				ejs.render str, data
+				_.template str, data
 		}
 
 		kit.glob(opts.patterns, { cwd: opts.src_dir })
