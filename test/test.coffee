@@ -1,20 +1,17 @@
 assert = require 'assert'
-kit = require '../kit'
+kit = require '../lib/kit'
 { _ } = kit
-
-kit.lang_load 'test/lang'
 
 describe 'Kit:', ->
 
-	it 'kit.parse_comment', (tdone) ->
+	it 'kit.parseComment', (tdone) ->
 		path = 'test/fixtures/comment.coffee'
 		kit.readFile path, 'utf8'
 		.done (str) ->
-			comments = kit.parse_comment 'kit', str, path
-			comment = comments[0]
-			assert.equal comment.path, path
-			assert.equal comment.tags[0].type, 'Int'
-			assert.equal comment.tags[0].name, 'limit'
+			comments = kit.parseComment 'nobone', str, path
+			assert.equal comments[0].path, path
+			assert.equal comments[0].tags[0].type, 'Int'
+			assert.equal comments[0].tags[0].name, 'limit'
 			tdone()
 
 	it 'async progress', (tdone) ->
@@ -24,8 +21,7 @@ describe 'Kit:', ->
 				return
 			kit.readFile __filename
 
-		kit.async 3, iter, false
-		.progress (ret) ->
+		kit.async 3, iter, false, (ret) ->
 			assert.equal ret.length, len
 		.done (rets) ->
 			assert.equal rets, undefined
@@ -34,22 +30,15 @@ describe 'Kit:', ->
 	it 'async results', (tdone) ->
 		len = kit.fs.readFileSync(__filename).length
 
-		kit.async 3, _.times 10, ->
+		kit.async(3, _.times 10, ->
 			(i) ->
 				assert.equal typeof i, 'number'
 				kit.readFile __filename
-		.progress (ret) ->
+		, (ret) ->
 			assert.equal ret.length, len
-		.done (rets) ->
+		).done (rets) ->
 			assert.equal rets.length, 10
 			tdone()
-
-	it 'lang normal', ->
-		str = kit.lang 'test', 'cn'
-		assert.equal str, '测试'
-
-	it 'lang alter', ->
-		assert.equal 'test|0'.l, 'test'
 
 	it 'crypto', ->
 		en = kit.encrypt '123', 'test'

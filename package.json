@@ -2,7 +2,7 @@
   "name": "nokit",
   "version": "0.0.1",
   "description": "Nokit is a collection of commonly used functions.",
-  "main": "kit.js",
+  "main": "dist/kit.js",
   "scripts": {
     "test": "cake test"
   },
@@ -21,18 +21,19 @@
   },
   "homepage": "https://github.com/ysmood/nokit",
   "dependencies": {
-    "colors": "0.6.2",
-    "fs-more": "0.0.4",
-    "glob": "4.0.6",
-    "iconv-lite": "0.4.4",
-    "jhash": "0.1.5",
+    "bluebird": "2.3.11",
+    "colors": "1.0.3",
+    "fs-more": "0.0.8",
+    "glob": "4.3.1",
+    "iconv-lite": "0.4.5",
+    "jhash": "0.1.6",
     "lodash": "2.4.1",
     "prompt": "0.2.14",
-    "q": "1.0.1",
-    "which": "1.0.5"
+    "which": "1.0.8"
   },
   "devDependencies": {
     "coffee-script": "*",
+    "ejs": "^1.0.0",
     "mocha": "*"
   }
 }
