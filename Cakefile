@@ -8,7 +8,7 @@ task 'build', 'Build project.', build = ->
 	compileCoffee = ->
 		kit.spawn 'coffee', [
 			'-o', 'dist'
-			'-cb', './'
+			'-cb', 'lib'
 		]
 
 	createDoc = ->
