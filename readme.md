@@ -7,9 +7,11 @@
 
  - **<u>type</u>**:  { _Object_ }
 
-- #### <a href="lib/kit.coffee?source#L24" target="_blank"><b>kitExtendsFsPromise</b></a>
+- #### <a href="lib/kit.coffee?source#L26" target="_blank"><b>kitExtendsFsPromise</b></a>
 
  kit extends all the promise functions of [fs-more][fs-more].
+ 
+ [Offline Documentation](?gotoDoc=fs-more/readme.md)
  [fs-more]: https://github.com/ysmood/fs-more
 
  - **<u>example</u>**:
@@ -21,13 +23,13 @@
     kit.outputFile('a.txt', 'test').done()
     ```
 
-- #### <a href="lib/kit.coffee?source#L35" target="_blank"><b>_</b></a>
+- #### <a href="lib/kit.coffee?source#L37" target="_blank"><b>_</b></a>
 
  The lodash lib.
 
  - **<u>type</u>**:  { _Object_ }
 
-- #### <a href="lib/kit.coffee?source#L83" target="_blank"><b>async</b></a>
+- #### <a href="lib/kit.coffee?source#L85" target="_blank"><b>async</b></a>
 
  An throttle version of `Promise.all`, it runs all the tasks under
  a concurrent limitation.
@@ -86,7 +88,7 @@
     	kit.log 'all done!'
     ```
 
-- #### <a href="lib/kit.coffee?source#L176" target="_blank"><b>compose</b></a>
+- #### <a href="lib/kit.coffee?source#L178" target="_blank"><b>compose</b></a>
 
  Creates a function that is the composition of the provided functions.
  Besides it can also accept async function that returns promise.
@@ -124,7 +126,7 @@
     download 'home'
     ```
 
-- #### <a href="lib/kit.coffee?source#L197" target="_blank"><b>daemonize</b></a>
+- #### <a href="lib/kit.coffee?source#L199" target="_blank"><b>daemonize</b></a>
 
  Daemonize a program.
 
@@ -142,7 +144,7 @@
 
     The daemonized process.
 
-- #### <a href="lib/kit.coffee?source#L223" target="_blank"><b>decrypt</b></a>
+- #### <a href="lib/kit.coffee?source#L225" target="_blank"><b>decrypt</b></a>
 
  A simple decrypt helper
 
@@ -156,7 +158,7 @@
 
  - **<u>return</u>**:  { _Buffer_ }
 
-- #### <a href="lib/kit.coffee?source#L246" target="_blank"><b>encrypt</b></a>
+- #### <a href="lib/kit.coffee?source#L248" target="_blank"><b>encrypt</b></a>
 
  A simple encrypt helper
 
@@ -170,7 +172,7 @@
 
  - **<u>return</u>**:  { _Buffer_ }
 
-- #### <a href="lib/kit.coffee?source#L267" target="_blank"><b>err</b></a>
+- #### <a href="lib/kit.coffee?source#L269" target="_blank"><b>err</b></a>
 
  A log error shortcut for `kit.log(msg, 'error', opts)`
 
@@ -178,7 +180,7 @@
 
  - **<u>param</u>**: `opts` { _Object_ }
 
-- #### <a href="lib/kit.coffee?source#L288" target="_blank"><b>exec</b></a>
+- #### <a href="lib/kit.coffee?source#L290" target="_blank"><b>exec</b></a>
 
  A better `child_process.exec`.
 
@@ -208,12 +210,14 @@
     """, 'zsh'
     ```
 
-- #### <a href="lib/kit.coffee?source#L323" target="_blank"><b>fs</b></a>
+- #### <a href="lib/kit.coffee?source#L327" target="_blank"><b>fs</b></a>
 
  See my project [fs-more][fs-more].
+ 
+ [Offline Documentation](?gotoDoc=fs-more/readme.md)
  [fs-more]: https://github.com/ysmood/fs-more
 
-- #### <a href="lib/kit.coffee?source#L341" target="_blank"><b>generateBone</b></a>
+- #### <a href="lib/kit.coffee?source#L345" target="_blank"><b>generateBone</b></a>
 
  A scaffolding helper to generate template project.
  The `lib/cli.coffee` used it as an example.
@@ -234,7 +238,7 @@
 
  - **<u>return</u>**:  { _Promise_ }
 
-- #### <a href="lib/kit.coffee?source#L376" target="_blank"><b>generateNodeModulePaths</b></a>
+- #### <a href="lib/kit.coffee?source#L380" target="_blank"><b>generateNodeModulePaths</b></a>
 
  Generate a list of module paths from a name and a directory.
 
@@ -250,9 +254,11 @@
 
     Paths
 
-- #### <a href="lib/kit.coffee?source#L392" target="_blank"><b>glob</b></a>
+- #### <a href="lib/kit.coffee?source#L398" target="_blank"><b>glob</b></a>
 
  See the https://github.com/isaacs/node-glob
+ 
+ [Offline Documentation](?gotoDoc=glob/readme.md)
 
  - **<u>param</u>**: `patterns` { _String | Array_ }
 
@@ -266,12 +272,14 @@
 
     Contains the path list.
 
-- #### <a href="lib/kit.coffee?source#L421" target="_blank"><b>jhash</b></a>
+- #### <a href="lib/kit.coffee?source#L429" target="_blank"><b>jhash</b></a>
 
  See my [jhash][jhash] project.
+ 
+ [Offline Documentation](?gotoDoc=jhash/readme.md)
  [jhash]: https://github.com/ysmood/jhash
 
-- #### <a href="lib/kit.coffee?source#L430" target="_blank"><b>inspect</b></a>
+- #### <a href="lib/kit.coffee?source#L438" target="_blank"><b>inspect</b></a>
 
  For debugging use. Dump a colorful object.
 
@@ -286,7 +294,7 @@
 
  - **<u>return</u>**:  { _String_ }
 
-- #### <a href="lib/kit.coffee?source#L446" target="_blank"><b>isDevelopment</b></a>
+- #### <a href="lib/kit.coffee?source#L454" target="_blank"><b>isDevelopment</b></a>
 
  Nobone use it to check the running mode of the app.
  Overwrite it if you want to control the check logic.
@@ -294,7 +302,7 @@
 
  - **<u>return</u>**:  { _Boolean_ }
 
-- #### <a href="lib/kit.coffee?source#L455" target="_blank"><b>isProduction</b></a>
+- #### <a href="lib/kit.coffee?source#L463" target="_blank"><b>isProduction</b></a>
 
  Nobone use it to check the running mode of the app.
  Overwrite it if you want to control the check logic.
@@ -302,7 +310,7 @@
 
  - **<u>return</u>**:  { _Boolean_ }
 
-- #### <a href="lib/kit.coffee?source#L470" target="_blank"><b>log</b></a>
+- #### <a href="lib/kit.coffee?source#L478" target="_blank"><b>log</b></a>
 
  A better log for debugging, it uses the `kit.inspect` to log.
  
@@ -324,7 +332,7 @@
 
     Default is same with `kit.inspect`
 
-- #### <a href="lib/kit.coffee?source#L531" target="_blank"><b>monitorApp</b></a>
+- #### <a href="lib/kit.coffee?source#L539" target="_blank"><b>monitorApp</b></a>
 
  Monitor an application and automatically restart it when file changed.
  When the monitored app exit with error,
@@ -347,13 +355,13 @@
 
     The child process.
 
-- #### <a href="lib/kit.coffee?source#L586" target="_blank"><b>nodeVersion</b></a>
+- #### <a href="lib/kit.coffee?source#L594" target="_blank"><b>nodeVersion</b></a>
 
  Node version. Such as `v0.10.23` is `0.1023`, `v0.10.1` is `0.1001`.
 
  - **<u>type</u>**:  { _Float_ }
 
-- #### <a href="lib/kit.coffee?source#L604" target="_blank"><b>open</b></a>
+- #### <a href="lib/kit.coffee?source#L612" target="_blank"><b>open</b></a>
 
  Open a thing that your system can recognize.
  Now only support Windows, OSX or system that installed 'xdg-open'.
@@ -378,7 +386,7 @@
     kit.open 'http://ysmood.org'
     ```
 
-- #### <a href="lib/kit.coffee?source#L639" target="_blank"><b>pad</b></a>
+- #### <a href="lib/kit.coffee?source#L647" target="_blank"><b>pad</b></a>
 
  String padding helper.
 
@@ -398,7 +406,7 @@
     kit.pad '1', 3 # '001'
     ```
 
-- #### <a href="lib/kit.coffee?source#L685" target="_blank"><b>parseComment</b></a>
+- #### <a href="lib/kit.coffee?source#L693" target="_blank"><b>parseComment</b></a>
 
  A comments parser for coffee-script.
  Used to generate documentation automatically.
@@ -453,17 +461,19 @@
     }
     ```
 
-- #### <a href="lib/kit.coffee?source#L753" target="_blank"><b>path</b></a>
+- #### <a href="lib/kit.coffee?source#L761" target="_blank"><b>path</b></a>
 
  Node native module
 
-- #### <a href="lib/kit.coffee?source#L759" target="_blank"><b>Promise</b></a>
+- #### <a href="lib/kit.coffee?source#L769" target="_blank"><b>Promise</b></a>
 
- The promise lib.
+ The promise lib. Now, it uses Bluebird as ES5 polyfill.
+ In the future, the Bluebird will be replaced.
+ Please don't use any API other than the ES5 spec.
 
  - **<u>type</u>**:  { _Object_ }
 
-- #### <a href="lib/kit.coffee?source#L767" target="_blank"><b>promisify</b></a>
+- #### <a href="lib/kit.coffee?source#L777" target="_blank"><b>promisify</b></a>
 
  Convert a callback style function to a promise function.
 
@@ -477,7 +487,7 @@
 
     The function will return a promise object.
 
-- #### <a href="lib/kit.coffee?source#L785" target="_blank"><b>promptGet</b></a>
+- #### <a href="lib/kit.coffee?source#L797" target="_blank"><b>promptGet</b></a>
 
  Block terminal and wait for user inputs. Useful when you need
  in-terminal user interaction.
@@ -485,12 +495,14 @@
  - **<u>param</u>**: `opts` { _Object_ }
 
     See the https://github.com/flatiron/prompt
+    
+    [Offline Documentation](?gotoDoc=prompt/README.md)
 
  - **<u>return</u>**:  { _Promise_ }
 
     Contains the results of prompt.
 
-- #### <a href="lib/kit.coffee?source#L805" target="_blank"><b>require</b></a>
+- #### <a href="lib/kit.coffee?source#L817" target="_blank"><b>require</b></a>
 
  Much much faster than the native require of node, but
  you should follow some rules to use it safely.
@@ -508,7 +520,7 @@
 
     The module that you require.
 
-- #### <a href="lib/kit.coffee?source#L900" target="_blank"><b>request</b></a>
+- #### <a href="lib/kit.coffee?source#L912" target="_blank"><b>request</b></a>
 
  A powerful extended combination of `http.request` and `https.request`.
 
@@ -588,7 +600,7 @@
     	kit.log res.headers
     ```
 
-- #### <a href="lib/kit.coffee?source#L1087" target="_blank"><b>spawn</b></a>
+- #### <a href="lib/kit.coffee?source#L1099" target="_blank"><b>spawn</b></a>
 
  A safer version of `child_process.spawn` to run a process on
  Windows or Linux.
@@ -614,11 +626,11 @@
     The `promise.process` is the child process object.
     When the child process ends, it will resolve.
 
-- #### <a href="lib/kit.coffee?source#L1135" target="_blank"><b>url</b></a>
+- #### <a href="lib/kit.coffee?source#L1147" target="_blank"><b>url</b></a>
 
  Node native module
 
-- #### <a href="lib/kit.coffee?source#L1160" target="_blank"><b>watchFile</b></a>
+- #### <a href="lib/kit.coffee?source#L1172" target="_blank"><b>watchFile</b></a>
 
  Watch a file. If the file changes, the handler will be invoked.
  You can change the polling interval by using `process.env.pollingWatch`.
@@ -656,7 +668,7 @@
     		kit.log path
     ```
 
-- #### <a href="lib/kit.coffee?source#L1190" target="_blank"><b>watchFiles</b></a>
+- #### <a href="lib/kit.coffee?source#L1202" target="_blank"><b>watchFiles</b></a>
 
  Watch files, when file changes, the handler will be invoked.
  It takes the advantage of `kit.watchFile`.
@@ -679,7 +691,7 @@
     	kit.log path
     ```
 
-- #### <a href="lib/kit.coffee?source#L1227" target="_blank"><b>watchDir</b></a>
+- #### <a href="lib/kit.coffee?source#L1239" target="_blank"><b>watchDir</b></a>
 
  Watch directory and all the files in it.
  It supports three types of change: create, modify, move, delete.

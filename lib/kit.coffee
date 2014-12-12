@@ -12,6 +12,8 @@ kit = {}
 
 ###*
  * kit extends all the promise functions of [fs-more][fs-more].
+ *
+ * [Offline Documentation](?gotoDoc=fs-more/readme.md)
  * [fs-more]: https://github.com/ysmood/fs-more
  * @example
  * ```coffee
@@ -318,6 +320,8 @@ _.extend kit, {
 
 	###*
 	 * See my project [fs-more][fs-more].
+	 *
+	 * [Offline Documentation](?gotoDoc=fs-more/readme.md)
 	 * [fs-more]: https://github.com/ysmood/fs-more
 	###
 	fs: fs
@@ -385,6 +389,8 @@ _.extend kit, {
 
 	###*
 	 * See the https://github.com/isaacs/node-glob
+	 *
+	 * [Offline Documentation](?gotoDoc=glob/readme.md)
 	 * @param {String | Array} patterns Minimatch pattern.
 	 * @param {Object} opts The glob options.
 	 * @return {Promise} Contains the path list.
@@ -416,6 +422,8 @@ _.extend kit, {
 
 	###*
 	 * See my [jhash][jhash] project.
+	 *
+	 * [Offline Documentation](?gotoDoc=jhash/readme.md)
 	 * [jhash]: https://github.com/ysmood/jhash
 	###
 	jhash: require 'jhash'
@@ -753,7 +761,9 @@ _.extend kit, {
 	path: require 'path'
 
 	###*
-	 * The promise lib.
+	 * The promise lib. Now, it uses Bluebird as ES5 polyfill.
+	 * In the future, the Bluebird will be replaced.
+	 * Please don't use any API other than the ES5 spec.
 	 * @type {Object}
 	###
 	Promise: Promise
@@ -780,6 +790,8 @@ _.extend kit, {
 	 * Block terminal and wait for user inputs. Useful when you need
 	 * in-terminal user interaction.
 	 * @param  {Object} opts See the https://github.com/flatiron/prompt
+	 *
+	 * [Offline Documentation](?gotoDoc=prompt/README.md)
 	 * @return {Promise} Contains the results of prompt.
 	###
 	promptGet: (opts) ->

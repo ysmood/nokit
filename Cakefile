@@ -64,9 +64,6 @@ task 'build', 'Build project.', build = ->
 
 	start().done()
 
-task 'clean', 'Remove temp files.', clean = ->
-	kit.remove 'kit.js'
-
 task 'test', 'Test', ->
 	kit.spawn('mocha', [
 		'-t', '5000'
