@@ -327,51 +327,6 @@ _.extend kit, {
 	fs: fs
 
 	###*
-	 * A scaffolding helper to generate template project.
-	 * The `lib/cli.coffee` used it as an example.
-	 * @param  {Object} opts Defaults:
-	 * ```coffee
-	 * {
-	 * 	srcDir: null
-	 * 	patterns: '**'
-	 * 	destDir: null
-	 * 	data: {}
-	 * 	compile: (str, data, path) ->
-	 * 		compile str
-	 * }
-	 * ```
-	 * @return {Promise}
-	###
-	generateBone: (opts) ->
-		###
-			It will treat all the files in the path as an ejs file
-		###
-		_.defaults opts, {
-			srcDir: null
-			patterns: ['**', '**/.*']
-			destDir: null
-			data: {}
-			compile: (str, data, path) ->
-				data.filename = path
-				_.template str, data
-		}
-
-		kit.glob(opts.patterns, { cwd: opts.srcDir })
-		.then (paths) ->
-			Promise.all paths.map (path) ->
-				srcPath = kit.path.join opts.srcDir, path
-				destPath = kit.path.join opts.destDir, path
-
-				kit.readFile(srcPath, 'utf8')
-				.then (str) ->
-					opts.compile str, opts.data, srcPath
-				.then (code) ->
-					kit.outputFile destPath, code
-				.catch (err) ->
-					if err.cause.code != 'EISDIR'
-						Promise.reject err
-
-	###*
 	 * Generate a list of module paths from a name and a directory.
 	 * @param  {String} moduleName The module name.
 	 * @param  {String} dir        The root path. Default is current working dir.
