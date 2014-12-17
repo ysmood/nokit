@@ -5,7 +5,7 @@
   "main": "dist/kit.js",
   "scripts": {
     "test": "cake test",
-    "publish": "cake build"
+    "prepublish": "cake build"
   },
   "repository": {
     "type": "git",

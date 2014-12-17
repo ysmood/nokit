@@ -17,10 +17,10 @@
  - **<u>example</u>**:
 
     ```coffee
-    kit.readFile('test.txt').done (str) ->
+    kit.readFile('test.txt').then (str) ->
     	console.log str
     
-    kit.outputFile('a.txt', 'test').done()
+    kit.outputFile('a.txt', 'test').then()
     ```
 
 - #### <a href="lib/kit.coffee?source#L37" target="_blank"><b>_</b></a>
@@ -565,7 +565,7 @@
     p = kit.request 'http://test.com'
     p.req.on 'response', (res) ->
     	kit.log res.headers['content-length']
-    p.done (body) ->
+    p.then (body) ->
     	kit.log body # html or buffer
     
     kit.request {
@@ -574,12 +574,12 @@
     	resProgress: (complete, total) ->
     		kit.log "Progress: #{complete} / #{total}"
     }
-    .done (res) ->
+    .then (res) ->
     	kit.log res.body.length
     	kit.log res.headers
     ```
 
-- #### <a href="lib/kit.coffee?source#L1054" target="_blank"><b>spawn</b></a>
+- #### <a href="lib/kit.coffee?source#L1057" target="_blank"><b>spawn</b></a>
 
  A safer version of `child_process.spawn` to run a process on
  Windows or Linux.
@@ -605,11 +605,11 @@
     The `promise.process` is the child process object.
     When the child process ends, it will resolve.
 
-- #### <a href="lib/kit.coffee?source#L1102" target="_blank"><b>url</b></a>
+- #### <a href="lib/kit.coffee?source#L1105" target="_blank"><b>url</b></a>
 
  Node native module
 
-- #### <a href="lib/kit.coffee?source#L1127" target="_blank"><b>watchFile</b></a>
+- #### <a href="lib/kit.coffee?source#L1130" target="_blank"><b>watchFile</b></a>
 
  Watch a file. If the file changes, the handler will be invoked.
  You can change the polling interval by using `process.env.pollingWatch`.
@@ -647,7 +647,7 @@
     		kit.log path
     ```
 
-- #### <a href="lib/kit.coffee?source#L1157" target="_blank"><b>watchFiles</b></a>
+- #### <a href="lib/kit.coffee?source#L1160" target="_blank"><b>watchFiles</b></a>
 
  Watch files, when file changes, the handler will be invoked.
  It takes the advantage of `kit.watchFile`.
@@ -670,7 +670,7 @@
     	kit.log path
     ```
 
-- #### <a href="lib/kit.coffee?source#L1194" target="_blank"><b>watchDir</b></a>
+- #### <a href="lib/kit.coffee?source#L1197" target="_blank"><b>watchDir</b></a>
 
  Watch directory and all the files in it.
  It supports three types of change: create, modify, move, delete.
