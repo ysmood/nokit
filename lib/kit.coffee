@@ -17,10 +17,10 @@ kit = {}
  * [fs-more]: https://github.com/ysmood/fs-more
  * @example
  * ```coffee
- * kit.readFile('test.txt').done (str) ->
+ * kit.readFile('test.txt').then (str) ->
  * 	console.log str
  *
- * kit.outputFile('a.txt', 'test').done()
+ * kit.outputFile('a.txt', 'test').then()
  * ```
 ###
 kitExtendsFsPromise = 'promise'
@@ -850,7 +850,7 @@ _.extend kit, {
 	 * p = kit.request 'http://test.com'
 	 * p.req.on 'response', (res) ->
 	 * 	kit.log res.headers['content-length']
-	 * p.done (body) ->
+	 * p.then (body) ->
 	 * 	kit.log body # html or buffer
 	 *
 	 * kit.request {
@@ -859,7 +859,7 @@ _.extend kit, {
 	 * 	resProgress: (complete, total) ->
 	 * 		kit.log "Progress: #{complete} / #{total}"
 	 * }
-	 * .done (res) ->
+	 * .then (res) ->
 	 * 	kit.log res.body.length
 	 * 	kit.log res.headers
 	 * ```
@@ -876,6 +876,7 @@ _.extend kit, {
 				opts.url = 'http://' + opts.url
 
 		url = kit.url.parse opts.url
+		delete url.host
 		url.protocol ?= 'http:'
 
 		request = null
@@ -923,14 +924,13 @@ _.extend kit, {
 			req = request opts, (res) ->
 				if opts.redirect > 0 and res.headers.location
 					opts.redirect--
-					if res.headers.location.indexOf('http') != 0
-						url = kit.url.resolve opts.url, res.headers.location
-					else
-						url = res.headers.location
-
+					url = kit.url.resolve(
+						kit.url.format opts
+						res.headers.location
+					)
 					kit.request _.extend(opts, kit.url.parse(url))
-					.catch (err) -> reject err
-					.done (val) -> resolve val
+					.then resolve
+					.catch reject
 					return
 
 				if opts.resProgress
