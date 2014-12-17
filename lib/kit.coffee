@@ -923,9 +923,12 @@ _.extend kit, {
 			req = request opts, (res) ->
 				if opts.redirect > 0 and res.headers.location
 					opts.redirect--
-					kit.request(
-						_.extend opts, kit.url.parse(res.headers.location)
-					)
+					if res.headers.location.indexOf('http') != 0
+						url = kit.url.resolve opts.url, res.headers.location
+					else
+						url = res.headers.location
+
+					kit.request _.extend(opts, kit.url.parse(url))
 					.catch (err) -> reject err
 					.done (val) -> resolve val
 					return
