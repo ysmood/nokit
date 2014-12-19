@@ -368,7 +368,7 @@ _.extend kit, {
 	_glob: (pattern, opts) ->
 		glob = kit.require 'glob'
 		new Promise (resolve, reject) ->
-			if opts.sync
+			if opts and opts.sync
 				try
 					g = new glob.Glob pattern, opts
 					paths = g.found
