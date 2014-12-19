@@ -742,26 +742,6 @@ _.extend kit, {
 				fn.apply self, args
 
 	###*
-	 * Block terminal and wait for user inputs. Useful when you need
-	 * in-terminal user interaction.
-	 * @param  {Object} opts See the https://github.com/flatiron/prompt
-	 *
-	 * [Offline Documentation](?gotoDoc=prompt/README.md)
-	 * @return {Promise} Contains the results of prompt.
-	###
-	promptGet: (opts) ->
-		prompt = kit.require 'prompt', (prompt) ->
-			prompt.message = '>> '
-			prompt.delimiter = ''
-
-		new Promise (resolve, reject) ->
-			prompt.get opts, (err, res) ->
-				if err
-					reject err
-				else
-					resolve res
-
-	###*
 	 * Much much faster than the native require of node, but
 	 * you should follow some rules to use it safely.
 	 * @param  {String}   moduleName Relative moudle path is not allowed!
