@@ -466,22 +466,7 @@
 
     The function will return a promise object.
 
-- #### <a href="lib/kit.coffee?source#L752" target="_blank"><b>promptGet</b></a>
-
- Block terminal and wait for user inputs. Useful when you need
- in-terminal user interaction.
-
- - **<u>param</u>**: `opts` { _Object_ }
-
-    See the https://github.com/flatiron/prompt
-    
-    [Offline Documentation](?gotoDoc=prompt/README.md)
-
- - **<u>return</u>**:  { _Promise_ }
-
-    Contains the results of prompt.
-
-- #### <a href="lib/kit.coffee?source#L772" target="_blank"><b>require</b></a>
+- #### <a href="lib/kit.coffee?source#L752" target="_blank"><b>require</b></a>
 
  Much much faster than the native require of node, but
  you should follow some rules to use it safely.
@@ -499,7 +484,7 @@
 
     The module that you require.
 
-- #### <a href="lib/kit.coffee?source#L867" target="_blank"><b>request</b></a>
+- #### <a href="lib/kit.coffee?source#L847" target="_blank"><b>request</b></a>
 
  A powerful extended combination of `http.request` and `https.request`.
 
@@ -579,7 +564,7 @@
     	kit.log res.headers
     ```
 
-- #### <a href="lib/kit.coffee?source#L1057" target="_blank"><b>spawn</b></a>
+- #### <a href="lib/kit.coffee?source#L1037" target="_blank"><b>spawn</b></a>
 
  A safer version of `child_process.spawn` to run a process on
  Windows or Linux.
@@ -605,11 +590,11 @@
     The `promise.process` is the child process object.
     When the child process ends, it will resolve.
 
-- #### <a href="lib/kit.coffee?source#L1105" target="_blank"><b>url</b></a>
+- #### <a href="lib/kit.coffee?source#L1085" target="_blank"><b>url</b></a>
 
  Node native module
 
-- #### <a href="lib/kit.coffee?source#L1130" target="_blank"><b>watchFile</b></a>
+- #### <a href="lib/kit.coffee?source#L1110" target="_blank"><b>watchFile</b></a>
 
  Watch a file. If the file changes, the handler will be invoked.
  You can change the polling interval by using `process.env.pollingWatch`.
@@ -647,7 +632,7 @@
     		kit.log path
     ```
 
-- #### <a href="lib/kit.coffee?source#L1160" target="_blank"><b>watchFiles</b></a>
+- #### <a href="lib/kit.coffee?source#L1140" target="_blank"><b>watchFiles</b></a>
 
  Watch files, when file changes, the handler will be invoked.
  It takes the advantage of `kit.watchFile`.
@@ -670,7 +655,7 @@
     	kit.log path
     ```
 
-- #### <a href="lib/kit.coffee?source#L1197" target="_blank"><b>watchDir</b></a>
+- #### <a href="lib/kit.coffee?source#L1177" target="_blank"><b>watchDir</b></a>
 
  Watch directory and all the files in it.
  It supports three types of change: create, modify, move, delete.
