@@ -368,12 +368,21 @@ _.extend kit, {
 	_glob: (pattern, opts) ->
 		glob = kit.require 'glob'
 		new Promise (resolve, reject) ->
-			g = glob pattern, opts, (err, paths) ->
-				paths.glob = g
-				if err
-					reject err
-				else
+			if opts.sync
+				try
+					g = new glob.Glob pattern, opts
+					paths = g.found
+					paths.glob = g
 					resolve paths
+				catch err
+					reject err
+			else
+				g = glob pattern, opts, (err, paths) ->
+					paths.glob = g
+					if err
+						reject err
+					else
+						resolve paths
 
 	###*
 	 * See my [jhash][jhash] project.

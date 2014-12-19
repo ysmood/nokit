@@ -14,6 +14,12 @@ describe 'Kit:', ->
 			assert.equal comments[0].tags[0].name, 'limit'
 			tdone()
 
+	it 'glob sync', (tdone) ->
+		kit.glob 'test/fixtures/*', { sync: true }
+		.then (paths) ->
+			assert.equal paths.length > 0, true
+			tdone()
+
 	it 'async progress', (tdone) ->
 		len = kit.fs.readFileSync(__filename).length
 		iter = (i) ->
