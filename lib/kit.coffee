@@ -527,7 +527,7 @@ _.extend kit, {
 				kit.log 'EXIT'.yellow +
 					" code: #{(code + '').cyan} signal: #{(sig + '').cyan}"
 
-				if code != null and code != 0
+				if code != null and code != 0 and code != 130
 					kit.err 'Process closed. Edit and save
 						the watched file to restart.'.red
 
