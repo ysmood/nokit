@@ -17,7 +17,7 @@ kit = {}
  * [fs-more]: https://github.com/ysmood/fs-more
  * @example
  * ```coffee
- * kit.readFile('test.txt').then (str) ->
+ * kit.readFile('test.txt', 'utf8').then (str) ->
  * 	console.log str
  *
  * kit.outputFile('a.txt', 'test').then()
@@ -39,9 +39,10 @@ _.extend kit, {
 	requireCache: {}
 
 	###*
-	 * An throttle version of `Promise.all`, it runs all the tasks under
+	 * An throttled version of `Promise.all`, it runs all the tasks under
 	 * a concurrent limitation.
-	 * @param  {Int} limit The max task to run at the same time. It's optional.
+	 * To run tasks sequentially, use `kit.compose`.
+	 * @param  {Int} limit The max task to run at a time. It's optional.
 	 * Default is Infinity.
 	 * @param  {Array | Function} list
 	 * If the list is an array, it should be a list of functions or promises,
@@ -148,8 +149,10 @@ _.extend kit, {
 
 	###*
 	 * Creates a function that is the composition of the provided functions.
-	 * Besides it can also accept async function that returns promise.
-	 * It's more powerful than `_.compose`.
+	 * Besides, it can also accept async function that returns promise.
+	 * It's more powerful than `_.compose`, and it use reverse order for
+	 * passing argument from one function to another.
+	 * See `kit.async`, if you need concurrent support.
 	 * @param  {Function | Array} fns Functions that return
 	 * promise or any value.
 	 * And the array can also contains promises.
@@ -186,14 +189,16 @@ _.extend kit, {
 		, Promise.resolve(val)
 
 	###*
-	 * Daemonize a program.
+	 * Daemonize a program. Just a shortcut usage of `kit.spawn`.
 	 * @param  {Object} opts Defaults:
+	 * ```coffee
 	 * {
 	 * 	bin: 'node'
 	 * 	args: ['app.js']
 	 * 	stdout: 'stdout.log'
 	 * 	stderr: 'stderr.log'
 	 * }
+	 * ```
 	 * @return {Porcess} The daemonized process.
 	###
 	daemonize: (opts = {}) ->
@@ -212,11 +217,10 @@ _.extend kit, {
 			stdio: [ 'ignore', outLog, errLog ]
 		}).process
 		p.unref()
-		kit.log "Run as background daemon, PID: #{p.pid}".yellow
 		p
 
 	###*
-	 * A simple decrypt helper
+	 * A simple decrypt helper. Cross-version of node.
 	 * @param  {Any} data
 	 * @param  {String | Buffer} password
 	 * @param  {String} algorithm Default is 'aes128'.
@@ -239,7 +243,7 @@ _.extend kit, {
 			Buffer.concat [decipher.update(data), decipher.final()]
 
 	###*
-	 * A simple encrypt helper
+	 * A simple encrypt helper. Cross-version of node.
 	 * @param  {Any} data
 	 * @param  {String | Buffer} password
 	 * @param  {String} algorithm Default is 'aes128'.
@@ -262,7 +266,7 @@ _.extend kit, {
 			Buffer.concat [cipher.update(data), cipher.final()]
 
 	###*
-	 * A log error shortcut for `kit.log(msg, 'error', opts)`
+	 * A error log shortcut for `kit.log(msg, 'error', opts)`
 	 * @param  {Any} msg
 	 * @param  {Object} opts
 	###
@@ -270,16 +274,28 @@ _.extend kit, {
 		kit.log msg, 'error', opts
 
 	###*
-	 * A better `child_process.exec`.
+	 * A better `child_process.exec`. This function require your current
+	 * version of node support `stream.Transform` API.
 	 * @param  {String} cmd   Shell commands.
 	 * @param  {String} shell Shell name. Such as `bash`, `zsh`. Optinal.
 	 * @return {Promise} Resolves when the process's stdio is drained.
+	 * The resolve value is like:
+	 * ```coffee
+	 * {
+	 * 	code: 0
+	 * 	signal: null
+	 * 	stdout: 'hello world'
+	 * 	stderr: ''
+	 * }
+	 * ```
 	 * @example
 	 * ```coffee
-	 * kit.exec """
-	 * a=10
+	 * kit.exec("""
+	 * a='hello world'
 	 * echo $a
-	 * """
+	 * """).then ({code, stdout}) ->
+	 * 	kit.log code # output => 0
+	 * 	kit.log stdout # output => "hello world"
 	 *
 	 * # Bash doesn't support "**" recusive match pattern.
 	 * kit.exec """
@@ -343,12 +359,25 @@ _.extend kit, {
 		names
 
 	###*
+	 * A handy file system search tool.
 	 * See the https://github.com/isaacs/node-glob
 	 *
 	 * [Offline Documentation](?gotoDoc=glob/readme.md)
 	 * @param {String | Array} patterns Minimatch pattern.
 	 * @param {Object} opts The glob options.
 	 * @return {Promise} Contains the path list.
+	 * @example
+	 * ```coffee
+	 * glob('*.js').then (paths) -> kit.log paths
+	 *
+	 * glob('*.js', { cwd: 'test' }).then (paths) -> kit.log paths
+	 *
+	 * glob(['*.js', '*.css']).then (paths) -> kit.log paths
+	 *
+	 * # The 'statCache' is also saved.
+	 * glob('*.js', { dot: true }).then (paths) ->
+	 * 	kit.log paths.statCache
+	 * ```
 	###
 	glob: (patterns, opts) ->
 		if _.isString patterns
@@ -385,18 +414,37 @@ _.extend kit, {
 						resolve paths
 
 	###*
+	 * A fast helper to hash string or binary file.
 	 * See my [jhash][jhash] project.
 	 *
 	 * [Offline Documentation](?gotoDoc=jhash/readme.md)
 	 * [jhash]: https://github.com/ysmood/jhash
+	 * @example
+	 * ```coffee
+	 * var jhash = require('jhash');
+	 * jhash.hash('test'); // output => '349o'
+	 *
+	 * var fs = require('fs');
+	 * jhash.hash(fs.readFileSync('a.jpg'));
+	 *
+	 * // Control the hash char set.
+	 * jhash.setSymbols('abcdef');
+	 * jhash.hash('test'); // output => 'decfddfe'
+	 *
+	 * // Control the max length of the result hash value. Unit is bit.
+	 * jhash.setMaskLen(10);
+	 * jhash.hash('test'); // output => 'ede'
+	 * ```
 	###
 	jhash: require 'jhash'
 
 	###*
-	 * For debugging use. Dump a colorful object.
+	 * For debugging. Dump a colorful object.
 	 * @param  {Object} obj Your target object.
 	 * @param  {Object} opts Options. Default:
+	 * ```coffee
 	 * { colors: true, depth: 5 }
+	 * ```
 	 * @return {String}
 	###
 	inspect: (obj, opts) ->
@@ -430,10 +478,10 @@ _.extend kit, {
 	###*
 	 * A better log for debugging, it uses the `kit.inspect` to log.
 	 *
-	 * You can use terminal command like `logReg='pattern' node app.js` to
+	 * Use terminal command like `logReg='pattern' node app.js` to
 	 * filter the log info.
 	 *
-	 * You can use `logTrace='on' node app.js` to force each log end with a
+	 * Use `logTrace='on' node app.js` to force each log end with a
 	 * stack trace.
 	 * @param  {Any} msg Your log message.
 	 * @param  {String} action 'log', 'error', 'warn'.
@@ -486,16 +534,16 @@ _.extend kit, {
 
 	###*
 	 * Monitor an application and automatically restart it when file changed.
-	 * When the monitored app exit with error,
-	 * the monitor itself will also exit.
-	 * It will make sure your app crash properly.
+	 * Even when the monitored app exit with error, the monitor will still wait
+	 * for your file change to restart the application.
+	 * It will print useful infomation when it application unexceptedly.
 	 * @param  {Object} opts Defaults:
 	 * ```coffee
 	 * {
 	 * 	bin: 'node'
 	 * 	args: ['app.js']
-	 * 	watchList: ['app.js']
-	 * 	opts: {} # Such as 'cwd', 'stdio', 'env'
+	 * 	watchList: ['app.js'] # Extra files to watch.
+	 * 	opts: {} # Same as the opts of 'kit.spawn'.
 	 * }
 	 * ```
 	 * @return {Process} The child process.
@@ -598,7 +646,7 @@ _.extend kit, {
 					resolve { stdout, stderr }
 
 	###*
-	 * String padding helper.
+	 * String padding helper. It is use in the `kit.log`.
 	 * @param  {Sting | Number} str
 	 * @param  {Number} width
 	 * @param  {String} char Padding char. Default is '0'.
@@ -617,8 +665,8 @@ _.extend kit, {
 
 	###*
 	 * A comments parser for coffee-script.
-	 * Used to generate documentation automatically.
-	 * It will traverse through all the comments.
+	 * Used to generate documentation from source code automatically.
+	 * It will traverse through all the comments of a coffee file.
 	 * @param  {String} moduleName The name of the module it belongs to.
 	 * @param  {String} code Coffee source code.
 	 * @param  {String} path The path of the source code.
@@ -720,14 +768,14 @@ _.extend kit, {
 		return comments
 
 	###*
-	 * Node native module
+	 * Node native module `path`.
 	###
 	path: require 'path'
 
 	###*
 	 * The promise lib. Now, it uses Bluebird as ES5 polyfill.
-	 * In the future, the Bluebird will be replaced.
-	 * Please don't use any API other than the ES5 spec.
+	 * In the future, the Bluebird will be replaced with native
+	 * ES6 Promise. Please don't use any API other than the ES6 spec.
 	 * @type {Object}
 	###
 	Promise: Promise
@@ -751,8 +799,8 @@ _.extend kit, {
 				fn.apply self, args
 
 	###*
-	 * Much much faster than the native require of node, but
-	 * you should follow some rules to use it safely.
+	 * Much faster than the native require of node, but you should
+	 * follow some rules to use it safely.
 	 * @param  {String}   moduleName Relative moudle path is not allowed!
 	 * Only allow absolute path or module name.
 	 * @param  {Function} done Run only the first time after the module loaded.
@@ -781,7 +829,7 @@ _.extend kit, {
 		kit.requireCache[moduleName]
 
 	###*
-	 * A powerful extended combination of `http.request` and `https.request`.
+	 * A handy extended combination of `http.request` and `https.request`.
 	 * @param  {Object} opts The same as the [http.request][http.request],
 	 * but with some extra options:
 	 * ```coffee
@@ -1032,16 +1080,30 @@ _.extend kit, {
 
 	###*
 	 * A safer version of `child_process.spawn` to run a process on
-	 * Windows or Linux.
+	 * Windows or Linux. In some conditions, it may be more convenient
+	 * to use the `kit.exec`.
 	 * It will automatically add `node_modules/.bin` to the `PATH`
 	 * environment variable.
-	 * @param  {String} cmd Path of an executable program.
+	 * @param  {String} cmd Path or name of an executable program.
 	 * @param  {Array} args CLI arguments.
 	 * @param  {Object} opts Process options.
-	 * Same with the Node.js official doc.
-	 * Default will inherit the parent's stdio.
-	 * @return {Promise} The `promise.process` is the child process object.
-	 * When the child process ends, it will resolve.
+	 * Same with the Node.js official documentation.
+	 * Except that it will inherit the parent's stdio.
+	 * @return {Promise} The `promise.process` is the spawned child
+	 * process object.
+	 * Resolves when the process's stdio is drained. The resolve value
+	 * is like:
+	 * ```coffee
+	 * {
+	 * 	code: 0
+	 * 	signal: null
+	 * }
+	 * ```
+	 * @example
+	 * ```coffee
+	 * kit.spawn 'git', ['commit', '-m', '42 is the answer to everything']
+	 * .then ({code}) -> kit.log code
+	 * ```
 	###
 	spawn: (cmd, args = [], opts = {}) ->
 		PATH = process.env.PATH or process.env.Path
@@ -1089,7 +1151,7 @@ _.extend kit, {
 		promise
 
 	###*
-	 * Node native module
+	 * Node native module `url`.
 	###
 	url: require 'url'
 
@@ -1097,7 +1159,8 @@ _.extend kit, {
 	 * Watch a file. If the file changes, the handler will be invoked.
 	 * You can change the polling interval by using `process.env.pollingWatch`.
 	 * Use `process.env.watchPersistent = 'off'` to disable the persistent.
-	 * For samba server, we have to choose `watchFile` other than `watch`.
+	 * Why not use `fs.watch`? Because `fs.watch` is unstable on some file
+	 * systems, such as Samba or OSX.
 	 * @param  {String}   path    The file path
 	 * @param  {Function} handler Event listener.
 	 * The handler has these params:
@@ -1135,7 +1198,7 @@ _.extend kit, {
 
 	###*
 	 * Watch files, when file changes, the handler will be invoked.
-	 * It takes the advantage of `kit.watchFile`.
+	 * It is build on the top of `kit.watchFile`.
 	 * @param  {Array} patterns String array with minimatch syntax.
 	 * Such as `['*\/**.css', 'lib\/**\/*.js']`.
 	 * @param  {Function} handler
@@ -1154,6 +1217,7 @@ _.extend kit, {
 	###*
 	 * Watch directory and all the files in it.
 	 * It supports three types of change: create, modify, move, delete.
+	 * It is build on the top of `kit.watchFile`.
 	 * @param  {Object} opts Defaults:
 	 * ```coffee
 	 * {

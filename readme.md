@@ -17,7 +17,7 @@
  - **<u>example</u>**:
 
     ```coffee
-    kit.readFile('test.txt').then (str) ->
+    kit.readFile('test.txt', 'utf8').then (str) ->
     	console.log str
     
     kit.outputFile('a.txt', 'test').then()
@@ -29,14 +29,15 @@
 
  - **<u>type</u>**:  { _Object_ }
 
-- #### <a href="lib/kit.coffee?source#L85" target="_blank"><b>async</b></a>
+- #### <a href="lib/kit.coffee?source#L86" target="_blank"><b>async</b></a>
 
- An throttle version of `Promise.all`, it runs all the tasks under
+ An throttled version of `Promise.all`, it runs all the tasks under
  a concurrent limitation.
+ To run tasks sequentially, use `kit.compose`.
 
  - **<u>param</u>**: `limit` { _Int_ }
 
-    The max task to run at the same time. It's optional.
+    The max task to run at a time. It's optional.
     Default is Infinity.
 
  - **<u>param</u>**: `list` { _Array | Function_ }
@@ -88,11 +89,13 @@
     	kit.log 'all done!'
     ```
 
-- #### <a href="lib/kit.coffee?source#L178" target="_blank"><b>compose</b></a>
+- #### <a href="lib/kit.coffee?source#L181" target="_blank"><b>compose</b></a>
 
  Creates a function that is the composition of the provided functions.
- Besides it can also accept async function that returns promise.
- It's more powerful than `_.compose`.
+ Besides, it can also accept async function that returns promise.
+ It's more powerful than `_.compose`, and it use reverse order for
+ passing argument from one function to another.
+ See `kit.async`, if you need concurrent support.
 
  - **<u>param</u>**: `fns` { _Function | Array_ }
 
@@ -126,41 +129,29 @@
     download 'home'
     ```
 
-- #### <a href="lib/kit.coffee?source#L199" target="_blank"><b>daemonize</b></a>
+- #### <a href="lib/kit.coffee?source#L204" target="_blank"><b>daemonize</b></a>
 
- Daemonize a program.
+ Daemonize a program. Just a shortcut usage of `kit.spawn`.
 
  - **<u>param</u>**: `opts` { _Object_ }
 
     Defaults:
+    ```coffee
     {
     	bin: 'node'
     	args: ['app.js']
     	stdout: 'stdout.log'
     	stderr: 'stderr.log'
     }
+    ```
 
  - **<u>return</u>**:  { _Porcess_ }
 
     The daemonized process.
 
-- #### <a href="lib/kit.coffee?source#L225" target="_blank"><b>decrypt</b></a>
+- #### <a href="lib/kit.coffee?source#L229" target="_blank"><b>decrypt</b></a>
 
- A simple decrypt helper
-
- - **<u>param</u>**: `data` { _Any_ }
-
- - **<u>param</u>**: `password` { _String | Buffer_ }
-
- - **<u>param</u>**: `algorithm` { _String_ }
-
-    Default is 'aes128'.
-
- - **<u>return</u>**:  { _Buffer_ }
-
-- #### <a href="lib/kit.coffee?source#L248" target="_blank"><b>encrypt</b></a>
-
- A simple encrypt helper
+ A simple decrypt helper. Cross-version of node.
 
  - **<u>param</u>**: `data` { _Any_ }
 
@@ -172,17 +163,32 @@
 
  - **<u>return</u>**:  { _Buffer_ }
 
-- #### <a href="lib/kit.coffee?source#L269" target="_blank"><b>err</b></a>
+- #### <a href="lib/kit.coffee?source#L252" target="_blank"><b>encrypt</b></a>
 
- A log error shortcut for `kit.log(msg, 'error', opts)`
+ A simple encrypt helper. Cross-version of node.
+
+ - **<u>param</u>**: `data` { _Any_ }
+
+ - **<u>param</u>**: `password` { _String | Buffer_ }
+
+ - **<u>param</u>**: `algorithm` { _String_ }
+
+    Default is 'aes128'.
+
+ - **<u>return</u>**:  { _Buffer_ }
+
+- #### <a href="lib/kit.coffee?source#L273" target="_blank"><b>err</b></a>
+
+ A error log shortcut for `kit.log(msg, 'error', opts)`
 
  - **<u>param</u>**: `msg` { _Any_ }
 
  - **<u>param</u>**: `opts` { _Object_ }
 
-- #### <a href="lib/kit.coffee?source#L290" target="_blank"><b>exec</b></a>
+- #### <a href="lib/kit.coffee?source#L306" target="_blank"><b>exec</b></a>
 
- A better `child_process.exec`.
+ A better `child_process.exec`. This function require your current
+ version of node support `stream.Transform` API.
 
  - **<u>param</u>**: `cmd` { _String_ }
 
@@ -195,14 +201,25 @@
  - **<u>return</u>**:  { _Promise_ }
 
     Resolves when the process's stdio is drained.
+    The resolve value is like:
+    ```coffee
+    {
+    	code: 0
+    	signal: null
+    	stdout: 'hello world'
+    	stderr: ''
+    }
+    ```
 
  - **<u>example</u>**:
 
     ```coffee
-    kit.exec """
-    a=10
+    kit.exec("""
+    a='hello world'
     echo $a
-    """
+    """).then ({code, stdout}) ->
+    	kit.log code # output => 0
+    	kit.log stdout # output => "hello world"
     
     # Bash doesn't support "**" recusive match pattern.
     kit.exec """
@@ -210,14 +227,14 @@
     """, 'zsh'
     ```
 
-- #### <a href="lib/kit.coffee?source#L327" target="_blank"><b>fs</b></a>
+- #### <a href="lib/kit.coffee?source#L343" target="_blank"><b>fs</b></a>
 
  See my project [fs-more][fs-more].
  
  [Offline Documentation](?gotoDoc=fs-more/readme.md)
  [fs-more]: https://github.com/ysmood/fs-more
 
-- #### <a href="lib/kit.coffee?source#L335" target="_blank"><b>generateNodeModulePaths</b></a>
+- #### <a href="lib/kit.coffee?source#L351" target="_blank"><b>generateNodeModulePaths</b></a>
 
  Generate a list of module paths from a name and a directory.
 
@@ -233,8 +250,9 @@
 
     Paths
 
-- #### <a href="lib/kit.coffee?source#L353" target="_blank"><b>glob</b></a>
+- #### <a href="lib/kit.coffee?source#L382" target="_blank"><b>glob</b></a>
 
+ A handy file system search tool.
  See the https://github.com/isaacs/node-glob
  
  [Offline Documentation](?gotoDoc=glob/readme.md)
@@ -251,16 +269,49 @@
 
     Contains the path list.
 
-- #### <a href="lib/kit.coffee?source#L393" target="_blank"><b>jhash</b></a>
+ - **<u>example</u>**:
 
+    ```coffee
+    glob('*.js').then (paths) -> kit.log paths
+    
+    glob('*.js', { cwd: 'test' }).then (paths) -> kit.log paths
+    
+    glob(['*.js', '*.css']).then (paths) -> kit.log paths
+    
+    # The 'statCache' is also saved.
+    glob('*.js', { dot: true }).then (paths) ->
+    	kit.log paths.statCache
+    ```
+
+- #### <a href="lib/kit.coffee?source#L439" target="_blank"><b>jhash</b></a>
+
+ A fast helper to hash string or binary file.
  See my [jhash][jhash] project.
  
  [Offline Documentation](?gotoDoc=jhash/readme.md)
  [jhash]: https://github.com/ysmood/jhash
 
-- #### <a href="lib/kit.coffee?source#L402" target="_blank"><b>inspect</b></a>
+ - **<u>example</u>**:
 
- For debugging use. Dump a colorful object.
+    ```coffee
+    var jhash = require('jhash');
+    jhash.hash('test'); // output => '349o'
+    
+    var fs = require('fs');
+    jhash.hash(fs.readFileSync('a.jpg'));
+    
+    // Control the hash char set.
+    jhash.setSymbols('abcdef');
+    jhash.hash('test'); // output => 'decfddfe'
+    
+    // Control the max length of the result hash value. Unit is bit.
+    jhash.setMaskLen(10);
+    jhash.hash('test'); // output => 'ede'
+    ```
+
+- #### <a href="lib/kit.coffee?source#L450" target="_blank"><b>inspect</b></a>
+
+ For debugging. Dump a colorful object.
 
  - **<u>param</u>**: `obj` { _Object_ }
 
@@ -269,11 +320,13 @@
  - **<u>param</u>**: `opts` { _Object_ }
 
     Options. Default:
+    ```coffee
     { colors: true, depth: 5 }
+    ```
 
  - **<u>return</u>**:  { _String_ }
 
-- #### <a href="lib/kit.coffee?source#L418" target="_blank"><b>isDevelopment</b></a>
+- #### <a href="lib/kit.coffee?source#L466" target="_blank"><b>isDevelopment</b></a>
 
  Nobone use it to check the running mode of the app.
  Overwrite it if you want to control the check logic.
@@ -281,7 +334,7 @@
 
  - **<u>return</u>**:  { _Boolean_ }
 
-- #### <a href="lib/kit.coffee?source#L427" target="_blank"><b>isProduction</b></a>
+- #### <a href="lib/kit.coffee?source#L475" target="_blank"><b>isProduction</b></a>
 
  Nobone use it to check the running mode of the app.
  Overwrite it if you want to control the check logic.
@@ -289,14 +342,14 @@
 
  - **<u>return</u>**:  { _Boolean_ }
 
-- #### <a href="lib/kit.coffee?source#L442" target="_blank"><b>log</b></a>
+- #### <a href="lib/kit.coffee?source#L490" target="_blank"><b>log</b></a>
 
  A better log for debugging, it uses the `kit.inspect` to log.
  
- You can use terminal command like `logReg='pattern' node app.js` to
+ Use terminal command like `logReg='pattern' node app.js` to
  filter the log info.
  
- You can use `logTrace='on' node app.js` to force each log end with a
+ Use `logTrace='on' node app.js` to force each log end with a
  stack trace.
 
  - **<u>param</u>**: `msg` { _Any_ }
@@ -311,12 +364,12 @@
 
     Default is same with `kit.inspect`
 
-- #### <a href="lib/kit.coffee?source#L503" target="_blank"><b>monitorApp</b></a>
+- #### <a href="lib/kit.coffee?source#L551" target="_blank"><b>monitorApp</b></a>
 
  Monitor an application and automatically restart it when file changed.
- When the monitored app exit with error,
- the monitor itself will also exit.
- It will make sure your app crash properly.
+ Even when the monitored app exit with error, the monitor will still wait
+ for your file change to restart the application.
+ It will print useful infomation when it application unexceptedly.
 
  - **<u>param</u>**: `opts` { _Object_ }
 
@@ -325,8 +378,8 @@
     {
     	bin: 'node'
     	args: ['app.js']
-    	watchList: ['app.js']
-    	opts: {} # Such as 'cwd', 'stdio', 'env'
+    	watchList: ['app.js'] # Extra files to watch.
+    	opts: {} # Same as the opts of 'kit.spawn'.
     }
     ```
 
@@ -334,13 +387,13 @@
 
     The child process.
 
-- #### <a href="lib/kit.coffee?source#L558" target="_blank"><b>nodeVersion</b></a>
+- #### <a href="lib/kit.coffee?source#L606" target="_blank"><b>nodeVersion</b></a>
 
  Node version. Such as `v0.10.23` is `0.1023`, `v0.10.1` is `0.1001`.
 
  - **<u>type</u>**:  { _Float_ }
 
-- #### <a href="lib/kit.coffee?source#L576" target="_blank"><b>open</b></a>
+- #### <a href="lib/kit.coffee?source#L624" target="_blank"><b>open</b></a>
 
  Open a thing that your system can recognize.
  Now only support Windows, OSX or system that installed 'xdg-open'.
@@ -365,9 +418,9 @@
     kit.open 'http://ysmood.org'
     ```
 
-- #### <a href="lib/kit.coffee?source#L611" target="_blank"><b>pad</b></a>
+- #### <a href="lib/kit.coffee?source#L659" target="_blank"><b>pad</b></a>
 
- String padding helper.
+ String padding helper. It is use in the `kit.log`.
 
  - **<u>param</u>**: `str` { _Sting | Number_ }
 
@@ -385,11 +438,11 @@
     kit.pad '1', 3 # '001'
     ```
 
-- #### <a href="lib/kit.coffee?source#L657" target="_blank"><b>parseComment</b></a>
+- #### <a href="lib/kit.coffee?source#L705" target="_blank"><b>parseComment</b></a>
 
  A comments parser for coffee-script.
- Used to generate documentation automatically.
- It will traverse through all the comments.
+ Used to generate documentation from source code automatically.
+ It will traverse through all the comments of a coffee file.
 
  - **<u>param</u>**: `moduleName` { _String_ }
 
@@ -440,19 +493,19 @@
     }
     ```
 
-- #### <a href="lib/kit.coffee?source#L725" target="_blank"><b>path</b></a>
+- #### <a href="lib/kit.coffee?source#L773" target="_blank"><b>path</b></a>
 
- Node native module
+ Node native module `path`.
 
-- #### <a href="lib/kit.coffee?source#L733" target="_blank"><b>Promise</b></a>
+- #### <a href="lib/kit.coffee?source#L781" target="_blank"><b>Promise</b></a>
 
  The promise lib. Now, it uses Bluebird as ES5 polyfill.
- In the future, the Bluebird will be replaced.
- Please don't use any API other than the ES5 spec.
+ In the future, the Bluebird will be replaced with native
+ ES6 Promise. Please don't use any API other than the ES6 spec.
 
  - **<u>type</u>**:  { _Object_ }
 
-- #### <a href="lib/kit.coffee?source#L741" target="_blank"><b>promisify</b></a>
+- #### <a href="lib/kit.coffee?source#L789" target="_blank"><b>promisify</b></a>
 
  Convert a callback style function to a promise function.
 
@@ -466,10 +519,10 @@
 
     The function will return a promise object.
 
-- #### <a href="lib/kit.coffee?source#L761" target="_blank"><b>require</b></a>
+- #### <a href="lib/kit.coffee?source#L809" target="_blank"><b>require</b></a>
 
- Much much faster than the native require of node, but
- you should follow some rules to use it safely.
+ Much faster than the native require of node, but you should
+ follow some rules to use it safely.
 
  - **<u>param</u>**: `moduleName` { _String_ }
 
@@ -484,9 +537,9 @@
 
     The module that you require.
 
-- #### <a href="lib/kit.coffee?source#L856" target="_blank"><b>request</b></a>
+- #### <a href="lib/kit.coffee?source#L904" target="_blank"><b>request</b></a>
 
- A powerful extended combination of `http.request` and `https.request`.
+ A handy extended combination of `http.request` and `https.request`.
 
  - **<u>param</u>**: `opts` { _Object_ }
 
@@ -564,16 +617,17 @@
     	kit.log res.headers
     ```
 
-- #### <a href="lib/kit.coffee?source#L1046" target="_blank"><b>spawn</b></a>
+- #### <a href="lib/kit.coffee?source#L1108" target="_blank"><b>spawn</b></a>
 
  A safer version of `child_process.spawn` to run a process on
- Windows or Linux.
+ Windows or Linux. In some conditions, it may be more convenient
+ to use the `kit.exec`.
  It will automatically add `node_modules/.bin` to the `PATH`
  environment variable.
 
  - **<u>param</u>**: `cmd` { _String_ }
 
-    Path of an executable program.
+    Path or name of an executable program.
 
  - **<u>param</u>**: `args` { _Array_ }
 
@@ -582,24 +636,40 @@
  - **<u>param</u>**: `opts` { _Object_ }
 
     Process options.
-    Same with the Node.js official doc.
-    Default will inherit the parent's stdio.
+    Same with the Node.js official documentation.
+    Except that it will inherit the parent's stdio.
 
  - **<u>return</u>**:  { _Promise_ }
 
-    The `promise.process` is the child process object.
-    When the child process ends, it will resolve.
+    The `promise.process` is the spawned child
+    process object.
+    Resolves when the process's stdio is drained. The resolve value
+    is like:
+    ```coffee
+    {
+    	code: 0
+    	signal: null
+    }
+    ```
 
-- #### <a href="lib/kit.coffee?source#L1094" target="_blank"><b>url</b></a>
+ - **<u>example</u>**:
 
- Node native module
+    ```coffee
+    kit.spawn 'git', ['commit', '-m', '42 is the answer to everything']
+    .then ({code}) -> kit.log code
+    ```
 
-- #### <a href="lib/kit.coffee?source#L1119" target="_blank"><b>watchFile</b></a>
+- #### <a href="lib/kit.coffee?source#L1156" target="_blank"><b>url</b></a>
+
+ Node native module `url`.
+
+- #### <a href="lib/kit.coffee?source#L1182" target="_blank"><b>watchFile</b></a>
 
  Watch a file. If the file changes, the handler will be invoked.
  You can change the polling interval by using `process.env.pollingWatch`.
  Use `process.env.watchPersistent = 'off'` to disable the persistent.
- For samba server, we have to choose `watchFile` other than `watch`.
+ Why not use `fs.watch`? Because `fs.watch` is unstable on some file
+ systems, such as Samba or OSX.
 
  - **<u>param</u>**: `path` { _String_ }
 
@@ -632,10 +702,10 @@
     		kit.log path
     ```
 
-- #### <a href="lib/kit.coffee?source#L1149" target="_blank"><b>watchFiles</b></a>
+- #### <a href="lib/kit.coffee?source#L1212" target="_blank"><b>watchFiles</b></a>
 
  Watch files, when file changes, the handler will be invoked.
- It takes the advantage of `kit.watchFile`.
+ It is build on the top of `kit.watchFile`.
 
  - **<u>param</u>**: `patterns` { _Array_ }
 
@@ -655,10 +725,11 @@
     	kit.log path
     ```
 
-- #### <a href="lib/kit.coffee?source#L1186" target="_blank"><b>watchDir</b></a>
+- #### <a href="lib/kit.coffee?source#L1250" target="_blank"><b>watchDir</b></a>
 
  Watch directory and all the files in it.
  It supports three types of change: create, modify, move, delete.
+ It is build on the top of `kit.watchFile`.
 
  - **<u>param</u>**: `opts` { _Object_ }
 
