@@ -1156,6 +1156,52 @@ _.extend kit, {
 	url: require 'url'
 
 	###*
+	 * Walk through path pattern recursively.
+	 * For more doc, see the [glob](https://github.com/isaacs/node-glob)
+	 *
+	 * [Offline Documentation](?gotoDoc=glob/readme.md)
+	 * @param  {String}   patterns The path minimatch pattern.
+	 * @param  {Object}   opts     Same with the `glob`. Optional.
+	 * @param  {Function} fn       Called on each path match.
+	 * @return {Promise} Same with the `kit.glob`.
+	 * @example
+	 * ```coffee
+	 * kit.walk '.\/**\/*.js', (path) ->
+	 * 	kit.log path
+	 * .then (paths) ->
+	 * 	kit.log paths
+	 *
+	 * 	# You can also get the glob object.
+	 * 	kit.log paths.glob
+	 * ```
+	###
+	walk: (pattern, opts, fn) ->
+		glob = kit.require 'glob'
+
+		if _.isFunction opts
+			fn = opts
+			opts = {}
+
+		opts ?= {}
+
+		new Promise (resolve, reject) ->
+			if opts.sync
+				try
+					g = new glob.Glob pattern, opts
+					resolve g.found
+				catch err
+					reject err
+			else
+				g = new glob.Glob pattern, opts, (err, matches) ->
+					if err
+						reject err
+					else
+						matches.glob = g
+						resolve matches
+
+			g.on 'match', fn if fn
+
+	###*
 	 * Watch a file. If the file changes, the handler will be invoked.
 	 * You can change the polling interval by using `process.env.pollingWatch`.
 	 * Use `process.env.watchPersistent = 'off'` to disable the persistent.

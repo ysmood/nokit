@@ -663,7 +663,42 @@
 
  Node native module `url`.
 
-- #### <a href="lib/kit.coffee?source#L1182" target="_blank"><b>watchFile</b></a>
+- #### <a href="lib/kit.coffee?source#L1178" target="_blank"><b>walk</b></a>
+
+ Walk through path pattern recursively.
+ For more doc, see the [glob](https://github.com/isaacs/node-glob)
+ 
+ [Offline Documentation](?gotoDoc=glob/readme.md)
+
+ - **<u>param</u>**: `patterns` { _String_ }
+
+    The path minimatch pattern.
+
+ - **<u>param</u>**: `opts` { _Object_ }
+
+    Same with the `glob`. Optional.
+
+ - **<u>param</u>**: `fn` { _Function_ }
+
+    Called on each path match.
+
+ - **<u>return</u>**:  { _Promise_ }
+
+    Same with the `kit.glob`.
+
+ - **<u>example</u>**:
+
+    ```coffee
+    kit.walk './**/*.js', (path) ->
+    	kit.log path
+    .then (paths) ->
+    	kit.log paths
+    
+    	# You can also get the glob object.
+    	kit.log paths.glob
+    ```
+
+- #### <a href="lib/kit.coffee?source#L1228" target="_blank"><b>watchFile</b></a>
 
  Watch a file. If the file changes, the handler will be invoked.
  You can change the polling interval by using `process.env.pollingWatch`.
@@ -702,7 +737,7 @@
     		kit.log path
     ```
 
-- #### <a href="lib/kit.coffee?source#L1212" target="_blank"><b>watchFiles</b></a>
+- #### <a href="lib/kit.coffee?source#L1258" target="_blank"><b>watchFiles</b></a>
 
  Watch files, when file changes, the handler will be invoked.
  It is build on the top of `kit.watchFile`.
@@ -725,7 +760,7 @@
     	kit.log path
     ```
 
-- #### <a href="lib/kit.coffee?source#L1250" target="_blank"><b>watchDir</b></a>
+- #### <a href="lib/kit.coffee?source#L1296" target="_blank"><b>watchDir</b></a>
 
  Watch directory and all the files in it.
  It supports three types of change: create, modify, move, delete.

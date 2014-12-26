@@ -20,6 +20,14 @@ describe 'Kit:', ->
 			assert.equal paths.length > 0, true
 			tdone()
 
+	it 'walk', (tdone) ->
+		pathCache = []
+		kit.walk 'test/fixtures/*', (path) ->
+			pathCache.push path
+		.then (paths) ->
+			assert.equal paths.length, pathCache.length
+			tdone()
+
 	it 'async progress', (tdone) ->
 		len = kit.fs.readFileSync(__filename).length
 		iter = (i) ->
