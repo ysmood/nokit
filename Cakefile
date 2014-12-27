@@ -35,7 +35,7 @@ task 'build', 'Build project.', build = ->
 						"""
 						methodStr += '\n\n'
 						if method.description
-							methodStr += indent method.description, 1
+							methodStr += indent method.description, 2
 							methodStr += '\n\n'
 
 						if _.any(method.tags, { tagName: 'private' })
@@ -46,10 +46,10 @@ task 'build', 'Build project.', build = ->
 							ttype = if tag.type then "{ _#{tag.type}_ }" else ''
 							methodStr += indent """
 								- **<u>#{tag.tagName}</u>**: #{tname} #{ttype}
-							""", 1
+							""", 2
 							methodStr += '\n\n'
 							if tag.description
-								methodStr += indent tag.description, 4
+								methodStr += indent tag.description, 3
 								methodStr += '\n\n'
 
 						modsApi += methodStr
