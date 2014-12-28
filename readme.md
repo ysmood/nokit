@@ -309,7 +309,58 @@
    jhash.hash('test'); // output => 'ede'
    ```
 
-- #### <a href="lib/kit.coffee?source#L450" target="_blank"><b>inspect</b></a>
+- #### <a href="lib/kit.coffee?source#L458" target="_blank"><b>join</b></a>
+
+  It inserts the fnB in between the fnA and concatenates the result.
+
+  - **<u>param</u>**: `fnA` { _Any_ }
+
+  - **<u>param</u>**: `fnB` { _Any_ }
+
+  - **<u>return</u>**:  { _Array_ }
+
+  - **<u>example</u>**:
+
+   ```coffee
+   kit.join([1, 2, 3, 4], 'sep')
+   # output => [1, 'sep', 2, 'sep', 3, 'sep', 4]
+   
+   iter = ->
+   	i = 0
+   	-> i++
+   kit.join([1, 2, 3, 4], new iter)
+   # output => [1, 'sep', 2, 'sep', 3, 'sep', 4]
+   ```
+
+- #### <a href="lib/kit.coffee?source#L497" target="_blank"><b>iter</b></a>
+
+  Generate a iterator from a value.
+
+  - **<u>param</u>**: `val` { _Any_ }
+
+  - **<u>return</u>**:  { _Function_ }
+
+   The every time when the function been
+   called, it returns a object looks like:
+   ```coffee
+   { key: 10, value: 'hello world' }
+   ```
+   The `key` can be `undefined`, `number` or `string`.
+
+  - **<u>example</u>**:
+
+   ```coffee
+   iter = kit.iter [1, 2, 3]
+   iter() # output => { key: 0, value: 1 }
+   
+   iter = kit.iter 'test'
+   iter() # output => { key: 0, value: 't' }
+   
+   iter = kit.iter { a: 1, b: 2, c: 3 }
+   iter() # output => { key: 'a', value: 1 }
+   ```
+
+- #### <a href="lib/kit.coffee?source#L521" target="_blank"><b>inspect</b></a>
 
   For debugging. Dump a colorful object.
 
@@ -326,7 +377,7 @@
 
   - **<u>return</u>**:  { _String_ }
 
-- #### <a href="lib/kit.coffee?source#L466" target="_blank"><b>isDevelopment</b></a>
+- #### <a href="lib/kit.coffee?source#L537" target="_blank"><b>isDevelopment</b></a>
 
   Nobone use it to check the running mode of the app.
   Overwrite it if you want to control the check logic.
@@ -334,7 +385,7 @@
 
   - **<u>return</u>**:  { _Boolean_ }
 
-- #### <a href="lib/kit.coffee?source#L475" target="_blank"><b>isProduction</b></a>
+- #### <a href="lib/kit.coffee?source#L546" target="_blank"><b>isProduction</b></a>
 
   Nobone use it to check the running mode of the app.
   Overwrite it if you want to control the check logic.
@@ -342,7 +393,7 @@
 
   - **<u>return</u>**:  { _Boolean_ }
 
-- #### <a href="lib/kit.coffee?source#L490" target="_blank"><b>log</b></a>
+- #### <a href="lib/kit.coffee?source#L561" target="_blank"><b>log</b></a>
 
   A better log for debugging, it uses the `kit.inspect` to log.
   
@@ -364,7 +415,7 @@
 
    Default is same with `kit.inspect`
 
-- #### <a href="lib/kit.coffee?source#L551" target="_blank"><b>monitorApp</b></a>
+- #### <a href="lib/kit.coffee?source#L622" target="_blank"><b>monitorApp</b></a>
 
   Monitor an application and automatically restart it when file changed.
   Even when the monitored app exit with error, the monitor will still wait
@@ -387,13 +438,13 @@
 
    The child process.
 
-- #### <a href="lib/kit.coffee?source#L606" target="_blank"><b>nodeVersion</b></a>
+- #### <a href="lib/kit.coffee?source#L677" target="_blank"><b>nodeVersion</b></a>
 
   Node version. Such as `v0.10.23` is `0.1023`, `v0.10.1` is `0.1001`.
 
   - **<u>type</u>**:  { _Float_ }
 
-- #### <a href="lib/kit.coffee?source#L624" target="_blank"><b>open</b></a>
+- #### <a href="lib/kit.coffee?source#L695" target="_blank"><b>open</b></a>
 
   Open a thing that your system can recognize.
   Now only support Windows, OSX or system that installed 'xdg-open'.
@@ -418,7 +469,7 @@
    kit.open 'http://ysmood.org'
    ```
 
-- #### <a href="lib/kit.coffee?source#L659" target="_blank"><b>pad</b></a>
+- #### <a href="lib/kit.coffee?source#L730" target="_blank"><b>pad</b></a>
 
   String padding helper. It is use in the `kit.log`.
 
@@ -438,7 +489,7 @@
    kit.pad '1', 3 # '001'
    ```
 
-- #### <a href="lib/kit.coffee?source#L705" target="_blank"><b>parseComment</b></a>
+- #### <a href="lib/kit.coffee?source#L776" target="_blank"><b>parseComment</b></a>
 
   A comments parser for coffee-script.
   Used to generate documentation from source code automatically.
@@ -493,11 +544,11 @@
    }
    ```
 
-- #### <a href="lib/kit.coffee?source#L773" target="_blank"><b>path</b></a>
+- #### <a href="lib/kit.coffee?source#L844" target="_blank"><b>path</b></a>
 
   Node native module `path`.
 
-- #### <a href="lib/kit.coffee?source#L781" target="_blank"><b>Promise</b></a>
+- #### <a href="lib/kit.coffee?source#L852" target="_blank"><b>Promise</b></a>
 
   The promise lib. Now, it uses Bluebird as ES5 polyfill.
   In the future, the Bluebird will be replaced with native
@@ -505,7 +556,7 @@
 
   - **<u>type</u>**:  { _Object_ }
 
-- #### <a href="lib/kit.coffee?source#L789" target="_blank"><b>promisify</b></a>
+- #### <a href="lib/kit.coffee?source#L860" target="_blank"><b>promisify</b></a>
 
   Convert a callback style function to a promise function.
 
@@ -519,7 +570,7 @@
 
    The function will return a promise object.
 
-- #### <a href="lib/kit.coffee?source#L809" target="_blank"><b>require</b></a>
+- #### <a href="lib/kit.coffee?source#L880" target="_blank"><b>require</b></a>
 
   Much faster than the native require of node, but you should
   follow some rules to use it safely.
@@ -537,7 +588,7 @@
 
    The module that you require.
 
-- #### <a href="lib/kit.coffee?source#L904" target="_blank"><b>request</b></a>
+- #### <a href="lib/kit.coffee?source#L980" target="_blank"><b>request</b></a>
 
   A handy extended combination of `http.request` and `https.request`.
 
@@ -554,6 +605,11 @@
    
    	# Max times of auto redirect. If 0, no auto redirect.
    	redirect: 0
+   
+   	# Timeout of the socket of the http connection.
+   	# If timeout happens, the promise will reject.
+   	# Zero means no timeout.
+   	timeout: 0
    
    	host: 'localhost'
    	hostname: 'localhost'
@@ -617,7 +673,7 @@
    	kit.log res.headers
    ```
 
-- #### <a href="lib/kit.coffee?source#L1108" target="_blank"><b>spawn</b></a>
+- #### <a href="lib/kit.coffee?source#L1188" target="_blank"><b>spawn</b></a>
 
   A safer version of `child_process.spawn` to run a process on
   Windows or Linux. In some conditions, it may be more convenient
@@ -659,11 +715,11 @@
    .then ({code}) -> kit.log code
    ```
 
-- #### <a href="lib/kit.coffee?source#L1156" target="_blank"><b>url</b></a>
+- #### <a href="lib/kit.coffee?source#L1236" target="_blank"><b>url</b></a>
 
   Node native module `url`.
 
-- #### <a href="lib/kit.coffee?source#L1178" target="_blank"><b>walk</b></a>
+- #### <a href="lib/kit.coffee?source#L1258" target="_blank"><b>walk</b></a>
 
   Walk through path pattern recursively.
   For more doc, see the [glob](https://github.com/isaacs/node-glob)
@@ -698,7 +754,7 @@
    	kit.log paths.glob
    ```
 
-- #### <a href="lib/kit.coffee?source#L1228" target="_blank"><b>watchFile</b></a>
+- #### <a href="lib/kit.coffee?source#L1308" target="_blank"><b>watchFile</b></a>
 
   Watch a file. If the file changes, the handler will be invoked.
   You can change the polling interval by using `process.env.pollingWatch`.
@@ -737,7 +793,7 @@
    		kit.log path
    ```
 
-- #### <a href="lib/kit.coffee?source#L1258" target="_blank"><b>watchFiles</b></a>
+- #### <a href="lib/kit.coffee?source#L1338" target="_blank"><b>watchFiles</b></a>
 
   Watch files, when file changes, the handler will be invoked.
   It is build on the top of `kit.watchFile`.
@@ -760,7 +816,7 @@
    	kit.log path
    ```
 
-- #### <a href="lib/kit.coffee?source#L1296" target="_blank"><b>watchDir</b></a>
+- #### <a href="lib/kit.coffee?source#L1376" target="_blank"><b>watchDir</b></a>
 
   Watch directory and all the files in it.
   It supports three types of change: create, modify, move, delete.
