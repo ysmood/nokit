@@ -47,7 +47,7 @@ task 'build', 'Build project.', build = ->
 							""", 2
 							methodStr += '\n\n'
 							if tag.description
-								methodStr += indent tag.description, 3
+								methodStr += indent tag.description, 4
 								methodStr += '\n\n'
 
 						modsApi += methodStr

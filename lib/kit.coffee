@@ -908,7 +908,7 @@ _.extend kit, {
 
 	###*
 	 * A handy extended combination of `http.request` and `https.request`.
-	 * @param  {Object} opts The same as the [http.request][http.request],
+	 * @param  {Object} opts The same as the [http.request](http://nodejs.org/api/http.html#httpHttpRequestOptionsCallback),
 	 * but with some extra options:
 	 * ```coffee
 	 * {
@@ -962,7 +962,6 @@ _.extend kit, {
 	 * }
 	 * ```
 	 * And if set opts as string, it will be treated as the url.
-	 * [http.request]: http://nodejs.org/api/http.html#httpHttpRequestOptionsCallback
 	 * @return {Promise} Contains the http response object,
 	 * it has an extra `body` property.
 	 * You can also get the request object by using `Promise.req`, for example:
