@@ -57,3 +57,50 @@ describe 'Kit:', ->
 	it 'crypto', ->
 		en = kit.encrypt '123', 'test'
 		assert.equal kit.decrypt(en, 'test').toString(), '123'
+
+	it 'request', (tdone) ->
+		http = require 'http'
+
+		info = 'ok'
+
+		server = http.createServer (req, res) ->
+			res.end info
+
+		server.listen 0, ->
+			{ port } = server.address()
+
+			kit.request {
+				url: '0.0.0.0:' + port
+			}
+			.then (body) ->
+				server.close()
+
+				try
+					assert.equal body, info
+					tdone()
+				catch err
+					tdone err
+
+	it 'request timeout', (tdone) ->
+		http = require 'http'
+
+		server = http.createServer()
+
+		server.listen 0, ->
+			{ port } = server.address()
+
+			promise = kit.request {
+				url: '0.0.0.0:' + port
+				timeout: 50
+			}
+
+			{ req } = promise
+
+			promise.catch (err) ->
+				try
+					assert.equal err.message, 'timeout'
+					tdone()
+				catch err
+					tdone err
+			.then ->
+				server.close()

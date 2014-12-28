@@ -842,6 +842,11 @@ _.extend kit, {
 	 * 	# Max times of auto redirect. If 0, no auto redirect.
 	 * 	redirect: 0
 	 *
+	 * 	# Timeout of the socket of the http connection.
+	 * 	# If timeout happens, the promise will reject.
+	 * 	# Zero means no timeout.
+	 * 	timeout: 0
+	 *
 	 * 	host: 'localhost'
 	 * 	hostname: 'localhost'
 	 * 	port: 80
@@ -980,8 +985,8 @@ _.extend kit, {
 
 				if opts.resPipe
 					resPipeError = (err) ->
-						reject err
 						opts.resPipe.end()
+						reject err
 
 					if opts.autoUnzip
 						switch res.headers['content-encoding']
@@ -1060,6 +1065,10 @@ _.extend kit, {
 				# Release pipe
 				opts.resPipe?.end()
 				reject err
+
+			if opts.timeout > 0
+				req.setTimeout opts.timeout, ->
+					req.emit 'error', new Error('timeout')
 
 			if opts.reqPipe
 				if opts.reqProgress
