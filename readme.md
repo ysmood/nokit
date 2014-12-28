@@ -157,8 +157,8 @@ Such as watch directory changes on a network file system, operate `spawn` on Win
     {
     	bin: 'node'
     	args: ['app.js']
-    	stdout: 'stdout.log'
-    	stderr: 'stderr.log'
+    	stdout: 'stdout.log' # Can also be a stream
+    	stderr: 'stderr.log' # Can also be a stream
     }
     ```
 
@@ -166,7 +166,7 @@ Such as watch directory changes on a network file system, operate `spawn` on Win
 
     The daemonized process.
 
-- #### <a href="lib/kit.coffee?source#L236" target="_blank"><b>decrypt</b></a>
+- #### <a href="lib/kit.coffee?source#L238" target="_blank"><b>decrypt</b></a>
 
   A simple decrypt helper. Cross-version of node.
 
@@ -180,7 +180,7 @@ Such as watch directory changes on a network file system, operate `spawn` on Win
 
   - **<u>return</u>**:  { _Buffer_ }
 
-- #### <a href="lib/kit.coffee?source#L259" target="_blank"><b>encrypt</b></a>
+- #### <a href="lib/kit.coffee?source#L261" target="_blank"><b>encrypt</b></a>
 
   A simple encrypt helper. Cross-version of node.
 
@@ -194,7 +194,7 @@ Such as watch directory changes on a network file system, operate `spawn` on Win
 
   - **<u>return</u>**:  { _Buffer_ }
 
-- #### <a href="lib/kit.coffee?source#L280" target="_blank"><b>err</b></a>
+- #### <a href="lib/kit.coffee?source#L282" target="_blank"><b>err</b></a>
 
   A error log shortcut for `kit.log(msg, 'error', opts)`
 
@@ -202,7 +202,7 @@ Such as watch directory changes on a network file system, operate `spawn` on Win
 
   - **<u>param</u>**: `opts` { _Object_ }
 
-- #### <a href="lib/kit.coffee?source#L313" target="_blank"><b>exec</b></a>
+- #### <a href="lib/kit.coffee?source#L315" target="_blank"><b>exec</b></a>
 
   A better `child_process.exec`. This function require your current
   version of node support `stream.Transform` API.
@@ -244,14 +244,14 @@ Such as watch directory changes on a network file system, operate `spawn` on Win
     """, 'zsh'
     ```
 
-- #### <a href="lib/kit.coffee?source#L350" target="_blank"><b>fs</b></a>
+- #### <a href="lib/kit.coffee?source#L352" target="_blank"><b>fs</b></a>
 
   See my project [fs-more][fs-more].
   
   [Offline Documentation](?gotoDoc=fs-more/readme.md)
   [fs-more]: https://github.com/ysmood/fs-more
 
-- #### <a href="lib/kit.coffee?source#L358" target="_blank"><b>generateNodeModulePaths</b></a>
+- #### <a href="lib/kit.coffee?source#L360" target="_blank"><b>generateNodeModulePaths</b></a>
 
   Generate a list of module paths from a name and a directory.
 
@@ -267,7 +267,7 @@ Such as watch directory changes on a network file system, operate `spawn` on Win
 
     Paths
 
-- #### <a href="lib/kit.coffee?source#L389" target="_blank"><b>glob</b></a>
+- #### <a href="lib/kit.coffee?source#L391" target="_blank"><b>glob</b></a>
 
   A handy file system search tool.
   See the https://github.com/isaacs/node-glob
@@ -300,7 +300,7 @@ Such as watch directory changes on a network file system, operate `spawn` on Win
     	kit.log paths.statCache
     ```
 
-- #### <a href="lib/kit.coffee?source#L446" target="_blank"><b>jhash</b></a>
+- #### <a href="lib/kit.coffee?source#L448" target="_blank"><b>jhash</b></a>
 
   A fast helper to hash string or binary file.
   See my [jhash][jhash] project.
@@ -326,7 +326,7 @@ Such as watch directory changes on a network file system, operate `spawn` on Win
     jhash.hash('test'); // output => 'ede'
     ```
 
-- #### <a href="lib/kit.coffee?source#L465" target="_blank"><b>join</b></a>
+- #### <a href="lib/kit.coffee?source#L467" target="_blank"><b>join</b></a>
 
   It inserts the fnB in between the fnA and concatenates the result.
 
@@ -349,7 +349,7 @@ Such as watch directory changes on a network file system, operate `spawn` on Win
     # output => [1, 'sep', 2, 'sep', 3, 'sep', 4]
     ```
 
-- #### <a href="lib/kit.coffee?source#L504" target="_blank"><b>iter</b></a>
+- #### <a href="lib/kit.coffee?source#L506" target="_blank"><b>iter</b></a>
 
   Generate a iterator from a value.
 
@@ -377,7 +377,7 @@ Such as watch directory changes on a network file system, operate `spawn` on Win
     iter() # output => { key: 'a', value: 1 }
     ```
 
-- #### <a href="lib/kit.coffee?source#L528" target="_blank"><b>inspect</b></a>
+- #### <a href="lib/kit.coffee?source#L530" target="_blank"><b>inspect</b></a>
 
   For debugging. Dump a colorful object.
 
@@ -394,7 +394,7 @@ Such as watch directory changes on a network file system, operate `spawn` on Win
 
   - **<u>return</u>**:  { _String_ }
 
-- #### <a href="lib/kit.coffee?source#L544" target="_blank"><b>isDevelopment</b></a>
+- #### <a href="lib/kit.coffee?source#L546" target="_blank"><b>isDevelopment</b></a>
 
   Nobone use it to check the running mode of the app.
   Overwrite it if you want to control the check logic.
@@ -402,7 +402,7 @@ Such as watch directory changes on a network file system, operate `spawn` on Win
 
   - **<u>return</u>**:  { _Boolean_ }
 
-- #### <a href="lib/kit.coffee?source#L553" target="_blank"><b>isProduction</b></a>
+- #### <a href="lib/kit.coffee?source#L555" target="_blank"><b>isProduction</b></a>
 
   Nobone use it to check the running mode of the app.
   Overwrite it if you want to control the check logic.
@@ -410,7 +410,7 @@ Such as watch directory changes on a network file system, operate `spawn` on Win
 
   - **<u>return</u>**:  { _Boolean_ }
 
-- #### <a href="lib/kit.coffee?source#L568" target="_blank"><b>log</b></a>
+- #### <a href="lib/kit.coffee?source#L570" target="_blank"><b>log</b></a>
 
   A better log for debugging, it uses the `kit.inspect` to log.
   
@@ -432,7 +432,7 @@ Such as watch directory changes on a network file system, operate `spawn` on Win
 
     Default is same with `kit.inspect`
 
-- #### <a href="lib/kit.coffee?source#L629" target="_blank"><b>monitorApp</b></a>
+- #### <a href="lib/kit.coffee?source#L631" target="_blank"><b>monitorApp</b></a>
 
   Monitor an application and automatically restart it when file changed.
   Even when the monitored app exit with error, the monitor will still wait
@@ -455,13 +455,13 @@ Such as watch directory changes on a network file system, operate `spawn` on Win
 
     The child process.
 
-- #### <a href="lib/kit.coffee?source#L684" target="_blank"><b>nodeVersion</b></a>
+- #### <a href="lib/kit.coffee?source#L686" target="_blank"><b>nodeVersion</b></a>
 
   Node version. Such as `v0.10.23` is `0.1023`, `v0.10.1` is `0.1001`.
 
   - **<u>type</u>**:  { _Float_ }
 
-- #### <a href="lib/kit.coffee?source#L702" target="_blank"><b>open</b></a>
+- #### <a href="lib/kit.coffee?source#L704" target="_blank"><b>open</b></a>
 
   Open a thing that your system can recognize.
   Now only support Windows, OSX or system that installed 'xdg-open'.
@@ -486,7 +486,7 @@ Such as watch directory changes on a network file system, operate `spawn` on Win
     kit.open 'http://ysmood.org'
     ```
 
-- #### <a href="lib/kit.coffee?source#L737" target="_blank"><b>pad</b></a>
+- #### <a href="lib/kit.coffee?source#L739" target="_blank"><b>pad</b></a>
 
   String padding helper. It is use in the `kit.log`.
 
@@ -506,7 +506,7 @@ Such as watch directory changes on a network file system, operate `spawn` on Win
     kit.pad '1', 3 # '001'
     ```
 
-- #### <a href="lib/kit.coffee?source#L783" target="_blank"><b>parseComment</b></a>
+- #### <a href="lib/kit.coffee?source#L785" target="_blank"><b>parseComment</b></a>
 
   A comments parser for coffee-script.
   Used to generate documentation from source code automatically.
@@ -561,11 +561,11 @@ Such as watch directory changes on a network file system, operate `spawn` on Win
     }
     ```
 
-- #### <a href="lib/kit.coffee?source#L851" target="_blank"><b>path</b></a>
+- #### <a href="lib/kit.coffee?source#L853" target="_blank"><b>path</b></a>
 
   Node native module `path`.
 
-- #### <a href="lib/kit.coffee?source#L859" target="_blank"><b>Promise</b></a>
+- #### <a href="lib/kit.coffee?source#L861" target="_blank"><b>Promise</b></a>
 
   The promise lib. Now, it uses Bluebird as ES5 polyfill.
   In the future, the Bluebird will be replaced with native
@@ -573,7 +573,7 @@ Such as watch directory changes on a network file system, operate `spawn` on Win
 
   - **<u>type</u>**:  { _Object_ }
 
-- #### <a href="lib/kit.coffee?source#L867" target="_blank"><b>promisify</b></a>
+- #### <a href="lib/kit.coffee?source#L869" target="_blank"><b>promisify</b></a>
 
   Convert a callback style function to a promise function.
 
@@ -587,7 +587,7 @@ Such as watch directory changes on a network file system, operate `spawn` on Win
 
     The function will return a promise object.
 
-- #### <a href="lib/kit.coffee?source#L887" target="_blank"><b>require</b></a>
+- #### <a href="lib/kit.coffee?source#L889" target="_blank"><b>require</b></a>
 
   Much faster than the native require of node, but you should
   follow some rules to use it safely.
@@ -605,7 +605,7 @@ Such as watch directory changes on a network file system, operate `spawn` on Win
 
     The module that you require.
 
-- #### <a href="lib/kit.coffee?source#L986" target="_blank"><b>request</b></a>
+- #### <a href="lib/kit.coffee?source#L988" target="_blank"><b>request</b></a>
 
   A handy extended combination of `http.request` and `https.request`.
 
@@ -689,7 +689,7 @@ Such as watch directory changes on a network file system, operate `spawn` on Win
     	kit.log res.headers
     ```
 
-- #### <a href="lib/kit.coffee?source#L1194" target="_blank"><b>spawn</b></a>
+- #### <a href="lib/kit.coffee?source#L1196" target="_blank"><b>spawn</b></a>
 
   A safer version of `child_process.spawn` to run a process on
   Windows or Linux. In some conditions, it may be more convenient
@@ -731,11 +731,11 @@ Such as watch directory changes on a network file system, operate `spawn` on Win
     .then ({code}) -> kit.log code
     ```
 
-- #### <a href="lib/kit.coffee?source#L1242" target="_blank"><b>url</b></a>
+- #### <a href="lib/kit.coffee?source#L1244" target="_blank"><b>url</b></a>
 
   Node native module `url`.
 
-- #### <a href="lib/kit.coffee?source#L1264" target="_blank"><b>walk</b></a>
+- #### <a href="lib/kit.coffee?source#L1266" target="_blank"><b>walk</b></a>
 
   Walk through path pattern recursively.
   For more doc, see the [glob](https://github.com/isaacs/node-glob)
@@ -770,7 +770,7 @@ Such as watch directory changes on a network file system, operate `spawn` on Win
     	kit.log paths.glob
     ```
 
-- #### <a href="lib/kit.coffee?source#L1314" target="_blank"><b>watchFile</b></a>
+- #### <a href="lib/kit.coffee?source#L1316" target="_blank"><b>watchFile</b></a>
 
   Watch a file. If the file changes, the handler will be invoked.
   You can change the polling interval by using `process.env.pollingWatch`.
@@ -809,7 +809,7 @@ Such as watch directory changes on a network file system, operate `spawn` on Win
     		kit.log path
     ```
 
-- #### <a href="lib/kit.coffee?source#L1344" target="_blank"><b>watchFiles</b></a>
+- #### <a href="lib/kit.coffee?source#L1346" target="_blank"><b>watchFiles</b></a>
 
   Watch files, when file changes, the handler will be invoked.
   It is build on the top of `kit.watchFile`.
@@ -832,7 +832,7 @@ Such as watch directory changes on a network file system, operate `spawn` on Win
     	kit.log path
     ```
 
-- #### <a href="lib/kit.coffee?source#L1382" target="_blank"><b>watchDir</b></a>
+- #### <a href="lib/kit.coffee?source#L1384" target="_blank"><b>watchDir</b></a>
 
   Watch directory and all the files in it.
   It supports three types of change: create, modify, move, delete.

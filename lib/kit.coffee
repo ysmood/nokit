@@ -202,8 +202,8 @@ _.extend kit, {
 	 * {
 	 * 	bin: 'node'
 	 * 	args: ['app.js']
-	 * 	stdout: 'stdout.log'
-	 * 	stderr: 'stderr.log'
+	 * 	stdout: 'stdout.log' # Can also be a stream
+	 * 	stderr: 'stderr.log' # Can also be a stream
 	 * }
 	 * ```
 	 * @return {Porcess} The daemonized process.
@@ -216,8 +216,10 @@ _.extend kit, {
 			stderr: 'stderr.log'
 		}
 
-		outLog = os.openSync(opts.stdout, 'a')
-		errLog = os.openSync(opts.stderr, 'a')
+		if _.isString opts.stdout
+			outLog = kit.fs.openSync(opts.stdout, 'a')
+		if _.isString opts.stderr
+			errLog = kit.fs.openSync(opts.stderr, 'a')
 
 		p = kit.spawn(opts.bin, opts.args, {
 			detached: true
