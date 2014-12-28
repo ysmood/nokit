@@ -298,15 +298,15 @@ _.extend kit, {
 	 * @example
 	 * ```coffee
 	 * kit.exec("""
-	 * a='hello world'
-	 * echo $a
+	 * 	a='hello world'
+	 *  echo $a
 	 * """).then ({code, stdout}) ->
 	 * 	kit.log code # output => 0
 	 * 	kit.log stdout # output => "hello world"
 	 *
 	 * # Bash doesn't support "**" recusive match pattern.
 	 * kit.exec """
-	 * echo **\/*.css
+	 * 	echo **\/*.css
 	 * """, 'zsh'
 	 * ```
 	###

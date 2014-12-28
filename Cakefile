@@ -62,16 +62,18 @@ task 'build', 'Build project.', build = ->
 		createDoc
 	]
 
-	start().done()
+	start().then ->
+		kit.log 'Build done.'.green
 
 option '-g', '--grep [grep]', 'Test pattern'
 task 'test', 'Test', (opts) ->
-	kit.spawn('mocha', [
-		'-t', '5000'
-		'-r', 'coffee-script/register'
-		'-R', 'spec'
-		'-g', opts.grep or ''
-		'test/test.coffee'
-	]).process.on 'exit', (code) ->
-		if code != 0
-			process.exit code
+	build().then ->
+		kit.spawn('mocha', [
+			'-t', '5000'
+			'-r', 'coffee-script/register'
+			'-R', 'spec'
+			'-g', opts.grep or ''
+			'test/test.coffee'
+		]).process.on 'exit', (code) ->
+			if code != 0
+				process.exit code
