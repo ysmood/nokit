@@ -8,7 +8,7 @@ such as `watch directory` on a network file system. Operation `spawn` on Windows
 
 # API
 
-<%- api %>
+<%= api %>
 
 # Lisence
 

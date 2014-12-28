@@ -20,7 +20,14 @@ kit = {}
  * kit.readFile('test.txt', 'utf8').then (str) ->
  * 	console.log str
  *
- * kit.outputFile('a.txt', 'test').then()
+ * kit.outputFile 'a.txt', 'test'
+ * .then -> kit.log 'done'
+ *
+ * kit.fs.writeJSONSync 'b.json', { a: 10 }
+ * .then -> kit.log 'done'
+ *
+ * kit.fs.mkdirsP 'b.json', { a: 10 }
+ * .then -> kit.log 'done'
  * ```
 ###
 kitExtendsFsPromise = 'promise'

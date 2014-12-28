@@ -17,8 +17,6 @@ task 'build', 'Build project.', build = ->
 			(code) ->
 				kit.parseComment 'kit', code, 'lib/kit.coffee'
 			(kitModule) ->
-				ejs = require 'ejs'
-
 				indent = (str, num = 0) ->
 					s = _.range(num).reduce ((s) -> s + ' '), ''
 					s + str.trim().replace(/\n/g, '\n' + s)
@@ -54,7 +52,9 @@ task 'build', 'Build project.', build = ->
 
 						modsApi += methodStr
 
-				kit.outputFile 'readme.md', modsApi
+				tpl = kit.fs.readFileSync 'doc/readme.tpl.md', 'utf8'
+
+				kit.outputFile 'readme.md', _.template tpl, { api: modsApi }
 		])()
 
 	start = kit.compose [
