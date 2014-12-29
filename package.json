@@ -33,6 +33,8 @@
   },
   "devDependencies": {
     "coffee-script": "*",
-    "mocha": "*"
+    "mocha": "*",
+    "formidable": "*",
+    "form-data": "*"
   }
 }

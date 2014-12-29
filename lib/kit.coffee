@@ -927,12 +927,16 @@ _.extend kit, {
 	 * 	# Zero means no timeout.
 	 * 	timeout: 0
 	 *
+	 * 	# The key of headers should be lowercased.
+	 * 	# If 'content-length' is not set,
+	 * 	# 'transfer-encoding' will be set to 'chunked'.
+	 * 	headers: {}
+	 *
 	 * 	host: 'localhost'
 	 * 	hostname: 'localhost'
 	 * 	port: 80
 	 * 	method: 'GET'
 	 * 	path: '/'
-	 * 	headers: {}
 	 * 	auth: ''
 	 * 	agent: null
 	 *
@@ -949,7 +953,6 @@ _.extend kit, {
 	 * 	autoEndReq: true
 	 *
 	 * 	# Readable stream.
-	 * 	# If this option is set, the `headers['content-length']`
 	 * 	# should also be set.
 	 * 	reqPipe: null
 	 *
@@ -983,6 +986,18 @@ _.extend kit, {
 	 * .then (res) ->
 	 * 	kit.log res.body.length
 	 * 	kit.log res.headers
+	 *
+	 * 	# Send form-data.
+	 * 	form = new (require 'form-data')
+	 * 	form.append 'a.jpg', new Buffer(0)
+	 * 	form.append 'b.txt', 'hello world!'
+	 * 	kit.request {
+	 * 		url: 'a.com'
+	 * 		headers: form.getHeaders()
+	 * 		reqPipe: form
+	 * 	}
+	 * 	.then (body) ->
+	 * 		kit.log body
 	 * ```
 	###
 	request: (opts) ->
@@ -1039,6 +1054,9 @@ _.extend kit, {
 
 		if reqBuf != undefined
 			opts.headers['content-length'] ?= reqBuf.length
+
+		if not opts.headers['content-length']
+			opts.headers['transfer-encoding'] ?= 'chunked'
 
 		req = null
 		promise = new Promise (resolve, reject) ->

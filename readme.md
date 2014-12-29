@@ -609,7 +609,7 @@ Goto [changelog](doc/changelog.md)
 
     The module that you require.
 
-- #### <a href="lib/kit.coffee?source#L988" target="_blank"><b>request</b></a>
+- #### <a href="lib/kit.coffee?source#L1003" target="_blank"><b>request</b></a>
 
   A handy extended combination of `http.request` and `https.request`.
 
@@ -632,12 +632,16 @@ Goto [changelog](doc/changelog.md)
     	# Zero means no timeout.
     	timeout: 0
     
+    	# The key of headers should be lowercased.
+    	# If 'content-length' is not set,
+    	# 'transfer-encoding' will be set to 'chunked'.
+    	headers: {}
+    
     	host: 'localhost'
     	hostname: 'localhost'
     	port: 80
     	method: 'GET'
     	path: '/'
-    	headers: {}
     	auth: ''
     	agent: null
     
@@ -654,7 +658,6 @@ Goto [changelog](doc/changelog.md)
     	autoEndReq: true
     
     	# Readable stream.
-    	# If this option is set, the `headers['content-length']`
     	# should also be set.
     	reqPipe: null
     
@@ -691,9 +694,21 @@ Goto [changelog](doc/changelog.md)
     .then (res) ->
     	kit.log res.body.length
     	kit.log res.headers
+    
+    	# Send form-data.
+    	form = new (require 'form-data')
+    	form.append 'a.jpg', new Buffer(0)
+    	form.append 'b.txt', 'hello world!'
+    	kit.request {
+    		url: 'a.com'
+    		headers: form.getHeaders()
+    		reqPipe: form
+    	}
+    	.then (body) ->
+    		kit.log body
     ```
 
-- #### <a href="lib/kit.coffee?source#L1196" target="_blank"><b>spawn</b></a>
+- #### <a href="lib/kit.coffee?source#L1214" target="_blank"><b>spawn</b></a>
 
   A safer version of `child_process.spawn` to run a process on
   Windows or Linux. In some conditions, it may be more convenient
@@ -735,11 +750,11 @@ Goto [changelog](doc/changelog.md)
     .then ({code}) -> kit.log code
     ```
 
-- #### <a href="lib/kit.coffee?source#L1244" target="_blank"><b>url</b></a>
+- #### <a href="lib/kit.coffee?source#L1262" target="_blank"><b>url</b></a>
 
   Node native module `url`.
 
-- #### <a href="lib/kit.coffee?source#L1266" target="_blank"><b>walk</b></a>
+- #### <a href="lib/kit.coffee?source#L1284" target="_blank"><b>walk</b></a>
 
   Walk through path pattern recursively.
   For more doc, see the [glob](https://github.com/isaacs/node-glob)
@@ -774,7 +789,7 @@ Goto [changelog](doc/changelog.md)
     	kit.log paths.glob
     ```
 
-- #### <a href="lib/kit.coffee?source#L1316" target="_blank"><b>watchFile</b></a>
+- #### <a href="lib/kit.coffee?source#L1334" target="_blank"><b>watchFile</b></a>
 
   Watch a file. If the file changes, the handler will be invoked.
   You can change the polling interval by using `process.env.pollingWatch`.
@@ -813,7 +828,7 @@ Goto [changelog](doc/changelog.md)
     		kit.log path
     ```
 
-- #### <a href="lib/kit.coffee?source#L1346" target="_blank"><b>watchFiles</b></a>
+- #### <a href="lib/kit.coffee?source#L1364" target="_blank"><b>watchFiles</b></a>
 
   Watch files, when file changes, the handler will be invoked.
   It is build on the top of `kit.watchFile`.
@@ -836,7 +851,7 @@ Goto [changelog](doc/changelog.md)
     	kit.log path
     ```
 
-- #### <a href="lib/kit.coffee?source#L1384" target="_blank"><b>watchDir</b></a>
+- #### <a href="lib/kit.coffee?source#L1402" target="_blank"><b>watchDir</b></a>
 
   Watch directory and all the files in it.
   It supports three types of change: create, modify, move, delete.

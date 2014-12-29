@@ -1,5 +1,6 @@
 assert = require 'assert'
 kit = require '../lib/kit'
+http = require 'http'
 { _ } = kit
 
 describe 'Kit:', ->
@@ -59,8 +60,6 @@ describe 'Kit:', ->
 		assert.equal kit.decrypt(en, 'test').toString(), '123'
 
 	it 'request', (tdone) ->
-		http = require 'http'
-
 		info = 'ok'
 
 		server = http.createServer (req, res) ->
@@ -70,27 +69,24 @@ describe 'Kit:', ->
 			{ port } = server.address()
 
 			kit.request {
-				url: '0.0.0.0:' + port
+				url: '127.0.0.1:' + port
 			}
 			.then (body) ->
-				server.close()
-
 				try
 					assert.equal body, info
 					tdone()
 				catch err
 					tdone err
+			.catch tdone
 
 	it 'request timeout', (tdone) ->
-		http = require 'http'
-
 		server = http.createServer()
 
 		server.listen 0, ->
 			{ port } = server.address()
 
 			promise = kit.request {
-				url: '0.0.0.0:' + port
+				url: '127.0.0.1:' + port
 				timeout: 50
 			}
 
@@ -102,8 +98,63 @@ describe 'Kit:', ->
 					tdone()
 				catch err
 					tdone err
-			.then ->
-				server.close()
+			.catch tdone
+
+	it 'request reqPipe', (tdone) ->
+		path = 'Cakefile'
+		info = kit.fs.readFileSync path, 'utf8'
+
+		server = http.createServer (req, res) ->
+			data = ''
+			req.on 'data', (chunk) -> data += chunk
+			req.on 'end', ->
+				res.end data
+
+		server.listen 0, ->
+			{ port } = server.address()
+			file = kit.fs.createReadStream path
+			{ size } = kit.fs.statSync path
+			kit.request {
+				url: '127.0.0.1:' + port
+				headers: {
+					'content-length': size
+				}
+				reqPipe: file
+			}
+			.then (body) ->
+				try
+					assert.equal body, info
+					tdone()
+				catch err
+					tdone err
+			.catch tdone
+
+	it 'request form-data', (tdone) ->
+		server = http.createServer (req, res) ->
+			form = new require('formidable').IncomingForm()
+
+			form.parse req, (err, fields, files) ->
+				res.end fields['b.jpg'].length.toString()
+
+		server.listen 0, ->
+			{ port } = server.address()
+			form = new (require 'form-data')
+
+			form.append 'a.txt', 'content'
+			form.append 'b.jpg', new Buffer(123)
+
+			kit.request {
+				url: '127.0.0.1:' + port
+				headers: form.getHeaders()
+				reqPipe: form
+			}
+			.then (body) ->
+				try
+					assert.equal body, 123
+					tdone()
+				catch err
+					tdone err
+			.catch tdone
 
 	it 'iter', ->
 		assert.deepEqual kit.iter([1, 2, 3])(), { key: 0, value: 1 }
