@@ -987,18 +987,18 @@ _.extend kit, {
 	 * 	kit.log res.body.length
 	 * 	kit.log res.headers
 	 *
-	 * 	# Send form-data.
-	 * 	form = new (require 'form-data')
-	 * 	form.append 'a.jpg', new Buffer(0)
-	 * 	form.append 'b.txt', 'hello world!'
-	 * 	kit.request {
-	 * 		url: 'a.com'
-	 * 		headers: form.getHeaders()
-	 * 		setTE: true
-	 * 		reqPipe: form
-	 * 	}
-	 * 	.then (body) ->
-	 * 		kit.log body
+	 * # Send form-data.
+	 * form = new (require 'form-data')
+	 * form.append 'a.jpg', new Buffer(0)
+	 * form.append 'b.txt', 'hello world!'
+	 * kit.request {
+	 * 	url: 'a.com'
+	 * 	headers: form.getHeaders()
+	 * 	setTE: true
+	 * 	reqPipe: form
+	 * }
+	 * .then (body) ->
+	 * 	kit.log body
 	 * ```
 	###
 	request: (opts) ->
