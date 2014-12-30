@@ -146,6 +146,7 @@ describe 'Kit:', ->
 			kit.request {
 				url: '127.0.0.1:' + port
 				headers: form.getHeaders()
+				setTE: true
 				reqPipe: form
 			}
 			.then (body) ->

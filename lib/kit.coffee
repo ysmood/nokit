@@ -928,8 +928,6 @@ _.extend kit, {
 	 * 	timeout: 0
 	 *
 	 * 	# The key of headers should be lowercased.
-	 * 	# If 'content-length' is not set,
-	 * 	# 'transfer-encoding' will be set to 'chunked'.
 	 * 	headers: {}
 	 *
 	 * 	host: 'localhost'
@@ -939,6 +937,9 @@ _.extend kit, {
 	 * 	path: '/'
 	 * 	auth: ''
 	 * 	agent: null
+	 *
+	 * 	# Set "transfer-encoding" header to 'chunked'.
+	 * 	setTE: false
 	 *
 	 * 	# Set null to use buffer, optional.
 	 * 	# It supports GBK, ShiftJIS etc.
@@ -953,7 +954,6 @@ _.extend kit, {
 	 * 	autoEndReq: true
 	 *
 	 * 	# Readable stream.
-	 * 	# should also be set.
 	 * 	reqPipe: null
 	 *
 	 * 	# Writable stream.
@@ -994,6 +994,7 @@ _.extend kit, {
 	 * 	kit.request {
 	 * 		url: 'a.com'
 	 * 		headers: form.getHeaders()
+	 * 		setTE: true
 	 * 		reqPipe: form
 	 * 	}
 	 * 	.then (body) ->
@@ -1055,8 +1056,8 @@ _.extend kit, {
 		if reqBuf != undefined
 			opts.headers['content-length'] ?= reqBuf.length
 
-		if not opts.headers['content-length']
-			opts.headers['transfer-encoding'] ?= 'chunked'
+		if opts.setTE
+			opts.headers['transfer-encoding'] = 'chunked'
 
 		req = null
 		promise = new Promise (resolve, reject) ->
