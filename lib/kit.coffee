@@ -314,13 +314,14 @@ _.extend kit, {
 	###
 	exec: (cmd, shell) ->
 		stream = kit.require 'stream'
+		os = kit.require 'os'
 
-		shell = process.env.SHELL or
+		shell ?= process.env.SHELL or
 			process.env.ComSpec or
 			process.env.COMSPEC
 
 		cmdStream = new stream.Transform
-		cmdStream.push cmd
+		cmdStream.push cmd + os.EOL
 		cmdStream.end()
 
 		stdout = ''

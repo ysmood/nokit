@@ -175,3 +175,9 @@ describe 'Kit:', ->
 			kit.join([1, 2, 3, 4], -> 's')
 			[1, 's', 2, 's', 3, 's', 4]
 		)
+
+	it 'exec', (tdone) ->
+		kit.exec 'echo ok'
+		.then ({ stdout }) ->
+			assert.equal stdout, 'ok\n'
+			tdone()
