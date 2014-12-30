@@ -134,14 +134,16 @@ describe 'Kit:', ->
 			form = new require('formidable').IncomingForm()
 
 			form.parse req, (err, fields, files) ->
-				res.end fields['b.jpg'].length.toString()
+				res.end fields['f.md'].length.toString()
 
 		server.listen 0, ->
 			{ port } = server.address()
 			form = new (require 'form-data')
 
+			buffer = kit.fs.readFileSync 'Cakefile'
+
 			form.append 'a.txt', 'content'
-			form.append 'b.jpg', new Buffer(123)
+			form.append 'f.md', buffer
 
 			kit.request {
 				url: '127.0.0.1:' + port
@@ -151,7 +153,7 @@ describe 'Kit:', ->
 			}
 			.then (body) ->
 				try
-					assert.equal body, 123
+					assert.equal +body, buffer.length
 					tdone()
 				catch err
 					tdone err
