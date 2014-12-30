@@ -183,3 +183,4 @@ describe 'Kit:', ->
 		.then ({ stdout }) ->
 			assert.equal stdout, 'ok\n'
 			tdone()
+		.catch tdone

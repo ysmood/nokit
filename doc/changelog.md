@@ -1,9 +1,9 @@
 # Changelog
 
-- v0.1.8
+- v0.1.9
 
   - `request`: Add `setTE` option for `transfer-encoding` instead.
-  - Fix a `exec` EOL issue.
+  - Fix a `exec` issue.
 
 - v0.1.6
 

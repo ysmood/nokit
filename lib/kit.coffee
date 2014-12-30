@@ -283,8 +283,7 @@ _.extend kit, {
 		kit.log msg, 'error', opts
 
 	###*
-	 * A better `child_process.exec`. This function require your current
-	 * version of node support `stream.Transform` API.
+	 * A better `child_process.exec`. Supports multi-line shell script.
 	 * @param  {String} cmd   Shell commands.
 	 * @param  {String} shell Shell name. Such as `bash`, `zsh`. Optinal.
 	 * @return {Promise} Resolves when the process's stdio is drained.
@@ -313,44 +312,43 @@ _.extend kit, {
 	 * ```
 	###
 	exec: (cmd, shell) ->
-		stream = kit.require 'stream'
-
-		if not stream.Transform
-			try
-				stream = require('readable-stream')
-			catch
-				console.log 'Please "npm install readable-stream" first'
-				process.exit()
-
 		os = kit.require 'os'
 
 		shell ?= process.env.SHELL or
 			process.env.ComSpec or
 			process.env.COMSPEC
 
-		cmdStream = new stream.Transform
-		cmdStream.push cmd + os.EOL
-		cmdStream.end()
+		randName = Date.now() + Math.random()
 
-		stdout = ''
-		outStream = new stream.Writable
-		outStream._write = (chunk) ->
-			stdout += chunk
+		paths = ['.in', '.out', '.err']
+		.map (type) ->
+			kit.path.join os.tmpDir(), randName + type
 
-		stderr = ''
-		errStream = new stream.Writable
-		errStream._write = (chunk) ->
-			stderr += chunk
+		[ stdinPath, stdoutPath, stderrPath ] = paths
 
-		p = kit.spawn shell, [], {
-			stdio: 'pipe'
-		}
-		cmdStream.pipe p.process.stdin
-		p.process.stdout.pipe outStream
-		p.process.stderr.pipe errStream
+		fileHandlers = []
 
-		p.then (msg) ->
-			_.extend msg, { stdout, stderr }
+		kit.outputFile stdinPath, cmd
+		.then ->
+			Promise.all [
+				kit.fs.openP stdinPath, 'r'
+				kit.fs.openP stdoutPath, 'w'
+				kit.fs.openP stderrPath, 'w'
+			]
+		.then (stdio) ->
+			fileHandlers = fileHandlers.concat stdio
+			kit.spawn shell, [], { stdio }
+		.then (msg) ->
+			Promise.all [
+				kit.readFile stdoutPath, 'utf8'
+				kit.readFile stderrPath, 'utf8'
+			]
+			.then ([stdout, stderr]) ->
+				Promise.all fileHandlers.map (f) -> kit.close f
+				.then ->
+					Promise.all paths.map (p) -> kit.remove p
+				.then ->
+					_.extend msg, { stdout, stderr }
 
 	###*
 	 * See my project [fs-more][fs-more].

@@ -1,6 +1,6 @@
 {
   "name": "nokit",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "Nokit is a collection of commonly used functions.",
   "main": "dist/kit.js",
   "scripts": {
@@ -35,7 +35,6 @@
     "coffee-script": "*",
     "form-data": "*",
     "formidable": "*",
-    "mocha": "*",
-    "readable-stream": "1.0.33"
+    "mocha": "*"
   }
 }
