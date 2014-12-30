@@ -872,6 +872,11 @@ _.extend kit, {
 	 * @param  {Function} fn
 	 * @param  {Any}      this `this` object of the function.
 	 * @return {Function} The function will return a promise object.
+	 * @example
+	 * ```coffee
+	 * readFile = kit.promisify fs.readFile, fs
+	 * readFile('a.txt').then kit.log
+	 * ```
 	###
 	promisify: (fn, self) ->
 		# We should avoid use Bluebird's promisify.
@@ -976,7 +981,8 @@ _.extend kit, {
 	 * And if set opts as string, it will be treated as the url.
 	 * @return {Promise} Contains the http response object,
 	 * it has an extra `body` property.
-	 * You can also get the request object by using `Promise.req`, for example:
+	 * You can also get the request object by using `Promise.req`.
+	 * @example
 	 * ```coffee
 	 * p = kit.request 'http://test.com'
 	 * p.req.on 'response', (res) ->
@@ -1458,7 +1464,7 @@ _.extend kit, {
 				return
 
 			# Each time a direcotry change happens, it will check all
-			# it children files, if any child is not in the watchedList,
+			# its children files, if any child is not in the watchedList,
 			# a `create` event will be triggered.
 			kit.glob(
 				expandPatterns
