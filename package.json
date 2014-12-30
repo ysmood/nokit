@@ -24,7 +24,7 @@
   "dependencies": {
     "bluebird": "2.5.2",
     "colors": "1.0.3",
-    "fs-more": "0.1.1",
+    "fs-more": "0.1.2",
     "glob": "4.3.2",
     "iconv-lite": "0.4.5",
     "jhash": "0.1.6",
@@ -33,8 +33,9 @@
   },
   "devDependencies": {
     "coffee-script": "*",
-    "mocha": "*",
+    "form-data": "*",
     "formidable": "*",
-    "form-data": "*"
+    "mocha": "*",
+    "readable-stream": "1.0.33"
   }
 }

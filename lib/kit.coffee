@@ -314,6 +314,14 @@ _.extend kit, {
 	###
 	exec: (cmd, shell) ->
 		stream = kit.require 'stream'
+
+		if not stream.Transform
+			try
+				stream = require('readable-stream')
+			catch
+				console.log 'Please "npm install readable-stream" first'
+				process.exit()
+
 		os = kit.require 'os'
 
 		shell ?= process.env.SHELL or
