@@ -733,7 +733,7 @@ _.extend kit, {
 					resolve { stdout, stderr }
 
 	###*
-	 * String padding helper. It is use in the `kit.log`.
+	 * String padding helper. It is used in the `kit.log`.
 	 * @param  {Sting | Number} str
 	 * @param  {Number} width
 	 * @param  {String} char Padding char. Default is '0'.
