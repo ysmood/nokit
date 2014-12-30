@@ -22,7 +22,7 @@
   },
   "homepage": "https://github.com/ysmood/nokit",
   "dependencies": {
-    "bluebird": "2.4.3",
+    "bluebird": "2.5.2",
     "colors": "1.0.3",
     "fs-more": "0.1.1",
     "glob": "4.3.2",
