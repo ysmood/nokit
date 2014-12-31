@@ -1,9 +1,10 @@
 # Changelog
 
-- v0.2.1
+- v0.2.2
 
-  - **API CHANGE** `spawn` now also rejects when exit code is not zero.
+  - **API CHANGE** `spawn` now rejects more properly.
   - Now `exec` will always clean the temp files.
+  - `monitorApp` now returns `Promise`.
 
 - v0.1.9
 
