@@ -1,5 +1,9 @@
 # Changelog
 
+- v0.2.0
+
+  - **API CHANGE** `spawn` now also rejects when exit code is not zero.
+
 - v0.1.9
 
   - `request`: Add `setTE` option for `transfer-encoding` instead.

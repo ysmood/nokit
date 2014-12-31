@@ -184,3 +184,10 @@ describe 'Kit:', ->
 			assert.equal stdout, 'ok\n'
 			tdone()
 		.catch tdone
+
+	it 'spawn reject', (tdone) ->
+		kit.spawn 'coffee', ['test/fixtures/spawnReject.coffee']
+		.then tdone
+		.catch ({ code }) ->
+			assert.equal code, 1
+			tdone()

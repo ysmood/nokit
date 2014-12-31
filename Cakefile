@@ -74,6 +74,5 @@ task 'test', 'Test', (opts) ->
 			'-R', 'spec'
 			'-g', opts.grep or ''
 			'test/test.coffee'
-		]).process.on 'exit', (code) ->
-			if code != 0
-				process.exit code
+		]).catch ({ code }) ->
+			process.exit code

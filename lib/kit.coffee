@@ -1199,8 +1199,8 @@ _.extend kit, {
 		promise
 
 	###*
-	 * A safer version of `child_process.spawn` to run a process on
-	 * Windows or Linux. In some conditions, it may be more convenient
+	 * A safer version of `child_process.spawn` to cross-platform run
+	 * a process. In some conditions, it may be more convenient
 	 * to use the `kit.exec`.
 	 * It will automatically add `node_modules/.bin` to the `PATH`
 	 * environment variable.
@@ -1211,7 +1211,7 @@ _.extend kit, {
 	 * Except that it will inherit the parent's stdio.
 	 * @return {Promise} The `promise.process` is the spawned child
 	 * process object.
-	 * Resolves when the process's stdio is drained. The resolve value
+	 * **Resolves** when the process's stdio is drained. The resolve value
 	 * is like:
 	 * ```coffee
 	 * {
@@ -1219,6 +1219,7 @@ _.extend kit, {
 	 * 	signal: null
 	 * }
 	 * ```
+	 * **Rejects** when the spawn fails or the exit code is not 0.
 	 * @example
 	 * ```coffee
 	 * kit.spawn 'git', ['commit', '-m', '42 is the answer to everything']
@@ -1265,7 +1266,10 @@ _.extend kit, {
 				reject err
 
 			ps.on 'close', (code, signal) ->
-				resolve { code, signal }
+				if code == 0
+					resolve { code, signal }
+				else
+					reject { code, signal }
 
 		promise.process = ps
 		promise
