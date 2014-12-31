@@ -284,6 +284,8 @@ _.extend kit, {
 
 	###*
 	 * A better `child_process.exec`. Supports multi-line shell script.
+	 * For supporting old node version, it will create 3 temp files,
+	 * the temp files will be removed after the execution.
 	 * @param  {String} cmd   Shell commands.
 	 * @param  {String} shell Shell name. Such as `bash`, `zsh`. Optinal.
 	 * @return {Promise} Resolves when the process's stdio is drained.
@@ -322,13 +324,18 @@ _.extend kit, {
 
 		paths = ['.in', '.out', '.err']
 		.map (type) ->
-			kit.path.join os.tmpDir(), randName + type
+			kit.path.join os.tmpDir(), 'nobone-' + randName + type
 
 		[ stdinPath, stdoutPath, stderrPath ] = paths
 
 		fileHandlers = []
 
-		kit.outputFile stdinPath, cmd
+		clean = ->
+			Promise.all fileHandlers.map (f) -> kit.close f
+			.then ->
+				Promise.all paths.map (p) -> kit.remove p
+
+		promise = kit.outputFile stdinPath, cmd
 		.then ->
 			Promise.all [
 				kit.fs.openP stdinPath, 'r'
@@ -344,11 +351,11 @@ _.extend kit, {
 				kit.readFile stderrPath, 'utf8'
 			]
 			.then ([stdout, stderr]) ->
-				Promise.all fileHandlers.map (f) -> kit.close f
-				.then ->
-					Promise.all paths.map (p) -> kit.remove p
-				.then ->
-					_.extend msg, { stdout, stderr }
+				_.extend msg, { stdout, stderr }
+
+		promise.then(clean).catch(clean)
+
+		promise
 
 	###*
 	 * See my project [fs-more][fs-more].

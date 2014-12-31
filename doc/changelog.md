@@ -1,8 +1,9 @@
 # Changelog
 
-- v0.2.0
+- v0.2.1
 
   - **API CHANGE** `spawn` now also rejects when exit code is not zero.
+  - Now `exec` will always clean the temp files.
 
 - v0.1.9
 
