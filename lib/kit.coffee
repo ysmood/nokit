@@ -640,7 +640,8 @@ _.extend kit, {
 	 * 	opts: {} # Same as the opts of 'kit.spawn'.
 	 * }
 	 * ```
-	 * @return {Process} The child process.
+	 * @return {Promise} It has a property `process`, which is the monitored
+	 * child process.
 	###
 	monitorApp: (opts) ->
 		_.defaults opts, {
@@ -653,45 +654,47 @@ _.extend kit, {
 		sepLine = ->
 			console.log _.times(process.stdout.columns, -> '*').join('').yellow
 
-		childPs = null
+		childPromise = null
+		isClosed = false
 		start = ->
 			sepLine()
 
-			childPs = kit.spawn(
+			childPromise = kit.spawn(
 				opts.bin
 				opts.args
 				opts.opts
-			).process
+			)
 
-			childPs.on 'close', (code, sig) ->
-				childPs.isClosed = true
-
+			childPromise.then ({ code, signal }) ->
+				isClosed = true
 				kit.log 'EXIT'.yellow +
 					" code: #{(code + '').cyan} signal: #{(sig + '').cyan}"
+			.catch (err) ->
+				if err.stack
+					return Promise.reject err.stack
 
-				if code != null and code != 0 and code != 130
-					kit.err 'Process closed. Edit and save
-						the watched file to restart.'.red
+				kit.err 'Process closed. Edit and save
+					the watched file to restart.'.red
 
 		process.on 'SIGINT', ->
-			childPs.kill 'SIGINT'
+			childPromise.process.kill 'SIGINT'
 			process.exit()
 
 		kit.watchFiles opts.watchList, (path, curr, prev) ->
 			if curr.mtime != prev.mtime
 				kit.log "Reload app, modified: ".yellow + path
 
-				if childPs.isClosed
+				if isClosed
 					start()
 				else
-					childPs.on 'close', start
-					childPs.kill 'SIGINT'
+					childPromise.process.on 'close', start
+					childPromise.process.kill 'SIGINT'
 
 		kit.log "Monitor: ".yellow + opts.watchList
 
 		start()
 
-		childPs
+		childPromise
 
 	###*
 	 * Node version. Such as `v0.10.23` is `0.1023`, `v0.10.1` is `0.1001`.
@@ -1218,7 +1221,8 @@ _.extend kit, {
 	 * Except that it will inherit the parent's stdio.
 	 * @return {Promise} The `promise.process` is the spawned child
 	 * process object.
-	 * **Resolves** when the process's stdio is drained. The resolve value
+	 * **Resolves** when the process's stdio is drained and the exit
+	 * code is either `0` or `130`. The resolve value
 	 * is like:
 	 * ```coffee
 	 * {
@@ -1226,7 +1230,6 @@ _.extend kit, {
 	 * 	signal: null
 	 * }
 	 * ```
-	 * **Rejects** when the spawn fails or the exit code is not 0.
 	 * @example
 	 * ```coffee
 	 * kit.spawn 'git', ['commit', '-m', '42 is the answer to everything']
@@ -1273,7 +1276,7 @@ _.extend kit, {
 				reject err
 
 			ps.on 'close', (code, signal) ->
-				if code == 0
+				if code == null or code == 0 or code == 130
 					resolve { code, signal }
 				else
 					reject { code, signal }
