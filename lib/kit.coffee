@@ -672,7 +672,6 @@ _.extend kit, {
 			)
 
 			childPromise.then ({ code, signal }) ->
-				isClosed = true
 				kit.log 'EXIT'.yellow +
 					" code: #{(code + '').cyan} signal: #{(signal + '').cyan}"
 			.catch (err) ->
@@ -681,6 +680,8 @@ _.extend kit, {
 
 				kit.err 'Process closed. Edit and save
 					the watched file to restart.'.red
+			.then ->
+				isClosed = true
 
 		process.on 'SIGINT', ->
 			childPromise.process.kill 'SIGINT'
