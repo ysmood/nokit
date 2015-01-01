@@ -637,7 +637,7 @@ _.extend kit, {
 	 * {
 	 * 	bin: 'node'
 	 * 	args: ['index.js']
-	 * 	watchList: ['index.js'] # Extra files to watch.
+	 * 	watchList: [] # By default, the same with the "args".
 	 * 	opts: {} # Same as the opts of 'kit.spawn'.
 	 * }
 	 * ```
@@ -648,10 +648,12 @@ _.extend kit, {
 		_.defaults opts, {
 			bin: 'node'
 			args: ['index.js']
-			watchList: ['index.js']
+			watchList: null
 			NodeDependency: true
 			opts: {}
 		}
+
+		opts.watchList ?= opts.args
 
 		sepLine = ->
 			console.log _.times(process.stdout.columns, -> '*').join('').yellow
