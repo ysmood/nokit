@@ -629,14 +629,15 @@ _.extend kit, {
 	###*
 	 * Monitor an application and automatically restart it when file changed.
 	 * Even when the monitored app exit with error, the monitor will still wait
-	 * for your file change to restart the application.
+	 * for your file change to restart the application. Not only nodejs, but also
+	 * other programs like ruby or python.
 	 * It will print useful infomation when it application unexceptedly.
 	 * @param  {Object} opts Defaults:
 	 * ```coffee
 	 * {
 	 * 	bin: 'node'
-	 * 	args: ['app.js']
-	 * 	watchList: ['app.js'] # Extra files to watch.
+	 * 	args: ['index.js']
+	 * 	watchList: ['index.js'] # Extra files to watch.
 	 * 	opts: {} # Same as the opts of 'kit.spawn'.
 	 * }
 	 * ```
@@ -646,8 +647,9 @@ _.extend kit, {
 	monitorApp: (opts) ->
 		_.defaults opts, {
 			bin: 'node'
-			args: ['app.js']
-			watchList: ['app.js']
+			args: ['index.js']
+			watchList: ['index.js']
+			NodeDependency: true
 			opts: {}
 		}
 
