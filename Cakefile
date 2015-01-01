@@ -4,6 +4,12 @@ process.chdir __dirname
 kit = require './lib/kit'
 { _ } = kit
 
+task 'dev', 'Lab', ->
+	kit.monitorApp {
+		bin: 'coffee'
+		args: ['test/lab.coffee']
+	}
+
 task 'build', 'Build project.', build = ->
 	compileCoffee = ->
 		kit.spawn 'coffee', [
