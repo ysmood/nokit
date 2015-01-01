@@ -659,6 +659,8 @@ _.extend kit, {
 		childPromise = null
 		isClosed = false
 		start = ->
+			isClosed = false
+
 			sepLine()
 
 			childPromise = kit.spawn(
@@ -670,7 +672,7 @@ _.extend kit, {
 			childPromise.then ({ code, signal }) ->
 				isClosed = true
 				kit.log 'EXIT'.yellow +
-					" code: #{(code + '').cyan} signal: #{(sig + '').cyan}"
+					" code: #{(code + '').cyan} signal: #{(signal + '').cyan}"
 			.catch (err) ->
 				if err.stack
 					return Promise.reject err.stack
