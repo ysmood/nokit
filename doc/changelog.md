@@ -1,5 +1,10 @@
 # Changelog
 
+- v0.2.4
+
+  - Optimize the option of `parseDependency`.
+    It now works with the default index files.
+
 - v0.2.3
 
   - Fix a `request` response encoding issue.

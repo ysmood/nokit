@@ -918,8 +918,8 @@ _.extend kit, {
 	 * ```coffee
 	 * {
 	 * 	depReg: /require\s*\(?['"](.+)['"]\)?/gm
-	 * 	depRoots: ['.']
-	 * 	extensions: ['.js', '.coffee']
+	 * 	depRoots: ['']
+	 * 	extensions: ['.js', '.coffee', 'index.js', 'index.coffee']
 	 *
 	 * 	# It will handle all the matched paths.
 	 * 	# Return false value if you don't want this match.
@@ -941,11 +941,10 @@ _.extend kit, {
 	parseDependency: (entryPaths, opts ={}, depPaths = {}) ->
 		_.defaults opts, {
 			depReg: /require\s*\(?['"](.+)['"]\)?/g
-			depRoots: ['.']
-			extensions: ['.js', '.coffee']
+			depRoots: ['']
+			extensions: ['.js', '.coffee', '/index.js', '/index.coffee']
 			handle: (path) ->
-				return if path[0] != '.'
-				path.replace(/^[\s'"]+/, '').replace(/[\s'";]+$/, '')
+				return path if path.match /^(?:\.|\/|[a-z]:)/i
 		}
 
 		if _.isString entryPaths
@@ -959,11 +958,13 @@ _.extend kit, {
 					p + ext
 		, []
 
-		if opts.depRoots.length > 0
-			entryPaths = entryPaths.reduce (s, p) ->
-				s.concat opts.depRoots.map (root) ->
-					kit.path.join root, p
-			, []
+		if opts.depRoots.indexOf('') == -1
+			opts.depRoots.push ''
+
+		entryPaths = entryPaths.reduce (s, p) ->
+			s.concat opts.depRoots.map (root) ->
+				kit.path.join root, p
+		, []
 
 		# Parse file.
 		kit.glob entryPaths, { nosort: true }

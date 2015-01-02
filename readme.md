@@ -615,8 +615,8 @@ Goto [changelog](doc/changelog.md)
     ```coffee
     {
     	depReg: /require\s*\(?['"](.+)['"]\)?/gm
-    	depRoots: ['.']
-    	extensions: ['.js', '.coffee']
+    	depRoots: ['']
+    	extensions: ['.js', '.coffee', 'index.js', 'index.coffee']
     
     	# It will handle all the matched paths.
     	# Return false value if you don't want this match.
@@ -640,11 +640,11 @@ Goto [changelog](doc/changelog.md)
     }
     ```
 
-- #### <a href="lib/kit.coffee?source#L995" target="_blank"><b>path</b></a>
+- #### <a href="lib/kit.coffee?source#L996" target="_blank"><b>path</b></a>
 
   Node native module `path`.
 
-- #### <a href="lib/kit.coffee?source#L1003" target="_blank"><b>Promise</b></a>
+- #### <a href="lib/kit.coffee?source#L1004" target="_blank"><b>Promise</b></a>
 
   The promise lib. Now, it uses Bluebird as ES5 polyfill.
   In the future, the Bluebird will be replaced with native
@@ -652,7 +652,7 @@ Goto [changelog](doc/changelog.md)
 
   - **<u>type</u>**:  { _Object_ }
 
-- #### <a href="lib/kit.coffee?source#L1016" target="_blank"><b>promisify</b></a>
+- #### <a href="lib/kit.coffee?source#L1017" target="_blank"><b>promisify</b></a>
 
   Convert a callback style function to a promise function.
 
@@ -673,7 +673,7 @@ Goto [changelog](doc/changelog.md)
     readFile('a.txt').then kit.log
     ```
 
-- #### <a href="lib/kit.coffee?source#L1036" target="_blank"><b>require</b></a>
+- #### <a href="lib/kit.coffee?source#L1037" target="_blank"><b>require</b></a>
 
   Much faster than the native require of node, but you should
   follow some rules to use it safely.
@@ -691,7 +691,7 @@ Goto [changelog](doc/changelog.md)
 
     The module that you require.
 
-- #### <a href="lib/kit.coffee?source#L1064" target="_blank"><b>requireOptional</b></a>
+- #### <a href="lib/kit.coffee?source#L1065" target="_blank"><b>requireOptional</b></a>
 
   Require an optional package. If not found, it will
   warn user to npm install it, and exit the process.
@@ -704,7 +704,7 @@ Goto [changelog](doc/changelog.md)
 
     The required package.
 
-- #### <a href="lib/kit.coffee?source#L1172" target="_blank"><b>request</b></a>
+- #### <a href="lib/kit.coffee?source#L1173" target="_blank"><b>request</b></a>
 
   A handy extended combination of `http.request` and `https.request`.
 
@@ -807,7 +807,7 @@ Goto [changelog](doc/changelog.md)
     	kit.log body
     ```
 
-- #### <a href="lib/kit.coffee?source#L1388" target="_blank"><b>spawn</b></a>
+- #### <a href="lib/kit.coffee?source#L1389" target="_blank"><b>spawn</b></a>
 
   A safer version of `child_process.spawn` to cross-platform run
   a process. In some conditions, it may be more convenient
@@ -850,11 +850,11 @@ Goto [changelog](doc/changelog.md)
     .then ({code}) -> kit.log code
     ```
 
-- #### <a href="lib/kit.coffee?source#L1439" target="_blank"><b>url</b></a>
+- #### <a href="lib/kit.coffee?source#L1440" target="_blank"><b>url</b></a>
 
   Node native module `url`.
 
-- #### <a href="lib/kit.coffee?source#L1461" target="_blank"><b>walk</b></a>
+- #### <a href="lib/kit.coffee?source#L1462" target="_blank"><b>walk</b></a>
 
   Walk through path pattern recursively.
   For more doc, see the [glob](https://github.com/isaacs/node-glob)
@@ -889,7 +889,7 @@ Goto [changelog](doc/changelog.md)
     	kit.log paths.glob
     ```
 
-- #### <a href="lib/kit.coffee?source#L1511" target="_blank"><b>watchFile</b></a>
+- #### <a href="lib/kit.coffee?source#L1512" target="_blank"><b>watchFile</b></a>
 
   Watch a file. If the file changes, the handler will be invoked.
   You can change the polling interval by using `process.env.pollingWatch`.
@@ -928,7 +928,7 @@ Goto [changelog](doc/changelog.md)
     		kit.log path
     ```
 
-- #### <a href="lib/kit.coffee?source#L1541" target="_blank"><b>watchFiles</b></a>
+- #### <a href="lib/kit.coffee?source#L1542" target="_blank"><b>watchFiles</b></a>
 
   Watch files, when file changes, the handler will be invoked.
   It is build on the top of `kit.watchFile`.
@@ -951,7 +951,7 @@ Goto [changelog](doc/changelog.md)
     	kit.log path
     ```
 
-- #### <a href="lib/kit.coffee?source#L1579" target="_blank"><b>watchDir</b></a>
+- #### <a href="lib/kit.coffee?source#L1580" target="_blank"><b>watchDir</b></a>
 
   Watch directory and all the files in it.
   It supports three types of change: create, modify, move, delete.

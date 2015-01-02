@@ -187,7 +187,7 @@ describe 'Kit:', ->
 
 	it 'parseDependency', (tdone) ->
 		kit.parseDependency 'test/fixtures/depMain.coffee', {
-			depRoots: ['.', 'test/fixtures/depDir']
+			depRoots: ['test/fixtures/depDir']
 		}
 		.then (paths) ->
 			assert.deepEqual paths.sort(), [
@@ -197,6 +197,7 @@ describe 'Kit:', ->
 				'test/fixtures/depDir/dep4.js'
 				'test/fixtures/depDir/dep5.coffee'
 				'test/fixtures/depDir/dep6.coffee'
+				'test/fixtures/depDir/lib/index.js'
 				'test/fixtures/depMain.coffee'
 			]
 			tdone()
