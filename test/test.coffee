@@ -185,9 +185,19 @@ describe 'Kit:', ->
 			tdone()
 		.catch tdone
 
-	it 'spawn reject', (tdone) ->
-		kit.spawn 'coffee', ['test/fixtures/spawnReject.coffee']
-		.then tdone
-		.catch ({ code }) ->
-			assert.equal code, 1
+	it 'parseDependency', (tdone) ->
+		kit.parseDependency 'test/fixtures/depMain.coffee', {
+			depRoots: ['.', 'test/fixtures/depDir']
+		}
+		.then (paths) ->
+			assert.deepEqual paths.sort(), [
+				'test/fixtures/dep1.coffee'
+				'test/fixtures/dep2.coffee'
+				'test/fixtures/dep3.coffee'
+				'test/fixtures/depDir/dep4.js'
+				'test/fixtures/depDir/dep5.coffee'
+				'test/fixtures/depDir/dep6.coffee'
+				'test/fixtures/depMain.coffee'
+			]
 			tdone()
+		.catch tdone

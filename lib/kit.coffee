@@ -874,6 +874,84 @@ _.extend kit, {
 		return comments
 
 	###*
+	 * Parse dependency tree by regex.
+	 * @param  {String | Array} entryPaths The file to begin with.
+	 * @param  {Object} opts Defaults:
+	 * ```coffee
+	 * {
+	 * 	depReg: /require\s*\(?['"](.+)['"]\)?/gm
+	 * 	depRoots: ['.']
+	 * 	extensions: ['.js', '.coffee']
+	 *
+	 * 	# It will handle all the matched paths.
+	 * 	# Return false value if you don't want this match.
+	 * 	handle: (path) ->
+	 * 		path.replace(/^[\s'"]+/, '').replace(/[\s'";]+$/, '')
+	 * }
+	 * ```
+	 * @return {Promise} It resolves the dependency path array.
+	 * @example
+	 * ```coffee
+	 * kit.parseDependency 'main.', {
+	 * 	depReg: /require\s*\(?['"](.+)['"]\)?/gm
+	 *  handle: (path) ->
+	 * 		return if path[0] != '.'
+	 * 		path.replace(/^[\s'"]+/, '').replace(/[\s'";]+$/, '')
+	 * }
+	 * ```
+	###
+	parseDependency: (entryPaths, opts, depPaths = {}) ->
+		_.defaults opts, {
+			depReg: /require\s*\(?['"](.+)['"]\)?/gm
+			depRoots: ['.']
+			extensions: ['.js', '.coffee']
+			handle: (path) ->
+				return if path[0] != '.'
+				path.replace(/^[\s'"]+/, '').replace(/[\s'";]+$/, '')
+		}
+
+		if _.isString entryPaths
+			entryPaths = [entryPaths]
+
+		entryPaths = entryPaths.reduce (s, p) ->
+			if kit.path.extname p
+				s.concat [p]
+			else
+				s.concat opts.extensions.map (ext) ->
+					p + ext
+		, []
+
+		if opts.depRoots.length > 0
+			entryPaths = entryPaths.reduce (s, p) ->
+				s.concat opts.depRoots.map (root) ->
+					kit.path.join root, p
+			, []
+
+		# Parse file.
+		kit.glob entryPaths, { nosort: true }
+		.then (paths) ->
+			Promise.all paths.map (path) ->
+				# Prevent the recycle dependencies.
+				return if depPaths[path]
+
+				kit.readFile path, 'utf8'
+				.then (str) ->
+					# The point to add path to watch list.
+					depPaths[path] = true
+					dir = kit.path.dirname path
+
+					entryPaths = []
+					str.replace opts.depReg, (m, p) ->
+						p = opts.handle p
+						return if not p
+						entryPaths.push p
+						entryPaths.push kit.path.join(dir, p)
+
+					kit.parseDependency entryPaths, opts, depPaths
+		.then ->
+			_.keys depPaths
+
+	###*
 	 * Node native module `path`.
 	###
 	path: require 'path'
