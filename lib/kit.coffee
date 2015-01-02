@@ -1301,7 +1301,7 @@ _.extend kit, {
 									m = cType.match(/charset=(.+);?/i)
 									if m and m[1]
 										encoding = m[1]
-									if not /^(text)|(application)\//.test(cType)
+									if !/^(text)|(application)\//.test(cType)
 										encoding = null
 							else
 								encoding = opts.resEncoding
@@ -1313,7 +1313,7 @@ _.extend kit, {
 									if encoding == 'utf8'
 										buf.toString()
 									else
-										kit.require('iconv-lite')
+										kit.requireOptional 'iconv-lite'
 										.decode buf, encoding
 								catch err
 									reject err

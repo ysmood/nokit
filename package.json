@@ -26,13 +26,13 @@
     "colors": "1.0.3",
     "fs-more": "0.1.2",
     "glob": "4.3.2",
-    "iconv-lite": "0.4.5",
     "jhash": "0.1.6",
     "lodash": "2.4.1",
     "which": "1.0.8"
   },
   "devDependencies": {
     "coffee-script": "*",
+    "iconv-lite": "0.4.5",
     "form-data": "*",
     "formidable": "*",
     "mocha": "*"
