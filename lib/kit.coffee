@@ -912,7 +912,10 @@ _.extend kit, {
 		return comments
 
 	###*
-	 * Parse dependency tree by regex.
+	 * Parse dependency tree by regex. The dependency relationships
+	 * is not a tree, but a graph. To avoid dependency cycle, this
+	 * function only return an linear array of the dependencies,
+	 * from which you won't get the detail relationshops between files.
 	 * @param  {String | Array} entryPaths The file to begin with.
 	 * @param  {Object} opts Defaults:
 	 * ```coffee
