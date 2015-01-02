@@ -2,6 +2,7 @@
 
 - v0.2.3
 
+  - Fix a `request` response encoding issue.
   - Now monitorApp will watch the reps automatically.
   - Fix a monitorApp restart issue.
   - Add `parseDependency` API.

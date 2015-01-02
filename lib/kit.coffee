@@ -1275,8 +1275,8 @@ _.extend kit, {
 								resolve res
 
 						if opts.resEncoding
-							encoding = 'utf8'
 							if opts.resEncoding == 'auto'
+								encoding = 'utf8'
 								cType = res.headers['content-type']
 								if _.isString cType
 									m = cType.match(/charset=(.+);?/i)
@@ -1284,6 +1284,8 @@ _.extend kit, {
 										encoding = m[1]
 									if not /^(text)|(application)\//.test(cType)
 										encoding = null
+							else
+								encoding = opts.resEncoding
 
 							decode = (buf) ->
 								if not encoding
