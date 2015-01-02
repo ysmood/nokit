@@ -640,32 +640,74 @@ _.extend kit, {
 	 * 	bin: 'node'
 	 * 	args: ['index.js']
 	 * 	watchList: [] # By default, the same with the "args".
+	 * 	isNodeDeps: false
 	 * 	opts: {} # Same as the opts of 'kit.spawn'.
+	 *
+	 * 	# The option of `kit.parseDependency`
+	 * 	parseDependency: {}
+	 *
+	 *	onStart: ->
+	 *		kit.log "Monitor: ".yellow + opts.watchList
+	 *	onRestart: (path) ->
+	 *		kit.log "Reload app, modified: ".yellow + path
+	 *	onNormalExit: ({ code, signal }) ->
+	 *		kit.log 'EXIT'.yellow +
+	 *			" code: #{(code + '').cyan} signal: #{(signal + '').cyan}"
+	 *	onErrorExit: ->
+	 *		kit.err 'Process closed. Edit and save
+	 *			the watched file to restart.'.red
+	 *	sepLine: ->
+	 *		chars = _.times(process.stdout.columns, -> '*')
+	 *		console.log chars.join('').yellow
 	 * }
 	 * ```
 	 * @return {Promise} It has a property `process`, which is the monitored
 	 * child process.
+	 * @example
+	 * ```coffee
+	 * kit.monitorApp {
+	 * 	bin: 'coffee'
+	 * 	args: ['main.coffee']
+	 * }
+	 *
+	 * kit.monitorApp {
+	 * 	bin: 'ruby'
+	 * 	args: ['app.rb', 'lib\/**\/*.rb']
+	 * 	isNodeDeps: false
+	 * }
+	 * ```
 	###
 	monitorApp: (opts) ->
 		_.defaults opts, {
 			bin: 'node'
 			args: ['index.js']
 			watchList: null
-			NodeDependency: true
+			isNodeDeps: true
+			parseDependency: {}
 			opts: {}
+			onStart: ->
+				kit.log "Monitor: ".yellow + opts.watchList
+			onRestart: (path) ->
+				kit.log "Reload app, modified: ".yellow + path
+			onNormalExit: ({ code, signal }) ->
+				kit.log 'EXIT'.yellow +
+					" code: #{(code + '').cyan} signal: #{(signal + '').cyan}"
+			onErrorExit: ->
+				kit.err 'Process closed. Edit and save
+					the watched file to restart.'.red
+			sepLine: ->
+				chars = _.times(process.stdout.columns, -> '*')
+				console.log chars.join('').yellow
 		}
 
 		opts.watchList ?= opts.args
-
-		sepLine = ->
-			console.log _.times(process.stdout.columns, -> '*').join('').yellow
 
 		childPromise = null
 		isClosed = false
 		start = ->
 			isClosed = false
 
-			sepLine()
+			opts.sepLine()
 
 			childPromise = kit.spawn(
 				opts.bin
@@ -673,25 +715,18 @@ _.extend kit, {
 				opts.opts
 			)
 
-			childPromise.then ({ code, signal }) ->
-				kit.log 'EXIT'.yellow +
-					" code: #{(code + '').cyan} signal: #{(signal + '').cyan}"
+			childPromise.then (msg) ->
+				opts.onNormalExit msg
 			.catch (err) ->
 				if err.stack
 					return Promise.reject err.stack
-
-				kit.err 'Process closed. Edit and save
-					the watched file to restart.'.red
+				opts.onErrorExit()
 			.then ->
 				isClosed = true
 
-		process.on 'SIGINT', ->
-			childPromise.process.kill 'SIGINT'
-			process.exit()
-
-		kit.watchFiles opts.watchList, (path, curr, prev) ->
+		watcher = (path, curr, prev) ->
 			if curr.mtime != prev.mtime
-				kit.log "Reload app, modified: ".yellow + path
+				opts.onRestart path
 
 				if isClosed
 					start()
@@ -699,7 +734,18 @@ _.extend kit, {
 					childPromise.process.on 'close', start
 					childPromise.process.kill 'SIGINT'
 
-		kit.log "Monitor: ".yellow + opts.watchList
+		process.on 'SIGINT', ->
+			childPromise.process.kill 'SIGINT'
+			process.exit()
+
+		if opts.isNodeDeps
+			kit.parseDependency opts.watchList, opts.parseDependency
+			.then (paths) ->
+				kit.watchFiles paths, watcher
+		else
+			kit.watchFiles opts.watchList, watcher
+
+		opts.onStart()
 
 		start()
 
@@ -900,7 +946,7 @@ _.extend kit, {
 	 * }
 	 * ```
 	###
-	parseDependency: (entryPaths, opts, depPaths = {}) ->
+	parseDependency: (entryPaths, opts ={}, depPaths = {}) ->
 		_.defaults opts, {
 			depReg: /require\s*\(?['"](.+)['"]\)?/gm
 			depRoots: ['.']
