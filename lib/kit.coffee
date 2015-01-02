@@ -703,10 +703,7 @@ _.extend kit, {
 		opts.watchList ?= opts.args
 
 		childPromise = null
-		isClosed = false
 		start = ->
-			isClosed = false
-
 			opts.sepLine()
 
 			childPromise = kit.spawn(
@@ -721,18 +718,13 @@ _.extend kit, {
 				if err.stack
 					return Promise.reject err.stack
 				opts.onErrorExit()
-			.then ->
-				isClosed = true
 
 		watcher = (path, curr, prev) ->
 			if curr.mtime != prev.mtime
 				opts.onRestart path
 
-				if isClosed
-					start()
-				else
-					childPromise.process.on 'close', start
-					childPromise.process.kill 'SIGINT'
+				childPromise.catch(->).then(start)
+				childPromise.process.kill 'SIGINT'
 
 		process.on 'SIGINT', ->
 			childPromise.process.kill 'SIGINT'
