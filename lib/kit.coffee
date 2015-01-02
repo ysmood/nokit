@@ -940,7 +940,7 @@ _.extend kit, {
 	###
 	parseDependency: (entryPaths, opts ={}, depPaths = {}) ->
 		_.defaults opts, {
-			depReg: /require\s*\(?['"](.+)['"]\)?/gm
+			depReg: /require\s*\(?['"](.+)['"]\)?/g
 			depRoots: ['.']
 			extensions: ['.js', '.coffee']
 			handle: (path) ->
