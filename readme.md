@@ -305,7 +305,7 @@ Goto [changelog](doc/changelog.md)
     	kit.log paths.statCache
     ```
 
-- #### <a href="lib/kit.coffee?source#L462" target="_blank"><b>jhash</b></a>
+- #### <a href="lib/kit.coffee?source#L464" target="_blank"><b>jhash</b></a>
 
   A fast helper to hash string or binary file.
   See my [jhash][jhash] project.
@@ -331,7 +331,7 @@ Goto [changelog](doc/changelog.md)
     jhash.hash('test'); // output => 'ede'
     ```
 
-- #### <a href="lib/kit.coffee?source#L481" target="_blank"><b>join</b></a>
+- #### <a href="lib/kit.coffee?source#L483" target="_blank"><b>join</b></a>
 
   It inserts the fnB in between the fnA and concatenates the result.
 
@@ -354,7 +354,7 @@ Goto [changelog](doc/changelog.md)
     # output => [1, 'sep', 2, 'sep', 3, 'sep', 4]
     ```
 
-- #### <a href="lib/kit.coffee?source#L520" target="_blank"><b>iter</b></a>
+- #### <a href="lib/kit.coffee?source#L522" target="_blank"><b>iter</b></a>
 
   Generate a iterator from a value.
 
@@ -382,7 +382,7 @@ Goto [changelog](doc/changelog.md)
     iter() # output => { key: 'a', value: 1 }
     ```
 
-- #### <a href="lib/kit.coffee?source#L544" target="_blank"><b>inspect</b></a>
+- #### <a href="lib/kit.coffee?source#L546" target="_blank"><b>inspect</b></a>
 
   For debugging. Dump a colorful object.
 
@@ -399,7 +399,7 @@ Goto [changelog](doc/changelog.md)
 
   - **<u>return</u>**:  { _String_ }
 
-- #### <a href="lib/kit.coffee?source#L560" target="_blank"><b>isDevelopment</b></a>
+- #### <a href="lib/kit.coffee?source#L562" target="_blank"><b>isDevelopment</b></a>
 
   Nobone use it to check the running mode of the app.
   Overwrite it if you want to control the check logic.
@@ -407,7 +407,7 @@ Goto [changelog](doc/changelog.md)
 
   - **<u>return</u>**:  { _Boolean_ }
 
-- #### <a href="lib/kit.coffee?source#L569" target="_blank"><b>isProduction</b></a>
+- #### <a href="lib/kit.coffee?source#L571" target="_blank"><b>isProduction</b></a>
 
   Nobone use it to check the running mode of the app.
   Overwrite it if you want to control the check logic.
@@ -415,7 +415,7 @@ Goto [changelog](doc/changelog.md)
 
   - **<u>return</u>**:  { _Boolean_ }
 
-- #### <a href="lib/kit.coffee?source#L584" target="_blank"><b>log</b></a>
+- #### <a href="lib/kit.coffee?source#L586" target="_blank"><b>log</b></a>
 
   A better log for debugging, it uses the `kit.inspect` to log.
   
@@ -437,11 +437,12 @@ Goto [changelog](doc/changelog.md)
 
     Default is same with `kit.inspect`
 
-- #### <a href="lib/kit.coffee?source#L646" target="_blank"><b>monitorApp</b></a>
+- #### <a href="lib/kit.coffee?source#L680" target="_blank"><b>monitorApp</b></a>
 
   Monitor an application and automatically restart it when file changed.
   Even when the monitored app exit with error, the monitor will still wait
-  for your file change to restart the application.
+  for your file change to restart the application. Not only nodejs, but also
+  other programs like ruby or python.
   It will print useful infomation when it application unexceptedly.
 
   - **<u>param</u>**: `opts` { _Object_ }
@@ -450,9 +451,27 @@ Goto [changelog](doc/changelog.md)
     ```coffee
     {
     	bin: 'node'
-    	args: ['app.js']
-    	watchList: ['app.js'] # Extra files to watch.
+    	args: ['index.js']
+    	watchList: [] # By default, the same with the "args".
+    	isNodeDeps: false
     	opts: {} # Same as the opts of 'kit.spawn'.
+    
+    	# The option of `kit.parseDependency`
+    	parseDependency: {}
+    
+    onStart: ->
+    	kit.log "Monitor: ".yellow + opts.watchList
+    onRestart: (path) ->
+    	kit.log "Reload app, modified: ".yellow + path
+    onNormalExit: ({ code, signal }) ->
+    	kit.log 'EXIT'.yellow +
+    		" code: #{(code + '').cyan} signal: #{(signal + '').cyan}"
+    onErrorExit: ->
+    	kit.err 'Process closed. Edit and save
+    		the watched file to restart.'.red
+    sepLine: ->
+    	chars = _.times(process.stdout.columns, -> '*')
+    	console.log chars.join('').yellow
     }
     ```
 
@@ -461,13 +480,28 @@ Goto [changelog](doc/changelog.md)
     It has a property `process`, which is the monitored
     child process.
 
-- #### <a href="lib/kit.coffee?source#L703" target="_blank"><b>nodeVersion</b></a>
+  - **<u>example</u>**:
+
+    ```coffee
+    kit.monitorApp {
+    	bin: 'coffee'
+    	args: ['main.coffee']
+    }
+    
+    kit.monitorApp {
+    	bin: 'ruby'
+    	args: ['app.rb', 'lib/**/*.rb']
+    	isNodeDeps: false
+    }
+    ```
+
+- #### <a href="lib/kit.coffee?source#L758" target="_blank"><b>nodeVersion</b></a>
 
   Node version. Such as `v0.10.23` is `0.1023`, `v0.10.1` is `0.1001`.
 
   - **<u>type</u>**:  { _Float_ }
 
-- #### <a href="lib/kit.coffee?source#L721" target="_blank"><b>open</b></a>
+- #### <a href="lib/kit.coffee?source#L776" target="_blank"><b>open</b></a>
 
   Open a thing that your system can recognize.
   Now only support Windows, OSX or system that installed 'xdg-open'.
@@ -492,7 +526,7 @@ Goto [changelog](doc/changelog.md)
     kit.open 'http://ysmood.org'
     ```
 
-- #### <a href="lib/kit.coffee?source#L756" target="_blank"><b>pad</b></a>
+- #### <a href="lib/kit.coffee?source#L811" target="_blank"><b>pad</b></a>
 
   String padding helper. It is used in the `kit.log`.
 
@@ -512,7 +546,7 @@ Goto [changelog](doc/changelog.md)
     kit.pad '1', 3 # '001'
     ```
 
-- #### <a href="lib/kit.coffee?source#L802" target="_blank"><b>parseComment</b></a>
+- #### <a href="lib/kit.coffee?source#L857" target="_blank"><b>parseComment</b></a>
 
   A comments parser for coffee-script.
   Used to generate documentation from source code automatically.
@@ -567,11 +601,50 @@ Goto [changelog](doc/changelog.md)
     }
     ```
 
-- #### <a href="lib/kit.coffee?source#L870" target="_blank"><b>path</b></a>
+- #### <a href="lib/kit.coffee?source#L949" target="_blank"><b>parseDependency</b></a>
+
+  Parse dependency tree by regex.
+
+  - **<u>param</u>**: `entryPaths` { _String | Array_ }
+
+    The file to begin with.
+
+  - **<u>param</u>**: `opts` { _Object_ }
+
+    Defaults:
+    ```coffee
+    {
+    	depReg: /require\s*\(?['"](.+)['"]\)?/gm
+    	depRoots: ['.']
+    	extensions: ['.js', '.coffee']
+    
+    	# It will handle all the matched paths.
+    	# Return false value if you don't want this match.
+    	handle: (path) ->
+    		path.replace(/^[\s'"]+/, '').replace(/[\s'";]+$/, '')
+    }
+    ```
+
+  - **<u>return</u>**:  { _Promise_ }
+
+    It resolves the dependency path array.
+
+  - **<u>example</u>**:
+
+    ```coffee
+    kit.parseDependency 'main.', {
+    	depReg: /require\s*\(?['"](.+)['"]\)?/gm
+     handle: (path) ->
+    		return if path[0] != '.'
+    		path.replace(/^[\s'"]+/, '').replace(/[\s'";]+$/, '')
+    }
+    ```
+
+- #### <a href="lib/kit.coffee?source#L1003" target="_blank"><b>path</b></a>
 
   Node native module `path`.
 
-- #### <a href="lib/kit.coffee?source#L878" target="_blank"><b>Promise</b></a>
+- #### <a href="lib/kit.coffee?source#L1011" target="_blank"><b>Promise</b></a>
 
   The promise lib. Now, it uses Bluebird as ES5 polyfill.
   In the future, the Bluebird will be replaced with native
@@ -579,7 +652,7 @@ Goto [changelog](doc/changelog.md)
 
   - **<u>type</u>**:  { _Object_ }
 
-- #### <a href="lib/kit.coffee?source#L891" target="_blank"><b>promisify</b></a>
+- #### <a href="lib/kit.coffee?source#L1024" target="_blank"><b>promisify</b></a>
 
   Convert a callback style function to a promise function.
 
@@ -600,7 +673,7 @@ Goto [changelog](doc/changelog.md)
     readFile('a.txt').then kit.log
     ```
 
-- #### <a href="lib/kit.coffee?source#L911" target="_blank"><b>require</b></a>
+- #### <a href="lib/kit.coffee?source#L1044" target="_blank"><b>require</b></a>
 
   Much faster than the native require of node, but you should
   follow some rules to use it safely.
@@ -618,7 +691,7 @@ Goto [changelog](doc/changelog.md)
 
     The module that you require.
 
-- #### <a href="lib/kit.coffee?source#L1027" target="_blank"><b>request</b></a>
+- #### <a href="lib/kit.coffee?source#L1160" target="_blank"><b>request</b></a>
 
   A handy extended combination of `http.request` and `https.request`.
 
@@ -721,7 +794,7 @@ Goto [changelog](doc/changelog.md)
     	kit.log body
     ```
 
-- #### <a href="lib/kit.coffee?source#L1239" target="_blank"><b>spawn</b></a>
+- #### <a href="lib/kit.coffee?source#L1372" target="_blank"><b>spawn</b></a>
 
   A safer version of `child_process.spawn` to cross-platform run
   a process. In some conditions, it may be more convenient
@@ -764,11 +837,11 @@ Goto [changelog](doc/changelog.md)
     .then ({code}) -> kit.log code
     ```
 
-- #### <a href="lib/kit.coffee?source#L1290" target="_blank"><b>url</b></a>
+- #### <a href="lib/kit.coffee?source#L1423" target="_blank"><b>url</b></a>
 
   Node native module `url`.
 
-- #### <a href="lib/kit.coffee?source#L1312" target="_blank"><b>walk</b></a>
+- #### <a href="lib/kit.coffee?source#L1445" target="_blank"><b>walk</b></a>
 
   Walk through path pattern recursively.
   For more doc, see the [glob](https://github.com/isaacs/node-glob)
@@ -803,7 +876,7 @@ Goto [changelog](doc/changelog.md)
     	kit.log paths.glob
     ```
 
-- #### <a href="lib/kit.coffee?source#L1362" target="_blank"><b>watchFile</b></a>
+- #### <a href="lib/kit.coffee?source#L1495" target="_blank"><b>watchFile</b></a>
 
   Watch a file. If the file changes, the handler will be invoked.
   You can change the polling interval by using `process.env.pollingWatch`.
@@ -842,7 +915,7 @@ Goto [changelog](doc/changelog.md)
     		kit.log path
     ```
 
-- #### <a href="lib/kit.coffee?source#L1392" target="_blank"><b>watchFiles</b></a>
+- #### <a href="lib/kit.coffee?source#L1525" target="_blank"><b>watchFiles</b></a>
 
   Watch files, when file changes, the handler will be invoked.
   It is build on the top of `kit.watchFile`.
@@ -865,7 +938,7 @@ Goto [changelog](doc/changelog.md)
     	kit.log path
     ```
 
-- #### <a href="lib/kit.coffee?source#L1430" target="_blank"><b>watchDir</b></a>
+- #### <a href="lib/kit.coffee?source#L1563" target="_blank"><b>watchDir</b></a>
 
   Watch directory and all the files in it.
   It supports three types of change: create, modify, move, delete.

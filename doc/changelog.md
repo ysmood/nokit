@@ -1,5 +1,12 @@
 # Changelog
 
+- v0.2.3
+
+  - Now monitorApp will watch the reps automatically.
+  - Fix a monitorApp restart issue.
+  - Add `parseDependency` API.
+  - The `stateCache` of glob now is not enumerable.
+
 - v0.2.2
 
   - **API CHANGE** `spawn` now rejects more properly.
