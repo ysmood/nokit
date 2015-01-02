@@ -1064,6 +1064,25 @@ _.extend kit, {
 		kit.requireCache[moduleName]
 
 	###*
+	 * Require an optional package. If not found, it will
+	 * warn user to npm install it, and exit the process.
+	 * @param  {String} name Package name
+	 * @return {Any} The required package.
+	###
+	requireOptional: (name) ->
+		try
+			kit.require name
+		catch
+			console.error(
+				"Error: Please ".red +
+				"'npm install #{name}'".green +
+				" first. If it is a global lib, ".red +
+				"'npm install -g #{name}'".green +
+				" first.".red
+			)
+			process.exit()
+
+	###*
 	 * A handy extended combination of `http.request` and `https.request`.
 	 * @param  {Object} opts The same as the [http.request](http://nodejs.org/api/http.html#httpHttpRequestOptionsCallback),
 	 * but with some extra options:
