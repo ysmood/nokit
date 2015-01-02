@@ -414,8 +414,10 @@ _.extend kit, {
 				_.extend statCache, paths.glob.statCache
 				allPaths = _.union allPaths, paths
 		.then ->
-			allPaths.statCache = statCache
-			allPaths
+			Object.defineProperty allPaths, 'statCache', {
+				value: statCache
+				enumerable: false
+			}
 
 	_glob: (pattern, opts) ->
 		glob = kit.require 'glob'
