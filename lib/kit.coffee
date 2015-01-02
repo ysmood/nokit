@@ -1072,9 +1072,10 @@ _.extend kit, {
 	requireOptional: (name) ->
 		try
 			kit.require name
-		catch
+		catch err
 			console.error(
-				"Error: Please ".red +
+				err.stack +
+				"\nError: Please ".red +
 				"'npm install #{name}'".green +
 				" first. If it is a global lib, ".red +
 				"'npm install -g #{name}'".green +
@@ -1300,7 +1301,9 @@ _.extend kit, {
 								if _.isString cType
 									m = cType.match(/charset=(.+);?/i)
 									if m and m[1]
-										encoding = m[1]
+										encoding = m[1].toLowerCase()
+										if encoding == 'utf-8'
+											encoding = 'utf8'
 									if !/^(text)|(application)\//.test(cType)
 										encoding = null
 							else

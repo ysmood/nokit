@@ -691,7 +691,20 @@ Goto [changelog](doc/changelog.md)
 
     The module that you require.
 
-- #### <a href="lib/kit.coffee?source#L1160" target="_blank"><b>request</b></a>
+- #### <a href="lib/kit.coffee?source#L1072" target="_blank"><b>requireOptional</b></a>
+
+  Require an optional package. If not found, it will
+  warn user to npm install it, and exit the process.
+
+  - **<u>param</u>**: `name` { _String_ }
+
+    Package name
+
+  - **<u>return</u>**:  { _Any_ }
+
+    The required package.
+
+- #### <a href="lib/kit.coffee?source#L1180" target="_blank"><b>request</b></a>
 
   A handy extended combination of `http.request` and `https.request`.
 
@@ -794,7 +807,7 @@ Goto [changelog](doc/changelog.md)
     	kit.log body
     ```
 
-- #### <a href="lib/kit.coffee?source#L1374" target="_blank"><b>spawn</b></a>
+- #### <a href="lib/kit.coffee?source#L1396" target="_blank"><b>spawn</b></a>
 
   A safer version of `child_process.spawn` to cross-platform run
   a process. In some conditions, it may be more convenient
@@ -837,11 +850,11 @@ Goto [changelog](doc/changelog.md)
     .then ({code}) -> kit.log code
     ```
 
-- #### <a href="lib/kit.coffee?source#L1425" target="_blank"><b>url</b></a>
+- #### <a href="lib/kit.coffee?source#L1447" target="_blank"><b>url</b></a>
 
   Node native module `url`.
 
-- #### <a href="lib/kit.coffee?source#L1447" target="_blank"><b>walk</b></a>
+- #### <a href="lib/kit.coffee?source#L1469" target="_blank"><b>walk</b></a>
 
   Walk through path pattern recursively.
   For more doc, see the [glob](https://github.com/isaacs/node-glob)
@@ -876,7 +889,7 @@ Goto [changelog](doc/changelog.md)
     	kit.log paths.glob
     ```
 
-- #### <a href="lib/kit.coffee?source#L1497" target="_blank"><b>watchFile</b></a>
+- #### <a href="lib/kit.coffee?source#L1519" target="_blank"><b>watchFile</b></a>
 
   Watch a file. If the file changes, the handler will be invoked.
   You can change the polling interval by using `process.env.pollingWatch`.
@@ -915,7 +928,7 @@ Goto [changelog](doc/changelog.md)
     		kit.log path
     ```
 
-- #### <a href="lib/kit.coffee?source#L1527" target="_blank"><b>watchFiles</b></a>
+- #### <a href="lib/kit.coffee?source#L1549" target="_blank"><b>watchFiles</b></a>
 
   Watch files, when file changes, the handler will be invoked.
   It is build on the top of `kit.watchFile`.
@@ -938,7 +951,7 @@ Goto [changelog](doc/changelog.md)
     	kit.log path
     ```
 
-- #### <a href="lib/kit.coffee?source#L1565" target="_blank"><b>watchDir</b></a>
+- #### <a href="lib/kit.coffee?source#L1587" target="_blank"><b>watchDir</b></a>
 
   Watch directory and all the files in it.
   It supports three types of change: create, modify, move, delete.
