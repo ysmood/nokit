@@ -1,5 +1,10 @@
 # Changelog
 
+- v0.2.5
+
+  - **API CHANGE** `open` now renamed to `xopen`.
+    It should be the same name with `fs.open`.
+
 - v0.2.4
 
   - Optimize the option of `parseDependency`.

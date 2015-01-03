@@ -765,7 +765,7 @@ _.extend kit, {
 	 * kit.open 'http://ysmood.org'
 	 * ```
 	###
-	open: (cmd, opts = {}) ->
+	xopen: (cmd, opts = {}) ->
 		{ exec } = kit.require 'child_process'
 
 		switch process.platform
