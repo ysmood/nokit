@@ -91,7 +91,6 @@ _.extend kit, {
 	 * ```
 	###
 	async: (limit, list, saveResutls, progress) ->
-		from = 0
 		resutls = []
 		iterIndex = 0
 		running = 0
