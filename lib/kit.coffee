@@ -649,6 +649,8 @@ _.extend kit, {
 	 *		kit.log "Monitor: ".yellow + opts.watchList
 	 *	onRestart: (path) ->
 	 *		kit.log "Reload app, modified: ".yellow + path
+	 *  onWatchFiles: (paths) ->
+	 * 		kit.log 'Watching:'.yellow + paths.join(', ')
 	 *	onNormalExit: ({ code, signal }) ->
 	 *		kit.log 'EXIT'.yellow +
 	 *			" code: #{(code + '').cyan} signal: #{(signal + '').cyan}"
@@ -688,6 +690,8 @@ _.extend kit, {
 				kit.log "Monitor: ".yellow + opts.watchList
 			onRestart: (path) ->
 				kit.log "Reload app, modified: ".yellow + path
+			onWatchFiles: (paths) ->
+				kit.log 'Watching: '.yellow + paths.join(', ')
 			onNormalExit: ({ code, signal }) ->
 				kit.log 'EXIT'.yellow +
 					" code: #{(code + '').cyan} signal: #{(signal + '').cyan}"
@@ -732,6 +736,7 @@ _.extend kit, {
 		if opts.isNodeDeps
 			kit.parseDependency opts.watchList, opts.parseDependency
 			.then (paths) ->
+				opts.onWatchFiles paths
 				kit.watchFiles paths, watcher
 		else
 			kit.watchFiles opts.watchList, watcher
@@ -935,12 +940,11 @@ _.extend kit, {
 	 * kit.parseDependency 'main.', {
 	 * 	depReg: /require\s*\(?['"](.+)['"]\)?/gm
 	 *  handle: (path) ->
-	 * 		return if path[0] != '.'
-	 * 		path.replace(/^[\s'"]+/, '').replace(/[\s'";]+$/, '')
+	 * 		return path if path.match /^(?:\.|\/|[a-z]:)/i
 	 * }
 	 * ```
 	###
-	parseDependency: (entryPaths, opts ={}, depPaths = {}) ->
+	parseDependency: (entryPaths, opts = {}, depPaths = {}) ->
 		_.defaults opts, {
 			depReg: /require\s*\(?['"](.+)['"]\)?/g
 			depRoots: ['']
