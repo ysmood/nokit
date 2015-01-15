@@ -705,7 +705,7 @@ _.extend kit, {
 	 * @param  {String} cmd  The thing you want to open.
 	 * @param  {Object} opts The options of the node native
 	 * `child_process.exec`.
-	 * @return {Promise} When the child process exits.
+	 * @return {Promise} When the child process exists.
 	 * @example
 	 * ```coffee
 	 * # Open a webpage with the default browser.
@@ -916,26 +916,32 @@ _.extend kit, {
 		, []
 
 		# Parse file.
-		kit.glob entryPaths
-		.then (paths) ->
-			Promise.all paths.map (path) ->
-				# Prevent the recycle dependencies.
-				return if depPaths[path]
+		Promise.all entryPaths.map (entryPath) ->
+			(if entryPath.indexOf('*') > -1
+				kit.glob entryPaths
+			else
+				kit.fileExists entryPath
+				.then (exists) ->
+					if exists then [entryPath] else []
+			).then (paths) ->
+				Promise.all paths.map (path) ->
+					# Prevent the recycle dependencies.
+					return if depPaths[path]
 
-				kit.readFile path, 'utf8'
-				.then (str) ->
-					# The point to add path to watch list.
-					depPaths[path] = true
-					dir = kit.path.dirname path
+					kit.readFile path, 'utf8'
+					.then (str) ->
+						# The point to add path to watch list.
+						depPaths[path] = true
+						dir = kit.path.dirname path
 
-					entryPaths = []
-					str.replace opts.depReg, (m, p) ->
-						p = opts.handle p
-						return if not p
-						entryPaths.push p
-						entryPaths.push kit.path.join(dir, p)
+						entryPaths = []
+						str.replace opts.depReg, (m, p) ->
+							p = opts.handle p
+							return if not p
+							entryPaths.push p
+							entryPaths.push kit.path.join(dir, p)
 
-					kit.parseDependency entryPaths, opts, depPaths
+						kit.parseDependency entryPaths, opts, depPaths
 		.then ->
 			_.keys depPaths
 
