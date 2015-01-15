@@ -1,7 +1,7 @@
 colors = require 'colors'
 _ = require 'lodash'
 Promise = require 'bluebird'
-fs = require 'fs-more'
+fs = require 'nofs'
 
 ###*
  * All the async functions in `kit` return promise object.
@@ -11,10 +11,9 @@ fs = require 'fs-more'
 kit = {}
 
 ###*
- * kit extends all the promise functions of [fs-more][fs-more].
+ * kit extends all the promise functions of [nofs](https://github.com/ysmood/nofs).
  *
- * [Offline Documentation](?gotoDoc=fs-more/readme.md)
- * [fs-more]: https://github.com/ysmood/fs-more
+ * [Offline Documentation](?gotoDoc=nofs/readme.md)
  * @example
  * ```coffee
  * kit.readFile('test.txt', 'utf8').then (str) ->
@@ -357,10 +356,9 @@ _.extend kit, {
 		promise
 
 	###*
-	 * See my project [fs-more][fs-more].
+	 * See my project [nofs](https://github.com/ysmood/nofs).
 	 *
-	 * [Offline Documentation](?gotoDoc=fs-more/readme.md)
-	 * [fs-more]: https://github.com/ysmood/fs-more
+	 * [Offline Documentation](?gotoDoc=nofs/readme.md)
 	###
 	fs: fs
 
@@ -379,63 +377,6 @@ _.extend kit, {
 			break if dir == pDir
 			dir = pDir
 		names
-
-	###*
-	 * A handy file system search tool.
-	 * See the https://github.com/isaacs/node-glob
-	 *
-	 * [Offline Documentation](?gotoDoc=glob/readme.md)
-	 * @param {String | Array} patterns Minimatch pattern.
-	 * @param {Object} opts The glob options.
-	 * @return {Promise} Contains the path list.
-	 * @example
-	 * ```coffee
-	 * glob('*.js').then (paths) -> kit.log paths
-	 *
-	 * glob('*.js', { cwd: 'test' }).then (paths) -> kit.log paths
-	 *
-	 * glob(['*.js', '*.css']).then (paths) -> kit.log paths
-	 *
-	 * # The 'statCache' is also saved.
-	 * glob('*.js', { dot: true }).then (paths) ->
-	 * 	kit.log paths.statCache
-	 * ```
-	###
-	glob: (patterns, opts) ->
-		if _.isString patterns
-			patterns = [patterns]
-
-		allPaths = []
-		statCache = {}
-		Promise.all patterns.map (p) ->
-			kit._glob p, opts
-			.then (paths) ->
-				_.extend statCache, paths.glob.statCache
-				allPaths = _.union allPaths, paths
-		.then ->
-			Object.defineProperty allPaths, 'statCache', {
-				value: statCache
-				enumerable: false
-			}
-
-	_glob: (pattern, opts) ->
-		glob = kit.require 'glob'
-		new Promise (resolve, reject) ->
-			if opts and opts.sync
-				try
-					g = new glob.Glob pattern, opts
-					paths = g.found
-					paths.glob = g
-					resolve paths
-				catch err
-					reject err
-			else
-				g = glob pattern, opts, (err, paths) ->
-					paths.glob = g
-					if err
-						reject err
-					else
-						resolve paths
 
 	###*
 	 * A fast helper to hash string or binary file.
@@ -639,7 +580,7 @@ _.extend kit, {
 	 * 	bin: 'node'
 	 * 	args: ['index.js']
 	 * 	watchList: [] # By default, the same with the "args".
-	 * 	isNodeDeps: false
+	 * 	isNodeDeps: true
 	 * 	opts: {} # Same as the opts of 'kit.spawn'.
 	 *
 	 * 	# The option of `kit.parseDependency`

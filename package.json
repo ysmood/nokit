@@ -22,10 +22,9 @@
   },
   "homepage": "https://github.com/ysmood/nokit",
   "dependencies": {
-    "bluebird": "2.5.2",
+    "bluebird": "2.6.2",
     "colors": "1.0.3",
-    "fs-more": "0.1.2",
-    "glob": "4.3.2",
+    "nofs": "0.2.0",
     "jhash": "0.1.6",
     "lodash": "2.4.1",
     "which": "1.0.8"
