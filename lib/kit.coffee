@@ -344,12 +344,14 @@ _.extend kit, {
 			fileHandlers = fileHandlers.concat stdio
 			kit.spawn shell, [], { stdio }
 		.then (msg) ->
-			Promise.all [
-				kit.readFile stdoutPath, 'utf8'
-				kit.readFile stderrPath, 'utf8'
-			]
-			.then ([stdout, stderr]) ->
-				_.extend msg, { stdout, stderr }
+			kit.readFile stdoutPath, 'utf8'
+			.then (stdout) ->
+				_.extend msg, { stdout }
+		.catch (msg) ->
+			kit.readFile stderrPath, 'utf8'
+			.then (stderr) ->
+				_.extend msg, { stderr }
+				Promise.reject msg
 
 		promise.then(clean).catch(clean)
 
