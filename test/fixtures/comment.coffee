@@ -10,7 +10,7 @@
 	 * @param {Boolean} save_resutls Whether to save each promise's result or not.
 	 * @return {Promise} You can get each round's results by using the `promise.progress`.
 	###
-	async: (limit, list, save_resutls = true) ->
+	as_ync1 = (limit, list, save_resutls = true) ->
 		from = 0
 		resutls = []
 		iter_index = 0

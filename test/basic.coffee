@@ -28,16 +28,26 @@ describe 'Kit:', ->
 		assert.equal typeof kit.watchFile, 'function'
 		assert.equal typeof kit.eachDir, 'function'
 
-	it 'kit.parseComment', ->
+	it 'parseComment coffee', ->
 		path = 'test/fixtures/comment.coffee'
 		kit.readFile path, 'utf8'
 		.then (str) ->
-			comments = kit.parseComment 'nobone', str, path
+			[ { tags: [tag] } ] = kit.parseComment str
 
 			Promise.all [
-				shouldEqual comments[0].path, path
-				shouldEqual comments[0].tags[0].type, 'Int'
-				shouldEqual comments[0].tags[0].name, 'limit'
+				shouldEqual tag.type, 'Int'
+				shouldEqual tag.name, 'limit'
+			]
+
+	it 'parseComment js', ->
+		path = 'test/fixtures/comment.js'
+		kit.readFile path, 'utf8'
+		.then (str) ->
+			[ { tags: [tag] } ] = kit.parseComment str
+
+			Promise.all [
+				shouldEqual tag.type, 'Int'
+				shouldEqual tag.name, 'limit'
 			]
 
 	it 'glob sync', ->

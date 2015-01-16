@@ -755,12 +755,10 @@ _.extend kit, {
 			new Array(width - str.length + 1).join(char) + str
 
 	###*
-	 * A comments parser for coffee-script.
+	 * A comments parser for javascript or coffee-script.
 	 * Used to generate documentation from source code automatically.
 	 * It will traverse through all the comments of a coffee file.
-	 * @param  {String} moduleName The name of the module it belongs to.
 	 * @param  {String} code Coffee source code.
-	 * @param  {String} path The path of the source code.
 	 * @param  {Object} opts Parser options:
 	 * ```coffee
 	 * {
@@ -793,9 +791,9 @@ _.extend kit, {
 	 * }
 	 * ```
 	###
-	parseComment: (moduleName, code, path = '', opts = {}) ->
+	parseComment: (code, opts = {}) ->
 		_.defaults opts, {
-			commentReg: /###\*([\s\S]+?)###\s+([\w\.]+)/g
+			commentReg: /(?:###|\/\*)\*([\s\S]+?)(?:###|\*\/)\s+(?:var\s)?([\w\.-]+)/g
 			splitReg: /^\s+\* @/m
 			tagNameReg: /^([\w\.]+)\s*/
 			typeReg: /^\{(.+?)\}\s*/
@@ -843,11 +841,9 @@ _.extend kit, {
 		while (m = opts.commentReg.exec(code)) != null
 			info = parseInfo m[1]
 			comments.push {
-				module: moduleName
 				name: m[2]
 				description: info.description
 				tags: info.tags
-				path
 				index: opts.commentReg.lastIndex
 				line: _.reduce(code[...opts.commentReg.lastIndex]
 				, (count, char) ->

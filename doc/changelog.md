@@ -1,5 +1,9 @@
 # Changelog
 
+- v0.2.6
+
+  - **API CHANGE** `parseComment` now only have two params.
+
 - v0.2.5
 
   - **API CHANGE** Replace dependency `fs-more` to `nofs`.
