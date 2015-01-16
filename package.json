@@ -1,6 +1,6 @@
 {
   "name": "nokit",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "description": "Nokit is a collection of commonly used functions.",
   "main": "dist/kit.js",
   "scripts": {
@@ -24,7 +24,7 @@
   "dependencies": {
     "bluebird": "2.7.1",
     "colors": "1.0.3",
-    "nofs": "0.2.4",
+    "nofs": "0.2.5",
     "jhash": "0.1.6",
     "lodash": "2.4.1",
     "which": "1.0.8"
