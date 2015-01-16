@@ -72,13 +72,18 @@ task 'build', 'Build project.', build = ->
 		kit.log 'Build done.'.green
 
 option '-g', '--grep [grep]', 'Test pattern'
+option '-b', '--bare', 'Don\'t compile before test.'
 task 'test', 'Test', (opts) ->
-	build().then ->
+	(if opts.bare
+		kit.Promise.resolve()
+	else
+		build()
+	).then ->
 		kit.spawn('mocha', [
 			'-t', '10000'
 			'-r', 'coffee-script/register'
 			'-R', 'spec'
 			'-g', opts.grep or ''
-			'test/test.coffee'
+			'test/basic.coffee'
 		]).catch ({ code }) ->
 			process.exit code
