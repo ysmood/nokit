@@ -22,16 +22,16 @@
   },
   "homepage": "https://github.com/ysmood/nokit",
   "dependencies": {
-    "bluebird": "2.6.2",
+    "bluebird": "2.7.1",
     "colors": "1.0.3",
-    "nofs": "0.2.0",
+    "nofs": "0.2.2",
     "jhash": "0.1.6",
     "lodash": "2.4.1",
     "which": "1.0.8"
   },
   "devDependencies": {
     "coffee-script": "*",
-    "iconv-lite": "0.4.5",
+    "iconv-lite": "0.4.6",
     "form-data": "*",
     "formidable": "*",
     "mocha": "*"
