@@ -2,8 +2,11 @@
 
 - v0.2.5
 
+  - **API CHANGE** Replace dependency `fs-more` to `nofs`.
   - **API CHANGE** `open` now renamed to `xopen`.
     It should be the same name with `fs.open`.
+  - `monitorApp` now will print the auto watched list.
+  - Fix a exec error handling bug.
 
 - v0.2.4
 
