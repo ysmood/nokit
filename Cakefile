@@ -75,7 +75,7 @@ option '-g', '--grep [grep]', 'Test pattern'
 task 'test', 'Test', (opts) ->
 	build().then ->
 		kit.spawn('mocha', [
-			'-t', '5000'
+			'-t', '10000'
 			'-r', 'coffee-script/register'
 			'-R', 'spec'
 			'-g', opts.grep or ''
