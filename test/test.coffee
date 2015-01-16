@@ -24,6 +24,10 @@ createRandomServer = (fn) ->
 
 describe 'Kit:', ->
 
+	it 'nofs alias', ->
+		assert.equal typeof kit.watchFile, 'function'
+		assert.equal typeof kit.eachDir, 'function'
+
 	it 'kit.parseComment', ->
 		path = 'test/fixtures/comment.coffee'
 		kit.readFile path, 'utf8'
