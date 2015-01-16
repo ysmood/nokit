@@ -1,27 +1,47 @@
 assert = require 'assert'
 kit = require '../lib/kit'
 http = require 'http'
-{ _ } = kit
+{ _, Promise } = kit
+
+shouldEqual = (args...) ->
+	try
+		assert.strictEqual.apply assert, args
+	catch err
+		Promise.reject err
+
+shouldDeepEqual = (args...) ->
+	try
+		assert.deepEqual.apply assert, args
+	catch err
+		Promise.reject err
+
+createRandomServer = (fn) ->
+	server = http.createServer fn
+
+	listen = kit.promisify server.listen, server
+
+	listen(0).then -> server.address().port
 
 describe 'Kit:', ->
 
-	it 'kit.parseComment', (tdone) ->
+	it 'kit.parseComment', ->
 		path = 'test/fixtures/comment.coffee'
 		kit.readFile path, 'utf8'
-		.done (str) ->
+		.then (str) ->
 			comments = kit.parseComment 'nobone', str, path
-			assert.equal comments[0].path, path
-			assert.equal comments[0].tags[0].type, 'Int'
-			assert.equal comments[0].tags[0].name, 'limit'
-			tdone()
 
-	it 'glob sync', (tdone) ->
+			Promise.all [
+				shouldEqual comments[0].path, path
+				shouldEqual comments[0].tags[0].type, 'Int'
+				shouldEqual comments[0].tags[0].name, 'limit'
+			]
+
+	it 'glob sync', ->
 		kit.glob 'test/fixtures/*', { sync: true }
 		.then (paths) ->
-			assert.equal paths.length > 0, true
-			tdone()
+			shouldEqual paths.length > 0, true
 
-	it 'async progress', (tdone) ->
+	it 'async progress', ->
 		len = kit.fs.readFileSync(__filename).length
 		iter = (i) ->
 			if i == 10
@@ -29,12 +49,11 @@ describe 'Kit:', ->
 			kit.readFile __filename
 
 		kit.async 3, iter, false, (ret) ->
-			assert.equal ret.length, len
-		.done (rets) ->
-			assert.equal rets, undefined
-			tdone()
+			shouldEqual ret.length, len
+		.then (rets) ->
+			shouldEqual rets, undefined
 
-	it 'async results', (tdone) ->
+	it 'async results', ->
 		len = kit.fs.readFileSync(__filename).length
 
 		kit.async(3, _.times 10, ->
@@ -42,41 +61,28 @@ describe 'Kit:', ->
 				assert.equal typeof i, 'number'
 				kit.readFile __filename
 		, (ret) ->
-			assert.equal ret.length, len
-		).done (rets) ->
-			assert.equal rets.length, 10
-			tdone()
+			shouldEqual ret.length, len
+		).then (rets) ->
+			shouldEqual rets.length, 10
 
 	it 'crypto', ->
 		en = kit.encrypt '123', 'test'
 		assert.equal kit.decrypt(en, 'test').toString(), '123'
 
-	it 'request', (tdone) ->
+	it 'request', ->
 		info = 'ok'
 
-		server = http.createServer (req, res) ->
+		createRandomServer (req, res) ->
 			res.end info
-
-		server.listen 0, ->
-			{ port } = server.address()
-
+		.then (port) ->
 			kit.request {
 				url: '127.0.0.1:' + port
 			}
 			.then (body) ->
-				try
-					assert.equal body, info
-					tdone()
-				catch err
-					tdone err
-			.catch tdone
+				shouldEqual body, info
 
-	it 'request timeout', (tdone) ->
-		server = http.createServer()
-
-		server.listen 0, ->
-			{ port } = server.address()
-
+	it 'request timeout', ->
+		createRandomServer().then (port) ->
 			promise = kit.request {
 				url: '127.0.0.1:' + port
 				timeout: 50
@@ -85,25 +91,18 @@ describe 'Kit:', ->
 			{ req } = promise
 
 			promise.catch (err) ->
-				try
-					assert.equal err.message, 'timeout'
-					tdone()
-				catch err
-					tdone err
-			.catch tdone
+				shouldEqual err.message, 'timeout'
 
-	it 'request reqPipe', (tdone) ->
+	it 'request reqPipe', ->
 		path = 'Cakefile'
 		info = kit.fs.readFileSync path, 'utf8'
 
-		server = http.createServer (req, res) ->
+		createRandomServer (req, res) ->
 			data = ''
 			req.on 'data', (chunk) -> data += chunk
 			req.on 'end', ->
 				res.end data
-
-		server.listen 0, ->
-			{ port } = server.address()
+		.then (port) ->
 			file = kit.fs.createReadStream path
 			{ size } = kit.fs.statSync path
 			kit.request {
@@ -114,22 +113,16 @@ describe 'Kit:', ->
 				reqPipe: file
 			}
 			.then (body) ->
-				try
-					assert.equal body, info
-					tdone()
-				catch err
-					tdone err
-			.catch tdone
+				shouldEqual body, info
 
-	it 'request form-data', (tdone) ->
-		server = http.createServer (req, res) ->
+	it 'request form-data', ->
+		createRandomServer (req, res) ->
 			form = new require('formidable').IncomingForm()
 
 			form.parse req, (err, fields, files) ->
 				res.end fields['f.md'].length.toString()
 
-		server.listen 0, ->
-			{ port } = server.address()
+		.then (port) ->
 			form = new (require 'form-data')
 
 			buffer = kit.fs.readFileSync 'Cakefile'
@@ -144,12 +137,7 @@ describe 'Kit:', ->
 				reqPipe: form
 			}
 			.then (body) ->
-				try
-					assert.equal +body, buffer.length
-					tdone()
-				catch err
-					tdone err
-			.catch tdone
+				shouldEqual +body, buffer.length
 
 	it 'iter', ->
 		assert.deepEqual kit.iter([1, 2, 3])(), { key: 0, value: 1 }
@@ -170,19 +158,17 @@ describe 'Kit:', ->
 			[1, 's', 2, 's', 3, 's', 4]
 		)
 
-	it 'exec', (tdone) ->
+	it 'exec', ->
 		kit.exec 'echo ok'
 		.then ({ stdout }) ->
-			assert.equal stdout, 'ok\n'
-			tdone()
-		.catch tdone
+			shouldEqual stdout, 'ok\n'
 
-	it 'parseDependency', (tdone) ->
+	it 'parseDependency', ->
 		kit.parseDependency 'test/fixtures/depMain.coffee', {
 			depRoots: ['test/fixtures/depDir']
 		}
 		.then (paths) ->
-			assert.deepEqual paths.sort(), [
+			shouldDeepEqual paths.sort(), [
 				'test/fixtures/dep1.coffee'
 				'test/fixtures/dep2.coffee'
 				'test/fixtures/dep3.coffee'
@@ -192,5 +178,3 @@ describe 'Kit:', ->
 				'test/fixtures/depDir/lib/index.js'
 				'test/fixtures/depMain.coffee'
 			]
-			tdone()
-		.catch tdone
