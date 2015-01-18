@@ -477,6 +477,28 @@ _.extend kit, {
 			-> { value: val }
 
 	###*
+	 * Indent a text block.
+	 * @param {String} text
+	 * @param {Int} num
+	 * @param {String} char
+	 * @param {RegExp} reg Default is `/^/mg`.
+	 * @return {String} The indented text block.
+	 * @example
+	 * ```coffee
+	 * # Increase
+	 * kit.indent "one\ntwo", 2
+	 * # => "  one\n  two"
+	 *
+	 * # Decrease
+	 * kit.indent "--one\n--two", 0, '', /^--/mg
+	 * # => "one\ntwo"
+	 * ```
+	###
+	indent: (text, num = 0, char = ' ', reg = /^/mg) ->
+		prefix = _.times(num, -> char).join('')
+		text.replace reg, prefix
+
+	###*
 	 * For debugging. Dump a colorful object.
 	 * @param  {Object} obj Your target object.
 	 * @param  {Object} opts Options. Default:

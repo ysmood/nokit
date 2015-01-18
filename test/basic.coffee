@@ -192,3 +192,6 @@ describe 'Kit:', ->
 				'test/fixtures/depDir/lib/index.js'
 				'test/fixtures/depMain.coffee'
 			]
+
+	it 'indent', ->
+		assert kit.indent('a\nb', 2), '  a\n  b'
