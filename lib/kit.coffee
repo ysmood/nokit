@@ -588,21 +588,21 @@ _.extend kit, {
 	 * 	# The option of `kit.parseDependency`
 	 * 	parseDependency: {}
 	 *
-	 *	onStart: ->
-	 *		kit.log "Monitor: ".yellow + opts.watchList
-	 *	onRestart: (path) ->
-	 *		kit.log "Reload app, modified: ".yellow + path
-	 *  onWatchFiles: (paths) ->
+	 * 	onStart: ->
+	 * 		kit.log "Monitor: ".yellow + opts.watchList
+	 * 	onRestart: (path) ->
+	 * 		kit.log "Reload app, modified: ".yellow + path
+	 * 	onWatchFiles: (paths) ->
 	 * 		kit.log 'Watching:'.yellow + paths.join(', ')
-	 *	onNormalExit: ({ code, signal }) ->
-	 *		kit.log 'EXIT'.yellow +
-	 *			" code: #{(code + '').cyan} signal: #{(signal + '').cyan}"
-	 *	onErrorExit: ->
-	 *		kit.err 'Process closed. Edit and save
-	 *			the watched file to restart.'.red
-	 *	sepLine: ->
-	 *		chars = _.times(process.stdout.columns, -> '*')
-	 *		console.log chars.join('').yellow
+	 * 	onNormalExit: ({ code, signal }) ->
+	 * 		kit.log 'EXIT'.yellow +
+	 * 			" code: #{(code + '').cyan} signal: #{(signal + '').cyan}"
+	 * 	onErrorExit: ->
+	 * 		kit.err 'Process closed. Edit and save
+	 * 			the watched file to restart.'.red
+	 * 	sepLine: ->
+	 * 		chars = _.times(process.stdout.columns, -> '*')
+	 * 		console.log chars.join('').yellow
 	 * }
 	 * ```
 	 * @return {Promise} It has a property `process`, which is the monitored
