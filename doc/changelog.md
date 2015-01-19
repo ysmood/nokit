@@ -1,9 +1,10 @@
 # Changelog
 
-- v0.2.6
+- v0.2.7
 
   - **API CHANGE** `parseComment` now only have two params.
   - Add `indent`, `formatComment` and `parseFileComment` api.
+  - Update deps.
 
 - v0.2.5
 
