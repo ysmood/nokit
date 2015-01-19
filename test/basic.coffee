@@ -173,9 +173,9 @@ describe 'Kit:', ->
 		)
 
 	it 'exec', ->
-		kit.exec 'echo ok'
+		kit.exec 'echo exec_ok'
 		.then ({ stdout }) ->
-			shouldEqual stdout, 'ok\n'
+			shouldEqual stdout.indexOf('exec_ok\n') > -1, true
 
 	it 'parseDependency', ->
 		kit.parseDependency 'test/fixtures/depMain.coffee', {
