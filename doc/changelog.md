@@ -3,6 +3,7 @@
 - v0.2.6
 
   - **API CHANGE** `parseComment` now only have two params.
+  - Add `indent`, `formatComment` and `parseFileComment` api.
 
 - v0.2.5
 

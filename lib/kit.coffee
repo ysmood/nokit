@@ -358,6 +358,49 @@ _.extend kit, {
 		promise
 
 	###*
+	 * Format the parsed comments array to a markdown string.
+	 * @param  {Array}  comments
+	 * @param  {Object} opts
+	 * @return {String}
+	###
+	formatComment: (comments, opts = {}) ->
+		_.defaults opts, {
+			indent: 0
+			name: ({ name }) ->
+				name = name.replace 'self.', ''
+				"- #### #{name}\n\n"
+			tag: ({ tagName, name, type }) ->
+				tname = if name then " `#{name}`" else ''
+				ttype = if type then " { _#{type}_ }" else ''
+				"- **<u>#{tagName}</u>**:#{tname}#{ttype}"
+		}
+
+		all = ''
+		for cmt in comments
+			if _.any(cmt.tags, { tagName: 'private' })
+				continue
+
+			cmtStr = opts.name cmt
+
+			if cmt.description
+				cmtStr += kit.indent cmt.description, 4
+				cmtStr += '\n\n'
+
+			for tag in cmt.tags
+				cmtStr += kit.indent opts.tag(tag), 4
+				cmtStr += '\n\n'
+				if tag.description
+					cmtStr += kit.indent tag.description, 8
+					cmtStr += '\n\n'
+
+			all += cmtStr
+
+		# Remove tailing space
+		all = all.replace /[ \t]+$/mg, ''
+
+		kit.indent all, opts.indent
+
+	###*
 	 * See my project [nofs](https://github.com/ysmood/nofs).
 	 *
 	 * [Offline Documentation](?gotoDoc=nofs/readme.md)
@@ -777,7 +820,7 @@ _.extend kit, {
 			new Array(width - str.length + 1).join(char) + str
 
 	###*
-	 * A comments parser for javascript or coffee-script.
+	 * A comments parser for javascript and coffee-script.
 	 * Used to generate documentation from source code automatically.
 	 * It will traverse through all the comments of a coffee file.
 	 * @param  {String} code Coffee source code.
@@ -796,7 +839,6 @@ _.extend kit, {
 	 * @return {Array} The parsed comments. Each item is something like:
 	 * ```coffee
 	 * {
-	 * 	module: 'nobone'
 	 * 	name: 'parseComment'
 	 * 	description: 'A comments parser for coffee-script.'
 	 * 	tags: [
@@ -805,7 +847,6 @@ _.extend kit, {
 	 * 			type: 'string'
 	 * 			name: 'code'
 	 * 			description: 'The name of the module it belongs to.'
-	 * 			path: 'http://thePathOfSourceCode'
 	 * 			index: 256 # The target char index in the file.
 	 * 			line: 32 # The line number of the target in the file.
 	 * 		}
@@ -815,7 +856,16 @@ _.extend kit, {
 	###
 	parseComment: (code, opts = {}) ->
 		_.defaults opts, {
-			commentReg: /(?:###|\/\*)\*([\s\S]+?)(?:###|\*\/)\s+(?:var\s)?([\w\.-]+)/g
+			commentReg: ///
+				# comment
+				(?:\#\#\# | \/\*)\*
+				([\s\S]+?)
+				(?:\#\#\#|\*\/)
+				# "var" and space
+				\s+(?:var\s+)?
+				# variable name
+				([\w\.-]+)
+			///g
 			splitReg: /^\s+\* @/m
 			tagNameReg: /^([\w\.]+)\s*/
 			typeReg: /^\{(.+?)\}\s*/
@@ -875,6 +925,25 @@ _.extend kit, {
 			}
 
 		return comments
+
+	parseFileComment: (path, opts = {}) ->
+		_.defaults opts, {
+			name: ''
+			parseComment: {}
+			formatComment: {
+				name: ({ name, line }) ->
+					name = name.replace 'self.', ''
+					link = "#{path}?source#L#{line}"
+					"- #### **[#{name}](#{link})**\n\n"
+			}
+		}
+
+		kit.readFile path, 'utf8'
+		.then (str) ->
+			kit.parseComment str, opts.parseComment
+		.then (comments) ->
+			ret = kit.formatComment comments, opts.formatComment
+			ret
 
 	###*
 	 * Parse dependency tree by regex. The dependency relationships
