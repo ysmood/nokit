@@ -333,7 +333,7 @@ _.extend kit, {
 			.then ->
 				Promise.all paths.map (p) -> kit.remove p
 
-		promise = kit.outputFile stdinPath, cmd
+		promise = kit.outputFile stdinPath, cmd + '\n'
 		.then ->
 			Promise.all [
 				kit.fs.openP stdinPath, 'r'
