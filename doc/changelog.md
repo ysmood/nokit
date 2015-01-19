@@ -4,6 +4,7 @@
 
   - **API CHANGE** `parseComment` now only have two params.
   - Add `indent`, `formatComment` and `parseFileComment` api.
+  - Fix a `exec` Windows bug.
   - Update deps.
 
 - v0.2.5
