@@ -575,7 +575,7 @@ _.extend kit, {
 			if kit.logReg and not kit.logReg.test(str)
 				return
 
-			console[action] str.replace /\n/g, '\n  '
+			console[action] str
 
 			if process.env.logTrace == 'on'
 				err = (new Error).stack
