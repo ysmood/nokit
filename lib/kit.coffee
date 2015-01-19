@@ -798,7 +798,7 @@ _.extend kit, {
 			when 'win32'
 				cmds = ['start']
 			else
-				which = kit.require 'which'
+				which = kit.require './which'
 				try
 					cmds = [which.sync('xdg-open')]
 				catch
@@ -1474,7 +1474,7 @@ _.extend kit, {
 		}
 
 		if process.platform == 'win32'
-			which = kit.require 'which'
+			which = kit.require './which'
 			cmd = which.sync cmd
 			if cmd.slice(-3).toLowerCase() == 'cmd'
 				cmdSrc = kit.fs.readFileSync(cmd, 'utf8')

@@ -24,10 +24,9 @@
   "dependencies": {
     "bluebird": "2.8.0",
     "colors": "1.0.3",
-    "nofs": "0.2.6",
+    "nofs": "0.2.7",
     "jhash": "0.1.6",
-    "lodash": "2.4.1",
-    "which": "1.0.8"
+    "lodash": "2.4.1"
   },
   "devDependencies": {
     "coffee-script": "1.8.0",

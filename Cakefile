@@ -27,6 +27,10 @@ task 'build', 'Build project.', build = ->
 		])()
 
 	start = kit.compose [
+		-> kit.remove 'dist'
+		-> kit.copy 'lib', 'dist', {
+			filter: '**/*.js'
+		}
 		compileCoffee
 		createDoc
 	]
