@@ -12,816 +12,882 @@ Goto [changelog](doc/changelog.md)
 
 # API
 
-### kit
-
-- #### <a href="lib/kit.coffee?source#L11" target="_blank"><b>kit</b></a>
-
-  All the async functions in `kit` return promise object.
-  Most time I use it to handle files and system staffs.
-
-  - **<u>type</u>**:  { _Object_ }
+- #### **[kit](lib/kit.coffee?source#L11)**
 
-- #### <a href="lib/kit.coffee?source#L32" target="_blank"><b>kitExtendsFsPromise</b></a>
-
-  kit extends all the promise functions of [nofs](https://github.com/ysmood/nofs).
-  
-  [Offline Documentation](?gotoDoc=nofs/readme.md)
+    All the async functions in `kit` return promise object.
+    Most time I use it to handle files and system staffs.
 
-  - **<u>example</u>**:
+    - **<u>type</u>**: { _Object_ }
 
-    ```coffee
-    kit.readFile('test.txt', 'utf8').then (str) ->
-    	console.log str
-    
-    kit.outputFile 'a.txt', 'test'
-    .then -> kit.log 'done'
-    
-    kit.fs.writeJSONSync 'b.json', { a: 10 }
-    .then -> kit.log 'done'
-    
-    kit.fs.mkdirsP 'b.json', { a: 10 }
-    .then -> kit.log 'done'
-    ```
-
-- #### <a href="lib/kit.coffee?source#L43" target="_blank"><b>_</b></a>
-
-  The lodash lib.
-
-  - **<u>type</u>**:  { _Object_ }
-
-- #### <a href="lib/kit.coffee?source#L92" target="_blank"><b>async</b></a>
-
-  An throttled version of `Promise.all`, it runs all the tasks under
-  a concurrent limitation.
-  To run tasks sequentially, use `kit.compose`.
-
-  - **<u>param</u>**: `limit` { _Int_ }
-
-    The max task to run at a time. It's optional.
-    Default is Infinity.
-
-  - **<u>param</u>**: `list` { _Array | Function_ }
-
-    If the list is an array, it should be a list of functions or promises,
-    and each function will return a promise.
-    If the list is a function, it should be a iterator that returns
-    a promise, hen it returns `undefined`, the iteration ends.
-
-  - **<u>param</u>**: `saveResutls` { _Boolean_ }
-
-    Whether to save each promise's result or
-    not. Default is true.
-
-  - **<u>param</u>**: `progress` { _Function_ }
-
-    If a task ends, the resolve value will be
-    passed to this function.
+- #### **[kitExtendsFsPromise](lib/kit.coffee?source#L32)**
 
-  - **<u>return</u>**:  { _Promise_ }
+    kit extends all the promise functions of [nofs](https://github.com/ysmood/nofs).
 
-  - **<u>example</u>**:
+    [Offline Documentation](?gotoDoc=nofs/readme.md)
 
-    ```coffee
-    urls = [
-    	'http://a.com'
-    	'http://b.com'
-    	'http://c.com'
-    	'http://d.com'
-    ]
-    tasks = [
-    	-> kit.request url[0]
-    	-> kit.request url[1]
-    	-> kit.request url[2]
-    	-> kit.request url[3]
-    ]
-    
-    kit.async(tasks).then ->
-    	kit.log 'all done!'
-    
-    kit.async(2, tasks).then ->
-    	kit.log 'max concurrent limit is 2'
-    
-    kit.async 3, ->
-    	url = urls.pop()
-    	if url
-    		kit.request url
-    .then ->
-    	kit.log 'all done!'
-    ```
+    - **<u>example</u>**:
 
-- #### <a href="lib/kit.coffee?source#L186" target="_blank"><b>compose</b></a>
+        ```coffee
+        kit.readFile('test.txt', 'utf8').then (str) ->
+        	console.log str
 
-  Creates a function that is the composition of the provided functions.
-  Besides, it can also accept async function that returns promise.
-  It's more powerful than `_.compose`, and it use reverse order for
-  passing argument from one function to another.
-  See `kit.async`, if you need concurrent support.
+        kit.outputFile 'a.txt', 'test'
+        .then -> kit.log 'done'
 
-  - **<u>param</u>**: `fns` { _Function | Array_ }
+        kit.fs.writeJSONSync 'b.json', { a: 10 }
+        .then -> kit.log 'done'
 
-    Functions that return
-    promise or any value.
-    And the array can also contains promises.
+        kit.fs.mkdirsP 'b.json', { a: 10 }
+        .then -> kit.log 'done'
+        ```
 
-  - **<u>return</u>**:  { _Function_ }
+- #### **[_](lib/kit.coffee?source#L43)**
 
-    A composed function that will return a promise.
+    The lodash lib.
 
-  - **<u>example</u>**:
+    - **<u>type</u>**: { _Object_ }
 
-    ```coffee
-    # It helps to decouple sequential pipeline code logic.
-    
-    createUrl = (name) ->
-    	return "http://test.com/" + name
-    
-    curl = (url) ->
-    	kit.request(url).then ->
-    		kit.log 'get'
-    
-    save = (str) ->
-    	kit.outputFile('a.txt', str).then ->
-    		kit.log 'saved'
-    
-    download = kit.compose createUrl, curl, save
-    # same as "download = kit.compose [createUrl, curl, save]"
-    
-    download 'home'
-    ```
+- #### **[async](lib/kit.coffee?source#L92)**
 
-- #### <a href="lib/kit.coffee?source#L209" target="_blank"><b>daemonize</b></a>
+    An throttled version of `Promise.all`, it runs all the tasks under
+    a concurrent limitation.
+    To run tasks sequentially, use `kit.compose`.
 
-  Daemonize a program. Just a shortcut usage of `kit.spawn`.
+    - **<u>param</u>**: `limit` { _Int_ }
 
-  - **<u>param</u>**: `opts` { _Object_ }
+        The max task to run at a time. It's optional.
+        Default is Infinity.
 
-    Defaults:
-    ```coffee
-    {
-    	bin: 'node'
-    	args: ['app.js']
-    	stdout: 'stdout.log' # Can also be a stream
-    	stderr: 'stderr.log' # Can also be a stream
-    }
-    ```
+    - **<u>param</u>**: `list` { _Array | Function_ }
 
-  - **<u>return</u>**:  { _Porcess_ }
+        If the list is an array, it should be a list of functions or promises,
+        and each function will return a promise.
+        If the list is a function, it should be a iterator that returns
+        a promise, hen it returns `undefined`, the iteration ends.
 
-    The daemonized process.
+    - **<u>param</u>**: `saveResutls` { _Boolean_ }
 
-- #### <a href="lib/kit.coffee?source#L236" target="_blank"><b>decrypt</b></a>
+        Whether to save each promise's result or
+        not. Default is true.
 
-  A simple decrypt helper. Cross-version of node.
+    - **<u>param</u>**: `progress` { _Function_ }
 
-  - **<u>param</u>**: `data` { _Any_ }
+        If a task ends, the resolve value will be
+        passed to this function.
 
-  - **<u>param</u>**: `password` { _String | Buffer_ }
+    - **<u>return</u>**: { _Promise_ }
 
-  - **<u>param</u>**: `algorithm` { _String_ }
+    - **<u>example</u>**:
 
-    Default is 'aes128'.
+        ```coffee
+        urls = [
+        	'http://a.com'
+        	'http://b.com'
+        	'http://c.com'
+        	'http://d.com'
+        ]
+        tasks = [
+        	-> kit.request url[0]
+        	-> kit.request url[1]
+        	-> kit.request url[2]
+        	-> kit.request url[3]
+        ]
 
-  - **<u>return</u>**:  { _Buffer_ }
+        kit.async(tasks).then ->
+        	kit.log 'all done!'
 
-- #### <a href="lib/kit.coffee?source#L259" target="_blank"><b>encrypt</b></a>
+        kit.async(2, tasks).then ->
+        	kit.log 'max concurrent limit is 2'
 
-  A simple encrypt helper. Cross-version of node.
+        kit.async 3, ->
+        	url = urls.pop()
+        	if url
+        		kit.request url
+        .then ->
+        	kit.log 'all done!'
+        ```
 
-  - **<u>param</u>**: `data` { _Any_ }
+- #### **[compose](lib/kit.coffee?source#L186)**
 
-  - **<u>param</u>**: `password` { _String | Buffer_ }
+    Creates a function that is the composition of the provided functions.
+    Besides, it can also accept async function that returns promise.
+    It's more powerful than `_.compose`, and it use reverse order for
+    passing argument from one function to another.
+    See `kit.async`, if you need concurrent support.
 
-  - **<u>param</u>**: `algorithm` { _String_ }
+    - **<u>param</u>**: `fns` { _Function | Array_ }
 
-    Default is 'aes128'.
+        Functions that return
+        promise or any value.
+        And the array can also contains promises.
 
-  - **<u>return</u>**:  { _Buffer_ }
+    - **<u>return</u>**: { _Function_ }
 
-- #### <a href="lib/kit.coffee?source#L280" target="_blank"><b>err</b></a>
+        A composed function that will return a promise.
 
-  A error log shortcut for `kit.log(msg, 'error', opts)`
+    - **<u>example</u>**:
 
-  - **<u>param</u>**: `msg` { _Any_ }
+        ```coffee
+        # It helps to decouple sequential pipeline code logic.
 
-  - **<u>param</u>**: `opts` { _Object_ }
+        createUrl = (name) ->
+        	return "http://test.com/" + name
 
-- #### <a href="lib/kit.coffee?source#L314" target="_blank"><b>exec</b></a>
+        curl = (url) ->
+        	kit.request(url).then ->
+        		kit.log 'get'
 
-  A better `child_process.exec`. Supports multi-line shell script.
-  For supporting old node version, it will create 3 temp files,
-  the temp files will be removed after the execution.
+        save = (str) ->
+        	kit.outputFile('a.txt', str).then ->
+        		kit.log 'saved'
 
-  - **<u>param</u>**: `cmd` { _String_ }
+        download = kit.compose createUrl, curl, save
+        # same as "download = kit.compose [createUrl, curl, save]"
 
-    Shell commands.
+        download 'home'
+        ```
 
-  - **<u>param</u>**: `shell` { _String_ }
+- #### **[daemonize](lib/kit.coffee?source#L209)**
 
-    Shell name. Such as `bash`, `zsh`. Optinal.
+    Daemonize a program. Just a shortcut usage of `kit.spawn`.
 
-  - **<u>return</u>**:  { _Promise_ }
+    - **<u>param</u>**: `opts` { _Object_ }
 
-    Resolves when the process's stdio is drained.
-    The resolve value is like:
-    ```coffee
-    {
-    	code: 0
-    	signal: null
-    	stdout: 'hello world'
-    	stderr: ''
-    }
-    ```
+        Defaults:
+        ```coffee
+        {
+        	bin: 'node'
+        	args: ['app.js']
+        	stdout: 'stdout.log' # Can also be a stream
+        	stderr: 'stderr.log' # Can also be a stream
+        }
+        ```
 
-  - **<u>example</u>**:
+    - **<u>return</u>**: { _Porcess_ }
 
-    ```coffee
-    kit.exec("""
-    	a='hello world'
-     echo $a
-    """).then ({code, stdout}) ->
-    	kit.log code # output => 0
-    	kit.log stdout # output => "hello world"
-    
-    # Bash doesn't support "**" recusive match pattern.
-    kit.exec """
-    	echo **/*.css
-    """, 'zsh'
-    ```
+        The daemonized process.
 
-- #### <a href="lib/kit.coffee?source#L365" target="_blank"><b>fs</b></a>
+- #### **[decrypt](lib/kit.coffee?source#L236)**
 
-  See my project [nofs](https://github.com/ysmood/nofs).
-  
-  [Offline Documentation](?gotoDoc=nofs/readme.md)
+    A simple decrypt helper. Cross-version of node.
 
-- #### <a href="lib/kit.coffee?source#L373" target="_blank"><b>generateNodeModulePaths</b></a>
+    - **<u>param</u>**: `data` { _Any_ }
 
-  Generate a list of module paths from a name and a directory.
+    - **<u>param</u>**: `password` { _String | Buffer_ }
 
-  - **<u>param</u>**: `moduleName` { _String_ }
+    - **<u>param</u>**: `algorithm` { _String_ }
 
-    The module name.
+        Default is 'aes128'.
 
-  - **<u>param</u>**: `dir` { _String_ }
+    - **<u>return</u>**: { _Buffer_ }
 
-    The root path. Default is current working dir.
+- #### **[encrypt](lib/kit.coffee?source#L259)**
 
-  - **<u>return</u>**:  { _Array_ }
+    A simple encrypt helper. Cross-version of node.
 
-    Paths
+    - **<u>param</u>**: `data` { _Any_ }
 
-- #### <a href="lib/kit.coffee?source#L406" target="_blank"><b>jhash</b></a>
+    - **<u>param</u>**: `password` { _String | Buffer_ }
 
-  A fast helper to hash string or binary file.
-  See my [jhash][jhash] project.
-  
-  [Offline Documentation](?gotoDoc=jhash/readme.md)
-  [jhash]: https://github.com/ysmood/jhash
+    - **<u>param</u>**: `algorithm` { _String_ }
 
-  - **<u>example</u>**:
+        Default is 'aes128'.
 
-    ```coffee
-    var jhash = require('jhash');
-    jhash.hash('test'); // output => '349o'
-    
-    var fs = require('fs');
-    jhash.hash(fs.readFileSync('a.jpg'));
-    
-    // Control the hash char set.
-    jhash.setSymbols('abcdef');
-    jhash.hash('test'); // output => 'decfddfe'
-    
-    // Control the max length of the result hash value. Unit is bit.
-    jhash.setMaskLen(10);
-    jhash.hash('test'); // output => 'ede'
-    ```
+    - **<u>return</u>**: { _Buffer_ }
 
-- #### <a href="lib/kit.coffee?source#L425" target="_blank"><b>join</b></a>
+- #### **[err](lib/kit.coffee?source#L280)**
 
-  It inserts the fnB in between the fnA and concatenates the result.
+    A error log shortcut for `kit.log(msg, 'error', opts)`
 
-  - **<u>param</u>**: `fnA` { _Any_ }
+    - **<u>param</u>**: `msg` { _Any_ }
 
-  - **<u>param</u>**: `fnB` { _Any_ }
+    - **<u>param</u>**: `opts` { _Object_ }
 
-  - **<u>return</u>**:  { _Array_ }
+- #### **[exec](lib/kit.coffee?source#L314)**
 
-  - **<u>example</u>**:
+    A better `child_process.exec`. Supports multi-line shell script.
+    For supporting old node version, it will create 3 temp files,
+    the temp files will be removed after the execution.
 
-    ```coffee
-    kit.join([1, 2, 3, 4], 'sep')
-    # output => [1, 'sep', 2, 'sep', 3, 'sep', 4]
-    
-    iter = ->
-    	i = 0
-    	-> i++
-    kit.join([1, 2, 3, 4], new iter)
-    # output => [1, 'sep', 2, 'sep', 3, 'sep', 4]
-    ```
+    - **<u>param</u>**: `cmd` { _String_ }
 
-- #### <a href="lib/kit.coffee?source#L464" target="_blank"><b>iter</b></a>
+        Shell commands.
 
-  Generate a iterator from a value.
+    - **<u>param</u>**: `shell` { _String_ }
 
-  - **<u>param</u>**: `val` { _Any_ }
+        Shell name. Such as `bash`, `zsh`. Optinal.
 
-  - **<u>return</u>**:  { _Function_ }
+    - **<u>return</u>**: { _Promise_ }
 
-    The every time when the function been
-    called, it returns a object looks like:
-    ```coffee
-    { key: 10, value: 'hello world' }
-    ```
-    The `key` can be `undefined`, `number` or `string`.
+        Resolves when the process's stdio is drained.
+        The resolve value is like:
+        ```coffee
+        {
+        	code: 0
+        	signal: null
+        	stdout: 'hello world'
+        	stderr: ''
+        }
+        ```
 
-  - **<u>example</u>**:
+    - **<u>example</u>**:
 
-    ```coffee
-    iter = kit.iter [1, 2, 3]
-    iter() # output => { key: 0, value: 1 }
-    
-    iter = kit.iter 'test'
-    iter() # output => { key: 0, value: 't' }
-    
-    iter = kit.iter { a: 1, b: 2, c: 3 }
-    iter() # output => { key: 'a', value: 1 }
-    ```
+        ```coffee
+        kit.exec("""
+        	a='hello world'
+         echo $a
+        """).then ({code, stdout}) ->
+        	kit.log code # output => 0
+        	kit.log stdout # output => "hello world"
 
-- #### <a href="lib/kit.coffee?source#L488" target="_blank"><b>inspect</b></a>
+        # Bash doesn't support "**" recusive match pattern.
+        kit.exec """
+        	echo **/*.css
+        """, 'zsh'
+        ```
 
-  For debugging. Dump a colorful object.
+- #### **[formatComment](lib/kit.coffee?source#L378)**
 
-  - **<u>param</u>**: `obj` { _Object_ }
+    Format the parsed comments array to a markdown string.
 
-    Your target object.
+    - **<u>param</u>**: `comments` { _Array_ }
 
-  - **<u>param</u>**: `opts` { _Object_ }
+    - **<u>param</u>**: `opts` { _Object_ }
 
-    Options. Default:
-    ```coffee
-    { colors: true, depth: 5 }
-    ```
+        Defaults:
+        ```coffee
+        {
+        		indent: 0
+        		name: ({ name }) ->
+        			name = name.replace 'self.', ''
+        			"- \#\#\#\# #{name}\n\n"
+        		tag: ({ tagName, name, type }) ->
+        			tname = if name then " `#{name}`" else ''
+        			ttype = if type then " { _#{type}_ }" else ''
+        			"- **<u>#{tagName}</u>**:#{tname}#{ttype}"
+        }
+        ```
 
-  - **<u>return</u>**:  { _String_ }
+    - **<u>return</u>**: { _String_ }
 
-- #### <a href="lib/kit.coffee?source#L504" target="_blank"><b>isDevelopment</b></a>
+- #### **[fs](lib/kit.coffee?source#L420)**
 
-  Nobone use it to check the running mode of the app.
-  Overwrite it if you want to control the check logic.
-  By default it returns the `rocess.env.NODE_ENV == 'development'`.
+    See my project [nofs](https://github.com/ysmood/nofs).
 
-  - **<u>return</u>**:  { _Boolean_ }
+    [Offline Documentation](?gotoDoc=nofs/readme.md)
 
-- #### <a href="lib/kit.coffee?source#L513" target="_blank"><b>isProduction</b></a>
+- #### **[generateNodeModulePaths](lib/kit.coffee?source#L428)**
 
-  Nobone use it to check the running mode of the app.
-  Overwrite it if you want to control the check logic.
-  By default it returns the `rocess.env.NODE_ENV == 'production'`.
+    Generate a list of module paths from a name and a directory.
 
-  - **<u>return</u>**:  { _Boolean_ }
+    - **<u>param</u>**: `moduleName` { _String_ }
 
-- #### <a href="lib/kit.coffee?source#L528" target="_blank"><b>log</b></a>
+        The module name.
 
-  A better log for debugging, it uses the `kit.inspect` to log.
-  
-  Use terminal command like `logReg='pattern' node app.js` to
-  filter the log info.
-  
-  Use `logTrace='on' node app.js` to force each log end with a
-  stack trace.
+    - **<u>param</u>**: `dir` { _String_ }
 
-  - **<u>param</u>**: `msg` { _Any_ }
+        The root path. Default is current working dir.
 
-    Your log message.
+    - **<u>return</u>**: { _Array_ }
 
-  - **<u>param</u>**: `action` { _String_ }
+        Paths
 
-    'log', 'error', 'warn'.
+- #### **[jhash](lib/kit.coffee?source#L461)**
 
-  - **<u>param</u>**: `opts` { _Object_ }
+    A fast helper to hash string or binary file.
+    See my [jhash][jhash] project.
 
-    Default is same with `kit.inspect`
+    [Offline Documentation](?gotoDoc=jhash/readme.md)
+    [jhash]: https://github.com/ysmood/jhash
 
-- #### <a href="lib/kit.coffee?source#L624" target="_blank"><b>monitorApp</b></a>
+    - **<u>example</u>**:
 
-  Monitor an application and automatically restart it when file changed.
-  Even when the monitored app exit with error, the monitor will still wait
-  for your file change to restart the application. Not only nodejs, but also
-  other programs like ruby or python.
-  It will print useful infomation when it application unexceptedly.
+        ```coffee
+        var jhash = require('jhash');
+        jhash.hash('test'); // output => '349o'
 
-  - **<u>param</u>**: `opts` { _Object_ }
+        var fs = require('fs');
+        jhash.hash(fs.readFileSync('a.jpg'));
 
-    Defaults:
-    ```coffee
-    {
-    	bin: 'node'
-    	args: ['index.js']
-    	watchList: [] # By default, the same with the "args".
-    	isNodeDeps: true
-    	opts: {} # Same as the opts of 'kit.spawn'.
-    
-    	# The option of `kit.parseDependency`
-    	parseDependency: {}
-    
-    onStart: ->
-    	kit.log "Monitor: ".yellow + opts.watchList
-    onRestart: (path) ->
-    	kit.log "Reload app, modified: ".yellow + path
-     onWatchFiles: (paths) ->
-    		kit.log 'Watching:'.yellow + paths.join(', ')
-    onNormalExit: ({ code, signal }) ->
-    	kit.log 'EXIT'.yellow +
-    		" code: #{(code + '').cyan} signal: #{(signal + '').cyan}"
-    onErrorExit: ->
-    	kit.err 'Process closed. Edit and save
-    		the watched file to restart.'.red
-    sepLine: ->
-    	chars = _.times(process.stdout.columns, -> '*')
-    	console.log chars.join('').yellow
-    }
-    ```
+        // Control the hash char set.
+        jhash.setSymbols('abcdef');
+        jhash.hash('test'); // output => 'decfddfe'
 
-  - **<u>return</u>**:  { _Promise_ }
+        // Control the max length of the result hash value. Unit is bit.
+        jhash.setMaskLen(10);
+        jhash.hash('test'); // output => 'ede'
+        ```
 
-    It has a property `process`, which is the monitored
-    child process.
+- #### **[join](lib/kit.coffee?source#L480)**
 
-  - **<u>example</u>**:
+    It inserts the fnB in between the fnA and concatenates the result.
 
-    ```coffee
-    kit.monitorApp {
-    	bin: 'coffee'
-    	args: ['main.coffee']
-    }
-    
-    kit.monitorApp {
-    	bin: 'ruby'
-    	args: ['app.rb', 'lib/**/*.rb']
-    	isNodeDeps: false
-    }
-    ```
+    - **<u>param</u>**: `fnA` { _Any_ }
 
-- #### <a href="lib/kit.coffee?source#L697" target="_blank"><b>nodeVersion</b></a>
+    - **<u>param</u>**: `fnB` { _Any_ }
 
-  Node version. Such as `v0.10.23` is `0.1023`, `v0.10.1` is `0.1001`.
+    - **<u>return</u>**: { _Array_ }
 
-  - **<u>type</u>**:  { _Float_ }
+    - **<u>example</u>**:
 
-- #### <a href="lib/kit.coffee?source#L715" target="_blank"><b>xopen</b></a>
+        ```coffee
+        kit.join([1, 2, 3, 4], 'sep')
+        # output => [1, 'sep', 2, 'sep', 3, 'sep', 4]
 
-  Open a thing that your system can recognize.
-  Now only support Windows, OSX or system that installed 'xdg-open'.
+        iter = ->
+        	i = 0
+        	-> i++
+        kit.join([1, 2, 3, 4], new iter)
+        # output => [1, 'sep', 2, 'sep', 3, 'sep', 4]
+        ```
 
-  - **<u>param</u>**: `cmd` { _String_ }
+- #### **[iter](lib/kit.coffee?source#L519)**
 
-    The thing you want to open.
+    Generate a iterator from a value.
 
-  - **<u>param</u>**: `opts` { _Object_ }
+    - **<u>param</u>**: `val` { _Any_ }
 
-    The options of the node native
-    `child_process.exec`.
+    - **<u>return</u>**: { _Function_ }
 
-  - **<u>return</u>**:  { _Promise_ }
+        The every time when the function been
+        called, it returns a object looks like:
+        ```coffee
+        { key: 10, value: 'hello world' }
+        ```
+        The `key` can be `undefined`, `number` or `string`.
 
-    When the child process exists.
+    - **<u>example</u>**:
 
-  - **<u>example</u>**:
+        ```coffee
+        iter = kit.iter [1, 2, 3]
+        iter() # output => { key: 0, value: 1 }
 
-    ```coffee
-    # Open a webpage with the default browser.
-    kit.open 'http://ysmood.org'
-    ```
+        iter = kit.iter 'test'
+        iter() # output => { key: 0, value: 't' }
 
-- #### <a href="lib/kit.coffee?source#L750" target="_blank"><b>pad</b></a>
+        iter = kit.iter { a: 1, b: 2, c: 3 }
+        iter() # output => { key: 'a', value: 1 }
+        ```
 
-  String padding helper. It is used in the `kit.log`.
+- #### **[indent](lib/kit.coffee?source#L552)**
 
-  - **<u>param</u>**: `str` { _Sting | Number_ }
+    Indent a text block.
 
-  - **<u>param</u>**: `width` { _Number_ }
+    - **<u>param</u>**: `text` { _String_ }
 
-  - **<u>param</u>**: `char` { _String_ }
+    - **<u>param</u>**: `num` { _Int_ }
 
-    Padding char. Default is '0'.
+    - **<u>param</u>**: `char` { _String_ }
 
-  - **<u>return</u>**:  { _String_ }
+    - **<u>param</u>**: `reg` { _RegExp_ }
 
-  - **<u>example</u>**:
+        Default is `/^/mg`.
 
-    ```coffee
-    kit.pad '1', 3 # '001'
-    ```
+    - **<u>return</u>**: { _String_ }
 
-- #### <a href="lib/kit.coffee?source#L796" target="_blank"><b>parseComment</b></a>
+        The indented text block.
 
-  A comments parser for coffee-script.
-  Used to generate documentation from source code automatically.
-  It will traverse through all the comments of a coffee file.
+    - **<u>example</u>**:
 
-  - **<u>param</u>**: `moduleName` { _String_ }
+        ```coffee
+        # Increase
+        kit.indent "one\ntwo", 2
+        # => "  one\n  two"
 
-    The name of the module it belongs to.
+        # Decrease
+        kit.indent "--one\n--two", 0, '', /^--/mg
+        # => "one\ntwo"
+        ```
 
-  - **<u>param</u>**: `code` { _String_ }
+- #### **[inspect](lib/kit.coffee?source#L565)**
 
-    Coffee source code.
+    For debugging. Dump a colorful object.
 
-  - **<u>param</u>**: `path` { _String_ }
+    - **<u>param</u>**: `obj` { _Object_ }
 
-    The path of the source code.
+        Your target object.
 
-  - **<u>param</u>**: `opts` { _Object_ }
+    - **<u>param</u>**: `opts` { _Object_ }
 
-    Parser options:
-    ```coffee
-    {
-    	commentReg: RegExp
-    	splitReg: RegExp
-    	tagNameReg: RegExp
-    	typeReg: RegExp
-    	nameReg: RegExp
-    	nameTags: ['param', 'property']
-    	descriptionReg: RegExp
-    }
-    ```
+        Options. Default:
+        ```coffee
+        { colors: true, depth: 5 }
+        ```
 
-  - **<u>return</u>**:  { _Array_ }
+    - **<u>return</u>**: { _String_ }
 
-    The parsed comments. Each item is something like:
-    ```coffee
-    {
-    	module: 'nobone'
-    	name: 'parseComment'
-    	description: 'A comments parser for coffee-script.'
-    	tags: [
-    		{
-    			tagName: 'param'
-    			type: 'string'
-    			name: 'code'
-    			description: 'The name of the module it belongs to.'
-    			path: 'http://thePathOfSourceCode'
-    			index: 256 # The target char index in the file.
-    			line: 32 # The line number of the target in the file.
-    		}
-    	]
-    }
-    ```
+- #### **[isDevelopment](lib/kit.coffee?source#L581)**
 
-- #### <a href="lib/kit.coffee?source#L890" target="_blank"><b>parseDependency</b></a>
+    Nobone use it to check the running mode of the app.
+    Overwrite it if you want to control the check logic.
+    By default it returns the `rocess.env.NODE_ENV == 'development'`.
 
-  Parse dependency tree by regex. The dependency relationships
-  is not a tree, but a graph. To avoid dependency cycle, this
-  function only return an linear array of the dependencies,
-  from which you won't get the detail relationshops between files.
+    - **<u>return</u>**: { _Boolean_ }
 
-  - **<u>param</u>**: `entryPaths` { _String | Array_ }
+- #### **[isProduction](lib/kit.coffee?source#L590)**
 
-    The file to begin with.
+    Nobone use it to check the running mode of the app.
+    Overwrite it if you want to control the check logic.
+    By default it returns the `rocess.env.NODE_ENV == 'production'`.
 
-  - **<u>param</u>**: `opts` { _Object_ }
+    - **<u>return</u>**: { _Boolean_ }
 
-    Defaults:
-    ```coffee
-    {
-    	depReg: /require\s*\(?['"](.+)['"]\)?/gm
-    	depRoots: ['']
-    	extensions: ['.js', '.coffee', 'index.js', 'index.coffee']
-    
-    	# It will handle all the matched paths.
-    	# Return false value if you don't want this match.
-    	handle: (path) ->
-    		path.replace(/^[\s'"]+/, '').replace(/[\s'";]+$/, '')
-    }
-    ```
+- #### **[log](lib/kit.coffee?source#L605)**
 
-  - **<u>return</u>**:  { _Promise_ }
+    A better log for debugging, it uses the `kit.inspect` to log.
 
-    It resolves the dependency path array.
+    Use terminal command like `logReg='pattern' node app.js` to
+    filter the log info.
 
-  - **<u>example</u>**:
+    Use `logTrace='on' node app.js` to force each log end with a
+    stack trace.
 
-    ```coffee
-    kit.parseDependency 'main.', {
-    	depReg: /require\s*\(?['"](.+)['"]\)?/gm
-     handle: (path) ->
-    		return path if path.match /^(?:\.|/|[a-z]:)/i
-    }
-    ```
+    - **<u>param</u>**: `msg` { _Any_ }
 
-- #### <a href="lib/kit.coffee?source#L951" target="_blank"><b>path</b></a>
+        Your log message.
 
-  Node native module `path`.
+    - **<u>param</u>**: `action` { _String_ }
 
-- #### <a href="lib/kit.coffee?source#L959" target="_blank"><b>Promise</b></a>
+        'log', 'error', 'warn'.
 
-  The promise lib. Now, it uses Bluebird as ES5 polyfill.
-  In the future, the Bluebird will be replaced with native
-  ES6 Promise. Please don't use any API other than the ES6 spec.
+    - **<u>param</u>**: `opts` { _Object_ }
 
-  - **<u>type</u>**:  { _Object_ }
+        Default is same with `kit.inspect`
 
-- #### <a href="lib/kit.coffee?source#L972" target="_blank"><b>promisify</b></a>
+- #### **[monitorApp](lib/kit.coffee?source#L701)**
 
-  Convert a callback style function to a promise function.
+    Monitor an application and automatically restart it when file changed.
+    Even when the monitored app exit with error, the monitor will still wait
+    for your file change to restart the application. Not only nodejs, but also
+    other programs like ruby or python.
+    It will print useful infomation when it application unexceptedly.
 
-  - **<u>param</u>**: `fn` { _Function_ }
+    - **<u>param</u>**: `opts` { _Object_ }
 
-  - **<u>param</u>**: `this` { _Any_ }
+        Defaults:
+        ```coffee
+        {
+        	bin: 'node'
+        	args: ['index.js']
+        	watchList: [] # By default, the same with the "args".
+        	isNodeDeps: true
+        	opts: {} # Same as the opts of 'kit.spawn'.
 
-    `this` object of the function.
+        	# The option of `kit.parseDependency`
+        	parseDependency: {}
 
-  - **<u>return</u>**:  { _Function_ }
+        	onStart: ->
+        		kit.log "Monitor: ".yellow + opts.watchList
+        	onRestart: (path) ->
+        		kit.log "Reload app, modified: ".yellow + path
+        	onWatchFiles: (paths) ->
+        		kit.log 'Watching:'.yellow + paths.join(', ')
+        	onNormalExit: ({ code, signal }) ->
+        		kit.log 'EXIT'.yellow +
+        			" code: #{(code + '').cyan} signal: #{(signal + '').cyan}"
+        	onErrorExit: ->
+        		kit.err 'Process closed. Edit and save
+        			the watched file to restart.'.red
+        	sepLine: ->
+        		chars = _.times(process.stdout.columns, -> '*')
+        		console.log chars.join('').yellow
+        }
+        ```
 
-    The function will return a promise object.
+    - **<u>return</u>**: { _Promise_ }
 
-  - **<u>example</u>**:
+        It has a property `process`, which is the monitored
+        child process.
 
-    ```coffee
-    readFile = kit.promisify fs.readFile, fs
-    readFile('a.txt').then kit.log
-    ```
+    - **<u>example</u>**:
 
-- #### <a href="lib/kit.coffee?source#L992" target="_blank"><b>require</b></a>
+        ```coffee
+        kit.monitorApp {
+        	bin: 'coffee'
+        	args: ['main.coffee']
+        }
 
-  Much faster than the native require of node, but you should
-  follow some rules to use it safely.
+        kit.monitorApp {
+        	bin: 'ruby'
+        	args: ['app.rb', 'lib/**/*.rb']
+        	isNodeDeps: false
+        }
+        ```
 
-  - **<u>param</u>**: `moduleName` { _String_ }
+- #### **[nodeVersion](lib/kit.coffee?source#L774)**
 
-    Relative moudle path is not allowed!
-    Only allow absolute path or module name.
+    Node version. Such as `v0.10.23` is `0.1023`, `v0.10.1` is `0.1001`.
 
-  - **<u>param</u>**: `done` { _Function_ }
+    - **<u>type</u>**: { _Float_ }
 
-    Run only the first time after the module loaded.
+- #### **[xopen](lib/kit.coffee?source#L792)**
 
-  - **<u>return</u>**:  { _Module_ }
+    Open a thing that your system can recognize.
+    Now only support Windows, OSX or system that installed 'xdg-open'.
 
-    The module that you require.
+    - **<u>param</u>**: `cmd` { _String_ }
 
-- #### <a href="lib/kit.coffee?source#L1020" target="_blank"><b>requireOptional</b></a>
+        The thing you want to open.
 
-  Require an optional package. If not found, it will
-  warn user to npm install it, and exit the process.
+    - **<u>param</u>**: `opts` { _Object_ }
 
-  - **<u>param</u>**: `name` { _String_ }
+        The options of the node native
+        `child_process.exec`.
 
-    Package name
+    - **<u>return</u>**: { _Promise_ }
 
-  - **<u>return</u>**:  { _Any_ }
+        When the child process exists.
 
-    The required package.
+    - **<u>example</u>**:
 
-- #### <a href="lib/kit.coffee?source#L1128" target="_blank"><b>request</b></a>
+        ```coffee
+        # Open a webpage with the default browser.
+        kit.open 'http://ysmood.org'
+        ```
 
-  A handy extended combination of `http.request` and `https.request`.
+- #### **[pad](lib/kit.coffee?source#L827)**
 
-  - **<u>param</u>**: `opts` { _Object_ }
+    String padding helper. It is used in the `kit.log`.
 
-    The same as the [http.request](http://nodejs.org/api/http.html#httpHttpRequestOptionsCallback),
-    but with some extra options:
-    ```coffee
-    {
-    	url: 'It is not optional, String or Url Object.'
-    
-    	# Other than return `res` with `res.body`,return `body` directly.
-    	body: true
-    
-    	# Max times of auto redirect. If 0, no auto redirect.
-    	redirect: 0
-    
-    	# Timeout of the socket of the http connection.
-    	# If timeout happens, the promise will reject.
-    	# Zero means no timeout.
-    	timeout: 0
-    
-    	# The key of headers should be lowercased.
-    	headers: {}
-    
-    	host: 'localhost'
-    	hostname: 'localhost'
-    	port: 80
-    	method: 'GET'
-    	path: '/'
-    	auth: ''
-    	agent: null
-    
-    	# Set "transfer-encoding" header to 'chunked'.
-    	setTE: false
-    
-    	# Set null to use buffer, optional.
-    	# It supports GBK, ShiftJIS etc.
-    	# For more info, see https://github.com/ashtuchkin/iconv-lite
-    	resEncoding: 'auto'
-    
-    	# It's string, object or buffer, optional. When it's an object,
-    	# The request will be 'application/x-www-form-urlencoded'.
-    	reqData: null
-    
-    	# auto end the request.
-    	autoEndReq: true
-    
-    	# Readable stream.
-    	reqPipe: null
-    
-    	# Writable stream.
-    	resPipe: null
-    
-    	# The progress of the request.
-    	reqProgress: (complete, total) ->
-    
-    	# The progress of the response.
-    	resProgress: (complete, total) ->
-    }
-    ```
-    And if set opts as string, it will be treated as the url.
+    - **<u>param</u>**: `str` { _Sting | Number_ }
 
-  - **<u>return</u>**:  { _Promise_ }
+    - **<u>param</u>**: `width` { _Number_ }
 
-    Contains the http response object,
-    it has an extra `body` property.
-    You can also get the request object by using `Promise.req`.
+    - **<u>param</u>**: `char` { _String_ }
 
-  - **<u>example</u>**:
+        Padding char. Default is '0'.
 
-    ```coffee
-    p = kit.request 'http://test.com'
-    p.req.on 'response', (res) ->
-    	kit.log res.headers['content-length']
-    p.then (body) ->
-    	kit.log body # html or buffer
-    
-    kit.request {
-    	url: 'https://test.com/a.mp3'
-    	body: false
-    	resProgress: (complete, total) ->
-    		kit.log "Progress: #{complete} / #{total}"
-    }
-    .then (res) ->
-    	kit.log res.body.length
-    	kit.log res.headers
-    
-    # Send form-data.
-    form = new (require 'form-data')
-    form.append 'a.jpg', new Buffer(0)
-    form.append 'b.txt', 'hello world!'
-    kit.request {
-    	url: 'a.com'
-    	headers: form.getHeaders()
-    	setTE: true
-    	reqPipe: form
-    }
-    .then (body) ->
-    	kit.log body
-    ```
+    - **<u>return</u>**: { _String_ }
 
-- #### <a href="lib/kit.coffee?source#L1344" target="_blank"><b>spawn</b></a>
+    - **<u>example</u>**:
 
-  A safer version of `child_process.spawn` to cross-platform run
-  a process. In some conditions, it may be more convenient
-  to use the `kit.exec`.
-  It will automatically add `node_modules/.bin` to the `PATH`
-  environment variable.
+        ```coffee
+        kit.pad '1', 3 # '001'
+        ```
 
-  - **<u>param</u>**: `cmd` { _String_ }
+- #### **[parseComment](lib/kit.coffee?source#L869)**
 
-    Path or name of an executable program.
+    A comments parser for javascript and coffee-script.
+    Used to generate documentation from source code automatically.
+    It will traverse through all the comments of a coffee file.
 
-  - **<u>param</u>**: `args` { _Array_ }
+    - **<u>param</u>**: `code` { _String_ }
 
-    CLI arguments.
+        Coffee source code.
 
-  - **<u>param</u>**: `opts` { _Object_ }
+    - **<u>param</u>**: `opts` { _Object_ }
 
-    Process options.
-    Same with the Node.js official documentation.
-    Except that it will inherit the parent's stdio.
+        Parser options:
+        ```coffee
+        {
+        	commentReg: RegExp
+        	splitReg: RegExp
+        	tagNameReg: RegExp
+        	typeReg: RegExp
+        	nameReg: RegExp
+        	nameTags: ['param', 'property']
+        	descriptionReg: RegExp
+        }
+        ```
 
-  - **<u>return</u>**:  { _Promise_ }
+    - **<u>return</u>**: { _Array_ }
 
-    The `promise.process` is the spawned child
-    process object.
-    **Resolves** when the process's stdio is drained and the exit
-    code is either `0` or `130`. The resolve value
-    is like:
-    ```coffee
-    {
-    	code: 0
-    	signal: null
-    }
-    ```
+        The parsed comments. Each item is something like:
+        ```coffee
+        {
+        	name: 'parseComment'
+        	description: 'A comments parser for coffee-script.'
+        	tags: [
+        		{
+        			tagName: 'param'
+        			type: 'string'
+        			name: 'code'
+        			description: 'The name of the module it belongs to.'
+        			index: 256 # The target char index in the file.
+        			line: 32 # The line number of the target in the file.
+        		}
+        	]
+        }
+        ```
 
-  - **<u>example</u>**:
+- #### **[parseFileComment](lib/kit.coffee?source#L959)**
 
-    ```coffee
-    kit.spawn 'git', ['commit', '-m', '42 is the answer to everything']
-    .then ({code}) -> kit.log code
-    ```
+    Parse commment from a js or coffee file, and output a markdown string.
 
-- #### <a href="lib/kit.coffee?source#L1395" target="_blank"><b>url</b></a>
+    - **<u>param</u>**: `path` { _String_ }
 
-  Node native module `url`.
+    - **<u>param</u>**: `opts` { _Object_ }
+
+        Defaults:
+        ```coffee
+        {
+        		name: ''
+        		parseComment: {}
+        		formatComment: {
+        			name: ({ name, line }) ->
+        				name = name.replace 'self.', ''
+        				link = "#{path}?source#L#{line}"
+        				"- \#\#\#\# **[#{name}](#{link})**\n\n"
+        		}
+        }
+        ```
+
+    - **<u>return</u>**: { _String_ }
+
+- #### **[parseDependency](lib/kit.coffee?source#L1007)**
+
+    Parse dependency tree by regex. The dependency relationships
+    is not a tree, but a graph. To avoid dependency cycle, this
+    function only return an linear array of the dependencies,
+    from which you won't get the detail relationshops between files.
+
+    - **<u>param</u>**: `entryPaths` { _String | Array_ }
+
+        The file to begin with.
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+        Defaults:
+        ```coffee
+        {
+        	depReg: /require\s*\(?['"](.+)['"]\)?/gm
+        	depRoots: ['']
+        	extensions: ['.js', '.coffee', 'index.js', 'index.coffee']
+
+        	# It will handle all the matched paths.
+        	# Return false value if you don't want this match.
+        	handle: (path) ->
+        		path.replace(/^[\s'"]+/, '').replace(/[\s'";]+$/, '')
+        }
+        ```
+
+    - **<u>return</u>**: { _Promise_ }
+
+        It resolves the dependency path array.
+
+    - **<u>example</u>**:
+
+        ```coffee
+        kit.parseDependency 'main.', {
+        	depReg: /require\s*\(?['"](.+)['"]\)?/gm
+         handle: (path) ->
+        		return path if path.match /^(?:\.|/|[a-z]:)/i
+        }
+        ```
+
+- #### **[path](lib/kit.coffee?source#L1068)**
+
+    Node native module `path`.
+
+- #### **[Promise](lib/kit.coffee?source#L1076)**
+
+    The promise lib. Now, it uses Bluebird as ES5 polyfill.
+    In the future, the Bluebird will be replaced with native
+    ES6 Promise. Please don't use any API other than the ES6 spec.
+
+    - **<u>type</u>**: { _Object_ }
+
+- #### **[promisify](lib/kit.coffee?source#L1089)**
+
+    Convert a callback style function to a promise function.
+
+    - **<u>param</u>**: `fn` { _Function_ }
+
+    - **<u>param</u>**: `this` { _Any_ }
+
+        `this` object of the function.
+
+    - **<u>return</u>**: { _Function_ }
+
+        The function will return a promise object.
+
+    - **<u>example</u>**:
+
+        ```coffee
+        readFile = kit.promisify fs.readFile, fs
+        readFile('a.txt').then kit.log
+        ```
+
+- #### **[require](lib/kit.coffee?source#L1109)**
+
+    Much faster than the native require of node, but you should
+    follow some rules to use it safely.
+
+    - **<u>param</u>**: `moduleName` { _String_ }
+
+        Relative moudle path is not allowed!
+        Only allow absolute path or module name.
+
+    - **<u>param</u>**: `done` { _Function_ }
+
+        Run only the first time after the module loaded.
+
+    - **<u>return</u>**: { _Module_ }
+
+        The module that you require.
+
+- #### **[requireOptional](lib/kit.coffee?source#L1137)**
+
+    Require an optional package. If not found, it will
+    warn user to npm install it, and exit the process.
+
+    - **<u>param</u>**: `name` { _String_ }
+
+        Package name
+
+    - **<u>return</u>**: { _Any_ }
+
+        The required package.
+
+- #### **[request](lib/kit.coffee?source#L1245)**
+
+    A handy extended combination of `http.request` and `https.request`.
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+        The same as the [http.request](http://nodejs.org/api/http.html#httpHttpRequestOptionsCallback),
+        but with some extra options:
+        ```coffee
+        {
+        	url: 'It is not optional, String or Url Object.'
+
+        	# Other than return `res` with `res.body`,return `body` directly.
+        	body: true
+
+        	# Max times of auto redirect. If 0, no auto redirect.
+        	redirect: 0
+
+        	# Timeout of the socket of the http connection.
+        	# If timeout happens, the promise will reject.
+        	# Zero means no timeout.
+        	timeout: 0
+
+        	# The key of headers should be lowercased.
+        	headers: {}
+
+        	host: 'localhost'
+        	hostname: 'localhost'
+        	port: 80
+        	method: 'GET'
+        	path: '/'
+        	auth: ''
+        	agent: null
+
+        	# Set "transfer-encoding" header to 'chunked'.
+        	setTE: false
+
+        	# Set null to use buffer, optional.
+        	# It supports GBK, ShiftJIS etc.
+        	# For more info, see https://github.com/ashtuchkin/iconv-lite
+        	resEncoding: 'auto'
+
+        	# It's string, object or buffer, optional. When it's an object,
+        	# The request will be 'application/x-www-form-urlencoded'.
+        	reqData: null
+
+        	# auto end the request.
+        	autoEndReq: true
+
+        	# Readable stream.
+        	reqPipe: null
+
+        	# Writable stream.
+        	resPipe: null
+
+        	# The progress of the request.
+        	reqProgress: (complete, total) ->
+
+        	# The progress of the response.
+        	resProgress: (complete, total) ->
+        }
+        ```
+        And if set opts as string, it will be treated as the url.
+
+    - **<u>return</u>**: { _Promise_ }
+
+        Contains the http response object,
+        it has an extra `body` property.
+        You can also get the request object by using `Promise.req`.
+
+    - **<u>example</u>**:
+
+        ```coffee
+        p = kit.request 'http://test.com'
+        p.req.on 'response', (res) ->
+        	kit.log res.headers['content-length']
+        p.then (body) ->
+        	kit.log body # html or buffer
+
+        kit.request {
+        	url: 'https://test.com/a.mp3'
+        	body: false
+        	resProgress: (complete, total) ->
+        		kit.log "Progress: #{complete} / #{total}"
+        }
+        .then (res) ->
+        	kit.log res.body.length
+        	kit.log res.headers
+
+        # Send form-data.
+        form = new (require 'form-data')
+        form.append 'a.jpg', new Buffer(0)
+        form.append 'b.txt', 'hello world!'
+        kit.request {
+        	url: 'a.com'
+        	headers: form.getHeaders()
+        	setTE: true
+        	reqPipe: form
+        }
+        .then (body) ->
+        	kit.log body
+        ```
+
+- #### **[spawn](lib/kit.coffee?source#L1461)**
+
+    A safer version of `child_process.spawn` to cross-platform run
+    a process. In some conditions, it may be more convenient
+    to use the `kit.exec`.
+    It will automatically add `node_modules/.bin` to the `PATH`
+    environment variable.
+
+    - **<u>param</u>**: `cmd` { _String_ }
+
+        Path or name of an executable program.
+
+    - **<u>param</u>**: `args` { _Array_ }
+
+        CLI arguments.
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+        Process options.
+        Same with the Node.js official documentation.
+        Except that it will inherit the parent's stdio.
+
+    - **<u>return</u>**: { _Promise_ }
+
+        The `promise.process` is the spawned child
+        process object.
+        **Resolves** when the process's stdio is drained and the exit
+        code is either `0` or `130`. The resolve value
+        is like:
+        ```coffee
+        {
+        	code: 0
+        	signal: null
+        }
+        ```
+
+    - **<u>example</u>**:
+
+        ```coffee
+        kit.spawn 'git', ['commit', '-m', '42 is the answer to everything']
+        .then ({code}) -> kit.log code
+        ```
+
+- #### **[url](lib/kit.coffee?source#L1512)**
+
+    Node native module `url`.
 
 
 

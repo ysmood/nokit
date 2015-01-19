@@ -360,7 +360,19 @@ _.extend kit, {
 	###*
 	 * Format the parsed comments array to a markdown string.
 	 * @param  {Array}  comments
-	 * @param  {Object} opts
+	 * @param  {Object} opts Defaults:
+	 * ```coffee
+	 * {
+	 * 		indent: 0
+	 * 		name: ({ name }) ->
+	 * 			name = name.replace 'self.', ''
+	 * 			"- \#\#\#\# #{name}\n\n"
+	 * 		tag: ({ tagName, name, type }) ->
+	 * 			tname = if name then " `#{name}`" else ''
+	 * 			ttype = if type then " { _#{type}_ }" else ''
+	 * 			"- **<u>#{tagName}</u>**:#{tname}#{ttype}"
+	 * }
+	 * ```
 	 * @return {String}
 	###
 	formatComment: (comments, opts = {}) ->
@@ -926,6 +938,24 @@ _.extend kit, {
 
 		return comments
 
+	###*
+	 * Parse commment from a js or coffee file, and output a markdown string.
+	 * @param  {String} path
+	 * @param  {Object} opts Defaults:
+	 * ```coffee
+	 * {
+	 * 		name: ''
+	 * 		parseComment: {}
+	 * 		formatComment: {
+	 * 			name: ({ name, line }) ->
+	 * 				name = name.replace 'self.', ''
+	 * 				link = "#{path}?source#L#{line}"
+	 * 				"- \#\#\#\# **[#{name}](#{link})**\n\n"
+	 * 		}
+	 * }
+	 * ```
+	 * @return {String}
+	###
 	parseFileComment: (path, opts = {}) ->
 		_.defaults opts, {
 			name: ''
