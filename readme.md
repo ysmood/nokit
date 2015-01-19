@@ -12,14 +12,14 @@ Goto [changelog](doc/changelog.md)
 
 # API
 
-- #### **[kit](lib/kit.coffee?source#L11)**
+- #### **[kit](lib/kit.coffee?source#L12)**
 
     All the async functions in `kit` return promise object.
     Most time I use it to handle files and system staffs.
 
     - **<u>type</u>**: { _Object_ }
 
-- #### **[kitExtendsFsPromise](lib/kit.coffee?source#L32)**
+- #### **[kitExtendsFsPromise](lib/kit.coffee?source#L33)**
 
     kit extends all the promise functions of [nofs](https://github.com/ysmood/nofs).
 
@@ -41,13 +41,13 @@ Goto [changelog](doc/changelog.md)
         .then -> kit.log 'done'
         ```
 
-- #### **[_](lib/kit.coffee?source#L43)**
+- #### **[_](lib/kit.coffee?source#L44)**
 
     The lodash lib.
 
     - **<u>type</u>**: { _Object_ }
 
-- #### **[async](lib/kit.coffee?source#L92)**
+- #### **[async](lib/kit.coffee?source#L93)**
 
     An throttled version of `Promise.all`, it runs all the tasks under
     a concurrent limitation.
@@ -107,7 +107,7 @@ Goto [changelog](doc/changelog.md)
         	kit.log 'all done!'
         ```
 
-- #### **[compose](lib/kit.coffee?source#L186)**
+- #### **[compose](lib/kit.coffee?source#L187)**
 
     Creates a function that is the composition of the provided functions.
     Besides, it can also accept async function that returns promise.
@@ -147,7 +147,7 @@ Goto [changelog](doc/changelog.md)
         download 'home'
         ```
 
-- #### **[daemonize](lib/kit.coffee?source#L209)**
+- #### **[daemonize](lib/kit.coffee?source#L210)**
 
     Daemonize a program. Just a shortcut usage of `kit.spawn`.
 
@@ -167,7 +167,7 @@ Goto [changelog](doc/changelog.md)
 
         The daemonized process.
 
-- #### **[decrypt](lib/kit.coffee?source#L236)**
+- #### **[decrypt](lib/kit.coffee?source#L237)**
 
     A simple decrypt helper. Cross-version of node.
 
@@ -181,7 +181,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Buffer_ }
 
-- #### **[encrypt](lib/kit.coffee?source#L259)**
+- #### **[encrypt](lib/kit.coffee?source#L260)**
 
     A simple encrypt helper. Cross-version of node.
 
@@ -195,7 +195,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Buffer_ }
 
-- #### **[err](lib/kit.coffee?source#L280)**
+- #### **[err](lib/kit.coffee?source#L281)**
 
     A error log shortcut for `kit.log(msg, 'error', opts)`
 
@@ -203,7 +203,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>param</u>**: `opts` { _Object_ }
 
-- #### **[exec](lib/kit.coffee?source#L314)**
+- #### **[exec](lib/kit.coffee?source#L315)**
 
     A better `child_process.exec`. Supports multi-line shell script.
     For supporting old node version, it will create 3 temp files,
@@ -246,7 +246,7 @@ Goto [changelog](doc/changelog.md)
         """, 'zsh'
         ```
 
-- #### **[formatComment](lib/kit.coffee?source#L378)**
+- #### **[formatComment](lib/kit.coffee?source#L379)**
 
     Format the parsed comments array to a markdown string.
 
@@ -270,13 +270,13 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _String_ }
 
-- #### **[fs](lib/kit.coffee?source#L420)**
+- #### **[fs](lib/kit.coffee?source#L421)**
 
     See my project [nofs](https://github.com/ysmood/nofs).
 
     [Offline Documentation](?gotoDoc=nofs/readme.md)
 
-- #### **[generateNodeModulePaths](lib/kit.coffee?source#L428)**
+- #### **[generateNodeModulePaths](lib/kit.coffee?source#L429)**
 
     Generate a list of module paths from a name and a directory.
 
@@ -292,7 +292,7 @@ Goto [changelog](doc/changelog.md)
 
         Paths
 
-- #### **[jhash](lib/kit.coffee?source#L461)**
+- #### **[jhash](lib/kit.coffee?source#L462)**
 
     A fast helper to hash string or binary file.
     See my [jhash][jhash] project.
@@ -318,7 +318,7 @@ Goto [changelog](doc/changelog.md)
         jhash.hash('test'); // output => 'ede'
         ```
 
-- #### **[join](lib/kit.coffee?source#L480)**
+- #### **[join](lib/kit.coffee?source#L481)**
 
     It inserts the fnB in between the fnA and concatenates the result.
 
@@ -341,7 +341,7 @@ Goto [changelog](doc/changelog.md)
         # output => [1, 'sep', 2, 'sep', 3, 'sep', 4]
         ```
 
-- #### **[iter](lib/kit.coffee?source#L519)**
+- #### **[iter](lib/kit.coffee?source#L520)**
 
     Generate a iterator from a value.
 
@@ -369,7 +369,7 @@ Goto [changelog](doc/changelog.md)
         iter() # output => { key: 'a', value: 1 }
         ```
 
-- #### **[indent](lib/kit.coffee?source#L552)**
+- #### **[indent](lib/kit.coffee?source#L553)**
 
     Indent a text block.
 
@@ -399,7 +399,7 @@ Goto [changelog](doc/changelog.md)
         # => "one\ntwo"
         ```
 
-- #### **[inspect](lib/kit.coffee?source#L565)**
+- #### **[inspect](lib/kit.coffee?source#L566)**
 
     For debugging. Dump a colorful object.
 
@@ -416,7 +416,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _String_ }
 
-- #### **[isDevelopment](lib/kit.coffee?source#L581)**
+- #### **[isDevelopment](lib/kit.coffee?source#L582)**
 
     Nobone use it to check the running mode of the app.
     Overwrite it if you want to control the check logic.
@@ -424,7 +424,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Boolean_ }
 
-- #### **[isProduction](lib/kit.coffee?source#L590)**
+- #### **[isProduction](lib/kit.coffee?source#L591)**
 
     Nobone use it to check the running mode of the app.
     Overwrite it if you want to control the check logic.
@@ -432,7 +432,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Boolean_ }
 
-- #### **[log](lib/kit.coffee?source#L605)**
+- #### **[log](lib/kit.coffee?source#L606)**
 
     A better log for debugging, it uses the `kit.inspect` to log.
 
@@ -454,7 +454,7 @@ Goto [changelog](doc/changelog.md)
 
         Default is same with `kit.inspect`
 
-- #### **[monitorApp](lib/kit.coffee?source#L701)**
+- #### **[monitorApp](lib/kit.coffee?source#L702)**
 
     Monitor an application and automatically restart it when file changed.
     Even when the monitored app exit with error, the monitor will still wait
@@ -514,13 +514,13 @@ Goto [changelog](doc/changelog.md)
         }
         ```
 
-- #### **[nodeVersion](lib/kit.coffee?source#L774)**
+- #### **[nodeVersion](lib/kit.coffee?source#L775)**
 
     Node version. Such as `v0.10.23` is `0.1023`, `v0.10.1` is `0.1001`.
 
     - **<u>type</u>**: { _Float_ }
 
-- #### **[xopen](lib/kit.coffee?source#L792)**
+- #### **[xopen](lib/kit.coffee?source#L793)**
 
     Open a thing that your system can recognize.
     Now only support Windows, OSX or system that installed 'xdg-open'.
@@ -675,11 +675,11 @@ Goto [changelog](doc/changelog.md)
         }
         ```
 
-- #### **[path](lib/kit.coffee?source#L1068)**
+- #### **[path](lib/kit.coffee?source#L1070)**
 
     Node native module `path`.
 
-- #### **[Promise](lib/kit.coffee?source#L1076)**
+- #### **[Promise](lib/kit.coffee?source#L1078)**
 
     The promise lib. Now, it uses Bluebird as ES5 polyfill.
     In the future, the Bluebird will be replaced with native
@@ -687,7 +687,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>type</u>**: { _Object_ }
 
-- #### **[promisify](lib/kit.coffee?source#L1089)**
+- #### **[promisify](lib/kit.coffee?source#L1091)**
 
     Convert a callback style function to a promise function.
 
@@ -708,7 +708,7 @@ Goto [changelog](doc/changelog.md)
         readFile('a.txt').then kit.log
         ```
 
-- #### **[require](lib/kit.coffee?source#L1109)**
+- #### **[require](lib/kit.coffee?source#L1111)**
 
     Much faster than the native require of node, but you should
     follow some rules to use it safely.
@@ -726,7 +726,7 @@ Goto [changelog](doc/changelog.md)
 
         The module that you require.
 
-- #### **[requireOptional](lib/kit.coffee?source#L1137)**
+- #### **[requireOptional](lib/kit.coffee?source#L1139)**
 
     Require an optional package. If not found, it will
     warn user to npm install it, and exit the process.
@@ -739,7 +739,7 @@ Goto [changelog](doc/changelog.md)
 
         The required package.
 
-- #### **[request](lib/kit.coffee?source#L1245)**
+- #### **[request](lib/kit.coffee?source#L1247)**
 
     A handy extended combination of `http.request` and `https.request`.
 
@@ -842,7 +842,7 @@ Goto [changelog](doc/changelog.md)
         	kit.log body
         ```
 
-- #### **[spawn](lib/kit.coffee?source#L1461)**
+- #### **[spawn](lib/kit.coffee?source#L1463)**
 
     A safer version of `child_process.spawn` to cross-platform run
     a process. In some conditions, it may be more convenient
@@ -885,7 +885,7 @@ Goto [changelog](doc/changelog.md)
         .then ({code}) -> kit.log code
         ```
 
-- #### **[url](lib/kit.coffee?source#L1512)**
+- #### **[url](lib/kit.coffee?source#L1513)**
 
     Node native module `url`.
 
