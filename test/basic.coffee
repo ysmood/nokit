@@ -178,12 +178,10 @@ describe 'Kit:', ->
 			shouldEqual stdout.indexOf('exec_ok\n') > -1, true
 
 	it 'parseDependency', ->
-		winSep = /\\/g
 		kit.parseDependency 'test/fixtures/depMain.coffee', {
 			depRoots: ['test/fixtures/depDir']
 		}
 		.then (paths) ->
-			paths = paths.map (p) -> p.replace winSep, '/'
 			shouldDeepEqual paths.sort(), [
 				'test/fixtures/dep1.coffee'
 				'test/fixtures/dep2.coffee'

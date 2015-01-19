@@ -1013,6 +1013,8 @@ _.extend kit, {
 				return path if path.match /^(?:\.|\/|[a-z]:)/i
 		}
 
+		winSep = /\\/g
+
 		if _.isString entryPaths
 			entryPaths = [entryPaths]
 
@@ -1048,7 +1050,7 @@ _.extend kit, {
 					kit.readFile path, 'utf8'
 					.then (str) ->
 						# The point to add path to watch list.
-						depPaths[path] = true
+						depPaths[path.replace winSep, '/'] = true
 						dir = kit.path.dirname path
 
 						entryPaths = []
