@@ -257,14 +257,14 @@ Goto [changelog](doc/changelog.md)
         Defaults:
         ```coffee
         {
-        		indent: 0
-        		name: ({ name }) ->
-        			name = name.replace 'self.', ''
-        			"- \#\#\#\# #{name}\n\n"
-        		tag: ({ tagName, name, type }) ->
-        			tname = if name then " `#{name}`" else ''
-        			ttype = if type then " { _#{type}_ }" else ''
-        			"- **<u>#{tagName}</u>**:#{tname}#{ttype}"
+        	indent: 0
+        	name: ({ name }) ->
+        		name = name.replace 'self.', ''
+        		"- \#\#\#\# #{name}\n\n"
+        	tag: ({ tagName, name, type }) ->
+        		tname = if name then " `#{name}`" else ''
+        		ttype = if type then " { _#{type}_ }" else ''
+        		"- **<u>#{tagName}</u>**:#{tname}#{ttype}"
         }
         ```
 
