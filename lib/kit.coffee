@@ -355,8 +355,28 @@ _.extend kit, {
 
 	###*
 	 * Works much like `gulp.src`, but with Promise instead.
-	 * Flow control and error handling is more pleasant.
-	 * Each piped handler will recusive a `fileInfo` object:
+	 * The flow control and error handling is more pleasant.
+	 * @param  {String} from Glob pattern string.
+	 * @param  {[type]} opts It extends the options of `nofs.globP`, but
+	 * with some extra proptereis. Defaults:
+	 * ```coffee
+	 * {
+	 * 	# The base directory of the pattern.
+	 * 	baseDir: String
+	 *
+	 * 	# The encoding of the contents.
+	 * 	# Set null if you want raw buffer.
+	 * 	encoding: 'utf8'
+	 * }
+	 * ```
+	 * @return {Object} The returned flow object has these members:
+	 * ```coffee
+	 * {
+	 * 	pipe: (handler) -> flow
+	 * 	to: (path) -> Promise
+	 * }
+	 * ```
+	 * Each piped handler will recieve a `fileInfo` object:
 	 * ```coffee
 	 * {
 	 * 	# Set the contents and return self.
@@ -378,24 +398,14 @@ _.extend kit, {
 	 * 	opts: Object
 	 * }
 	 * ```
-	 * @param  {String} from Glob pattern string.
-	 * @param  {[type]} opts It extends the options of `nofs.globP`, but
-	 * with some extra proptereis. Defaults:
-	 * ```coffee
-	 * {
-	 * 	# The base directory of the pattern.
-	 * 	baseDir: String
-	 *
-	 * 	# The encoding of the contents.
-	 * 	# Set null if you want raw buffer.
-	 * 	encoding: 'utf8'
-	 * }
-	 * ```
-	 * @return {Promise}
+	 * The handler can have a `onEnd` function, which will be called after the
+	 * whole flow ended. It's optional.
 	 * @example
 	 * ```coffee
 	 * kit.flow 'src/**\/*.js'
-	 * .pipe jade()
+	 * .pipe (fileInfo) ->
+	 * 	fileInfo.set '/* Lisence Info *\/' + fileInfo.contents
+	 * .pipe jslint()
 	 * .pipe minify()
 	 * .to 'build/minified'
 	 * ```
