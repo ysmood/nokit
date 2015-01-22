@@ -55,14 +55,29 @@ describe 'Kit:', ->
 		.then (paths) ->
 			shouldEqual paths.length > 0, true
 
+	it 'async array', ->
+		len = kit.fs.readFileSync(__filename).length
+		list = [
+			-> kit.fs.readFileSync(__filename)
+			-> kit.fs.readFileSync(__filename)
+			-> kit.fs.readFileSync(__filename)
+		]
+
+		kit.async 3, list, false, (ret) ->
+			shouldEqual ret.length, len
+		.then (rets) ->
+			shouldEqual rets, undefined
+
 	it 'async progress', ->
 		len = kit.fs.readFileSync(__filename).length
-		iter = (i) ->
-			if i == 10
-				return
-			kit.readFile __filename
+		iter = ->
+			i = 0
+			->
+				if i++ == 10
+					return
+				kit.readFile __filename
 
-		kit.async 3, iter, false, (ret) ->
+		kit.async 3, iter(), false, (ret) ->
 			shouldEqual ret.length, len
 		.then (rets) ->
 			shouldEqual rets, undefined
@@ -71,8 +86,7 @@ describe 'Kit:', ->
 		len = kit.fs.readFileSync(__filename).length
 
 		kit.async(3, _.times 10, ->
-			(i) ->
-				assert.equal typeof i, 'number'
+			->
 				kit.readFile __filename
 		, (ret) ->
 			shouldEqual ret.length, len

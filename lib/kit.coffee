@@ -92,7 +92,6 @@ _.extend kit, {
 	###
 	async: (limit, list, saveResutls, progress) ->
 		resutls = []
-		iterIndex = 0
 		running = 0
 		isIterDone = false
 
@@ -105,13 +104,9 @@ _.extend kit, {
 		saveResutls ?= true
 
 		if _.isArray list
-			listLen = list.length - 1
-			iter = (i) ->
-				return if i > listLen
-				if _.isFunction list[i]
-					list[i](i)
-				else
-					list[i]
+			iter = ->
+				el = list.pop()
+				if _.isFunction el then el() else el
 
 		else if _.isFunction list
 			iter = list
@@ -120,7 +115,7 @@ _.extend kit, {
 
 		new Promise (resolve, reject) ->
 			addTask = ->
-				task = iter(iterIndex++)
+				task = iter()
 				if isIterDone or task == undefined
 					isIterDone = true
 					allDone() if running == 0
