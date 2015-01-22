@@ -1503,6 +1503,103 @@ _.extend kit, {
 		promise
 
 	###*
+	 * Works much like `gulp.src`, but with Promise instead.
+	 * Flow control and error handling is more pleasant.
+	 * Each piped handler will recusive a `fileInfo` object:
+	 * ```coffee
+	 * {
+	 * 	# Set the contents and return self.
+	 * 	set: Function
+	 *
+	 * 	# The source path.
+	 * 	path: String
+	 *
+	 * 	# The destination path.
+	 * 	dest: String
+	 *
+	 * 	# The file content.
+	 * 	contents: String | Buffer
+	 *
+	 * 	# All the globbed files.
+	 * 	list: Array
+	 *
+	 * 	# The opts you passed to mapFiles.
+	 * 	opts: Object
+	 * }
+	 * ```
+	 * @param  {String} from Glob pattern string.
+	 * @param  {[type]} opts It extends the options of `nofs.globP`, but
+	 * with some extra proptereis. Defaults:
+	 * ```coffee
+	 * {
+	 * 	# The base directory of the pattern.
+	 * 	baseDir: String
+	 *
+	 * 	# The encoding of the contents.
+	 * 	# Set null if you want raw buffer.
+	 * 	encoding: 'utf8'
+	 * }
+	 * ```
+	 * @return {Promise}
+	 * @example
+	 * ```coffee
+	 * kit.flow 'src/**\/*.js'
+	 * .pipe jade()
+	 * .pipe minify()
+	 * .to 'build/minified'
+	 * ```
+	###
+	flow: (from, opts = {}) ->
+		_.defaults opts, {
+			encoding: 'utf8'
+		}
+
+		pipeList = []
+		onEndList = []
+
+		set = (contents) ->
+			@contents = contents
+			@
+
+		reader = (to) -> (fileInfo) ->
+			(if fileInfo.isDir
+				Promise.resolve()
+			else
+				kit.readFile fileInfo.path, opts.encoding
+			).then (contents) ->
+				fileInfo.baseDir = opts.baseDir if opts.baseDir
+				dest = kit.path.join(
+					to
+					kit.path.relative fileInfo.baseDir, fileInfo.path
+				)
+				_.extend fileInfo, { set, dest, opts, contents }
+
+		writer = (fileInfo) ->
+			return if not fileInfo
+			{ dest, contents, opts } = fileInfo
+			if dest? and contents?
+				fs.outputFile dest, contents, opts
+
+		workflow = (fileInfo, list) ->
+			list.push fileInfo
+			kit.compose(pipeList)(fileInfo)
+
+		mapper =
+			pipe: (task) ->
+				if _.isFunction task.onEnd
+					onEndList.push task.onEnd
+				pipeList.push (fileInfo) ->
+					task fileInfo if fileInfo
+				mapper
+			to: (to) ->
+				pipeList.unshift reader(to)
+				pipeList.push writer
+				onEndList.push writer
+
+				kit.glob(from, opts, workflow).then (list) ->
+					kit.compose(onEndList)({ set, to, list, opts })
+
+	###*
 	 * Node native module `url`.
 	###
 	url: require 'url'
