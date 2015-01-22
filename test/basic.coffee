@@ -209,3 +209,44 @@ describe 'Kit:', ->
 
 	it 'indent', ->
 		assert kit.indent('a\nb', 2), '  a\n  b'
+
+	it 'flow map', ->
+		tmp = 'test/fixtures/flow'
+
+		after ->
+			kit.remove tmp
+
+		counter = (info) ->
+			info.set info.contents.length
+
+		kit.flow 'test/fixtures/**/*.js'
+		.pipe counter
+		.to tmp
+		.then ->
+			kit.glob tmp + '/**'
+		.then ({ length }) ->
+			shouldEqual length, 5
+
+	it 'flow concat', ->
+		tmp = 'test/fixtures/flow_all.coffee'
+		after ->
+			kit.remove tmp
+
+		concat = (name) ->
+			all = ''
+
+			c = (info) ->
+				all += info.contents
+				null
+			c.onEnd = (info) ->
+				info.dest = info.to + '/' + name
+				info.set all
+			c
+
+		kit.flow 'test/fixtures/**/*.coffee'
+		.pipe concat('flow_all.coffee')
+		.to 'test/fixtures'
+		.then ->
+			kit.readFile tmp, 'utf8'
+		.then (str) ->
+			shouldEqual str.indexOf('indent') > 0, true
