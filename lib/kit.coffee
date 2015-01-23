@@ -1,7 +1,7 @@
 colors = require 'colors'
 _ = require 'lodash'
-Promise = require 'bluebird'
 fs = require 'nofs'
+{ Promise } = fs
 which = require './which'
 
 ###*
