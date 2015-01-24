@@ -1169,7 +1169,7 @@ _.extend kit, {
 	###*
 	 * Node native module `path`.
 	###
-	path: require 'path'
+	path: fs.path
 
 	###*
 	 * The promise lib. Now, it uses Bluebird as ES5 polyfill.
