@@ -1,5 +1,9 @@
 # Changelog
 
+- v0.2.8
+
+  - **BIG API CHANGE** `nofs` has changed the iterator arguments.
+
 - v0.2.7
 
   - **API CHANGE** `parseComment` now only have two params.

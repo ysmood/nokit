@@ -12,7 +12,7 @@ which = require './which'
 kit = {}
 
 ###*
- * kit extends all the promise functions of [nofs](https://github.com/ysmood/nofs).
+ * kit extends all the functions of [nofs](https://github.com/ysmood/nofs).
  *
  * [Offline Documentation](?gotoDoc=nofs/readme.md)
  * @example
@@ -23,19 +23,17 @@ kit = {}
  * kit.outputFile 'a.txt', 'test'
  * .then -> kit.log 'done'
  *
- * kit.fs.writeJSONSync 'b.json', { a: 10 }
+ * kit.writeJSON 'b.json', { a: 10 }
  * .then -> kit.log 'done'
  *
- * kit.fs.mkdirsP 'b.json', { a: 10 }
+ * kit.mkdirs 'b.json', { a: 10 }
  * .then -> kit.log 'done'
  * ```
 ###
 kitExtendsFsPromise = 'promise'
-for k, v of fs
-	if k.slice(-1) == 'P'
-		kit[k.slice(0, -1)] = fs[k]
 
-_.extend kit, {
+
+_.extend kit, fs, {
 
 	###*
 	 * The lodash lib.
@@ -332,9 +330,9 @@ _.extend kit, {
 		promise = kit.outputFile stdinPath, cmd + '\n'
 		.then ->
 			Promise.all [
-				kit.fs.openP stdinPath, 'r'
-				kit.fs.openP stdoutPath, 'w'
-				kit.fs.openP stderrPath, 'w'
+				kit.fs.open stdinPath, 'r'
+				kit.fs.open stdoutPath, 'w'
+				kit.fs.open stderrPath, 'w'
 			]
 		.then (stdio) ->
 			fileHandlers = fileHandlers.concat stdio
@@ -357,7 +355,7 @@ _.extend kit, {
 	 * Works much like `gulp.src`, but with Promise instead.
 	 * The flow control and error handling is more pleasant.
 	 * @param  {String} from Glob pattern string.
-	 * @param  {[type]} opts It extends the options of `nofs.globP`, but
+	 * @param  {Object} opts It extends the options of `nofs.glob`, but
 	 * with some extra proptereis. Defaults:
 	 * ```coffee
 	 * {
@@ -441,7 +439,7 @@ _.extend kit, {
 			if dest? and contents?
 				fs.outputFile dest, contents, opts
 
-		workflow = (fileInfo, list) ->
+		opts.iter = (fileInfo, list) ->
 			list.push fileInfo
 			kit.compose(pipeList)(fileInfo)
 
@@ -457,7 +455,7 @@ _.extend kit, {
 				pipeList.push writer
 				onEndList.push writer
 
-				kit.glob(from, opts, workflow).then (list) ->
+				kit.glob(from, opts).then (list) ->
 					kit.compose(onEndList)({ set, to, list, opts })
 
 	###*
@@ -1190,17 +1188,7 @@ _.extend kit, {
 	 * readFile('a.txt').then kit.log
 	 * ```
 	###
-	promisify: (fn, self) ->
-		# We should avoid use Bluebird's promisify.
-		# This one should be faster.
-		(args...) ->
-			new Promise (resolve, reject) ->
-				args.push ->
-					if arguments[0]?
-						reject arguments[0]
-					else
-						resolve arguments[1]
-				fn.apply self, args
+	promisify: fs.promisify
 
 	###*
 	 * Much faster than the native require of node, but you should
@@ -1615,9 +1603,6 @@ _.extend kit, {
 	url: require 'url'
 
 }
-
-# Fix node bugs
-kit.path.delimiter = if process.platform == 'win32' then ';' else ':'
 
 # Some debug options.
 if kit.isDevelopment()
