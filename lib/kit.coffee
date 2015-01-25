@@ -775,8 +775,10 @@ _.extend kit, fs, {
 	 * 	onNormalExit: ({ code, signal }) ->
 	 * 		kit.log 'EXIT'.yellow +
 	 * 			" code: #{(code + '').cyan} signal: #{(signal + '').cyan}"
-	 * 	onErrorExit: ->
-	 * 		kit.err 'Process closed. Edit and save
+	 * 	onErrorExit: ({ code, signal }) ->
+	 * 		kit.err 'EXIT'.yellow +
+	 * 		" code: #{(code + '').cyan} signal: #{(signal + '').cyan}\n" +
+	 * 		'Process closed. Edit and save
 	 * 			the watched file to restart.'.red
 	 * 	sepLine: ->
 	 * 		chars = _.times(process.stdout.columns, -> '*')
@@ -816,8 +818,10 @@ _.extend kit, fs, {
 			onNormalExit: ({ code, signal }) ->
 				kit.log 'EXIT'.yellow +
 					" code: #{(code + '').cyan} signal: #{(signal + '').cyan}"
-			onErrorExit: ->
-				kit.err 'Process closed. Edit and save
+			onErrorExit: ({ code, signal }) ->
+				kit.err 'EXIT'.yellow +
+				" code: #{(code + '').cyan} signal: #{(signal + '').cyan}\n" +
+				'Process closed. Edit and save
 					the watched file to restart.'.red
 			sepLine: ->
 				chars = _.times(process.stdout.columns, -> '*')
@@ -841,7 +845,7 @@ _.extend kit, fs, {
 			.catch (err) ->
 				if err.stack
 					return Promise.reject err.stack
-				opts.onErrorExit()
+				opts.onErrorExit err
 
 		watcher = (path, curr, prev) ->
 			if curr.mtime != prev.mtime
@@ -858,9 +862,9 @@ _.extend kit, fs, {
 			kit.parseDependency opts.watchList, opts.parseDependency
 			.then (paths) ->
 				opts.onWatchFiles paths
-				kit.watchFiles paths, watcher
+				kit.watchFiles paths, { handler: watcher }
 		else
-			kit.watchFiles opts.watchList, watcher
+			kit.watchFiles opts.watchList, { handler: watcher }
 
 		opts.onStart()
 

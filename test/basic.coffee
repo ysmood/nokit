@@ -24,10 +24,6 @@ createRandomServer = (fn) ->
 
 describe 'Kit:', ->
 
-	it 'nofs alias', ->
-		assert.equal typeof kit.watchFile, 'function'
-		assert.equal typeof kit.eachDir, 'function'
-
 	it 'parseComment coffee', ->
 		path = 'test/fixtures/comment.coffee'
 		kit.readFile path, 'utf8'
@@ -49,11 +45,6 @@ describe 'Kit:', ->
 				shouldEqual tag.type, 'Int'
 				shouldEqual tag.name, 'limit'
 			]
-
-	it 'glob sync', ->
-		kit.glob 'test/fixtures/*', { sync: true }
-		.then (paths) ->
-			shouldEqual paths.length > 0, true
 
 	it 'async array', ->
 		len = kit.fs.readFileSync(__filename).length
@@ -166,6 +157,23 @@ describe 'Kit:', ->
 			}
 			.then (body) ->
 				shouldEqual +body, buffer.length
+
+	it 'monitorApp', (tdone) ->
+		p = 'test/fixtures/monitorApp-test.coffee'
+		kit.copySync 'test/fixtures/monitorApp.coffee', p
+		kit.monitorApp {
+			bin: 'coffee'
+			args: [p]
+			onErrorExit: ({ code, signal }) ->
+				try
+					assert.strictEqual code, 10
+					tdone()
+				catch err
+					tdone err
+		}
+		setTimeout ->
+			kit.outputFileSync p, 'process.exit 10'
+		, 500
 
 	it 'iter', ->
 		assert.deepEqual kit.iter([1, 2, 3])(), { key: 0, value: 1 }
