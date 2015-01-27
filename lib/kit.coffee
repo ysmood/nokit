@@ -1583,7 +1583,7 @@ _.extend kit, fs,
 	 * @param  {Object}   opts Optional. Defaults:
 	 * ```coffee
 	 * {
-	 * 	deps: [String]
+	 * 	deps: String | Array
 	 * 	description: String
 	 * 	log: ->
 	 * 		return if not this.description
@@ -1600,7 +1600,7 @@ _.extend kit, fs,
 	 * @property {Function} run Use it to start tasks.
 	 * `(names = 'default', isSequential = false, init) ->`.
 	 * The `names` can be a string or array. the `init` will be passed as
-	 * the first task's argument.
+	 * the first task's argument. In one `run`, each task will only run once.
 	 * @return {Promise} Resolve with the last task's resolved value.
 	 * When `isSequential == true`, it resolves a value, else it resolves
 	 * an array.
@@ -1639,16 +1639,25 @@ _.extend kit, fs,
 					"[ #{name} ] ".green + @description
 		}
 
+		if _.isString opts.deps
+			opts.deps = [opts.deps]
+
 		kit.task.list ?= {}
 
-		kit.task.list[name] = (val) ->
+		kit.task.list[name] = (resolveList) -> (val) ->
 			opts.log()
 
 			if opts.deps and opts.deps.length > 0
-				depTasks = _.select kit.task.list, (nil, name) ->
+				depTasks = _.pick kit.task.list, (nil, name) ->
 					opts.deps.indexOf(name) > -1
 			else
 				return Promise.resolve fn(val)
+
+			depTasks = _.map depTasks, (task, name) -> (val) ->
+				if resolveList[name]
+					resolveList[name]
+				else
+					resolveList[name] = task(resolveList)(val)
 
 			(if opts.isSequential
 				kit.compose(depTasks)(val)
@@ -1657,16 +1666,22 @@ _.extend kit, fs,
 			).then fn
 
 		kit.task.run ?= (names = 'default', isSequential = false, init) ->
+			resolveList = {}
+
 			if _.isString names
 				names = [names]
 
+			runTask = (name) -> (val) ->
+				if resolveList[name]
+					resolveList[name]
+				else
+					resolveList[name] = kit.task.list[name](resolveList)(val)
+
 			if isSequential
-				kit.compose(names.map (name) ->
-					kit.task.list[name]
-				)(init)
+				kit.compose(names.map runTask)(init)
 			else
 				Promise.all names.map (name) ->
-					kit.task.list[name](init)
+					runTask(name)(init)
 
 	###*
 	 * Node native module `url`.
