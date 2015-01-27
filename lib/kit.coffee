@@ -882,7 +882,7 @@ _.extend kit, fs, {
 	###*
 	 * Open a thing that your system can recognize.
 	 * Now only support Windows, OSX or system that installed 'xdg-open'.
-	 * @param  {String} cmd  The thing you want to open.
+	 * @param  {String | Array} cmds  The thing you want to open.
 	 * @param  {Object} opts The options of the node native
 	 * `child_process.exec`.
 	 * @return {Promise} When the child process exists.
@@ -892,28 +892,24 @@ _.extend kit, fs, {
 	 * kit.open 'http://ysmood.org'
 	 * ```
 	###
-	xopen: (cmd, opts = {}) ->
-		{ exec } = kit.require 'child_process'
-
-		switch process.platform
+	xopen: (cmds, opts = {}) ->
+		(Promise.resolve switch process.platform
 			when 'darwin'
-				cmds = ['open']
+				'open'
 			when 'win32'
-				cmds = ['start']
+				'start'
 			else
 				try
-					cmds = [which.sync('xdg-open')]
+					kit.which 'xdg-open'
 				catch
-					return Promise.resolve()
+					null
+		).then (starter) ->
+			return if not starter
 
-		cmds.push cmd
+			if _.isString cmds
+				cmds = [cmds]
 
-		new Promise (resolve, reject) ->
-			exec cmds.join(' '), opts, (err, stdout, stderr) ->
-				if err
-					reject err
-				else
-					resolve { stdout, stderr }
+			kit.spawn starter, cmds
 
 	###*
 	 * A comments parser for javascript and coffee-script.
@@ -1550,7 +1546,7 @@ _.extend kit, fs, {
 		}
 
 		if process.platform == 'win32'
-			cmd = which.sync cmd
+			cmd = kit.whichSync cmd
 			if cmd.slice(-3).toLowerCase() == 'cmd'
 				cmdSrc = kit.fs.readFileSync(cmd, 'utf8')
 				m = cmdSrc.match(/node\s+"%~dp0\\(\.\.\\.+)"/)
@@ -1585,6 +1581,18 @@ _.extend kit, fs, {
 	 * Node native module `url`.
 	###
 	url: require 'url'
+
+	###*
+	 * Same as the unix `which` command.
+	 * @type {Function}
+	###
+	which: fs.promisify which
+
+	###*
+	 * Same as the unix `which` command.
+	 * @type {Function}
+	###
+	whichSync: which.sync
 
 }
 
