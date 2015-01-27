@@ -23,7 +23,7 @@ task 'build', 'Build project.', build = ->
 			(doc) ->
 				tpl = kit.fs.readFileSync 'doc/readme.tpl.md', 'utf8'
 
-				kit.outputFile 'readme.md', _.template tpl, { api: doc }
+				kit.outputFile 'readme.md', _.template(tpl)({ api: doc })
 		])()
 
 	start = kit.compose [

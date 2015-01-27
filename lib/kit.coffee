@@ -651,7 +651,7 @@ _.extend kit, fs, {
 	 * ```
 	###
 	indent: (text, num = 0, char = ' ', reg = /^/mg) ->
-		prefix = _.times(num, -> char).join('')
+		prefix = _.repeat num, char
 		text.replace reg, prefix
 
 	###*
@@ -714,14 +714,14 @@ _.extend kit, fs, {
 		kit.lastLogTime = time
 		time = [
 			[
-				kit.pad time.getFullYear(), 4
-				kit.pad time.getMonth() + 1, 2
-				kit.pad time.getDate(), 2
+				_.padLeft time.getFullYear(), 4, '0'
+				_.padLeft time.getMonth() + 1, 2, '0'
+				_.padLeft time.getDate(), 2, '0'
 			].join('-')
 			[
-				kit.pad time.getHours(), 2
-				kit.pad time.getMinutes(), 2
-				kit.pad time.getSeconds(), 2
+				_.padLeft time.getHours(), 2, '0'
+				_.padLeft time.getMinutes(), 2, '0'
+				_.padLeft time.getSeconds(), 2, '0'
 			].join(':')
 		].join(' ').grey
 
@@ -781,8 +781,7 @@ _.extend kit, fs, {
 	 * 		'Process closed. Edit and save
 	 * 			the watched file to restart.'.red
 	 * 	sepLine: ->
-	 * 		chars = _.times(process.stdout.columns, -> '*')
-	 * 		console.log chars.join('').yellow
+	 * 		console.log _.repeat('*', process.stdout.columns).yellow
 	 * }
 	 * ```
 	 * @return {Promise} It has a property `process`, which is the monitored
@@ -824,8 +823,7 @@ _.extend kit, fs, {
 				'Process closed. Edit and save
 					the watched file to restart.'.red
 			sepLine: ->
-				chars = _.times(process.stdout.columns, -> '*')
-				console.log chars.join('').yellow
+				console.log _.repeat('*', process.stdout.columns).yellow
 		}
 
 		opts.watchList ?= opts.args
@@ -878,7 +876,7 @@ _.extend kit, fs, {
 	###
 	nodeVersion: ->
 		ms = process.versions.node.match /(\d+)\.(\d+)\.(\d+)/
-		str = ms[1] + '.' + kit.pad(ms[2], 2) + kit.pad(ms[3], 2)
+		str = ms[1] + '.' + _.padLeft(ms[2], 2, '0') + _.padLeft(ms[3], 2, '0')
 		+str
 
 	###*
@@ -916,24 +914,6 @@ _.extend kit, fs, {
 					reject err
 				else
 					resolve { stdout, stderr }
-
-	###*
-	 * String padding helper. It is used in the `kit.log`.
-	 * @param  {Sting | Number} str
-	 * @param  {Number} width
-	 * @param  {String} char Padding char. Default is '0'.
-	 * @return {String}
-	 * @example
-	 * ```coffee
-	 * kit.pad '1', 3 # '001'
-	 * ```
-	###
-	pad: (str, width, char = '0') ->
-		str = str + ''
-		if str.length >= width
-			str
-		else
-			new Array(width - str.length + 1).join(char) + str
 
 	###*
 	 * A comments parser for javascript and coffee-script.
