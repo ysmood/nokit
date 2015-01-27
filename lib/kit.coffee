@@ -453,7 +453,7 @@ _.extend kit, fs, {
 			to: (to) ->
 				pipeList.unshift reader(to)
 				pipeList.push writer
-				onEndList.push writer
+				onEndList.push writer if onEndList.length > 0
 
 				kit.glob(from, opts).then (list) ->
 					kit.compose(onEndList)({ set, to, list, opts })
