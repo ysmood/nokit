@@ -435,9 +435,9 @@ _.extend kit, fs, {
 
 		writer = (fileInfo) ->
 			return if not fileInfo
-			{ dest, contents, opts } = fileInfo
+			{ dest, contents } = fileInfo
 			if dest? and contents?
-				fs.outputFile dest, contents, opts
+				fs.outputFile dest, contents, fileInfo.opts
 
 		opts.iter = (fileInfo, list) ->
 			list.push fileInfo
