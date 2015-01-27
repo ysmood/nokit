@@ -1589,7 +1589,7 @@ _.extend kit, fs, {
 	which: fs.promisify which
 
 	###*
-	 * Same as the unix `which` command.
+	 * Sync version of `which`.
 	 * @type {Function}
 	###
 	whichSync: which.sync
