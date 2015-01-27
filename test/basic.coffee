@@ -294,6 +294,6 @@ describe 'Kit:', ->
 			seq.push v
 			1
 
-		kit.task.run('default', true, 0)
+		kit.task.run 'default', { isSequential: true, init: 0 }
 		.then (seq) ->
 			shouldDeepEqual seq, [0, [2], 1]

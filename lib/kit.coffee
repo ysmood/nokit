@@ -1599,10 +1599,21 @@ _.extend kit, fs,
 	 * @param  {Function} fn `(val) -> Promise | Any` The task function.
 	 * If it is a async task, it should return a promise.
 	 * It will get its dependency tasks' resolved values.
-	 * @property {Function} run Use it to start tasks.
-	 * `(names = 'default', isSequential = false, init) ->`.
-	 * The `names` can be a string or array. the `init` will be passed as
-	 * the first task's argument. In one `run`, each task will only run once.
+	 * @property {Function} run Use it to start tasks. Each task will only run once.
+	 * `(names = 'default', opts) ->`. The `names` can be a string or array.
+	 * The default opts:
+	 * ```coffee
+	 * {
+	 * 	isSequential: false
+	 *
+	 * 	# Will be passed as the first task's argument.
+	 * 	init: undefined
+	 *
+	 * 	# To stop the run currently in process. Set the `__stop__`
+	 * 	# reference to true. It will reject a "runStopped" error.
+	 * 	flow: { __stop__: false }
+	 * }
+	 * ```
 	 * @property {Object} list The defined task functions.
 	 * @return {Promise} Resolve with the last task's resolved value.
 	 * When `isSequential == true`, it resolves a value, else it resolves
@@ -1648,19 +1659,22 @@ _.extend kit, fs,
 		kit.task.list ?= {}
 
 		# Here we use some curry functions to deal with the race condition.
-		runTask = (resolveList) -> (name) -> (val) ->
-			if resolveList[name]
-				resolveList[name]
+		runTask = (flow) -> (name) -> (val) ->
+			if flow[name]
+				flow[name]
 			else
-				resolveList[name] = kit.task.list[name](resolveList)(val)
+				flow[name] = kit.task.list[name](flow)(val)
 
-		kit.task.list[name] = (resolveList) -> (val) ->
+		kit.task.list[name] = (flow) -> (val) ->
+			if flow.__stop__
+				return Promise.reject new Error('runStopped')
+
 			opts.log()
 
 			if not opts.deps or opts.deps.length < 1
 				return Promise.resolve fn(val)
 
-			depTasks = opts.deps.map runTask(resolveList)
+			depTasks = opts.deps.map runTask(flow)
 
 			(if opts.isSequential
 				kit.compose(depTasks)(val)
@@ -1668,15 +1682,21 @@ _.extend kit, fs,
 				Promise.all depTasks.map (task) -> task val
 			).then fn
 
-		kit.task.run ?= (names = 'default', isSequential = false, init) ->
+		kit.task.run ?= (names = 'default', opts = {}) ->
 			if _.isString names
 				names = [names]
 
-			if isSequential
-				kit.compose(names.map runTask({}))(init)
+			_.defaults opts, {
+				isSequential: false
+				init: undefined
+				flow: { __stop__: false }
+			}
+
+			if opts.isSequential
+				kit.compose(names.map runTask(opts.flow)) opts.init
 			else
 				Promise.all names.map (name) ->
-					runTask({})(name)(init)
+					runTask(opts.flow)(name) opts.init
 
 	###*
 	 * Node native module `url`.
