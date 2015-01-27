@@ -1603,12 +1603,13 @@ _.extend kit, fs,
 	 * `(names = 'default', isSequential = false, init) ->`.
 	 * The `names` can be a string or array. the `init` will be passed as
 	 * the first task's argument. In one `run`, each task will only run once.
+	 * @property {Object} list The defined task functions.
 	 * @return {Promise} Resolve with the last task's resolved value.
 	 * When `isSequential == true`, it resolves a value, else it resolves
 	 * an array.
 	 * @example
 	 * ```coffee
-	 * kit.task 'default', { deps: ['build'] }, ->
+	 * kit.task 'default', { deps: 'build' }, ->
 	 * 	kit.log 'run defaults...'
 	 *
 	 * kit.task 'build', { deps: ['clean'] }, (isFull) ->
@@ -1646,20 +1647,20 @@ _.extend kit, fs,
 
 		kit.task.list ?= {}
 
+		# Here we use some curry functions to deal with the race condition.
+		runTask = (resolveList) -> (name) -> (val) ->
+			if resolveList[name]
+				resolveList[name]
+			else
+				resolveList[name] = kit.task.list[name](resolveList)(val)
+
 		kit.task.list[name] = (resolveList) -> (val) ->
 			opts.log()
 
-			if opts.deps and opts.deps.length > 0
-				depTasks = _.pick kit.task.list, (nil, name) ->
-					opts.deps.indexOf(name) > -1
-			else
+			if not opts.deps or opts.deps.length < 1
 				return Promise.resolve fn(val)
 
-			depTasks = _.map depTasks, (task, name) -> (val) ->
-				if resolveList[name]
-					resolveList[name]
-				else
-					resolveList[name] = task(resolveList)(val)
+			depTasks = opts.deps.map runTask(resolveList)
 
 			(if opts.isSequential
 				kit.compose(depTasks)(val)
@@ -1668,22 +1669,14 @@ _.extend kit, fs,
 			).then fn
 
 		kit.task.run ?= (names = 'default', isSequential = false, init) ->
-			resolveList = {}
-
 			if _.isString names
 				names = [names]
 
-			runTask = (name) -> (val) ->
-				if resolveList[name]
-					resolveList[name]
-				else
-					resolveList[name] = kit.task.list[name](resolveList)(val)
-
 			if isSequential
-				kit.compose(names.map runTask)(init)
+				kit.compose(names.map runTask({}))(init)
 			else
 				Promise.all names.map (name) ->
-					runTask(name)(init)
+					runTask({})(name)(init)
 
 	###*
 	 * Node native module `url`.
