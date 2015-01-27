@@ -524,12 +524,14 @@ _.extend kit, fs,
 	 * Generate a list of module paths from a name and a directory.
 	 * @param  {String} moduleName The module name.
 	 * @param  {String} dir        The root path. Default is current working dir.
+	 * @param  {String} modDir     Default is 'node_modules'.
 	 * @return {Array} Paths
 	###
-	generateNodeModulePaths: (moduleName, dir = process.cwd()) ->
+	genModulePaths: (moduleName, dir = process.cwd(), modDir) ->
+		modDir ?= 'node_modules'
 		names = [moduleName]
 		while true
-			names.push kit.path.join(dir, 'node_modules', moduleName)
+			names.push kit.path.join(dir, modDir, moduleName)
 			pDir = kit.path.dirname dir
 
 			break if dir == pDir
@@ -1183,7 +1185,7 @@ _.extend kit, fs,
 			if moduleName[0] == '.'
 				throw new Error('Relative path is not allowed: ' + moduleName)
 
-			names = kit.generateNodeModulePaths moduleName, process.cwd()
+			names = kit.genModulePaths moduleName, process.cwd()
 
 			if process.env.NODE_PATH
 				for p in process.env.NODE_PATH.split(kit.path.delimiter)
