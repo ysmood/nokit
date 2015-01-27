@@ -33,7 +33,7 @@ kit = {}
 kitExtendsFsPromise = 'promise'
 
 
-_.extend kit, fs, {
+_.extend kit, fs,
 
 	###*
 	 * The lodash lib.
@@ -1578,6 +1578,97 @@ _.extend kit, fs, {
 		promise
 
 	###*
+	 * Sequencing and executing tasks and dependencies concurrently.
+	 * @param  {String}   name The task name.
+	 * @param  {Object}   opts Optional. Defaults:
+	 * ```coffee
+	 * {
+	 * 	deps: [String]
+	 * 	description: String
+	 * 	log: ->
+	 * 		return if not this.description
+	 * 		kit.log 'Run Task >> '.cyan +
+	 * 			"[ #{name} ] ".green + this.description
+	 *
+	 * 	# Whether to run dependency in a row.
+	 * 	isSequential: false
+	 * }
+	 * ```
+	 * @param  {Function} fn `(val) -> Promise | Any` The task function.
+	 * If it is a async task, it should return a promise.
+	 * It will get its dependency tasks' resolved values.
+	 * @property {Function} run Use it to start tasks.
+	 * `(names = 'default', isSequential = false, init) ->`.
+	 * The `names` can be a string or array. the `init` will be passed as
+	 * the first task's argument.
+	 * @return {Promise} Resolve with the last task's resolved value.
+	 * When `isSequential == true`, it resolves a value, else it resolves
+	 * an array.
+	 * @example
+	 * ```coffee
+	 * kit.task 'default', { deps: ['build'] }, ->
+	 * 	kit.log 'run defaults...'
+	 *
+	 * kit.task 'build', { deps: ['clean'] }, (isFull) ->
+	 * 	if isFull
+	 * 		'do something'
+	 * 	else
+	 * 		'do something else'
+	 *
+	 * kit.task 'clean', (opts) ->
+	 * 	if opts.isForce
+	 * 		kit.remove 'dist/**', { isForce: true }
+	 * 	else
+	 * 		kit.remove 'dist/**'
+	 *
+	 * kit.task.run()
+	 * .then ->
+	 * 	kit.log 'All Done!'
+	 * ```
+	###
+	task: (name, opts, fn) ->
+		if _.isFunction opts
+			fn = opts
+			opts = {}
+
+		_.defaults opts, {
+			isSequential: false
+			log: ->
+				return if not @description
+				kit.log 'Run Task >> '.cyan +
+					"[ #{name} ] ".green + @description
+		}
+
+		kit.task.list ?= {}
+
+		kit.task.list[name] = (val) ->
+			opts.log()
+
+			if opts.deps and opts.deps.length > 0
+				depTasks = _.select kit.task.list, (nil, name) ->
+					opts.deps.indexOf(name) > -1
+			else
+				return Promise.resolve fn(val)
+
+			(if opts.isSequential
+				kit.compose(depTasks)(val)
+			else
+				Promise.all depTasks.map (task) -> task val
+			).then fn
+
+		kit.task.run ?= (names = 'default', isSequential = false, init) ->
+			if _.isString names
+				names = [names]
+
+			if isSequential
+				kit.compose(names.map (name) ->
+					kit.task.list[name]
+				)(init)
+			else
+				Promise.all names.map (name) ->
+					kit.task.list[name](init)
+
+	###*
 	 * Node native module `url`.
 	###
 	url: require 'url'
@@ -1593,8 +1684,6 @@ _.extend kit, fs, {
 	 * @type {Function}
 	###
 	whichSync: which.sync
-
-}
 
 # Some debug options.
 if kit.isDevelopment()

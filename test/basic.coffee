@@ -258,3 +258,42 @@ describe 'Kit:', ->
 			kit.readFile tmp, 'utf8'
 		.then (str) ->
 			shouldEqual str.indexOf('indent') > 0, true
+
+	it 'task deps', ->
+		seq = []
+
+		kit.task 'default', { deps: ['one'], description: '0' } , ->
+			seq.push 'default'
+			seq
+
+		kit.task 'one', { deps: ['two']} , ->
+			seq.push 'one'
+
+		kit.task 'two', { description: '2' } , ->
+			seq.push 'two'
+
+		kit.task.run()
+		.then ([seq]) ->
+			shouldDeepEqual seq, [ 'two', 'one', 'default' ]
+
+	it 'task sequential', ->
+		seq = []
+
+		kit.task 'default', { deps: ['one', 'two'], isSequential: true } , (v) ->
+			seq.push v
+			seq
+
+		kit.task 'one', (v) ->
+			new Promise (r) ->
+				setTimeout ->
+					seq.push v
+					r 2
+				, 5
+
+		kit.task 'two', { description: '2' } , (v) ->
+			seq.push v
+			1
+
+		kit.task.run('default', true, 0)
+		.then (seq) ->
+			shouldDeepEqual seq, [0, 2, 1]
