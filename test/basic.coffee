@@ -290,10 +290,10 @@ describe 'Kit:', ->
 					r 2
 				, 5
 
-		kit.task 'two', { description: '2' } , (v) ->
+		kit.task 'two', { deps: 'one', description: '2' } , (v) ->
 			seq.push v
 			1
 
 		kit.task.run('default', true, 0)
 		.then (seq) ->
-			shouldDeepEqual seq, [0, 2, 1]
+			shouldDeepEqual seq, [0, [2], 1]
