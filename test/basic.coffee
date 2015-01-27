@@ -221,9 +221,6 @@ describe 'Kit:', ->
 	it 'flow map', ->
 		tmp = 'test/fixtures/flow'
 
-		after ->
-			kit.remove tmp
-
 		counter = (info) ->
 			info.set info.contents.length
 
@@ -237,8 +234,6 @@ describe 'Kit:', ->
 
 	it 'flow concat', ->
 		tmp = 'test/fixtures/flow_all.coffee'
-		after ->
-			kit.remove tmp
 
 		concat = (name) ->
 			all = ''
