@@ -23,7 +23,7 @@
   "homepage": "https://github.com/ysmood/nokit",
   "dependencies": {
     "colors": "1.0.3",
-    "nofs": "0.4.0",
+    "nofs": "0.4.1",
     "jhash": "0.1.6",
     "lodash": "3.0.0"
   },
