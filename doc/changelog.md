@@ -3,6 +3,8 @@
 - v0.2.8
 
   - **BIG API CHANGE** `nofs` has changed the iterator arguments.
+  - **API CHANGE** remove `pad` function, use `kit._.padLeft` instead.
+  - Update `lodash` to `v3.0.0`.
 
 - v0.2.7
 

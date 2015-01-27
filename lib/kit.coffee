@@ -544,19 +544,17 @@ _.extend kit, fs, {
 	 * [jhash]: https://github.com/ysmood/jhash
 	 * @example
 	 * ```coffee
-	 * var jhash = require('jhash');
-	 * jhash.hash('test'); // output => '349o'
+	 * kit.jhash.hash 'test' # output => '349o'
 	 *
-	 * var fs = require('fs');
-	 * jhash.hash(fs.readFileSync('a.jpg'));
+	 * jhash.hash kit.readFileSync('a.jpg')
 	 *
-	 * // Control the hash char set.
-	 * jhash.setSymbols('abcdef');
-	 * jhash.hash('test'); // output => 'decfddfe'
+	 * # Control the hash char set.
+	 * kit.jhash.setSymbols 'abcdef'
+	 * kit.jhash.hash 'test' # output => 'decfddfe'
 	 *
-	 * // Control the max length of the result hash value. Unit is bit.
-	 * jhash.setMaskLen(10);
-	 * jhash.hash('test'); // output => 'ede'
+	 * # Control the max length of the result hash value. Unit is bit.
+	 * jhash.setMaskLen 10
+	 * jhash.hash 'test' # output => 'ede'
 	 * ```
 	###
 	jhash: require 'jhash'
@@ -651,7 +649,7 @@ _.extend kit, fs, {
 	 * ```
 	###
 	indent: (text, num = 0, char = ' ', reg = /^/mg) ->
-		prefix = _.repeat num, char
+		prefix = _.repeat char, num
 		text.replace reg, prefix
 
 	###*
@@ -781,7 +779,7 @@ _.extend kit, fs, {
 	 * 		'Process closed. Edit and save
 	 * 			the watched file to restart.'.red
 	 * 	sepLine: ->
-	 * 		console.log _.repeat('*', process.stdout.columns).yellow
+	 * 		process.stdout.write _.repeat('*', process.stdout.columns).yellow
 	 * }
 	 * ```
 	 * @return {Promise} It has a property `process`, which is the monitored
@@ -823,7 +821,9 @@ _.extend kit, fs, {
 				'Process closed. Edit and save
 					the watched file to restart.'.red
 			sepLine: ->
-				console.log _.repeat('*', process.stdout.columns).yellow
+				process.stdout.write _.repeat(
+					'*', process.stdout.columns
+				).yellow
 		}
 
 		opts.watchList ?= opts.args
@@ -1149,7 +1149,7 @@ _.extend kit, fs, {
 			_.keys depPaths
 
 	###*
-	 * Node native module `path`.
+	 * io.js native module `path`. See `nofs` for more information.
 	###
 	path: fs.path
 
