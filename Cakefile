@@ -41,16 +41,22 @@ task 'build', 'Build project.', build = ->
 option '-g', '--grep [grep]', 'Test pattern'
 option '-b', '--bare', 'Don\'t compile before test.'
 task 'test', 'Test', (opts) ->
+	clean = ->
+		kit.spawn 'git', ['clean', '-fd', kit.path.normalize('test/fixtures')]
+
 	(if opts.bare
 		kit.Promise.resolve()
 	else
 		build()
-	).then ->
+	).then clean
+	.then ->
 		kit.spawn('mocha', [
 			'-t', '10000'
 			'-r', 'coffee-script/register'
 			'-R', 'spec'
 			'-g', opts.grep or '.'
 			'test/basic.coffee'
-		]).catch ({ code }) ->
-			process.exit code
+		])
+	.then -> clean()
+	.catch ({ code }) ->
+		process.exit code
