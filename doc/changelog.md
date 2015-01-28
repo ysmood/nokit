@@ -4,7 +4,9 @@
 
   - **BIG API CHANGE** `nofs` has changed the iterator arguments.
   - **API CHANGE** remove `pad` function, use `kit._.padLeft` instead.
+  - **API CHANGE** rename `generateNodeModulePaths` to `genModulePaths`.
   - Update `lodash` to `v3.0.0`.
+  - Add `task` helper.
 
 - v0.2.7
 
