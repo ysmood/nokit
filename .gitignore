@@ -1,5 +1,4 @@
 *.sublime-*
 node_modules
-dist
 .nobone
 .cake_task_cache
