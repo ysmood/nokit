@@ -1031,7 +1031,7 @@ _.extend kit, fs,
 	 * 			name: ({ name, line }) ->
 	 * 				name = name.replace 'self.', ''
 	 * 				link = "#{path}?source#L#{line}"
-	 * 				"- \#\#\#\# **[#{name}](#{link})**\n\n"
+	 * 				"- \#\#\# **[#{name}](#{link})**\n\n"
 	 * 		}
 	 * }
 	 * ```
@@ -1045,7 +1045,7 @@ _.extend kit, fs,
 				name: ({ name, line }) ->
 					name = name.replace 'self.', ''
 					link = "#{path}?source#L#{line}"
-					"- #### **[#{name}](#{link})**\n\n"
+					"- ### **[#{name}](#{link})**\n\n"
 			}
 		}
 

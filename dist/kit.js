@@ -1179,7 +1179,7 @@ _.extend(kit, fs, {
   	 * 			name: ({ name, line }) ->
   	 * 				name = name.replace 'self.', ''
   	 * 				link = "#{path}?source#L#{line}"
-  	 * 				"- \#\#\#\# **[#{name}](#{link})**\n\n"
+  	 * 				"- \#\#\# **[#{name}](#{link})**\n\n"
   	 * 		}
   	 * }
   	 * ```
@@ -1198,7 +1198,7 @@ _.extend(kit, fs, {
           name = _arg.name, line = _arg.line;
           name = name.replace('self.', '');
           link = "" + path + "?source#L" + line;
-          return "- #### **[" + name + "](" + link + ")**\n\n";
+          return "- ### **[" + name + "](" + link + ")**\n\n";
         }
       }
     });
