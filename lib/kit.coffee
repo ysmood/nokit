@@ -1608,9 +1608,9 @@ _.extend kit, fs,
 	 * 	# Will be passed as the first task's argument.
 	 * 	init: undefined
 	 *
-	 * 	# To stop the run currently in process. Set the `__stop__`
+	 * 	# To stop the run currently in process. Set the `$stop`
 	 * 	# reference to true. It will reject a "runStopped" error.
-	 * 	flow: { __stop__: false }
+	 * 	flow: { $stop: false }
 	 * }
 	 * ```
 	 * @property {Object} list The defined task functions.
@@ -1665,7 +1665,7 @@ _.extend kit, fs,
 				flow[name] = kit.task.list[name](flow)(val)
 
 		kit.task.list[name] = (flow) -> (val) ->
-			if flow.__stop__
+			if flow.$stop
 				return Promise.reject new Error('runStopped')
 
 			opts.log()
@@ -1681,6 +1681,8 @@ _.extend kit, fs,
 				Promise.all depTasks.map (task) -> task val
 			).then fn
 
+		kit.task.list[name].opts = opts
+
 		kit.task.run ?= (names = 'default', opts = {}) ->
 			if _.isString names
 				names = [names]
@@ -1688,14 +1690,16 @@ _.extend kit, fs,
 			_.defaults opts, {
 				isSequential: false
 				init: undefined
-				flow: { __stop__: false }
+				flow: { $stop: false }
 			}
 
+			task = runTask opts.flow
+
 			if opts.isSequential
-				kit.compose(names.map runTask(opts.flow)) opts.init
+				kit.compose(names.map task) opts.init
 			else
 				Promise.all names.map (name) ->
-					runTask(opts.flow)(name) opts.init
+					task(name) opts.init
 
 	###*
 	 * Node native module `url`.
