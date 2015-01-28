@@ -76,7 +76,7 @@ setGlobals = ->
 		kit
 		task
 		option
-		cmder
+		flow: kit.flow
 	}
 
 launch = ->

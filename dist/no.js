@@ -92,7 +92,7 @@ setGlobals = function() {
     kit: kit,
     task: task,
     option: option,
-    cmder: cmder
+    flow: kit.flow
   });
 };
 
