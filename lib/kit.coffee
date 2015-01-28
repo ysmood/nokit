@@ -540,10 +540,9 @@ _.extend kit, fs,
 
 	###*
 	 * A fast helper to hash string or binary file.
-	 * See my [jhash][jhash] project.
+	 * See my [jhash](https://github.com/ysmood/jhash) project.
 	 *
 	 * [Offline Documentation](?gotoDoc=jhash/readme.md)
-	 * [jhash]: https://github.com/ysmood/jhash
 	 * @example
 	 * ```coffee
 	 * kit.jhash.hash 'test' # output => '349o'
