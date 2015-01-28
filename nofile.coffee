@@ -24,9 +24,7 @@ task 'build', 'Build project.', build = ->
 
 	start = kit.compose [
 		-> kit.remove 'dist'
-		-> kit.copy 'lib', 'dist', {
-			filter: '**/*.js'
-		}
+		-> flow('lib/**/*.js').to 'dist'
 		compileCoffee
 		createDoc
 	]
@@ -34,7 +32,7 @@ task 'build', 'Build project.', build = ->
 	start().then ->
 		kit.log 'Build done.'.green
 
-option '-g, --grep [grep]', 'Test pattern'
+option '-g, --grep [grep]', 'Test pattern', '.'
 option '-b, --bare', 'Don\'t compile before test.'
 task 'test', 'Test', (opts) ->
 	clean = ->
@@ -50,7 +48,7 @@ task 'test', 'Test', (opts) ->
 			'-t', '10000'
 			'-r', 'coffee-script/register'
 			'-R', 'spec'
-			'-g', opts.grep or '.'
+			'-g', opts.grep
 			'test/basic.coffee'
 		])
 	.then -> clean()
