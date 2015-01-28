@@ -4,8 +4,8 @@
   "description": "A light weight set of handy functions.",
   "main": "dist/kit.js",
   "scripts": {
-    "test": "cake test",
-    "prepublish": "cake build"
+    "test": "bin/no.js test",
+    "prepublish": "bin/no.js build"
   },
   "repository": {
     "type": "git",
