@@ -3,7 +3,7 @@
 /*
 	A simplified version of Make.
  */
-var cmder, kit, loadNofile, option, task, _, _base;
+var cmder, kit, launch, loadNofile, setGlobals, task, _;
 
 if (process.env.NODE_ENV == null) {
   process.env.NODE_ENV = 'development';
@@ -20,6 +20,9 @@ loadNofile = function() {
   try {
     require('coffee-script/register');
   } catch (_error) {}
+  try {
+    require('Livescript');
+  } catch (_error) {}
   paths = kit.genModulePaths('nofile', __dirname, '').slice(1);
   for (_i = 0, _len = paths.length; _i < _len; _i++) {
     path = paths[_i];
@@ -32,6 +35,7 @@ loadNofile = function() {
       }
     }
   }
+  throw new Error('Cannot find nofile');
 };
 
 
@@ -80,24 +84,35 @@ task = function(name, deps, description, isSequential, fn) {
   }, argedFn);
 };
 
-option = cmder.option.bind(cmder);
+setGlobals = function() {
+  var option;
+  option = cmder.option.bind(cmder);
+  return kit._.extend(global, {
+    _: _,
+    kit: kit,
+    task: task,
+    option: option,
+    cmder: cmder
+  });
+};
 
-kit._.extend(global, {
-  _: _,
-  kit: kit,
-  task: task,
-  option: option,
-  cmder: cmder
-});
+launch = function() {
+  cmder.parse(process.argv);
+  if (cmder.args.length === 0) {
+    if (kit.task.list && kit.task.list['default']) {
+      return kit.task.run('default', {
+        init: cmder
+      });
+    } else {
+      return cmder.outputHelp();
+    }
+  } else if (!_.isObject(cmder.args[0])) {
+    return cmder.outputHelp();
+  }
+};
+
+setGlobals();
 
 loadNofile();
 
-cmder.parse(process.argv);
-
-if (cmder.args.length === 0) {
-  if (typeof (_base = kit.task).run === "function") {
-    _base.run(void 0, {
-      init: cmder
-    });
-  }
-}
+launch();

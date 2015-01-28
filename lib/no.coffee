@@ -11,6 +11,7 @@ cmder = kit.requireOptional 'commander'
 
 loadNofile = ->
 	try require 'coffee-script/register'
+	try require 'Livescript'
 
 	paths = kit.genModulePaths('nofile', __dirname, '')[1..]
 	for path in paths
@@ -19,6 +20,8 @@ loadNofile = ->
 		catch err
 			if err.code != 'MODULE_NOT_FOUND'
 				throw err
+
+	throw new Error 'Cannot find nofile'
 
 ###*
  * A simplified task wrapper for `kit.task`
@@ -64,20 +67,29 @@ task = (name, deps, description, isSequential, fn) ->
 
 	kit.task name, { deps, description, isSequential }, argedFn
 
-option = cmder.option.bind(cmder)
+setGlobals = ->
+	option = cmder.option.bind(cmder)
 
-# Expose global helpers.
-kit._.extend global, {
-	_
-	kit
-	task
-	option
-	cmder
-}
+	# Expose global helpers.
+	kit._.extend global, {
+		_
+		kit
+		task
+		option
+		cmder
+	}
 
+launch = ->
+	cmder.parse process.argv
+
+	if cmder.args.length == 0
+		if kit.task.list and kit.task.list['default']
+			kit.task.run 'default', { init: cmder }
+		else
+			cmder.outputHelp()
+	else if not _.isObject cmder.args[0]
+		cmder.outputHelp()
+
+setGlobals()
 loadNofile()
-
-cmder.parse process.argv
-
-if cmder.args.length == 0
-	kit.task.run? undefined, { init: cmder }
+launch()

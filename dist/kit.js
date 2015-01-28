@@ -1820,7 +1820,6 @@ _.extend(kit, fs, {
   	 * 	deps: String | Array
   	 * 	description: String
   	 * 	log: ->
-  	 * 		return if not this.description
   	 * 		kit.log 'Run Task >> '.cyan +
   	 * 			"[ #{name} ] ".green + this.description
   	 *
@@ -1880,10 +1879,8 @@ _.extend(kit, fs, {
     }
     _.defaults(opts, {
       isSequential: false,
+      description: '',
       log: function() {
-        if (!this.description) {
-          return;
-        }
         return kit.log('Run Task >> '.cyan + ("[ " + name + " ] ").green + this.description);
       }
     });
