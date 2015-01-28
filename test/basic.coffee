@@ -113,7 +113,7 @@ describe 'Kit:', ->
 				shouldEqual err.message, 'timeout'
 
 	it 'request reqPipe', ->
-		path = 'Cakefile'
+		path = 'nofile.coffee'
 		info = kit.fs.readFileSync path, 'utf8'
 
 		createRandomServer (req, res) ->
@@ -144,7 +144,7 @@ describe 'Kit:', ->
 		.then (port) ->
 			form = new (require 'form-data')
 
-			buffer = kit.fs.readFileSync 'Cakefile'
+			buffer = kit.fs.readFileSync 'nofile.coffee'
 
 			form.append 'a.txt', 'content'
 			form.append 'f.md', buffer

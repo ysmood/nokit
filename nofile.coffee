@@ -1,8 +1,4 @@
-process.env.NODE_ENV = 'development'
 process.chdir __dirname
-
-kit = require './lib/kit'
-{ _ } = kit
 
 task 'dev', 'Lab', ->
 	kit.monitorApp {
@@ -38,8 +34,8 @@ task 'build', 'Build project.', build = ->
 	start().then ->
 		kit.log 'Build done.'.green
 
-option '-g', '--grep [grep]', 'Test pattern'
-option '-b', '--bare', 'Don\'t compile before test.'
+option '-g, --grep [grep]', 'Test pattern'
+option '-b, --bare', 'Don\'t compile before test.'
 task 'test', 'Test', (opts) ->
 	clean = ->
 		kit.spawn 'git', ['clean', '-fd', kit.path.normalize('test/fixtures')]
