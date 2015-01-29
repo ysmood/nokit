@@ -62,13 +62,11 @@ task = (name, deps, description, isSequential, fn = ->) ->
 
 	cmder.command name
 	.description description or ''
-	.action ->
-		kit.task.run name, { init: cmder }
 
 	kit.task name, { deps, description, isSequential }, argedFn
 
 setGlobals = ->
-	option = cmder.option.bind(cmder)
+	option = cmder.option.bind cmder
 
 	# Expose global helpers.
 	kit._.extend global, {
@@ -80,15 +78,25 @@ setGlobals = ->
 	}
 
 launch = ->
+	if not kit.task.list
+		return
+
 	cmder.parse process.argv
 
 	if cmder.args.length == 0
-		if kit.task.list and kit.task.list['default']
+		if kit.task.list['default']
 			kit.task.run 'default', { init: cmder }
 		else
 			cmder.outputHelp()
-	else if not _.isObject cmder.args[0]
-		cmder.outputHelp()
+
+	for task in cmder.args
+		if not kit.task.list[task]
+			kit.err '  [Error] No such task: '.red + task.cyan,
+				{ isShowTime: false }
+			cmder.outputHelp()
+			return
+
+	kit.task.run cmder.args, { init: cmder }
 
 setGlobals()
 loadNofile()

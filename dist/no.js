@@ -75,11 +75,7 @@ task = function(name, deps, description, isSequential, fn) {
   argedFn = function() {
     return fn(cmder);
   };
-  cmder.command(name).description(description || '').action(function() {
-    return kit.task.run(name, {
-      init: cmder
-    });
-  });
+  cmder.command(name).description(description || '');
   return kit.task(name, {
     deps: deps,
     description: description,
@@ -100,18 +96,34 @@ setGlobals = function() {
 };
 
 launch = function() {
+  var _i, _len, _ref;
+  if (!kit.task.list) {
+    return;
+  }
   cmder.parse(process.argv);
   if (cmder.args.length === 0) {
-    if (kit.task.list && kit.task.list['default']) {
-      return kit.task.run('default', {
+    if (kit.task.list['default']) {
+      kit.task.run('default', {
         init: cmder
       });
     } else {
-      return cmder.outputHelp();
+      cmder.outputHelp();
     }
-  } else if (!_.isObject(cmder.args[0])) {
-    return cmder.outputHelp();
   }
+  _ref = cmder.args;
+  for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+    task = _ref[_i];
+    if (!kit.task.list[task]) {
+      kit.err('  [Error] No such task: '.red + task.cyan, {
+        isShowTime: false
+      });
+      cmder.outputHelp();
+      return;
+    }
+  }
+  return kit.task.run(cmder.args, {
+    init: cmder
+  });
 };
 
 setGlobals();
