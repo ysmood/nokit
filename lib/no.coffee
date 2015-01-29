@@ -32,7 +32,7 @@ loadNofile = ->
  * @param  {Function} fn
  * @return {Promise}
 ###
-task = (name, deps, description, isSequential, fn) ->
+task = (name, deps, description, isSequential, fn = ->) ->
 	# Allowed option format:
 	#
 	# task name, fn

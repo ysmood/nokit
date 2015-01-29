@@ -1,5 +1,7 @@
 process.chdir __dirname
 
+task 'default', ['build'], 'Default task'
+
 task 'dev', 'Lab', ->
 	kit.monitorApp {
 		bin: 'coffee'

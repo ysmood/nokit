@@ -51,6 +51,9 @@ loadNofile = function() {
 
 task = function(name, deps, description, isSequential, fn) {
   var argedFn;
+  if (fn == null) {
+    fn = function() {};
+  }
   if (_.isFunction(deps)) {
     fn = deps;
     deps = void 0;
