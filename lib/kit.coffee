@@ -1042,7 +1042,6 @@ _.extend kit, fs,
 	 * @param  {Object} opts Defaults:
 	 * ```coffee
 	 * {
-	 * 		name: ''
 	 * 		parseComment: {}
 	 * 		formatComment: {
 	 * 			name: ({ name, line }) ->
@@ -1052,11 +1051,10 @@ _.extend kit, fs,
 	 * 		}
 	 * }
 	 * ```
-	 * @return {String}
+	 * @return {Promise} Resolve a markdown string.
 	###
 	parseFileComment: (path, opts = {}) ->
 		_.defaults opts, {
-			name: ''
 			parseComment: {}
 			formatComment: {
 				name: ({ name, line }) ->
