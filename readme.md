@@ -42,7 +42,7 @@ concat = (outputFile) ->
         file.set all
     c
 
-kit.flow 'test/fixtures/**/*.js'
+kit.warp 'test/fixtures/**/*.js'
 .pipe lisencer('/* MIT lisence */')
 .pipe concat('bundle.coffee')
 .to 'test/fixtures'
@@ -70,7 +70,7 @@ Assume your file content is:
 # _: lodash
 # option: commander.option
 # task: kit.task
-# flow: kit.flow
+# warp: kit.warp
 # kit: kit
 # Promise: kit.Promise
 
@@ -84,7 +84,7 @@ task 'clean', ->
     kit.remove 'dist'
 
 task 'build', ->
-    flow 'src/**/*.js'
+    warp 'src/**/*.js'
     .pipe (file) ->
         file.set '/* Nothing */' + file.contents
     .to 'dist'
@@ -339,10 +339,10 @@ Goto [changelog](doc/changelog.md)
         """, 'zsh'
         ```
 
-- ## **[flow](lib/kit.coffee?source#L411)**
+- ## **[warp](lib/kit.coffee?source#L411)**
 
     Works much like `gulp.src`, but with Promise instead.
-    The flow control and error handling is more pleasant.
+    The warp control and error handling is more pleasant.
 
     - **<u>param</u>**: `from` { _String_ }
 
@@ -365,10 +365,10 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Object_ }
 
-        The returned flow object has these members:
+        The returned warp object has these members:
         ```coffee
         {
-        	pipe: (handler) -> flow
+        	pipe: (handler) -> warp
         	to: (path) -> Promise
         }
         ```
@@ -395,12 +395,12 @@ Goto [changelog](doc/changelog.md)
         }
         ```
         The handler can have a `onEnd` function, which will be called after the
-        whole flow ended. It's optional.
+        whole warp ended. It's optional.
 
     - **<u>example</u>**:
 
         ```coffee
-        kit.flow 'src/**/*.js'
+        kit.warp 'src/**/*.js'
         .pipe (fileInfo) ->
         	fileInfo.set '/* Lisence Info */' + fileInfo.contents
         .pipe jslint()
@@ -1082,7 +1082,7 @@ Goto [changelog](doc/changelog.md)
 
         	# To stop the run currently in process. Set the `$stop`
         	# reference to true. It will reject a "runStopped" error.
-        	flow: { $stop: false }
+        	warp: { $stop: false }
         }
         ```
 

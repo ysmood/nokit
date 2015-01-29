@@ -99,7 +99,7 @@ setGlobals = function() {
     task: task,
     option: option,
     Promise: kit.Promise,
-    flow: kit.flow
+    warp: kit.warp
   });
 };
 

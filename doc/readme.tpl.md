@@ -42,7 +42,7 @@ concat = (outputFile) ->
         file.set all
     c
 
-kit.flow 'test/fixtures/**/*.js'
+kit.warp 'test/fixtures/**/*.js'
 .pipe lisencer('/* MIT lisence */')
 .pipe concat('bundle.coffee')
 .to 'test/fixtures'
@@ -70,7 +70,7 @@ Assume your file content is:
 # _: lodash
 # option: commander.option
 # task: kit.task
-# flow: kit.flow
+# warp: kit.warp
 # kit: kit
 # Promise: kit.Promise
 
@@ -84,7 +84,7 @@ task 'clean', ->
     kit.remove 'dist'
 
 task 'build', ->
-    flow 'src/**/*.js'
+    warp 'src/**/*.js'
     .pipe (file) ->
         file.set '/* Nothing */' + file.contents
     .to 'dist'

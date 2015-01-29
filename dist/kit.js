@@ -413,7 +413,7 @@ _.extend(kit, fs, {
 
   /**
   	 * Works much like `gulp.src`, but with Promise instead.
-  	 * The flow control and error handling is more pleasant.
+  	 * The warp control and error handling is more pleasant.
   	 * @param  {String} from Glob pattern string.
   	 * @param  {Object} opts It extends the options of `nofs.glob`, but
   	 * with some extra proptereis. Defaults:
@@ -427,10 +427,10 @@ _.extend(kit, fs, {
   	 * 	encoding: 'utf8'
   	 * }
   	 * ```
-  	 * @return {Object} The returned flow object has these members:
+  	 * @return {Object} The returned warp object has these members:
   	 * ```coffee
   	 * {
-  	 * 	pipe: (handler) -> flow
+  	 * 	pipe: (handler) -> warp
   	 * 	to: (path) -> Promise
   	 * }
   	 * ```
@@ -457,10 +457,10 @@ _.extend(kit, fs, {
   	 * }
   	 * ```
   	 * The handler can have a `onEnd` function, which will be called after the
-  	 * whole flow ended. It's optional.
+  	 * whole warp ended. It's optional.
   	 * @example
   	 * ```coffee
-  	 * kit.flow 'src/**\/*.js'
+  	 * kit.warp 'src/**\/*.js'
   	 * .pipe (fileInfo) ->
   	 * 	fileInfo.set '/* Lisence Info *\/' + fileInfo.contents
   	 * .pipe jslint()
@@ -468,7 +468,7 @@ _.extend(kit, fs, {
   	 * .to 'build/minified'
   	 * ```
    */
-  flow: function(from, opts) {
+  warp: function(from, opts) {
     var mapper, onEndList, pipeList, reader, set, writer;
     if (opts == null) {
       opts = {};
@@ -1863,7 +1863,7 @@ _.extend(kit, fs, {
   	 *
   	 * 	# To stop the run currently in process. Set the `$stop`
   	 * 	# reference to true. It will reject a "runStopped" error.
-  	 * 	flow: { $stop: false }
+  	 * 	warp: { $stop: false }
   	 * }
   	 * ```
   	 * @property {Object} list The defined task functions.
@@ -1911,28 +1911,28 @@ _.extend(kit, fs, {
     if ((_base = kit.task).list == null) {
       _base.list = {};
     }
-    runTask = function(flow) {
+    runTask = function(warp) {
       return function(name) {
         return function(val) {
-          if (flow[name]) {
-            return flow[name];
+          if (warp[name]) {
+            return warp[name];
           } else {
-            return flow[name] = kit.task.list[name](flow)(val);
+            return warp[name] = kit.task.list[name](warp)(val);
           }
         };
       };
     };
-    kit.task.list[name] = function(flow) {
+    kit.task.list[name] = function(warp) {
       return function(val) {
         var depTasks;
-        if (flow.$stop) {
+        if (warp.$stop) {
           return Promise.reject(new Error('runStopped'));
         }
         opts.log();
         if (!opts.deps || opts.deps.length < 1) {
           return Promise.resolve(fn(val));
         }
-        depTasks = opts.deps.map(runTask(flow));
+        depTasks = opts.deps.map(runTask(warp));
         return (opts.isSequential ? kit.compose(depTasks)(val) : Promise.all(depTasks.map(function(task) {
           return task(val);
         }))).then(fn);
@@ -1953,11 +1953,11 @@ _.extend(kit, fs, {
       _.defaults(opts, {
         isSequential: false,
         init: void 0,
-        flow: {
+        warp: {
           $stop: false
         }
       });
-      task = runTask(opts.flow);
+      task = runTask(opts.warp);
       if (opts.isSequential) {
         return kit.compose(names.map(task))(opts.init);
       } else {

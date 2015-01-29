@@ -353,7 +353,7 @@ _.extend kit, fs,
 
 	###*
 	 * Works much like `gulp.src`, but with Promise instead.
-	 * The flow control and error handling is more pleasant.
+	 * The warp control and error handling is more pleasant.
 	 * @param  {String} from Glob pattern string.
 	 * @param  {Object} opts It extends the options of `nofs.glob`, but
 	 * with some extra proptereis. Defaults:
@@ -367,10 +367,10 @@ _.extend kit, fs,
 	 * 	encoding: 'utf8'
 	 * }
 	 * ```
-	 * @return {Object} The returned flow object has these members:
+	 * @return {Object} The returned warp object has these members:
 	 * ```coffee
 	 * {
-	 * 	pipe: (handler) -> flow
+	 * 	pipe: (handler) -> warp
 	 * 	to: (path) -> Promise
 	 * }
 	 * ```
@@ -397,10 +397,10 @@ _.extend kit, fs,
 	 * }
 	 * ```
 	 * The handler can have a `onEnd` function, which will be called after the
-	 * whole flow ended. It's optional.
+	 * whole warp ended. It's optional.
 	 * @example
 	 * ```coffee
-	 * kit.flow 'src/**\/*.js'
+	 * kit.warp 'src/**\/*.js'
 	 * .pipe (fileInfo) ->
 	 * 	fileInfo.set '/* Lisence Info *\/' + fileInfo.contents
 	 * .pipe jslint()
@@ -408,7 +408,7 @@ _.extend kit, fs,
 	 * .to 'build/minified'
 	 * ```
 	###
-	flow: (from, opts = {}) ->
+	warp: (from, opts = {}) ->
 		_.defaults opts, {
 			encoding: 'utf8'
 		}
@@ -1625,7 +1625,7 @@ _.extend kit, fs,
 	 *
 	 * 	# To stop the run currently in process. Set the `$stop`
 	 * 	# reference to true. It will reject a "runStopped" error.
-	 * 	flow: { $stop: false }
+	 * 	warp: { $stop: false }
 	 * }
 	 * ```
 	 * @property {Object} list The defined task functions.
@@ -1673,14 +1673,14 @@ _.extend kit, fs,
 		kit.task.list ?= {}
 
 		# Here we use some curry functions to deal with the race condition.
-		runTask = (flow) -> (name) -> (val) ->
-			if flow[name]
-				flow[name]
+		runTask = (warp) -> (name) -> (val) ->
+			if warp[name]
+				warp[name]
 			else
-				flow[name] = kit.task.list[name](flow)(val)
+				warp[name] = kit.task.list[name](warp)(val)
 
-		kit.task.list[name] = (flow) -> (val) ->
-			if flow.$stop
+		kit.task.list[name] = (warp) -> (val) ->
+			if warp.$stop
 				return Promise.reject new Error('runStopped')
 
 			opts.log()
@@ -1688,7 +1688,7 @@ _.extend kit, fs,
 			if not opts.deps or opts.deps.length < 1
 				return Promise.resolve fn(val)
 
-			depTasks = opts.deps.map runTask(flow)
+			depTasks = opts.deps.map runTask(warp)
 
 			(if opts.isSequential
 				kit.compose(depTasks)(val)
@@ -1705,10 +1705,10 @@ _.extend kit, fs,
 			_.defaults opts, {
 				isSequential: false
 				init: undefined
-				flow: { $stop: false }
+				warp: { $stop: false }
 			}
 
-			task = runTask opts.flow
+			task = runTask opts.warp
 
 			if opts.isSequential
 				kit.compose(names.map task) opts.init

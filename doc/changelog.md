@@ -1,5 +1,9 @@
 # Changelog
 
+- v0.4.0
+
+  - **API CHANGE** Rename `flow` to `warp`, to Star Trek.
+
 - v0.3.6
 
   - **BIG API CHANGE** `nofs` has changed the iterator arguments.

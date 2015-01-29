@@ -218,8 +218,8 @@ describe 'Kit:', ->
 	it 'indent', ->
 		assert kit.indent('a\nb', 2), '  a\n  b'
 
-	it 'flow map', ->
-		tmp = 'test/fixtures/flow'
+	it 'warp map', ->
+		tmp = 'test/fixtures/warp'
 
 		after ->
 			kit.remove tmp
@@ -227,7 +227,7 @@ describe 'Kit:', ->
 		counter = (info) ->
 			info.set info.contents.length
 
-		kit.flow 'test/fixtures/**/*.js'
+		kit.warp 'test/fixtures/**/*.js'
 		.pipe counter
 		.to tmp
 		.then ->
@@ -235,8 +235,8 @@ describe 'Kit:', ->
 		.then ({ length }) ->
 			shouldEqual length, 5
 
-	it 'flow concat', ->
-		tmp = 'test/fixtures/flow_all.coffee'
+	it 'warp concat', ->
+		tmp = 'test/fixtures/warp_all.coffee'
 		after ->
 			kit.remove tmp
 
@@ -251,8 +251,8 @@ describe 'Kit:', ->
 				info.set all
 			c
 
-		kit.flow 'test/fixtures/**/*.coffee'
-		.pipe concat('flow_all.coffee')
+		kit.warp 'test/fixtures/**/*.coffee'
+		.pipe concat('warp_all.coffee')
 		.to 'test/fixtures'
 		.then ->
 			kit.readFile tmp, 'utf8'

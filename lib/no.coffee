@@ -80,7 +80,7 @@ setGlobals = ->
 		task
 		option
 		Promise: kit.Promise
-		flow: kit.flow
+		warp: kit.warp
 	}
 
 module.exports = launch = ->

@@ -36,7 +36,7 @@ task 'build', 'build project', build = ->
 
 	start = kit.compose [
 		-> kit.remove 'dist'
-		-> kit.flow('lib/**/*.js').to 'dist'
+		-> kit.warp('lib/**/*.js').to 'dist'
 		compileCoffee
 		createDoc
 	]
