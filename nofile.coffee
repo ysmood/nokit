@@ -1,5 +1,7 @@
 process.chdir __dirname
 
+kit = require './lib/kit'
+
 task 'default', ['build'], 'default task is "build"'
 
 task 'dev', 'lab', ->
@@ -34,7 +36,7 @@ task 'build', 'build project', build = ->
 
 	start = kit.compose [
 		-> kit.remove 'dist'
-		-> flow('lib/**/*.js').to 'dist'
+		-> kit.flow('lib/**/*.js').to 'dist'
 		compileCoffee
 		createDoc
 	]
@@ -62,5 +64,8 @@ task 'test', 'unit tests', (opts) ->
 			'test/basic.coffee'
 		])
 	.then -> clean()
-	.catch ({ code }) ->
-		process.exit code
+	.catch (err) ->
+		if err.code
+			process.exit code
+		else
+			Promise.reject err
