@@ -1,14 +1,14 @@
 {
   "name": "nokit",
-  "version": "0.2.8",
+  "version": "0.2.9",
   "description": "A light weight set of handy functions.",
   "main": "dist/kit.js",
   "bin": {
     "no": "bin/no"
   },
   "scripts": {
-    "test": "bin/no test",
-    "prepublish": "bin/no build"
+    "test": "node bin/no test",
+    "prepublish": "node bin/no build"
   },
   "repository": {
     "type": "git",
