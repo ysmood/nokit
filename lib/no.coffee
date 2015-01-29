@@ -21,7 +21,8 @@ loadNofile = ->
 			if err.code != 'MODULE_NOT_FOUND'
 				throw err
 
-	throw new Error 'Cannot find nofile'
+	kit.err '[Error] Cannot find nofile'.red, { isShowTime: false }
+	process.exit()
 
 ###*
  * A simplified task wrapper for `kit.task`

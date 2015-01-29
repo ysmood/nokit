@@ -35,7 +35,10 @@ loadNofile = function() {
       }
     }
   }
-  throw new Error('Cannot find nofile');
+  kit.err('[Error] Cannot find nofile'.red, {
+    isShowTime: false
+  });
+  return process.exit();
 };
 
 
