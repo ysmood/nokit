@@ -23,7 +23,7 @@ loadNofile = function() {
   try {
     require('Livescript');
   } catch (_error) {}
-  paths = kit.genModulePaths('nofile', __dirname, '').slice(1);
+  paths = kit.genModulePaths('nofile', process.cwd(), '').slice(1);
   for (_i = 0, _len = paths.length; _i < _len; _i++) {
     path = paths[_i];
     try {

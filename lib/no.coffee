@@ -13,7 +13,7 @@ loadNofile = ->
 	try require 'coffee-script/register'
 	try require 'Livescript'
 
-	paths = kit.genModulePaths('nofile', __dirname, '')[1..]
+	paths = kit.genModulePaths('nofile', process.cwd(), '')[1..]
 	for path in paths
 		try
 			return require path

@@ -3,9 +3,12 @@
   "version": "0.2.8",
   "description": "A light weight set of handy functions.",
   "main": "dist/kit.js",
+  "bin": {
+    "no": "bin/no"
+  },
   "scripts": {
-    "test": "bin/no.js test",
-    "prepublish": "bin/no.js build"
+    "test": "bin/no test",
+    "prepublish": "bin/no build"
   },
   "repository": {
     "type": "git",
