@@ -892,7 +892,7 @@ Goto [changelog](doc/changelog.md)
 
         The required package.
 
-- ## **[request](lib/kit.coffee?source#L1335)**
+- ## **[request](lib/kit.coffee?source#L1334)**
 
     A handy extended combination of `http.request` and `https.request`.
 
@@ -995,7 +995,7 @@ Goto [changelog](doc/changelog.md)
         	kit.log body
         ```
 
-- ## **[spawn](lib/kit.coffee?source#L1551)**
+- ## **[spawn](lib/kit.coffee?source#L1550)**
 
     A safer version of `child_process.spawn` to cross-platform run
     a process. In some conditions, it may be more convenient
@@ -1038,7 +1038,7 @@ Goto [changelog](doc/changelog.md)
         .then ({code}) -> kit.log code
         ```
 
-- ## **[task](lib/kit.coffee?source#L1658)**
+- ## **[task](lib/kit.coffee?source#L1657)**
 
     Sequencing and executing tasks and dependencies concurrently.
 
@@ -1119,17 +1119,17 @@ Goto [changelog](doc/changelog.md)
         	kit.log 'All Done!'
         ```
 
-- ## **[url](lib/kit.coffee?source#L1723)**
+- ## **[url](lib/kit.coffee?source#L1722)**
 
     Node native module `url`.
 
-- ## **[which](lib/kit.coffee?source#L1729)**
+- ## **[which](lib/kit.coffee?source#L1728)**
 
     Same as the unix `which` command.
 
     - **<u>type</u>**: { _Function_ }
 
-- ## **[whichSync](lib/kit.coffee?source#L1735)**
+- ## **[whichSync](lib/kit.coffee?source#L1734)**
 
     Sync version of `which`.
 
