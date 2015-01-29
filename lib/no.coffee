@@ -90,7 +90,8 @@ module.exports = launch = ->
 		'output version of nokit',
 		->
 			info = kit.readJsonSync(__dirname + '/../package.json')
-			console.log info.version
+			console.log "nokit@#{info.version}".green,
+				"(#{require.resolve('./kit')})".grey
 			process.exit()
 	.usage '[options] [commands]'
 

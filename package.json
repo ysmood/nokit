@@ -1,10 +1,10 @@
 {
   "name": "nokit",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "A light weight set of handy functions.",
   "main": "dist/kit.js",
   "bin": {
-    "no": "bin/no"
+    "no": "bin/no.js"
   },
   "scripts": {
     "test": "node bin/no test",

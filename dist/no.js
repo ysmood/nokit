@@ -108,7 +108,7 @@ module.exports = launch = function() {
   cmder.option('-v, --version', 'output version of nokit', function() {
     var info;
     info = kit.readJsonSync(__dirname + '/../package.json');
-    console.log(info.version);
+    console.log(("nokit@" + info.version).green, ("(" + (require.resolve('./kit')) + ")").grey);
     return process.exit();
   }).usage('[options] [commands]');
   setGlobals();
