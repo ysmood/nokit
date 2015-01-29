@@ -181,54 +181,6 @@ _.extend(kit, fs, {
   },
 
   /**
-  	 * Creates a function that is the composition of the provided functions.
-  	 * Besides, it can also accept async function that returns promise.
-  	 * See `kit.async`, if you need concurrent support.
-  	 * @param  {Function | Array} fns Functions that return
-  	 * promise or any value.
-  	 * And the array can also contains promises.
-  	 * @return {Function} `(val) -> Promise` A function that will return a promise.
-  	 * @example
-  	 * ```coffee
-  	 * # It helps to decouple sequential pipeline code logic.
-  	 *
-  	 * createUrl = (name) ->
-  	 * 	return "http://test.com/" + name
-  	 *
-  	 * curl = (url) ->
-  	 * 	kit.request(url).then ->
-  	 * 		kit.log 'get'
-  	 *
-  	 * save = (str) ->
-  	 * 	kit.outputFile('a.txt', str).then ->
-  	 * 		kit.log 'saved'
-  	 *
-  	 * download = kit.flow createUrl, curl, save
-  	 * # same as "download = kit.flow [createUrl, curl, save]"
-  	 *
-  	 * download 'home'
-  	 * ```
-   */
-  flow: function() {
-    var fns;
-    fns = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-    return function(val) {
-      if (_.isArray(fns[0])) {
-        fns = fns[0];
-      }
-      return fns.reduce(function(preFn, fn) {
-        if (_.isFunction(fn.then)) {
-          return preFn.then(function() {
-            return fn;
-          });
-        } else {
-          return preFn.then(fn);
-        }
-      }, Promise.resolve(val));
-    };
-  },
-
-  /**
   	 * Daemonize a program. Just a shortcut usage of `kit.spawn`.
   	 * @param  {Object} opts Defaults:
   	 * ```coffee
@@ -410,134 +362,50 @@ _.extend(kit, fs, {
   },
 
   /**
-  	 * Works much like `gulp.src`, but with Promise instead.
-  	 * The warp control and error handling is more pleasant.
-  	 * @param  {String} from Glob pattern string.
-  	 * @param  {Object} opts It extends the options of `nofs.glob`, but
-  	 * with some extra proptereis. Defaults:
-  	 * ```coffee
-  	 * {
-  	 * 	# The base directory of the pattern.
-  	 * 	baseDir: String
-  	 *
-  	 * 	# The encoding of the contents.
-  	 * 	# Set null if you want raw buffer.
-  	 * 	encoding: 'utf8'
-  	 * }
-  	 * ```
-  	 * @return {Object} The returned warp object has these members:
-  	 * ```coffee
-  	 * {
-  	 * 	pipe: (handler) -> warp
-  	 * 	to: (path) -> Promise
-  	 * }
-  	 * ```
-  	 * Each piped handler will recieve a `fileInfo` object:
-  	 * ```coffee
-  	 * {
-  	 * 	# Set the contents and return self.
-  	 * 	set: Function
-  	 *
-  	 * 	# The source path.
-  	 * 	path: String
-  	 *
-  	 * 	# The destination path.
-  	 * 	dest: String
-  	 *
-  	 * 	# The file content.
-  	 * 	contents: String | Buffer
-  	 *
-  	 * 	# All the globbed files.
-  	 * 	list: Array
-  	 *
-  	 * 	# The opts you passed to mapFiles.
-  	 * 	opts: Object
-  	 * }
-  	 * ```
-  	 * The handler can have a `onEnd` function, which will be called after the
-  	 * whole warp ended. It's optional.
+  	 * Creates a function that is the composition of the provided functions.
+  	 * Besides, it can also accept async function that returns promise.
+  	 * See `kit.async`, if you need concurrent support.
+  	 * @param  {Function | Array} fns Functions that return
+  	 * promise or any value.
+  	 * And the array can also contains promises.
+  	 * @return {Function} `(val) -> Promise` A function that will return a promise.
   	 * @example
   	 * ```coffee
-  	 * kit.warp 'src/**\/*.js'
-  	 * .pipe (fileInfo) ->
-  	 * 	fileInfo.set '/* Lisence Info *\/' + fileInfo.contents
-  	 * .pipe jslint()
-  	 * .pipe minify()
-  	 * .to 'build/minified'
+  	 * # It helps to decouple sequential pipeline code logic.
+  	 *
+  	 * createUrl = (name) ->
+  	 * 	return "http://test.com/" + name
+  	 *
+  	 * curl = (url) ->
+  	 * 	kit.request(url).then ->
+  	 * 		kit.log 'get'
+  	 *
+  	 * save = (str) ->
+  	 * 	kit.outputFile('a.txt', str).then ->
+  	 * 		kit.log 'saved'
+  	 *
+  	 * download = kit.flow createUrl, curl, save
+  	 * # same as "download = kit.flow [createUrl, curl, save]"
+  	 *
+  	 * download 'home'
   	 * ```
    */
-  warp: function(from, opts) {
-    var mapper, onEndList, pipeList, reader, set, writer;
-    if (opts == null) {
-      opts = {};
-    }
-    _.defaults(opts, {
-      encoding: 'utf8'
-    });
-    pipeList = [];
-    onEndList = [];
-    set = function(contents) {
-      this.contents = contents;
-      return this;
-    };
-    reader = function(to) {
-      return function(fileInfo) {
-        return (fileInfo.isDir ? Promise.resolve() : kit.readFile(fileInfo.path, opts.encoding)).then(function(contents) {
-          var dest;
-          if (opts.baseDir) {
-            fileInfo.baseDir = opts.baseDir;
-          }
-          dest = kit.path.join(to, kit.path.relative(fileInfo.baseDir, fileInfo.path));
-          return _.extend(fileInfo, {
-            set: set,
-            dest: dest,
-            opts: opts,
-            contents: contents
+  flow: function() {
+    var fns;
+    fns = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+    return function(val) {
+      if (_.isArray(fns[0])) {
+        fns = fns[0];
+      }
+      return fns.reduce(function(preFn, fn) {
+        if (_.isFunction(fn.then)) {
+          return preFn.then(function() {
+            return fn;
           });
-        });
-      };
-    };
-    writer = function(fileInfo) {
-      var contents, dest;
-      if (!fileInfo) {
-        return;
-      }
-      dest = fileInfo.dest, contents = fileInfo.contents;
-      if ((dest != null) && (contents != null)) {
-        return fs.outputFile(dest, contents, fileInfo.opts);
-      }
-    };
-    opts.iter = function(fileInfo, list) {
-      list.push(fileInfo);
-      return kit.flow(pipeList)(fileInfo);
-    };
-    return mapper = {
-      pipe: function(task) {
-        if (_.isFunction(task.onEnd)) {
-          onEndList.push(task.onEnd);
+        } else {
+          return preFn.then(fn);
         }
-        pipeList.push(function(fileInfo) {
-          if (fileInfo) {
-            return task(fileInfo);
-          }
-        });
-        return mapper;
-      },
-      to: function(to) {
-        pipeList.unshift(reader(to));
-        pipeList.push(writer);
-        if (onEndList.length > 0) {
-          onEndList.push(writer);
-        }
-        return kit.glob(from, opts).then(function(list) {
-          return kit.flow(onEndList)({
-            set: set,
-            to: to,
-            list: list,
-            opts: opts
-          });
-        });
-      }
+      }, Promise.resolve(val));
     };
   },
 
@@ -1970,6 +1838,138 @@ _.extend(kit, fs, {
   	 * Node native module `url`.
    */
   url: require('url'),
+
+  /**
+  	 * Works much like `gulp.src`, but with Promise instead.
+  	 * The warp control and error handling is more pleasant.
+  	 * @param  {String} from Glob pattern string.
+  	 * @param  {Object} opts It extends the options of `nofs.glob`, but
+  	 * with some extra proptereis. Defaults:
+  	 * ```coffee
+  	 * {
+  	 * 	# The base directory of the pattern.
+  	 * 	baseDir: String
+  	 *
+  	 * 	# The encoding of the contents.
+  	 * 	# Set null if you want raw buffer.
+  	 * 	encoding: 'utf8'
+  	 * }
+  	 * ```
+  	 * @return {Object} The returned warp object has these members:
+  	 * ```coffee
+  	 * {
+  	 * 	pipe: (handler) -> warp
+  	 * 	to: (path) -> Promise
+  	 * }
+  	 * ```
+  	 * Each piped handler will recieve a `fileInfo` object:
+  	 * ```coffee
+  	 * {
+  	 * 	# Set the contents and return self.
+  	 * 	set: Function
+  	 *
+  	 * 	# The source path.
+  	 * 	path: String
+  	 *
+  	 * 	# The destination path.
+  	 * 	dest: String
+  	 *
+  	 * 	# The file content.
+  	 * 	contents: String | Buffer
+  	 *
+  	 * 	# All the globbed files.
+  	 * 	list: Array
+  	 *
+  	 * 	# The opts you passed to mapFiles.
+  	 * 	opts: Object
+  	 * }
+  	 * ```
+  	 * The handler can have a `onEnd` function, which will be called after the
+  	 * whole warp ended. It's optional.
+  	 * @example
+  	 * ```coffee
+  	 * kit.warp 'src/**\/*.js'
+  	 * .pipe (fileInfo) ->
+  	 * 	fileInfo.set '/* Lisence Info *\/' + fileInfo.contents
+  	 * .pipe jslint()
+  	 * .pipe minify()
+  	 * .to 'build/minified'
+  	 * ```
+   */
+  warp: function(from, opts) {
+    var mapper, onEndList, pipeList, reader, set, writer;
+    if (opts == null) {
+      opts = {};
+    }
+    _.defaults(opts, {
+      encoding: 'utf8'
+    });
+    pipeList = [];
+    onEndList = [];
+    set = function(contents) {
+      this.contents = contents;
+      return this;
+    };
+    reader = function(to) {
+      return function(fileInfo) {
+        return (fileInfo.isDir ? Promise.resolve() : kit.readFile(fileInfo.path, opts.encoding)).then(function(contents) {
+          var dest;
+          if (opts.baseDir) {
+            fileInfo.baseDir = opts.baseDir;
+          }
+          dest = kit.path.join(to, kit.path.relative(fileInfo.baseDir, fileInfo.path));
+          return _.extend(fileInfo, {
+            set: set,
+            dest: dest,
+            opts: opts,
+            contents: contents
+          });
+        });
+      };
+    };
+    writer = function(fileInfo) {
+      var contents, dest;
+      if (!fileInfo) {
+        return;
+      }
+      dest = fileInfo.dest, contents = fileInfo.contents;
+      if ((dest != null) && (contents != null)) {
+        return fs.outputFile(dest, contents, fileInfo.opts);
+      }
+    };
+    opts.iter = function(fileInfo, list) {
+      list.push(fileInfo);
+      return kit.flow(pipeList)(fileInfo);
+    };
+    return mapper = {
+      pipe: function(task) {
+        if (_.isFunction(task.onEnd)) {
+          onEndList.push(task.onEnd);
+        }
+        pipeList.push(function(fileInfo) {
+          if (fileInfo) {
+            return task(fileInfo);
+          }
+        });
+        return mapper;
+      },
+      to: function(to) {
+        pipeList.unshift(reader(to));
+        pipeList.push(writer);
+        if (onEndList.length > 0) {
+          onEndList.push(writer);
+        }
+        return kit.glob(from, opts).then(function(list) {
+          return kit.flow(onEndList)({
+            set: set,
+            to: to,
+            list: list,
+            opts: opts
+          });
+        });
+      }
+    };
+  },
 
   /**
   	 * Same as the unix `which` command.

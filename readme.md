@@ -200,45 +200,7 @@ Goto [changelog](doc/changelog.md)
         	kit.log 'all done!'
         ```
 
-- ## **[flow](lib/kit.coffee?source#L178)**
-
-    Creates a function that is the composition of the provided functions.
-    Besides, it can also accept async function that returns promise.
-    See `kit.async`, if you need concurrent support.
-
-    - **<u>param</u>**: `fns` { _Function | Array_ }
-
-        Functions that return
-        promise or any value.
-        And the array can also contains promises.
-
-    - **<u>return</u>**: { _Function_ }
-
-        `(val) -> Promise` A function that will return a promise.
-
-    - **<u>example</u>**:
-
-        ```coffee
-        # It helps to decouple sequential pipeline code logic.
-
-        createUrl = (name) ->
-        	return "http://test.com/" + name
-
-        curl = (url) ->
-        	kit.request(url).then ->
-        		kit.log 'get'
-
-        save = (str) ->
-        	kit.outputFile('a.txt', str).then ->
-        		kit.log 'saved'
-
-        download = kit.flow createUrl, curl, save
-        # same as "download = kit.flow [createUrl, curl, save]"
-
-        download 'home'
-        ```
-
-- ## **[daemonize](lib/kit.coffee?source#L201)**
+- ## **[daemonize](lib/kit.coffee?source#L162)**
 
     Daemonize a program. Just a shortcut usage of `kit.spawn`.
 
@@ -258,7 +220,7 @@ Goto [changelog](doc/changelog.md)
 
         The daemonized process.
 
-- ## **[decrypt](lib/kit.coffee?source#L228)**
+- ## **[decrypt](lib/kit.coffee?source#L189)**
 
     A simple decrypt helper. Cross-version of node.
 
@@ -272,7 +234,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Buffer_ }
 
-- ## **[encrypt](lib/kit.coffee?source#L251)**
+- ## **[encrypt](lib/kit.coffee?source#L212)**
 
     A simple encrypt helper. Cross-version of node.
 
@@ -286,7 +248,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Buffer_ }
 
-- ## **[err](lib/kit.coffee?source#L272)**
+- ## **[err](lib/kit.coffee?source#L233)**
 
     A error log shortcut for `kit.log(msg, 'error', opts)`
 
@@ -294,7 +256,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>param</u>**: `opts` { _Object_ }
 
-- ## **[exec](lib/kit.coffee?source#L306)**
+- ## **[exec](lib/kit.coffee?source#L267)**
 
     A better `child_process.exec`. Supports multi-line shell script.
     For supporting old node version, it will create 3 temp files,
@@ -337,76 +299,45 @@ Goto [changelog](doc/changelog.md)
         """, 'zsh'
         ```
 
-- ## **[warp](lib/kit.coffee?source#L409)**
+- ## **[flow](lib/kit.coffee?source#L342)**
 
-    Works much like `gulp.src`, but with Promise instead.
-    The warp control and error handling is more pleasant.
+    Creates a function that is the composition of the provided functions.
+    Besides, it can also accept async function that returns promise.
+    See `kit.async`, if you need concurrent support.
 
-    - **<u>param</u>**: `from` { _String_ }
+    - **<u>param</u>**: `fns` { _Function | Array_ }
 
-        Glob pattern string.
+        Functions that return
+        promise or any value.
+        And the array can also contains promises.
 
-    - **<u>param</u>**: `opts` { _Object_ }
+    - **<u>return</u>**: { _Function_ }
 
-        It extends the options of `nofs.glob`, but
-        with some extra proptereis. Defaults:
-        ```coffee
-        {
-        	# The base directory of the pattern.
-        	baseDir: String
-
-        	# The encoding of the contents.
-        	# Set null if you want raw buffer.
-        	encoding: 'utf8'
-        }
-        ```
-
-    - **<u>return</u>**: { _Object_ }
-
-        The returned warp object has these members:
-        ```coffee
-        {
-        	pipe: (handler) -> warp
-        	to: (path) -> Promise
-        }
-        ```
-        Each piped handler will recieve a `fileInfo` object:
-        ```coffee
-        {
-        	# Set the contents and return self.
-        	set: Function
-
-        	# The source path.
-        	path: String
-
-        	# The destination path.
-        	dest: String
-
-        	# The file content.
-        	contents: String | Buffer
-
-        	# All the globbed files.
-        	list: Array
-
-        	# The opts you passed to mapFiles.
-        	opts: Object
-        }
-        ```
-        The handler can have a `onEnd` function, which will be called after the
-        whole warp ended. It's optional.
+        `(val) -> Promise` A function that will return a promise.
 
     - **<u>example</u>**:
 
         ```coffee
-        kit.warp 'src/**/*.js'
-        .pipe (fileInfo) ->
-        	fileInfo.set '/* Lisence Info */' + fileInfo.contents
-        .pipe jslint()
-        .pipe minify()
-        .to 'build/minified'
+        # It helps to decouple sequential pipeline code logic.
+
+        createUrl = (name) ->
+        	return "http://test.com/" + name
+
+        curl = (url) ->
+        	kit.request(url).then ->
+        		kit.log 'get'
+
+        save = (str) ->
+        	kit.outputFile('a.txt', str).then ->
+        		kit.log 'saved'
+
+        download = kit.flow createUrl, curl, save
+        # same as "download = kit.flow [createUrl, curl, save]"
+
+        download 'home'
         ```
 
-- ## **[formatComment](lib/kit.coffee?source#L477)**
+- ## **[formatComment](lib/kit.coffee?source#L370)**
 
     Format the parsed comments array to a markdown string.
 
@@ -430,13 +361,13 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _String_ }
 
-- ## **[fs](lib/kit.coffee?source#L519)**
+- ## **[fs](lib/kit.coffee?source#L412)**
 
     See my project [nofs](https://github.com/ysmood/nofs).
 
     [Offline Documentation](?gotoDoc=nofs/readme.md)
 
-- ## **[genModulePaths](lib/kit.coffee?source#L528)**
+- ## **[genModulePaths](lib/kit.coffee?source#L421)**
 
     Generate a list of module paths from a name and a directory.
 
@@ -456,7 +387,7 @@ Goto [changelog](doc/changelog.md)
 
         Paths
 
-- ## **[jhash](lib/kit.coffee?source#L559)**
+- ## **[jhash](lib/kit.coffee?source#L452)**
 
     A fast helper to hash string or binary file.
     See my [jhash](https://github.com/ysmood/jhash) project.
@@ -479,7 +410,7 @@ Goto [changelog](doc/changelog.md)
         jhash.hash 'test' # output => 'ede'
         ```
 
-- ## **[join](lib/kit.coffee?source#L578)**
+- ## **[join](lib/kit.coffee?source#L471)**
 
     It inserts the fnB in between the fnA and concatenates the result.
 
@@ -502,7 +433,7 @@ Goto [changelog](doc/changelog.md)
         # output => [1, 'sep', 2, 'sep', 3, 'sep', 4]
         ```
 
-- ## **[iter](lib/kit.coffee?source#L617)**
+- ## **[iter](lib/kit.coffee?source#L510)**
 
     Generate a iterator from a value.
 
@@ -530,7 +461,7 @@ Goto [changelog](doc/changelog.md)
         iter() # output => { key: 'a', value: 1 }
         ```
 
-- ## **[indent](lib/kit.coffee?source#L650)**
+- ## **[indent](lib/kit.coffee?source#L543)**
 
     Indent a text block.
 
@@ -560,7 +491,7 @@ Goto [changelog](doc/changelog.md)
         # => "one\ntwo"
         ```
 
-- ## **[inspect](lib/kit.coffee?source#L663)**
+- ## **[inspect](lib/kit.coffee?source#L556)**
 
     For debugging. Dump a colorful object.
 
@@ -577,7 +508,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _String_ }
 
-- ## **[isDevelopment](lib/kit.coffee?source#L679)**
+- ## **[isDevelopment](lib/kit.coffee?source#L572)**
 
     Nobone use it to check the running mode of the app.
     Overwrite it if you want to control the check logic.
@@ -585,7 +516,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Boolean_ }
 
-- ## **[isProduction](lib/kit.coffee?source#L688)**
+- ## **[isProduction](lib/kit.coffee?source#L581)**
 
     Nobone use it to check the running mode of the app.
     Overwrite it if you want to control the check logic.
@@ -593,7 +524,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Boolean_ }
 
-- ## **[log](lib/kit.coffee?source#L709)**
+- ## **[log](lib/kit.coffee?source#L602)**
 
     A better log for debugging, it uses the `kit.inspect` to log.
 
@@ -621,7 +552,7 @@ Goto [changelog](doc/changelog.md)
         }
         ```
 
-- ## **[monitorApp](lib/kit.coffee?source#L817)**
+- ## **[monitorApp](lib/kit.coffee?source#L710)**
 
     Monitor an application and automatically restart it when file changed.
     Even when the monitored app exit with error, the monitor will still wait
@@ -682,13 +613,13 @@ Goto [changelog](doc/changelog.md)
         }
         ```
 
-- ## **[nodeVersion](lib/kit.coffee?source#L893)**
+- ## **[nodeVersion](lib/kit.coffee?source#L786)**
 
     Node version. Such as `v0.10.23` is `0.1023`, `v0.10.1` is `0.1001`.
 
     - **<u>type</u>**: { _Float_ }
 
-- ## **[xopen](lib/kit.coffee?source#L911)**
+- ## **[xopen](lib/kit.coffee?source#L804)**
 
     Open a thing that your system can recognize.
     Now only support Windows, OSX or system that installed 'xdg-open'.
@@ -713,7 +644,7 @@ Goto [changelog](doc/changelog.md)
         kit.open 'http://ysmood.org'
         ```
 
-- ## **[parseComment](lib/kit.coffee?source#L965)**
+- ## **[parseComment](lib/kit.coffee?source#L858)**
 
     A comments parser for javascript and coffee-script.
     Used to generate documentation from source code automatically.
@@ -758,7 +689,7 @@ Goto [changelog](doc/changelog.md)
         }
         ```
 
-- ## **[parseFileComment](lib/kit.coffee?source#L1054)**
+- ## **[parseFileComment](lib/kit.coffee?source#L947)**
 
     Parse commment from a js or coffee file, and output a markdown string.
 
@@ -783,7 +714,7 @@ Goto [changelog](doc/changelog.md)
 
         Resolve a markdown string.
 
-- ## **[parseDependency](lib/kit.coffee?source#L1103)**
+- ## **[parseDependency](lib/kit.coffee?source#L996)**
 
     Parse dependency tree by regex. The dependency relationships
     is not a tree, but a graph. To avoid dependency cycle, this
@@ -826,11 +757,11 @@ Goto [changelog](doc/changelog.md)
         	kit.log markdownStr
         ```
 
-- ## **[path](lib/kit.coffee?source#L1166)**
+- ## **[path](lib/kit.coffee?source#L1059)**
 
     io.js native module `path`. See `nofs` for more information.
 
-- ## **[Promise](lib/kit.coffee?source#L1174)**
+- ## **[Promise](lib/kit.coffee?source#L1067)**
 
     The promise lib. Now, it uses Bluebird as ES5 polyfill.
     In the future, the Bluebird will be replaced with native
@@ -838,7 +769,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>type</u>**: { _Object_ }
 
-- ## **[promisify](lib/kit.coffee?source#L1187)**
+- ## **[promisify](lib/kit.coffee?source#L1080)**
 
     Convert a callback style function to a promise function.
 
@@ -859,7 +790,7 @@ Goto [changelog](doc/changelog.md)
         readFile('a.txt').then kit.log
         ```
 
-- ## **[require](lib/kit.coffee?source#L1197)**
+- ## **[require](lib/kit.coffee?source#L1090)**
 
     Much faster than the native require of node, but you should
     follow some rules to use it safely.
@@ -877,7 +808,7 @@ Goto [changelog](doc/changelog.md)
 
         The module that you require.
 
-- ## **[requireOptional](lib/kit.coffee?source#L1225)**
+- ## **[requireOptional](lib/kit.coffee?source#L1118)**
 
     Require an optional package. If not found, it will
     warn user to npm install it, and exit the process.
@@ -890,7 +821,7 @@ Goto [changelog](doc/changelog.md)
 
         The required package.
 
-- ## **[request](lib/kit.coffee?source#L1332)**
+- ## **[request](lib/kit.coffee?source#L1225)**
 
     A handy extended combination of `http.request` and `https.request`.
 
@@ -993,7 +924,7 @@ Goto [changelog](doc/changelog.md)
         	kit.log body
         ```
 
-- ## **[spawn](lib/kit.coffee?source#L1548)**
+- ## **[spawn](lib/kit.coffee?source#L1441)**
 
     A safer version of `child_process.spawn` to cross-platform run
     a process. In some conditions, it may be more convenient
@@ -1036,7 +967,7 @@ Goto [changelog](doc/changelog.md)
         .then ({code}) -> kit.log code
         ```
 
-- ## **[task](lib/kit.coffee?source#L1655)**
+- ## **[task](lib/kit.coffee?source#L1548)**
 
     Sequencing and executing tasks and dependencies concurrently.
 
@@ -1117,9 +1048,78 @@ Goto [changelog](doc/changelog.md)
         	kit.log 'All Done!'
         ```
 
-- ## **[url](lib/kit.coffee?source#L1720)**
+- ## **[url](lib/kit.coffee?source#L1613)**
 
     Node native module `url`.
+
+- ## **[warp](lib/kit.coffee?source#L1672)**
+
+    Works much like `gulp.src`, but with Promise instead.
+    The warp control and error handling is more pleasant.
+
+    - **<u>param</u>**: `from` { _String_ }
+
+        Glob pattern string.
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+        It extends the options of `nofs.glob`, but
+        with some extra proptereis. Defaults:
+        ```coffee
+        {
+        	# The base directory of the pattern.
+        	baseDir: String
+
+        	# The encoding of the contents.
+        	# Set null if you want raw buffer.
+        	encoding: 'utf8'
+        }
+        ```
+
+    - **<u>return</u>**: { _Object_ }
+
+        The returned warp object has these members:
+        ```coffee
+        {
+        	pipe: (handler) -> warp
+        	to: (path) -> Promise
+        }
+        ```
+        Each piped handler will recieve a `fileInfo` object:
+        ```coffee
+        {
+        	# Set the contents and return self.
+        	set: Function
+
+        	# The source path.
+        	path: String
+
+        	# The destination path.
+        	dest: String
+
+        	# The file content.
+        	contents: String | Buffer
+
+        	# All the globbed files.
+        	list: Array
+
+        	# The opts you passed to mapFiles.
+        	opts: Object
+        }
+        ```
+        The handler can have a `onEnd` function, which will be called after the
+        whole warp ended. It's optional.
+
+    - **<u>example</u>**:
+
+        ```coffee
+        kit.warp 'src/**/*.js'
+        .pipe (fileInfo) ->
+        	fileInfo.set '/* Lisence Info */' + fileInfo.contents
+        .pipe jslint()
+        .pipe minify()
+        .to 'build/minified'
+        ```
 
 - ## **[which](lib/kit.coffee?source#L1726)**
 

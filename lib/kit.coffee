@@ -147,45 +147,6 @@ _.extend kit, fs,
 				break if not addTask()
 
 	###*
-	 * Creates a function that is the composition of the provided functions.
-	 * Besides, it can also accept async function that returns promise.
-	 * See `kit.async`, if you need concurrent support.
-	 * @param  {Function | Array} fns Functions that return
-	 * promise or any value.
-	 * And the array can also contains promises.
-	 * @return {Function} `(val) -> Promise` A function that will return a promise.
-	 * @example
-	 * ```coffee
-	 * # It helps to decouple sequential pipeline code logic.
-	 *
-	 * createUrl = (name) ->
-	 * 	return "http://test.com/" + name
-	 *
-	 * curl = (url) ->
-	 * 	kit.request(url).then ->
-	 * 		kit.log 'get'
-	 *
-	 * save = (str) ->
-	 * 	kit.outputFile('a.txt', str).then ->
-	 * 		kit.log 'saved'
-	 *
-	 * download = kit.flow createUrl, curl, save
-	 * # same as "download = kit.flow [createUrl, curl, save]"
-	 *
-	 * download 'home'
-	 * ```
-	###
-	flow: (fns...) -> (val) ->
-		fns = fns[0] if _.isArray fns[0]
-
-		fns.reduce (preFn, fn) ->
-			if _.isFunction fn.then
-				preFn.then -> fn
-			else
-				preFn.then fn
-		, Promise.resolve(val)
-
-	###*
 	 * Daemonize a program. Just a shortcut usage of `kit.spawn`.
 	 * @param  {Object} opts Defaults:
 	 * ```coffee
@@ -350,111 +311,43 @@ _.extend kit, fs,
 		promise
 
 	###*
-	 * Works much like `gulp.src`, but with Promise instead.
-	 * The warp control and error handling is more pleasant.
-	 * @param  {String} from Glob pattern string.
-	 * @param  {Object} opts It extends the options of `nofs.glob`, but
-	 * with some extra proptereis. Defaults:
-	 * ```coffee
-	 * {
-	 * 	# The base directory of the pattern.
-	 * 	baseDir: String
-	 *
-	 * 	# The encoding of the contents.
-	 * 	# Set null if you want raw buffer.
-	 * 	encoding: 'utf8'
-	 * }
-	 * ```
-	 * @return {Object} The returned warp object has these members:
-	 * ```coffee
-	 * {
-	 * 	pipe: (handler) -> warp
-	 * 	to: (path) -> Promise
-	 * }
-	 * ```
-	 * Each piped handler will recieve a `fileInfo` object:
-	 * ```coffee
-	 * {
-	 * 	# Set the contents and return self.
-	 * 	set: Function
-	 *
-	 * 	# The source path.
-	 * 	path: String
-	 *
-	 * 	# The destination path.
-	 * 	dest: String
-	 *
-	 * 	# The file content.
-	 * 	contents: String | Buffer
-	 *
-	 * 	# All the globbed files.
-	 * 	list: Array
-	 *
-	 * 	# The opts you passed to mapFiles.
-	 * 	opts: Object
-	 * }
-	 * ```
-	 * The handler can have a `onEnd` function, which will be called after the
-	 * whole warp ended. It's optional.
+	 * Creates a function that is the composition of the provided functions.
+	 * Besides, it can also accept async function that returns promise.
+	 * See `kit.async`, if you need concurrent support.
+	 * @param  {Function | Array} fns Functions that return
+	 * promise or any value.
+	 * And the array can also contains promises.
+	 * @return {Function} `(val) -> Promise` A function that will return a promise.
 	 * @example
 	 * ```coffee
-	 * kit.warp 'src/**\/*.js'
-	 * .pipe (fileInfo) ->
-	 * 	fileInfo.set '/* Lisence Info *\/' + fileInfo.contents
-	 * .pipe jslint()
-	 * .pipe minify()
-	 * .to 'build/minified'
+	 * # It helps to decouple sequential pipeline code logic.
+	 *
+	 * createUrl = (name) ->
+	 * 	return "http://test.com/" + name
+	 *
+	 * curl = (url) ->
+	 * 	kit.request(url).then ->
+	 * 		kit.log 'get'
+	 *
+	 * save = (str) ->
+	 * 	kit.outputFile('a.txt', str).then ->
+	 * 		kit.log 'saved'
+	 *
+	 * download = kit.flow createUrl, curl, save
+	 * # same as "download = kit.flow [createUrl, curl, save]"
+	 *
+	 * download 'home'
 	 * ```
 	###
-	warp: (from, opts = {}) ->
-		_.defaults opts, {
-			encoding: 'utf8'
-		}
+	flow: (fns...) -> (val) ->
+		fns = fns[0] if _.isArray fns[0]
 
-		pipeList = []
-		onEndList = []
-
-		set = (contents) ->
-			@contents = contents
-			@
-
-		reader = (to) -> (fileInfo) ->
-			(if fileInfo.isDir
-				Promise.resolve()
+		fns.reduce (preFn, fn) ->
+			if _.isFunction fn.then
+				preFn.then -> fn
 			else
-				kit.readFile fileInfo.path, opts.encoding
-			).then (contents) ->
-				fileInfo.baseDir = opts.baseDir if opts.baseDir
-				dest = kit.path.join(
-					to
-					kit.path.relative fileInfo.baseDir, fileInfo.path
-				)
-				_.extend fileInfo, { set, dest, opts, contents }
-
-		writer = (fileInfo) ->
-			return if not fileInfo
-			{ dest, contents } = fileInfo
-			if dest? and contents?
-				fs.outputFile dest, contents, fileInfo.opts
-
-		opts.iter = (fileInfo, list) ->
-			list.push fileInfo
-			kit.flow(pipeList)(fileInfo)
-
-		mapper =
-			pipe: (task) ->
-				if _.isFunction task.onEnd
-					onEndList.push task.onEnd
-				pipeList.push (fileInfo) ->
-					task fileInfo if fileInfo
-				mapper
-			to: (to) ->
-				pipeList.unshift reader(to)
-				pipeList.push writer
-				onEndList.push writer if onEndList.length > 0
-
-				kit.glob(from, opts).then (list) ->
-					kit.flow(onEndList)({ set, to, list, opts })
+				preFn.then fn
+		, Promise.resolve(val)
 
 	###*
 	 * Format the parsed comments array to a markdown string.
@@ -1718,6 +1611,113 @@ _.extend kit, fs,
 	 * Node native module `url`.
 	###
 	url: require 'url'
+
+	###*
+	 * Works much like `gulp.src`, but with Promise instead.
+	 * The warp control and error handling is more pleasant.
+	 * @param  {String} from Glob pattern string.
+	 * @param  {Object} opts It extends the options of `nofs.glob`, but
+	 * with some extra proptereis. Defaults:
+	 * ```coffee
+	 * {
+	 * 	# The base directory of the pattern.
+	 * 	baseDir: String
+	 *
+	 * 	# The encoding of the contents.
+	 * 	# Set null if you want raw buffer.
+	 * 	encoding: 'utf8'
+	 * }
+	 * ```
+	 * @return {Object} The returned warp object has these members:
+	 * ```coffee
+	 * {
+	 * 	pipe: (handler) -> warp
+	 * 	to: (path) -> Promise
+	 * }
+	 * ```
+	 * Each piped handler will recieve a `fileInfo` object:
+	 * ```coffee
+	 * {
+	 * 	# Set the contents and return self.
+	 * 	set: Function
+	 *
+	 * 	# The source path.
+	 * 	path: String
+	 *
+	 * 	# The destination path.
+	 * 	dest: String
+	 *
+	 * 	# The file content.
+	 * 	contents: String | Buffer
+	 *
+	 * 	# All the globbed files.
+	 * 	list: Array
+	 *
+	 * 	# The opts you passed to mapFiles.
+	 * 	opts: Object
+	 * }
+	 * ```
+	 * The handler can have a `onEnd` function, which will be called after the
+	 * whole warp ended. It's optional.
+	 * @example
+	 * ```coffee
+	 * kit.warp 'src/**\/*.js'
+	 * .pipe (fileInfo) ->
+	 * 	fileInfo.set '/* Lisence Info *\/' + fileInfo.contents
+	 * .pipe jslint()
+	 * .pipe minify()
+	 * .to 'build/minified'
+	 * ```
+	###
+	warp: (from, opts = {}) ->
+		_.defaults opts, {
+			encoding: 'utf8'
+		}
+
+		pipeList = []
+		onEndList = []
+
+		set = (contents) ->
+			@contents = contents
+			@
+
+		reader = (to) -> (fileInfo) ->
+			(if fileInfo.isDir
+				Promise.resolve()
+			else
+				kit.readFile fileInfo.path, opts.encoding
+			).then (contents) ->
+				fileInfo.baseDir = opts.baseDir if opts.baseDir
+				dest = kit.path.join(
+					to
+					kit.path.relative fileInfo.baseDir, fileInfo.path
+				)
+				_.extend fileInfo, { set, dest, opts, contents }
+
+		writer = (fileInfo) ->
+			return if not fileInfo
+			{ dest, contents } = fileInfo
+			if dest? and contents?
+				fs.outputFile dest, contents, fileInfo.opts
+
+		opts.iter = (fileInfo, list) ->
+			list.push fileInfo
+			kit.flow(pipeList)(fileInfo)
+
+		mapper =
+			pipe: (task) ->
+				if _.isFunction task.onEnd
+					onEndList.push task.onEnd
+				pipeList.push (fileInfo) ->
+					task fileInfo if fileInfo
+				mapper
+			to: (to) ->
+				pipeList.unshift reader(to)
+				pipeList.push writer
+				onEndList.push writer if onEndList.length > 0
+
+				kit.glob(from, opts).then (list) ->
+					kit.flow(onEndList)({ set, to, list, opts })
 
 	###*
 	 * Same as the unix `which` command.
