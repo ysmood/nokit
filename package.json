@@ -1,6 +1,6 @@
 {
   "name": "nokit",
-  "version": "0.3.3",
+  "version": "0.3.5",
   "description": "A light weight set of handy functions.",
   "main": "dist/kit.js",
   "bin": {
@@ -29,7 +29,7 @@
     "colors": "1.0.3",
     "jhash": "0.1.6",
     "lodash": "3.0.0",
-    "nofs": "0.4.2"
+    "nofs": "0.4.3"
   },
   "devDependencies": {
     "coffee-script": "1.8.0",
