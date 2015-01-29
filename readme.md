@@ -785,7 +785,7 @@ Goto [changelog](doc/changelog.md)
 
         Resolve a markdown string.
 
-- ### **[parseDependency](lib/kit.coffee?source#L1103)**
+- ### **[parseDependency](lib/kit.coffee?source#L1105)**
 
     Parse dependency tree by regex. The dependency relationships
     is not a tree, but a graph. To avoid dependency cycle, this
@@ -821,16 +821,18 @@ Goto [changelog](doc/changelog.md)
         ```coffee
         kit.parseDependency 'main.', {
         	depReg: /require\s*\(?['"](.+)['"]\)?/gm
-         handle: (path) ->
+        	handle: (path) ->
         		return path if path.match /^(?:\.|/|[a-z]:)/i
         }
+        .then (markdownStr) ->
+        	kit.log markdownStr
         ```
 
-- ### **[path](lib/kit.coffee?source#L1166)**
+- ### **[path](lib/kit.coffee?source#L1168)**
 
     io.js native module `path`. See `nofs` for more information.
 
-- ### **[Promise](lib/kit.coffee?source#L1174)**
+- ### **[Promise](lib/kit.coffee?source#L1176)**
 
     The promise lib. Now, it uses Bluebird as ES5 polyfill.
     In the future, the Bluebird will be replaced with native
@@ -838,7 +840,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>type</u>**: { _Object_ }
 
-- ### **[promisify](lib/kit.coffee?source#L1187)**
+- ### **[promisify](lib/kit.coffee?source#L1189)**
 
     Convert a callback style function to a promise function.
 
@@ -859,7 +861,7 @@ Goto [changelog](doc/changelog.md)
         readFile('a.txt').then kit.log
         ```
 
-- ### **[require](lib/kit.coffee?source#L1197)**
+- ### **[require](lib/kit.coffee?source#L1199)**
 
     Much faster than the native require of node, but you should
     follow some rules to use it safely.
@@ -877,7 +879,7 @@ Goto [changelog](doc/changelog.md)
 
         The module that you require.
 
-- ### **[requireOptional](lib/kit.coffee?source#L1225)**
+- ### **[requireOptional](lib/kit.coffee?source#L1227)**
 
     Require an optional package. If not found, it will
     warn user to npm install it, and exit the process.
@@ -890,7 +892,7 @@ Goto [changelog](doc/changelog.md)
 
         The required package.
 
-- ### **[request](lib/kit.coffee?source#L1333)**
+- ### **[request](lib/kit.coffee?source#L1335)**
 
     A handy extended combination of `http.request` and `https.request`.
 
@@ -993,7 +995,7 @@ Goto [changelog](doc/changelog.md)
         	kit.log body
         ```
 
-- ### **[spawn](lib/kit.coffee?source#L1549)**
+- ### **[spawn](lib/kit.coffee?source#L1551)**
 
     A safer version of `child_process.spawn` to cross-platform run
     a process. In some conditions, it may be more convenient
@@ -1036,7 +1038,7 @@ Goto [changelog](doc/changelog.md)
         .then ({code}) -> kit.log code
         ```
 
-- ### **[task](lib/kit.coffee?source#L1656)**
+- ### **[task](lib/kit.coffee?source#L1658)**
 
     Sequencing and executing tasks and dependencies concurrently.
 
@@ -1117,17 +1119,17 @@ Goto [changelog](doc/changelog.md)
         	kit.log 'All Done!'
         ```
 
-- ### **[url](lib/kit.coffee?source#L1721)**
+- ### **[url](lib/kit.coffee?source#L1723)**
 
     Node native module `url`.
 
-- ### **[which](lib/kit.coffee?source#L1727)**
+- ### **[which](lib/kit.coffee?source#L1729)**
 
     Same as the unix `which` command.
 
     - **<u>type</u>**: { _Function_ }
 
-- ### **[whichSync](lib/kit.coffee?source#L1733)**
+- ### **[whichSync](lib/kit.coffee?source#L1735)**
 
     Sync version of `which`.
 

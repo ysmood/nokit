@@ -1095,9 +1095,11 @@ _.extend kit, fs,
 	 * ```coffee
 	 * kit.parseDependency 'main.', {
 	 * 	depReg: /require\s*\(?['"](.+)['"]\)?/gm
-	 *  handle: (path) ->
+	 * 	handle: (path) ->
 	 * 		return path if path.match /^(?:\.|\/|[a-z]:)/i
 	 * }
+	 * .then (markdownStr) ->
+	 * 	kit.log markdownStr
 	 * ```
 	###
 	parseDependency: (entryPaths, opts = {}, depPaths = {}) ->

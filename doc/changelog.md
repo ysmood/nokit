@@ -1,6 +1,6 @@
 # Changelog
 
-- v0.3.1
+- v0.3.2
 
   - **BIG API CHANGE** `nofs` has changed the iterator arguments.
   - **API CHANGE** remove `pad` function, use `kit._.padLeft` instead.
