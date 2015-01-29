@@ -72,6 +72,7 @@ Assume your file content is:
 # task: kit.task
 # flow: kit.flow
 # kit: kit
+# Promise: kit.Promise
 
 option '-w, --hello [world]', 'Just a test option'
 

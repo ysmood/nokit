@@ -79,6 +79,7 @@ setGlobals = ->
 		kit
 		task
 		option
+		Promise: kit.Promise
 		flow: kit.flow
 	}
 

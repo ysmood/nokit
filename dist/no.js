@@ -98,6 +98,7 @@ setGlobals = function() {
     kit: kit,
     task: task,
     option: option,
+    Promise: kit.Promise,
     flow: kit.flow
   });
 };
