@@ -61,12 +61,11 @@ Same works with livescript:
 `npm i -g nokit commander Livescript`
 
 Create a `nofile.coffee` (or `.js`, `.ls`) at your current working directory
-or any of its parents directory. Assume your file content is:
+or any of its parents directory. The syntax of `nofile` is almost the same as the Cakefile, only the `option`'s first argument is slightly changed.
+
+Assume your file content is:
 
 ```coffee
-# Syntax is almost the same as the Cakefile,
-# only the option is first argument is slightly changed.
-
 # There are some global variables you can call directly:
 # _: lodash
 # option: commander.option
