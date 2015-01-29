@@ -776,7 +776,7 @@ Goto [changelog](doc/changelog.md)
         			name: ({ name, line }) ->
         				name = name.replace 'self.', ''
         				link = "#{path}?source#L#{line}"
-        				"- \#\#\# **[#{name}](#{link})**\n\n"
+        				"- \#\# **[#{name}](#{link})**\n\n"
         		}
         }
         ```
