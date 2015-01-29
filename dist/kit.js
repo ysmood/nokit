@@ -1409,7 +1409,9 @@ _.extend(kit, fs, {
       return kit.require(name);
     } catch (_error) {
       err = _error;
-      console.error(err.stack + "\nError: Please ".red + ("'npm install " + name + "'").green + " first. If it is a global lib, ".red + ("'npm install -g " + name + "'").green + " first.".red);
+      kit.err("If current module is installed globally, run ".red + ("'npm install -g " + name + "'").green + " first, else run ".red + ("'npm install " + name + "'").green + " first.\n".red + err.stack, {
+        isShowTime: false
+      });
       return process.exit();
     }
   },

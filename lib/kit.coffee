@@ -1228,14 +1228,13 @@ _.extend kit, fs,
 		try
 			kit.require name
 		catch err
-			console.error(
-				err.stack +
-				"\nError: Please ".red +
-				"'npm install #{name}'".green +
-				" first. If it is a global lib, ".red +
+			kit.err(
+				"If current module is installed globally, run ".red +
 				"'npm install -g #{name}'".green +
-				" first.".red
-			)
+				" first, else run ".red +
+				"'npm install #{name}'".green + " first.\n".red +
+				err.stack
+			, { isShowTime: false })
 			process.exit()
 
 	###*
