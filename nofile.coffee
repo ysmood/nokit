@@ -34,7 +34,7 @@ task 'build', 'Build project.', build = ->
 	start().then ->
 		kit.log 'Build done.'.green
 
-option '-g, --grep [grep]', 'Test pattern', '.'
+option '-g, --grep [pattern]', 'Test pattern', '.'
 option '-b, --bare', 'Don\'t compile before test.'
 task 'test', 'Test', (opts) ->
 	clean = ->

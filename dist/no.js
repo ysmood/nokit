@@ -3,7 +3,7 @@
 /*
 	A simplified version of Make.
  */
-var cmder, kit, launch, loadNofile, setGlobals, task, _;
+var cmder, error, kit, launch, loadNofile, setGlobals, task, _;
 
 if (process.env.NODE_ENV == null) {
   process.env.NODE_ENV = 'development';
@@ -14,6 +14,13 @@ kit = require('./kit');
 _ = kit._;
 
 cmder = kit.requireOptional('commander');
+
+error = function(msg) {
+  var err;
+  err = new Error(msg);
+  err.source = 'nokit';
+  throw err;
+};
 
 loadNofile = function() {
   var err, path, paths, _i, _len;
@@ -35,10 +42,7 @@ loadNofile = function() {
       }
     }
   }
-  kit.err('[Error] Cannot find nofile'.red, {
-    isShowTime: false
-  });
-  return process.exit();
+  return error('Cannot find nofile');
 };
 
 
@@ -98,8 +102,10 @@ setGlobals = function() {
   });
 };
 
-launch = function() {
+module.exports = launch = function() {
   var _i, _len, _ref;
+  setGlobals();
+  loadNofile();
   if (!kit.task.list) {
     return;
   }
@@ -117,20 +123,10 @@ launch = function() {
   for (_i = 0, _len = _ref.length; _i < _len; _i++) {
     task = _ref[_i];
     if (!kit.task.list[task]) {
-      kit.err('  [Error] No such task: '.red + task.cyan, {
-        isShowTime: false
-      });
-      cmder.outputHelp();
-      return;
+      error('No such task: ' + task);
     }
   }
   return kit.task.run(cmder.args, {
     init: cmder
   });
 };
-
-setGlobals();
-
-loadNofile();
-
-launch();

@@ -9,6 +9,11 @@ kit = require './kit'
 { _ } = kit
 cmder = kit.requireOptional 'commander'
 
+error = (msg) ->
+	err = new Error msg
+	err.source = 'nokit'
+	throw err
+
 loadNofile = ->
 	try require 'coffee-script/register'
 	try require 'Livescript'
@@ -21,8 +26,7 @@ loadNofile = ->
 			if err.code != 'MODULE_NOT_FOUND'
 				throw err
 
-	kit.err '[Error] Cannot find nofile'.red, { isShowTime: false }
-	process.exit()
+	error 'Cannot find nofile'
 
 ###*
  * A simplified task wrapper for `kit.task`
@@ -78,7 +82,10 @@ setGlobals = ->
 		flow: kit.flow
 	}
 
-launch = ->
+module.exports = launch = ->
+	setGlobals()
+	loadNofile()
+
 	if not kit.task.list
 		return
 
@@ -92,13 +99,6 @@ launch = ->
 
 	for task in cmder.args
 		if not kit.task.list[task]
-			kit.err '  [Error] No such task: '.red + task.cyan,
-				{ isShowTime: false }
-			cmder.outputHelp()
-			return
+			error 'No such task: ' + task
 
 	kit.task.run cmder.args, { init: cmder }
-
-setGlobals()
-loadNofile()
-launch()
