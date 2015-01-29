@@ -16,8 +16,16 @@ task 'build', 'Build project.', build = ->
 		]
 
 	createDoc = ->
+		path = 'lib/kit.coffee'
 		kit.compose([
-			kit.parseFileComment 'lib/kit.coffee'
+			kit.parseFileComment path, {
+				formatComment: {
+					name: ({ name, line }) ->
+						name = name.replace 'self.', ''
+						link = "#{path}?source#L#{line}"
+						"- ## **[#{name}](#{link})**\n\n"
+				}
+			}
 			(doc) ->
 				tpl = kit.fs.readFileSync 'doc/readme.tpl.md', 'utf8'
 
