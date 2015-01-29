@@ -83,6 +83,17 @@ setGlobals = ->
 	}
 
 module.exports = launch = ->
+
+	# Version info
+	cmder.option(
+		'-v, --version'
+		'output version of nokit'
+		->
+			info = kit.readJsonSync(__dirname + '/../package.json')
+			console.log info.version
+			process.exit()
+	)
+
 	setGlobals()
 	loadNofile()
 

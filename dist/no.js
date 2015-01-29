@@ -104,6 +104,12 @@ setGlobals = function() {
 
 module.exports = launch = function() {
   var _i, _len, _ref;
+  cmder.option('-v, --version', 'output version of nokit', function() {
+    var info;
+    info = kit.readJsonSync(__dirname + '/../package.json');
+    console.log(info.version);
+    return process.exit();
+  });
   setGlobals();
   loadNofile();
   if (!kit.task.list) {
