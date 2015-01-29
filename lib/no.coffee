@@ -41,27 +41,27 @@ task = (name, deps, description, isSequential, fn = ->) ->
 	# task name, deps, description, fn
 	if _.isFunction deps
 		fn = deps
-		deps = undefined
-		description = ''
-		isSequential = undefined
+		deps = null
+		description = null
+		isSequential = null
 	else if _.isString(deps) and _.isFunction(description)
 		fn = description
 		description = deps
-		deps = undefined
-		isSequential = undefined
+		deps = null
+		isSequential = null
 	else if _.isArray(deps) and _.isFunction(description)
 		fn = description
-		description = ''
-		isSequential = undefined
+		description = null
+		isSequential = null
 	else if _.isArray(deps) and _.isString(description) and
 	_.isFunction(isSequential)
 		fn = isSequential
-		isSequential = undefined
+		isSequential = null
 
 	argedFn = -> fn cmder
 
 	cmder.command name
-	.description description
+	.description description or ''
 	.action ->
 		kit.task.run name, { init: cmder }
 

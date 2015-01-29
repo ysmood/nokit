@@ -56,26 +56,26 @@ task = function(name, deps, description, isSequential, fn) {
   }
   if (_.isFunction(deps)) {
     fn = deps;
-    deps = void 0;
-    description = '';
-    isSequential = void 0;
+    deps = null;
+    description = null;
+    isSequential = null;
   } else if (_.isString(deps) && _.isFunction(description)) {
     fn = description;
     description = deps;
-    deps = void 0;
-    isSequential = void 0;
+    deps = null;
+    isSequential = null;
   } else if (_.isArray(deps) && _.isFunction(description)) {
     fn = description;
-    description = '';
-    isSequential = void 0;
+    description = null;
+    isSequential = null;
   } else if (_.isArray(deps) && _.isString(description) && _.isFunction(isSequential)) {
     fn = isSequential;
-    isSequential = void 0;
+    isSequential = null;
   }
   argedFn = function() {
     return fn(cmder);
   };
-  cmder.command(name).description(description).action(function() {
+  cmder.command(name).description(description || '').action(function() {
     return kit.task.run(name, {
       init: cmder
     });
