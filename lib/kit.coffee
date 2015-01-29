@@ -700,29 +700,40 @@ _.extend kit, fs,
 	 * stack trace.
 	 * @param  {Any} msg Your log message.
 	 * @param  {String} action 'log', 'error', 'warn'.
-	 * @param  {Object} opts Default is same with `kit.inspect`
+	 * @param  {Object} opts Default is same with `kit.inspect`,
+	 * but with some extra options:
+	 * ```coffee
+	 * {
+	 * 	isShowTime: true
+	 * }
+	 * ```
 	###
 	log: (msg, action = 'log', opts = {}) ->
+		_.defaults opts, {
+			isShowTime: true
+		}
+
 		if not kit.lastLogTime
 			kit.lastLogTime = new Date
 			if process.env.logReg
 				kit.logReg = new RegExp(process.env.logReg)
 
-		time = new Date()
-		timeDelta = (+time - +kit.lastLogTime).toString().magenta + 'ms'
-		kit.lastLogTime = time
-		time = [
-			[
-				_.padLeft time.getFullYear(), 4, '0'
-				_.padLeft time.getMonth() + 1, 2, '0'
-				_.padLeft time.getDate(), 2, '0'
-			].join('-')
-			[
-				_.padLeft time.getHours(), 2, '0'
-				_.padLeft time.getMinutes(), 2, '0'
-				_.padLeft time.getSeconds(), 2, '0'
-			].join(':')
-		].join(' ').grey
+		if opts.isShowTime
+			time = new Date()
+			timeDelta = (+time - +kit.lastLogTime).toString().magenta + 'ms'
+			kit.lastLogTime = time
+			time = [
+				[
+					_.padLeft time.getFullYear(), 4, '0'
+					_.padLeft time.getMonth() + 1, 2, '0'
+					_.padLeft time.getDate(), 2, '0'
+				].join('-')
+				[
+					_.padLeft time.getHours(), 2, '0'
+					_.padLeft time.getMinutes(), 2, '0'
+					_.padLeft time.getSeconds(), 2, '0'
+				].join(':')
+			].join(' ').grey
 
 		log = ->
 			str = _.toArray(arguments).join ' '
@@ -738,9 +749,15 @@ _.extend kit, fs,
 				console.log err
 
 		if _.isObject msg
-			log "[#{time}] ->\n" + kit.inspect(msg, opts), timeDelta
+			if opts.isShowTime
+				log "[#{time}] ->\n" + kit.inspect(msg, opts), timeDelta
+			else
+				log kit.inspect(msg, opts), timeDelta
 		else
-			log "[#{time}]", msg, timeDelta
+			if opts.isShowTime
+				log "[#{time}] " + msg, timeDelta
+			else
+				log msg, timeDelta
 
 		if action == 'error'
 			process.stdout.write "\u0007"
