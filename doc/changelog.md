@@ -7,6 +7,7 @@
   - **API CHANGE** rename `generateNodeModulePaths` to `genModulePaths`.
   - Update `lodash` to `v3.0.0`.
   - Add `task` helper.
+  - Add a command line helper `no`.
 
 - v0.2.7
 

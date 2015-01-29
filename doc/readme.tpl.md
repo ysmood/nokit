@@ -10,6 +10,13 @@ It's one of the core lib of [nobone](https://github.com/ysmood/nobone).
 
 [![NPM version](https://badge.fury.io/js/nokit.svg)](http://badge.fury.io/js/nokit) [![Build Status](https://travis-ci.org/ysmood/nokit.svg)](https://travis-ci.org/ysmood/nokit) [![Build status](https://ci.appveyor.com/api/projects/status/3pwhk4ua9c3ojm0q?svg=true)](https://ci.appveyor.com/project/ysmood/nokit) [![Deps Up to Date](https://david-dm.org/ysmood/nokit.svg?style=flat)](https://david-dm.org/ysmood/nokit)
 
+# Installation
+
+As a lib dependency, install it locally: `npm i nokit`
+
+Nokit has provaided a cli tool like GNU Make. If you install it globally like this: `npm -g i nokit commander`, then have fun with your `nofile`, it can be
+js, coffee or livescript. For more information goto the `CLI` section.
+
 # Quick Start
 
 ## vs Gulp
@@ -42,6 +49,52 @@ kit.flow 'test/fixtures/**/*.js'
 .then ->
     kit.log 'All Done!'
 ```
+
+## CLI
+
+If you want nokit support coffee, you should install it like this:
+
+`npm i -g nokit commander coffee-script`
+
+Same works with livescript:
+
+`npm i -g nokit commander Livescript`
+
+Create a `nofile.coffee` (or `.js`, `.ls`) at your current working directory
+or any of its parents directory. Assume your file content is:
+
+```coffee
+# There are some global variables you can call directly:
+# _: lodash
+# option: commander.option
+# task: kit.task
+# flow: kit.flow
+# kit: kit
+
+option '-w, --hello [world]', 'Just a test option'
+
+# Define a default task, and it depends on the "clean" task.
+task 'default', ['clean'], 'This is a comment info', (opts) ->
+    kit.log opts.test
+
+task 'clean', ->
+    kit.remove 'dist'
+
+task 'build', ->
+    flow 'src/**/*.js'
+    .pipe (file) ->
+        file.set '/* Nothing */' + file.contents
+    .to 'dist'
+```
+
+Then you can run it in command line: `no`. Just that simple, without action
+argument, `no` will try to call the `default` action directly.
+
+You can run `no -h` to display help info.
+
+Call `no build` to run the `build` task.
+
+For more doc for the `option` goto [commander.js](https://github.com/tj/commander.js).
 
 # Changelog
 
