@@ -109,7 +109,7 @@ module.exports = launch = function() {
     info = kit.readJsonSync(__dirname + '/../package.json');
     console.log(info.version);
     return process.exit();
-  });
+  }).usage('[options] [commands]');
   setGlobals();
   loadNofile();
   if (!kit.task.list) {
