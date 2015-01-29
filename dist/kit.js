@@ -57,7 +57,7 @@ _.extend(kit, fs, {
   /**
   	 * An throttled version of `Promise.all`, it runs all the tasks under
   	 * a concurrent limitation.
-  	 * To run tasks sequentially, use `kit.compose`.
+  	 * To run tasks sequentially, use `kit.flow`.
   	 * @param  {Int} limit The max task to run at a time. It's optional.
   	 * Default is Infinity.
   	 * @param  {Array | Function} list
@@ -183,13 +183,11 @@ _.extend(kit, fs, {
   /**
   	 * Creates a function that is the composition of the provided functions.
   	 * Besides, it can also accept async function that returns promise.
-  	 * It's more powerful than `_.compose`, and it use reverse order for
-  	 * passing argument from one function to another.
   	 * See `kit.async`, if you need concurrent support.
   	 * @param  {Function | Array} fns Functions that return
   	 * promise or any value.
   	 * And the array can also contains promises.
-  	 * @return {Function} A composed function that will return a promise.
+  	 * @return {Function} `(val) -> Promise` A function that will return a promise.
   	 * @example
   	 * ```coffee
   	 * # It helps to decouple sequential pipeline code logic.
@@ -205,13 +203,13 @@ _.extend(kit, fs, {
   	 * 	kit.outputFile('a.txt', str).then ->
   	 * 		kit.log 'saved'
   	 *
-  	 * download = kit.compose createUrl, curl, save
-  	 * # same as "download = kit.compose [createUrl, curl, save]"
+  	 * download = kit.flow createUrl, curl, save
+  	 * # same as "download = kit.flow [createUrl, curl, save]"
   	 *
   	 * download 'home'
   	 * ```
    */
-  compose: function() {
+  flow: function() {
     var fns;
     fns = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
     return function(val) {
@@ -511,7 +509,7 @@ _.extend(kit, fs, {
     };
     opts.iter = function(fileInfo, list) {
       list.push(fileInfo);
-      return kit.compose(pipeList)(fileInfo);
+      return kit.flow(pipeList)(fileInfo);
     };
     return mapper = {
       pipe: function(task) {
@@ -532,7 +530,7 @@ _.extend(kit, fs, {
           onEndList.push(writer);
         }
         return kit.glob(from, opts).then(function(list) {
-          return kit.compose(onEndList)({
+          return kit.flow(onEndList)({
             set: set,
             to: to,
             list: list,
@@ -1933,7 +1931,7 @@ _.extend(kit, fs, {
           return Promise.resolve(fn(val));
         }
         depTasks = opts.deps.map(runTask(warp));
-        return (opts.isSequential ? kit.compose(depTasks)(val) : Promise.all(depTasks.map(function(task) {
+        return (opts.isSequential ? kit.flow(depTasks)(val) : Promise.all(depTasks.map(function(task) {
           return task(val);
         }))).then(fn);
       };
@@ -1959,7 +1957,7 @@ _.extend(kit, fs, {
       });
       task = runTask(opts.warp);
       if (opts.isSequential) {
-        return kit.compose(names.map(task))(opts.init);
+        return kit.flow(names.map(task))(opts.init);
       } else {
         return Promise.all(names.map(function(name) {
           return task(name)(opts.init);

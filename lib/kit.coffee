@@ -46,7 +46,7 @@ _.extend kit, fs,
 	###*
 	 * An throttled version of `Promise.all`, it runs all the tasks under
 	 * a concurrent limitation.
-	 * To run tasks sequentially, use `kit.compose`.
+	 * To run tasks sequentially, use `kit.flow`.
 	 * @param  {Int} limit The max task to run at a time. It's optional.
 	 * Default is Infinity.
 	 * @param  {Array | Function} list
@@ -149,13 +149,11 @@ _.extend kit, fs,
 	###*
 	 * Creates a function that is the composition of the provided functions.
 	 * Besides, it can also accept async function that returns promise.
-	 * It's more powerful than `_.compose`, and it use reverse order for
-	 * passing argument from one function to another.
 	 * See `kit.async`, if you need concurrent support.
 	 * @param  {Function | Array} fns Functions that return
 	 * promise or any value.
 	 * And the array can also contains promises.
-	 * @return {Function} A composed function that will return a promise.
+	 * @return {Function} `(val) -> Promise` A function that will return a promise.
 	 * @example
 	 * ```coffee
 	 * # It helps to decouple sequential pipeline code logic.
@@ -171,13 +169,13 @@ _.extend kit, fs,
 	 * 	kit.outputFile('a.txt', str).then ->
 	 * 		kit.log 'saved'
 	 *
-	 * download = kit.compose createUrl, curl, save
-	 * # same as "download = kit.compose [createUrl, curl, save]"
+	 * download = kit.flow createUrl, curl, save
+	 * # same as "download = kit.flow [createUrl, curl, save]"
 	 *
 	 * download 'home'
 	 * ```
 	###
-	compose: (fns...) -> (val) ->
+	flow: (fns...) -> (val) ->
 		fns = fns[0] if _.isArray fns[0]
 
 		fns.reduce (preFn, fn) ->
@@ -441,7 +439,7 @@ _.extend kit, fs,
 
 		opts.iter = (fileInfo, list) ->
 			list.push fileInfo
-			kit.compose(pipeList)(fileInfo)
+			kit.flow(pipeList)(fileInfo)
 
 		mapper =
 			pipe: (task) ->
@@ -456,7 +454,7 @@ _.extend kit, fs,
 				onEndList.push writer if onEndList.length > 0
 
 				kit.glob(from, opts).then (list) ->
-					kit.compose(onEndList)({ set, to, list, opts })
+					kit.flow(onEndList)({ set, to, list, opts })
 
 	###*
 	 * Format the parsed comments array to a markdown string.
@@ -1691,7 +1689,7 @@ _.extend kit, fs,
 			depTasks = opts.deps.map runTask(warp)
 
 			(if opts.isSequential
-				kit.compose(depTasks)(val)
+				kit.flow(depTasks)(val)
 			else
 				Promise.all depTasks.map (task) -> task val
 			).then fn
@@ -1711,7 +1709,7 @@ _.extend kit, fs,
 			task = runTask opts.warp
 
 			if opts.isSequential
-				kit.compose(names.map task) opts.init
+				kit.flow(names.map task) opts.init
 			else
 				Promise.all names.map (name) ->
 					task(name) opts.init

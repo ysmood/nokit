@@ -19,7 +19,7 @@ task 'build', 'build project', build = ->
 
 	createDoc = ->
 		path = 'lib/kit.coffee'
-		kit.compose([
+		kit.flow([
 			kit.parseFileComment path, {
 				formatComment: {
 					name: ({ name, line }) ->
@@ -34,7 +34,7 @@ task 'build', 'build project', build = ->
 				kit.outputFile 'readme.md', _.template(tpl)({ api: doc })
 		])()
 
-	start = kit.compose [
+	start = kit.flow [
 		-> kit.remove 'dist'
 		-> kit.warp('lib/**/*.js').to 'dist'
 		compileCoffee

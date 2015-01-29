@@ -3,6 +3,7 @@
 - v0.4.0
 
   - **API CHANGE** Rename `flow` to `warp`, to Star Trek.
+  - **API CHANGE** Rename `compose` to `flow`.
 
 - v0.3.6
 
