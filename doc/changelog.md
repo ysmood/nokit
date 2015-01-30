@@ -1,6 +1,6 @@
 # Changelog
 
-- v0.4.0
+- v0.4.1
 
   - **API CHANGE** Rename `flow` to `warp`, to Star Trek.
   - **API CHANGE** Rename `compose` to `flow`.
