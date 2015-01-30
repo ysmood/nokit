@@ -603,11 +603,20 @@ _.extend kit, fs,
 	 * 	isShowTime: true
 	 * }
 	 * ```
+	 * @example
+	 * ```coffee
+	 * # To achieve "console.log A, B"
+	 * kit.log [A, B]
+	 * ```
 	###
 	log: (msg, action = 'log', opts = {}) ->
 		colors = kit.require 'colors', ->
 			if kit.isDevelopment()
 				colors.mode = 'none'
+
+		if _.isObject action
+			opts = action
+			action = 'log'
 
 		_.defaults opts, {
 			isShowTime: true
