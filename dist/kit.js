@@ -1235,8 +1235,8 @@ _.extend(kit, fs, {
 
   /**
   	 * Much faster than the native require of node, but you should
-  	 * follow some rules to use it safely. Used to require nokit's internal
-  	 * module.
+  	 * follow some rules to use it safely.
+  	 * Use it to load nokit's internal module.
   	 * @param  {String}   moduleName Relative moudle path is not allowed!
   	 * Only allow absolute path or module name.
   	 * @param  {Function} loaded Run only the first time after the module loaded.
@@ -1284,7 +1284,6 @@ _.extend(kit, fs, {
       if (kit[moduleName] === null) {
         kit[moduleName] = kit.requireCache[moduleName];
       }
-      console.log('>>>', moduleName);
       return kit.requireCache[moduleName];
     }
   },
@@ -1891,7 +1890,8 @@ _.extend(kit, fs, {
   	 * 	to: (path) -> Promise
   	 * }
   	 * ```
-  	 * Each piped handler will recieve a `fileInfo` object:
+  	 * Each piped handler will recieve a
+  	 * object that extends `nofs`'s fileInfo object:
   	 * ```coffee
   	 * {
   	 * 	# Set the contents and return self.
@@ -1900,16 +1900,35 @@ _.extend(kit, fs, {
   	 * 	# The source path.
   	 * 	path: String
   	 *
+  	 * 	# The dest root path.
+  	 *  to: String
+  	 *
   	 * 	# The destination path.
-  	 * 	dest: String
+  	 * 	# Alter it if you want to change the output file's location.
+  	 * 	# You can set it to string if you don't want "path.format".
+  	 * 	dest: {
+  	 * 		# These properties are parsed via io.js 'path.parse'.
+  	 *  	root: String
+  	 *  	dir: String
+  	 *
+  	 * 		# If the 'ext' or 'name' is not null,
+  	 * 		# the 'base' will be override by the 'ext' and 'name'.
+  	 *  	base: String
+  	 *  	ext: String
+  	 *  	name: String
+  	 * 	}
   	 *
   	 * 	# The file content.
   	 * 	contents: String | Buffer
   	 *
+  	 * 	isDir: Boolean
+  	 *
+  	 * 	stats: fs.Stats
+  	 *
   	 * 	# All the globbed files.
   	 * 	list: Array
   	 *
-  	 * 	# The opts you passed to mapFiles.
+  	 * 	# The opts you passed to "nofs.glob".
   	 * 	opts: Object
   	 * }
   	 * ```
@@ -1946,10 +1965,11 @@ _.extend(kit, fs, {
           if (opts.baseDir) {
             fileInfo.baseDir = opts.baseDir;
           }
-          dest = kit.path.join(to, kit.path.relative(fileInfo.baseDir, fileInfo.path));
+          dest = kit.path.parse(kit.path.join(to, kit.path.relative(fileInfo.baseDir, fileInfo.path)));
           return _.extend(fileInfo, {
             set: set,
             dest: dest,
+            to: to,
             opts: opts,
             contents: contents
           });
@@ -1963,6 +1983,12 @@ _.extend(kit, fs, {
       }
       dest = fileInfo.dest, contents = fileInfo.contents;
       if ((dest != null) && (contents != null)) {
+        if (_.isObject(dest)) {
+          if ((dest.name != null) && (dest.ext != null)) {
+            dest.base = dest.name + dest.ext;
+          }
+          dest = kit.path.format(dest);
+        }
         return fs.outputFile(dest, contents, fileInfo.opts);
       }
     };

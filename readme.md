@@ -24,11 +24,16 @@ js, coffee or livescript. For more information goto the `CLI` section.
 ```coffee
 # nokit extends nofs, so we don't have to require nofs here.
 kit = require 'nokit'
+coffee = require 'coffee-script'
+
+# A plugin for coffee, a simple curried function.
+compiler = (opts) -> (file) ->
+    file.dest.ext = '.js'
+    file.set coffee.compile(file.contents, opts)
 
 # A plugin to prepend lisence to each file,
-# a simple curried function.
 lisencer = (lisence) -> (file) ->
-    file.set lisence + file.contents
+    file.set lisence + '\n' + file.contents
 
 # A plugin to concat all files.
 concat = (outputFile) ->
@@ -42,12 +47,13 @@ concat = (outputFile) ->
         file.set all
     c
 
-kit.warp 'test/fixtures/**/*.js'
-.pipe lisencer('/* MIT lisence */')
-.pipe concat('bundle.coffee')
-.to 'test/fixtures'
+kit.warp 'src/**/*.coffee'
+.pipe compiler bare: true
+.pipe lisencer '/* MIT lisence */'
+.pipe concat 'bundle.js'
+.to 'dist'
 .then ->
-    kit.log 'All Done!'
+    kit.log 'Build Done'
 ```
 
 ## CLI
@@ -802,8 +808,8 @@ Goto [changelog](doc/changelog.md)
 - ## **[require](lib/kit.coffee?source#L1108)**
 
     Much faster than the native require of node, but you should
-    follow some rules to use it safely. Used to require nokit's internal
-    module.
+    follow some rules to use it safely.
+    Use it to load nokit's internal module.
 
     - **<u>param</u>**: `moduleName` { _String_ }
 
@@ -827,7 +833,7 @@ Goto [changelog](doc/changelog.md)
         kit.jhash.hash 'test'
         ```
 
-- ## **[requireOptional](lib/kit.coffee?source#L1148)**
+- ## **[requireOptional](lib/kit.coffee?source#L1146)**
 
     Require an optional package. If not found, it will
     warn user to npm install it, and exit the process.
@@ -840,7 +846,7 @@ Goto [changelog](doc/changelog.md)
 
         The required package.
 
-- ## **[request](lib/kit.coffee?source#L1255)**
+- ## **[request](lib/kit.coffee?source#L1253)**
 
     A handy extended combination of `http.request` and `https.request`.
 
@@ -943,7 +949,7 @@ Goto [changelog](doc/changelog.md)
         	kit.log body
         ```
 
-- ## **[spawn](lib/kit.coffee?source#L1473)**
+- ## **[spawn](lib/kit.coffee?source#L1471)**
 
     A safer version of `child_process.spawn` to cross-platform run
     a process. In some conditions, it may be more convenient
@@ -986,7 +992,7 @@ Goto [changelog](doc/changelog.md)
         .then ({code}) -> kit.log code
         ```
 
-- ## **[task](lib/kit.coffee?source#L1581)**
+- ## **[task](lib/kit.coffee?source#L1579)**
 
     Sequencing and executing tasks and dependencies concurrently.
 
@@ -1067,12 +1073,12 @@ Goto [changelog](doc/changelog.md)
         	kit.log 'All Done!'
         ```
 
-- ## **[url](lib/kit.coffee?source#L1647)**
+- ## **[url](lib/kit.coffee?source#L1645)**
 
     The `url` module of [io.js](iojs.org).
     You must `kit.require 'url'` before using it.
 
-- ## **[warp](lib/kit.coffee?source#L1706)**
+- ## **[warp](lib/kit.coffee?source#L1724)**
 
     Works much like `gulp.src`, but with Promise instead.
     The warp control and error handling is more pleasant.
@@ -1105,7 +1111,8 @@ Goto [changelog](doc/changelog.md)
         	to: (path) -> Promise
         }
         ```
-        Each piped handler will recieve a `fileInfo` object:
+        Each piped handler will recieve a
+        object that extends `nofs`'s fileInfo object:
         ```coffee
         {
         	# Set the contents and return self.
@@ -1114,16 +1121,35 @@ Goto [changelog](doc/changelog.md)
         	# The source path.
         	path: String
 
+        	# The dest root path.
+         to: String
+
         	# The destination path.
-        	dest: String
+        	# Alter it if you want to change the output file's location.
+        	# You can set it to string if you don't want "path.format".
+        	dest: {
+        		# These properties are parsed via io.js 'path.parse'.
+         	root: String
+         	dir: String
+
+        		# If the 'ext' or 'name' is not null,
+        		# the 'base' will be override by the 'ext' and 'name'.
+         	base: String
+         	ext: String
+         	name: String
+        	}
 
         	# The file content.
         	contents: String | Buffer
 
+        	isDir: Boolean
+
+        	stats: fs.Stats
+
         	# All the globbed files.
         	list: Array
 
-        	# The opts you passed to mapFiles.
+        	# The opts you passed to "nofs.glob".
         	opts: Object
         }
         ```
@@ -1141,7 +1167,7 @@ Goto [changelog](doc/changelog.md)
         .to 'build/minified'
         ```
 
-- ## **[which](lib/kit.coffee?source#L1762)**
+- ## **[which](lib/kit.coffee?source#L1785)**
 
     Same as the unix `which` command.
     You must `kit.require 'which'` before using it.
@@ -1152,7 +1178,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Promise_ }
 
-- ## **[whichSync](lib/kit.coffee?source#L1769)**
+- ## **[whichSync](lib/kit.coffee?source#L1792)**
 
     Sync version of `which`.
     You must `kit.require 'whichSync'` before using it.

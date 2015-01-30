@@ -225,15 +225,16 @@ describe 'Kit:', ->
 			kit.remove tmp
 
 		counter = (info) ->
+			info.dest.ext = '.coffee'
 			info.set info.contents.length
 
 		kit.warp 'test/fixtures/**/*.js'
 		.pipe counter
 		.to tmp
 		.then ->
-			kit.glob tmp + '/**'
-		.then ({ length }) ->
-			shouldEqual length, 5
+			kit.glob tmp + '/**/*.coffee'
+		.then (paths) ->
+			shouldEqual paths.length, 3
 
 	it 'warp concat', ->
 		tmp = 'test/fixtures/warp_all.coffee'

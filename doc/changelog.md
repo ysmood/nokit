@@ -3,6 +3,7 @@
 - v0.4.2
 
   - Optimize the `require` function.
+  - **API CHANGE** The `dest` of `warp` now is a path object.
 
 - v0.4.1
 

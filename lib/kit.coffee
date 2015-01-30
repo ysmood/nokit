@@ -1667,7 +1667,8 @@ _.extend kit, fs,
 	 * 	to: (path) -> Promise
 	 * }
 	 * ```
-	 * Each piped handler will recieve a `fileInfo` object:
+	 * Each piped handler will recieve a
+	 * object that extends `nofs`'s fileInfo object:
 	 * ```coffee
 	 * {
 	 * 	# Set the contents and return self.
@@ -1676,16 +1677,35 @@ _.extend kit, fs,
 	 * 	# The source path.
 	 * 	path: String
 	 *
+	 * 	# The dest root path.
+	 *  to: String
+	 *
 	 * 	# The destination path.
-	 * 	dest: String
+	 * 	# Alter it if you want to change the output file's location.
+	 * 	# You can set it to string if you don't want "path.format".
+	 * 	dest: {
+	 * 		# These properties are parsed via io.js 'path.parse'.
+	 *  	root: String
+	 *  	dir: String
+	 *
+	 * 		# If the 'ext' or 'name' is not null,
+	 * 		# the 'base' will be override by the 'ext' and 'name'.
+	 *  	base: String
+	 *  	ext: String
+	 *  	name: String
+	 * 	}
 	 *
 	 * 	# The file content.
 	 * 	contents: String | Buffer
 	 *
+	 * 	isDir: Boolean
+	 *
+	 * 	stats: fs.Stats
+	 *
 	 * 	# All the globbed files.
 	 * 	list: Array
 	 *
-	 * 	# The opts you passed to mapFiles.
+	 * 	# The opts you passed to "nofs.glob".
 	 * 	opts: Object
 	 * }
 	 * ```
@@ -1720,16 +1740,21 @@ _.extend kit, fs,
 				kit.readFile fileInfo.path, opts.encoding
 			).then (contents) ->
 				fileInfo.baseDir = opts.baseDir if opts.baseDir
-				dest = kit.path.join(
-					to
+
+				dest = kit.path.parse kit.path.join to,
 					kit.path.relative fileInfo.baseDir, fileInfo.path
-				)
-				_.extend fileInfo, { set, dest, opts, contents }
+
+				_.extend fileInfo, { set, dest, to, opts, contents }
 
 		writer = (fileInfo) ->
 			return if not fileInfo
 			{ dest, contents } = fileInfo
 			if dest? and contents?
+				if _.isObject dest
+					if dest.name? and dest.ext?
+						dest.base = dest.name + dest.ext
+					dest = kit.path.format dest
+
 				fs.outputFile dest, contents, fileInfo.opts
 
 		opts.iter = (fileInfo, list) ->

@@ -66,6 +66,6 @@ task 'test', 'unit tests', (opts) ->
 	.then -> clean()
 	.catch (err) ->
 		if err.code
-			process.exit code
+			process.exit err.code
 		else
 			Promise.reject err

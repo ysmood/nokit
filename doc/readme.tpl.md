@@ -24,11 +24,16 @@ js, coffee or livescript. For more information goto the `CLI` section.
 ```coffee
 # nokit extends nofs, so we don't have to require nofs here.
 kit = require 'nokit'
+coffee = require 'coffee-script'
+
+# A plugin for coffee, a simple curried function.
+compiler = (opts) -> (file) ->
+    file.dest.ext = '.js'
+    file.set coffee.compile(file.contents, opts)
 
 # A plugin to prepend lisence to each file,
-# a simple curried function.
 lisencer = (lisence) -> (file) ->
-    file.set lisence + file.contents
+    file.set lisence + '\n' + file.contents
 
 # A plugin to concat all files.
 concat = (outputFile) ->
@@ -42,12 +47,13 @@ concat = (outputFile) ->
         file.set all
     c
 
-kit.warp 'test/fixtures/**/*.js'
-.pipe lisencer('/* MIT lisence */')
-.pipe concat('bundle.coffee')
-.to 'test/fixtures'
+kit.warp 'src/**/*.coffee'
+.pipe compiler bare: true
+.pipe lisencer '/* MIT lisence */'
+.pipe concat 'bundle.js'
+.to 'dist'
 .then ->
-    kit.log 'All Done!'
+    kit.log 'Build Done'
 ```
 
 ## CLI
