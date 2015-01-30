@@ -1,5 +1,9 @@
 # Changelog
 
+- v0.4.2
+
+  - Optimize the `require` function.
+
 - v0.4.1
 
   - **API CHANGE** Rename `flow` to `warp`, to Star Trek.

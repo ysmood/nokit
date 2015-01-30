@@ -1,8 +1,6 @@
-colors = require 'colors'
 _ = require 'lodash'
 fs = require 'nofs'
 { Promise } = fs
-which = require './which'
 
 ###*
  * All the async functions in `kit` return promise object.
@@ -13,6 +11,7 @@ kit = {}
 
 ###*
  * kit extends all the functions of [nofs](https://github.com/ysmood/nofs).
+ * You can use it as same as nofs. For more info, see the doc:
  *
  * [Offline Documentation](?gotoDoc=nofs/readme.md)
  * @example
@@ -30,14 +29,18 @@ kit = {}
  * .then -> kit.log 'done'
  * ```
 ###
-kitExtendsFsPromise = 'promise'
+extend_nofs = 'nofs'
 
 
 _.extend kit, fs,
 
 	###*
-	 * The lodash lib.
+	 * The [lodash](https://lodash.com) lib.
 	 * @type {Object}
+	 * @example
+	 * ```coffee
+	 * kit._.map [1, 2, 3]
+	 * ```
 	###
 	_: _
 
@@ -432,10 +435,12 @@ _.extend kit, fs,
 	###*
 	 * A fast helper to hash string or binary file.
 	 * See my [jhash](https://github.com/ysmood/jhash) project.
+	 * You must `kit.require 'jhash'` before using it.
 	 *
 	 * [Offline Documentation](?gotoDoc=jhash/readme.md)
 	 * @example
 	 * ```coffee
+	 * kit.require 'jhash'
 	 * kit.jhash.hash 'test' # output => '349o'
 	 *
 	 * jhash.hash kit.readFileSync('a.jpg')
@@ -449,7 +454,7 @@ _.extend kit, fs,
 	 * jhash.hash 'test' # output => 'ede'
 	 * ```
 	###
-	jhash: require 'jhash'
+	jhash: null
 
 	###*
 	 * It inserts the fnB in between the fnA and concatenates the result.
@@ -600,6 +605,10 @@ _.extend kit, fs,
 	 * ```
 	###
 	log: (msg, action = 'log', opts = {}) ->
+		colors = kit.require 'colors', ->
+			if kit.isDevelopment()
+				colors.mode = 'none'
+
 		_.defaults opts, {
 			isShowTime: true
 		}
@@ -809,6 +818,7 @@ _.extend kit, fs,
 				'start'
 			else
 				try
+					kit.require 'which'
 					kit.which 'xdg-open'
 				catch
 					null
@@ -1082,15 +1092,30 @@ _.extend kit, fs,
 	###*
 	 * Much faster than the native require of node, but you should
 	 * follow some rules to use it safely.
+	 * Use it to load nokit's internal module.
 	 * @param  {String}   moduleName Relative moudle path is not allowed!
 	 * Only allow absolute path or module name.
-	 * @param  {Function} done Run only the first time after the module loaded.
+	 * @param  {Function} loaded Run only the first time after the module loaded.
 	 * @return {Module} The module that you require.
+	 * @example
+	 * Use it to load nokit's internal module.
+	 * ```coffee
+	 * kit.require 'jhash'
+	 * # Then you can use the module, or it will be null.
+	 * kit.jhash.hash 'test'
+	 * ```
 	###
-	require: (moduleName, done) ->
-		if not kit.requireCache[moduleName]
+	require: (moduleName, loaded) ->
+		if kit.requireCache[moduleName]
+			kit.requireCache[moduleName]
+		else
 			if moduleName[0] == '.'
 				throw new Error('Relative path is not allowed: ' + moduleName)
+
+			if kit[moduleName[1..]] == null
+				return kit[moduleName] =
+					kit.requireCache[moduleName] =
+					require './' + moduleName
 
 			names = kit.genModulePaths moduleName, process.cwd()
 
@@ -1101,13 +1126,16 @@ _.extend kit, fs,
 			for name in names
 				try
 					kit.requireCache[moduleName] = require name
-					done? kit.requireCache[moduleName]
+					loaded? kit.requireCache[moduleName]
 					break
 
-		if not kit.requireCache[moduleName]
-			throw new Error('Module not found: ' + moduleName)
+			if not kit.requireCache[moduleName]
+				throw new Error('Module not found: ' + moduleName)
 
-		kit.requireCache[moduleName]
+			if kit[moduleName] == null
+				kit[moduleName] = kit.requireCache[moduleName]
+
+			kit.requireCache[moduleName]
 
 	###*
 	 * Require an optional package. If not found, it will
@@ -1223,6 +1251,8 @@ _.extend kit, fs,
 	 * ```
 	###
 	request: (opts) ->
+		kit.require 'url'
+
 		if _.isString opts
 			opts = { url: opts }
 
@@ -1454,6 +1484,7 @@ _.extend kit, fs,
 		}
 
 		if process.platform == 'win32'
+			kit.require 'whichSync'
 			cmd = kit.whichSync cmd
 			if cmd.slice(-3).toLowerCase() == 'cmd'
 				cmdSrc = kit.fs.readFileSync(cmd, 'utf8')
@@ -1608,9 +1639,10 @@ _.extend kit, fs,
 					task(name) opts.init
 
 	###*
-	 * Node native module `url`.
+	 * The `url` module of [io.js](iojs.org).
+	 * You must `kit.require 'url'` before using it.
 	###
-	url: require 'url'
+	url: null
 
 	###*
 	 * Works much like `gulp.src`, but with Promise instead.
@@ -1721,20 +1753,21 @@ _.extend kit, fs,
 
 	###*
 	 * Same as the unix `which` command.
-	 * @type {Function}
+	 * You must `kit.require 'which'` before using it.
+	 * @param {String} name The command.
+	 * @return {Promise}
 	###
-	which: fs.promisify which
+	which: null
 
 	###*
 	 * Sync version of `which`.
+	 * You must `kit.require 'whichSync'` before using it.
 	 * @type {Function}
 	###
-	whichSync: which.sync
+	whichSync: null
 
 # Some debug options.
 if kit.isDevelopment()
 	Promise.longStackTraces()
-else
-	colors.mode = 'none'
 
 module.exports = kit

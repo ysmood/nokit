@@ -18,14 +18,14 @@ IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  */
 
-module.exports = which
-which.sync = whichSync
+module.exports = fs.promisify which
+module.exports.sync = whichSync
 
-var path = require("nofs").path
-  , fs
+var fs = require("nofs")
+
+var path = fs.path
   , COLON = process.platform === "win32" ? ";" : ":"
   , isExe
-  , fs = require("fs")
 
 if (process.platform == "win32") {
   // On windows, there is no good way to check that a file is executable
