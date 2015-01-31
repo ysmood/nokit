@@ -1121,7 +1121,7 @@ _.extend kit, fs,
 			if moduleName[0] == '.'
 				throw new Error('Relative path is not allowed: ' + moduleName)
 
-			if kit[moduleName[1..]] == null
+			if kit[moduleName] == null
 				return kit[moduleName] =
 					kit.requireCache[moduleName] =
 					require './' + moduleName
