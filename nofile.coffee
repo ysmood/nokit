@@ -2,7 +2,7 @@ process.chdir __dirname
 
 kit = require './lib/kit'
 
-task 'default', ['build'], 'default task is "build"'
+task 'default', ['test'], 'default task is "test"'
 
 task 'dev', 'lab', ->
 	kit.monitorApp {
