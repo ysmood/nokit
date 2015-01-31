@@ -18,10 +18,10 @@ IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  */
 
-module.exports = fs.promisify which
-module.exports.sync = whichSync
-
 var fs = require("nofs")
+
+module.exports = fs.promisify(which)
+module.exports.sync = whichSync
 
 var path = fs.path
   , COLON = process.platform === "win32" ? ";" : ":"

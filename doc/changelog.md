@@ -2,8 +2,10 @@
 
 - v0.4.2
 
-  - Optimize the `require` function.
   - **API CHANGE** The `dest` of `warp` now is a path object.
+  - **API CHANGE** Optimize the `require` function. Now some
+    nokit libs need to be required before using. Such as `jhash` and `url`,
+  - Now nokit use `io.js`'s `url` lib.
   - **API CHANGE** Rename `inspect` to `xinspect`.
 
 - v0.4.1
