@@ -1179,13 +1179,13 @@ Goto [changelog](doc/changelog.md)
     - **<u>example</u>**:
 
         ```coffee
+        # Define a simple workflow.
         kit.warp 'src/**/*.js'
         .pipe (fileInfo) ->
         	fileInfo.set '/* Lisence Info */' + fileInfo.contents
         .pipe jslint()
         .pipe minify()
         .to 'build/minified'
-
 
         # Override warp's file reader with a custom one.
         myReader = (fileInfo) ->
