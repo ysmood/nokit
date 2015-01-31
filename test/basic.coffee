@@ -221,9 +221,6 @@ describe 'Kit:', ->
 	it 'warp map', ->
 		tmp = 'test/fixtures/warp'
 
-		after ->
-			kit.remove tmp
-
 		counter = (info) ->
 			info.dest.ext = '.coffee'
 			info.set info.contents.length
@@ -234,12 +231,30 @@ describe 'Kit:', ->
 		.then ->
 			kit.glob tmp + '/**/*.coffee'
 		.then (paths) ->
-			shouldEqual paths.length, 3
+			shouldDeepEqual paths, [
+				"test/fixtures/warp/comment.coffee"
+				"test/fixtures/warp/depDir/dep4.coffee"
+				"test/fixtures/warp/depDir/lib/index.coffee"
+			]
+
+	it 'warp custom reader', ->
+		tmp = 'test/fixtures/warp-custom-reader'
+
+		myReader = (info) ->
+			kit.readFile info.path, 'hex'
+			.then info.set
+		myReader.isReader = true
+
+		kit.warp 'test/fixtures/**/*.js'
+		.pipe myReader
+		.to tmp
+		.then ->
+			kit.readFile tmp + '/comment.js', 'utf8'
+		.then (str) ->
+			shouldEqual str[0..10], '2f2a2a0a092'
 
 	it 'warp concat', ->
 		tmp = 'test/fixtures/warp_all.coffee'
-		after ->
-			kit.remove tmp
 
 		concat = (name) ->
 			all = ''

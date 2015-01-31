@@ -1085,7 +1085,7 @@ Goto [changelog](doc/changelog.md)
     The `url` module of [io.js](iojs.org).
     You must `kit.require 'url'` before using it.
 
-- ## **[warp](lib/kit.coffee?source#L1738)**
+- ## **[warp](lib/kit.coffee?source#L1764)**
 
     Works much like `gulp.src`, but with Promise instead.
     The warp control and error handling is more pleasant.
@@ -1106,6 +1106,17 @@ Goto [changelog](doc/changelog.md)
         	# The encoding of the contents.
         	# Set null if you want raw buffer.
         	encoding: 'utf8'
+
+        	# Default `set` used in the `fileInfo` object.
+        	set: (contents) -> this
+
+        	# Default file reader plugin. Override it if you don't want
+        	# warp read file contents automatically.
+        	reader: (fileInfo) -> fileInfo
+
+        	# Default file writer plugin. Override it if you don't want
+        	# warp write file contents automatically.
+        	writer: (fileInfo) -> fileInfo
         }
         ```
 
@@ -1161,7 +1172,9 @@ Goto [changelog](doc/changelog.md)
         }
         ```
         The handler can have a `onEnd` function, which will be called after the
-        whole warp ended. It's optional.
+        whole warp ended.
+        The handler can have a `isReader` property, which will make the handler
+        override the default file reader.
 
     - **<u>example</u>**:
 
@@ -1172,9 +1185,22 @@ Goto [changelog](doc/changelog.md)
         .pipe jslint()
         .pipe minify()
         .to 'build/minified'
+
+
+        # Override warp's file reader with a custom one.
+        myReader = (fileInfo) ->
+        	kit.readFile fileInfo.path, 'hex'
+        	.then fileInfo.set
+
+        # This will tell warp you want use your own reader.
+        myReader.isReader = true
+
+        kit.warp 'src/**/*.js'
+        .pipe myReader
+        .to 'dist'
         ```
 
-- ## **[which](lib/kit.coffee?source#L1808)**
+- ## **[which](lib/kit.coffee?source#L1841)**
 
     Same as the unix `which` command.
     You must `kit.require 'which'` before using it.
@@ -1185,7 +1211,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Promise_ }
 
-- ## **[whichSync](lib/kit.coffee?source#L1815)**
+- ## **[whichSync](lib/kit.coffee?source#L1848)**
 
     Sync version of `which`.
     You must `kit.require 'whichSync'` before using it.

@@ -1672,6 +1672,17 @@ _.extend kit, fs,
 	 * 	# The encoding of the contents.
 	 * 	# Set null if you want raw buffer.
 	 * 	encoding: 'utf8'
+	 *
+	 * 	# Default `set` used in the `fileInfo` object.
+	 * 	set: (contents) -> this
+	 *
+	 * 	# Default file reader plugin. Override it if you don't want
+	 * 	# warp read file contents automatically.
+	 * 	reader: (fileInfo) -> fileInfo
+	 *
+	 * 	# Default file writer plugin. Override it if you don't want
+	 * 	# warp write file contents automatically.
+	 * 	writer: (fileInfo) -> fileInfo
 	 * }
 	 * ```
 	 * @return {Object} The returned warp object has these members:
@@ -1724,7 +1735,9 @@ _.extend kit, fs,
 	 * }
 	 * ```
 	 * The handler can have a `onEnd` function, which will be called after the
-	 * whole warp ended. It's optional.
+	 * whole warp ended.
+	 * The handler can have a `isReader` property, which will make the handler
+	 * override the default file reader.
 	 * @example
 	 * ```coffee
 	 * kit.warp 'src/**\/*.js'
@@ -1733,43 +1746,50 @@ _.extend kit, fs,
 	 * .pipe jslint()
 	 * .pipe minify()
 	 * .to 'build/minified'
+	 *
+	 *
+	 * # Override warp's file reader with a custom one.
+	 * myReader = (fileInfo) ->
+	 * 	kit.readFile fileInfo.path, 'hex'
+	 * 	.then fileInfo.set
+	 *
+	 * # This will tell warp you want use your own reader.
+	 * myReader.isReader = true
+	 *
+	 * kit.warp 'src/**\/*.js'
+	 * .pipe myReader
+	 * .to 'dist'
 	 * ```
 	###
 	warp: (from, opts = {}) ->
 		_.defaults opts, {
 			encoding: 'utf8'
+
+			set: (contents) ->
+				@contents = contents
+				@
+
+			reader: (fileInfo) ->
+				(if fileInfo.isDir
+					Promise.resolve()
+				else
+					kit.readFile fileInfo.path, opts.encoding
+				).then fileInfo.set
+
+			writer: (fileInfo) ->
+				return if not fileInfo
+				{ dest, contents } = fileInfo
+				if dest? and contents?
+					if _.isObject dest
+						if dest.name? and dest.ext?
+							dest.base = dest.name + dest.ext
+						dest = kit.path.format dest
+
+					fs.outputFile dest, contents, fileInfo.opts
 		}
 
 		pipeList = []
 		onEndList = []
-
-		set = (contents) ->
-			@contents = contents
-			@
-
-		reader = (to) -> (fileInfo) ->
-			(if fileInfo.isDir
-				Promise.resolve()
-			else
-				kit.readFile fileInfo.path, opts.encoding
-			).then (contents) ->
-				fileInfo.baseDir = opts.baseDir if opts.baseDir
-
-				dest = kit.path.parse kit.path.join to,
-					kit.path.relative fileInfo.baseDir, fileInfo.path
-
-				_.extend fileInfo, { set, dest, to, opts, contents }
-
-		writer = (fileInfo) ->
-			return if not fileInfo
-			{ dest, contents } = fileInfo
-			if dest? and contents?
-				if _.isObject dest
-					if dest.name? and dest.ext?
-						dest.base = dest.name + dest.ext
-					dest = kit.path.format dest
-
-				fs.outputFile dest, contents, fileInfo.opts
 
 		opts.iter = (fileInfo, list) ->
 			list.push fileInfo
@@ -1787,17 +1807,30 @@ _.extend kit, fs,
 
 		mapper =
 			pipe: (task) ->
-				pipeList.push runTask(task)
+				if task.isReader
+					opts.reader = task
+				else
+					pipeList.push runTask(task)
+
 				if _.isFunction task.onEnd
 					onEndList.push runTask(task.onEnd)
 				mapper
 			to: (to) ->
-				pipeList.unshift reader(to)
-				pipeList.push writer
-				onEndList.push writer if onEndList.length > 0
+				pipeList.unshift (fileInfo) ->
+					fileInfo.baseDir = opts.baseDir if opts.baseDir
+					opts.reader _.extend(fileInfo, {
+						to
+						dest: kit.path.parse kit.path.join to,
+							kit.path.relative fileInfo.baseDir, fileInfo.path
+						set: opts.set.bind fileInfo
+						opts
+					})
+
+				pipeList.push opts.writer
+				onEndList.push opts.writer if onEndList.length > 0
 
 				kit.glob(from, opts).then (list) ->
-					kit.flow(onEndList)({ set, to, list, opts })
+					kit.flow(onEndList)({ set: opts.set, to, list, opts })
 
 	###*
 	 * Same as the unix `which` command.
