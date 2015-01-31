@@ -22,6 +22,8 @@ createRandomServer = (fn) ->
 
 	listen(0).then -> server.address().port
 
+unixSep = (p) -> p.replace /\\/g, '\/'
+
 describe 'Kit:', ->
 
 	it 'parseComment coffee', ->
@@ -231,7 +233,7 @@ describe 'Kit:', ->
 		.then ->
 			kit.glob tmp + '/**/*.coffee'
 		.then (paths) ->
-			shouldDeepEqual paths, [
+			shouldDeepEqual paths.map(unixSep) , [
 				"test/fixtures/warp/comment.coffee"
 				"test/fixtures/warp/depDir/dep4.coffee"
 				"test/fixtures/warp/depDir/lib/index.coffee"
