@@ -1,3 +1,5 @@
+'use strict'
+
 _ = require 'lodash'
 fs = require 'nofs'
 { Promise } = fs
@@ -1118,13 +1120,16 @@ _.extend kit, fs,
 		if kit.requireCache[moduleName]
 			kit.requireCache[moduleName]
 		else
-			if moduleName[0] == '.'
-				throw new Error('Relative path is not allowed: ' + moduleName)
-
 			if kit[moduleName] == null
-				return kit[moduleName] =
+				try return kit[moduleName] =
 					kit.requireCache[moduleName] =
 					require './' + moduleName
+				return kit[moduleName] =
+					kit.requireCache[moduleName] =
+					require moduleName
+
+			if moduleName[0] == '.'
+				throw new Error('Relative path is not allowed: ' + moduleName)
 
 			names = kit.genModulePaths moduleName, process.cwd()
 

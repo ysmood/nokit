@@ -1,7 +1,7 @@
 'use strict';
 
-const punycode = require('./punycode');
-const util = require('lodash');
+var punycode = require('./punycode');
+var util = require('lodash');
 
 exports.parse = urlParse;
 exports.resolve = urlResolve;
@@ -29,51 +29,51 @@ function Url() {
 
 // define these here so at least they only have to be
 // compiled once on the first module load.
-const protocolPattern = /^([a-z0-9.+-]+:)/i;
-const portPattern = /:[0-9]*$/;
+var protocolPattern = /^([a-z0-9.+-]+:)/i;
+var portPattern = /:[0-9]*$/;
 
 // Special case for a simple path URL
-const simplePathPattern = /^(\/\/?(?!\/)[^\?\s]*)(\?[^\s]*)?$/;
+var simplePathPattern = /^(\/\/?(?!\/)[^\?\s]*)(\?[^\s]*)?$/;
 
 // RFC 2396: characters reserved for delimiting URLs.
 // We actually just auto-escape these.
-const delims = ['<', '>', '"', '`', ' ', '\r', '\n', '\t'];
+var delims = ['<', '>', '"', '`', ' ', '\r', '\n', '\t'];
 
 // RFC 2396: characters not allowed for various reasons.
-const unwise = ['{', '}', '|', '\\', '^', '`'].concat(delims);
+var unwise = ['{', '}', '|', '\\', '^', '`'].concat(delims);
 
 // Allowed by RFCs, but cause of XSS attacks.  Always escape these.
-const autoEscape = ['\''].concat(unwise);
+var autoEscape = ['\''].concat(unwise);
 
 
-const slashPattern = /\\/g;
+var slashPattern = /\\/g;
 
-const userAtHostPattern = /^\/\/[^@\/]+@[^@\/]+/;
+var userAtHostPattern = /^\/\/[^@\/]+@[^@\/]+/;
 
-const colonPattern = /%3A/i;
+var colonPattern = /%3A/i;
 
-const pathnameEscapePattern = /[?#]/g;
+var pathnameEscapePattern = /[?#]/g;
 
 // Characters that are never ever allowed in a hostname.
 // Note that any invalid chars are also handled, but these
 // are the ones that are *expected* to be seen, so we fast-path them.
-const nonHostChars = ['%', '/', '?', ';', '#'].concat(autoEscape);
-const hostEndingChars = ['/', '?', '#'];
-const hostnameMaxLen = 255;
-const hostnamePartPattern = /^[+a-z0-9A-Z_-]{0,63}$/;
-const hostnamePartStart = /^([+a-z0-9A-Z_-]{0,63})(.*)$/;
+var nonHostChars = ['%', '/', '?', ';', '#'].concat(autoEscape);
+var hostEndingChars = ['/', '?', '#'];
+var hostnameMaxLen = 255;
+var hostnamePartPattern = /^[+a-z0-9A-Z_-]{0,63}$/;
+var hostnamePartStart = /^([+a-z0-9A-Z_-]{0,63})(.*)$/;
 // protocols that can allow "unsafe" and "unwise" chars.
-const unsafeProtocol = {
+var unsafeProtocol = {
   'javascript': true,
   'javascript:': true
 };
 // protocols that never have a hostname.
-const hostlessProtocol = {
+var hostlessProtocol = {
   'javascript': true,
   'javascript:': true
 };
 // protocols that always contain a // bit.
-const slashedProtocol = {
+var slashedProtocol = {
   'http': true,
   'https': true,
   'ftp': true,
@@ -85,7 +85,7 @@ const slashedProtocol = {
   'gopher:': true,
   'file:': true
 };
-const querystring = require('querystring');
+var querystring = require('querystring');
 
 function urlParse(url, parseQueryString, slashesDenoteHost) {
   if (url && util.isObject(url) && url instanceof Url) return url;
