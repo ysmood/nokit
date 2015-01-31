@@ -1672,7 +1672,7 @@ _.extend kit, fs,
 	 * @return {Object} The returned warp object has these members:
 	 * ```coffee
 	 * {
-	 * 	pipe: (handler) -> warp
+	 * 	pipe: (handler) -> fileInfo | null
 	 * 	to: (path) -> Promise
 	 * }
 	 * ```
@@ -1681,7 +1681,7 @@ _.extend kit, fs,
 	 * ```coffee
 	 * {
 	 * 	# Set the contents and return self.
-	 * 	set: Function
+	 * 	set: (String | Buffer) -> fileInfo
 	 *
 	 * 	# The source path.
 	 * 	path: String
@@ -1770,12 +1770,21 @@ _.extend kit, fs,
 			list.push fileInfo
 			kit.flow(pipeList)(fileInfo)
 
+		runTask = (task) -> (fileInfo) ->
+			return if not fileInfo
+			Promise.resolve task fileInfo
+			.then (val) ->
+				if not val? or val == fileInfo
+					val
+				else
+					err = new Error 'wrong return value => ' + task
+					Promise.reject err
+
 		mapper =
 			pipe: (task) ->
+				pipeList.push runTask(task)
 				if _.isFunction task.onEnd
-					onEndList.push task.onEnd
-				pipeList.push (fileInfo) ->
-					task fileInfo if fileInfo
+					onEndList.push runTask(task.onEnd)
 				mapper
 			to: (to) ->
 				pipeList.unshift reader(to)

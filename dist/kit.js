@@ -716,6 +716,11 @@ _.extend(kit, fs, {
   	 * 	isShowTime: true
   	 * }
   	 * ```
+  	 * @example
+  	 * ```coffee
+  	 * # To achieve "console.log A, B"
+  	 * kit.log [A, B]
+  	 * ```
    */
   log: function(msg, action, opts) {
     var colors, log, time, timeDelta;
@@ -730,6 +735,10 @@ _.extend(kit, fs, {
         return colors.mode = 'none';
       }
     });
+    if (_.isObject(action)) {
+      opts = action;
+      action = 'log';
+    }
     _.defaults(opts, {
       isShowTime: true
     });
@@ -1886,7 +1895,7 @@ _.extend(kit, fs, {
   	 * @return {Object} The returned warp object has these members:
   	 * ```coffee
   	 * {
-  	 * 	pipe: (handler) -> warp
+  	 * 	pipe: (handler) -> fileInfo | null
   	 * 	to: (path) -> Promise
   	 * }
   	 * ```
@@ -1895,7 +1904,7 @@ _.extend(kit, fs, {
   	 * ```coffee
   	 * {
   	 * 	# Set the contents and return self.
-  	 * 	set: Function
+  	 * 	set: (String | Buffer) -> fileInfo
   	 *
   	 * 	# The source path.
   	 * 	path: String
@@ -1945,7 +1954,7 @@ _.extend(kit, fs, {
   	 * ```
    */
   warp: function(from, opts) {
-    var mapper, onEndList, pipeList, reader, set, writer;
+    var mapper, onEndList, pipeList, reader, runTask, set, writer;
     if (opts == null) {
       opts = {};
     }
@@ -1996,16 +2005,28 @@ _.extend(kit, fs, {
       list.push(fileInfo);
       return kit.flow(pipeList)(fileInfo);
     };
-    return mapper = {
-      pipe: function(task) {
-        if (_.isFunction(task.onEnd)) {
-          onEndList.push(task.onEnd);
+    runTask = function(task) {
+      return function(fileInfo) {
+        if (!fileInfo) {
+          return;
         }
-        pipeList.push(function(fileInfo) {
-          if (fileInfo) {
-            return task(fileInfo);
+        return Promise.resolve(task(fileInfo)).then(function(val) {
+          var err;
+          if ((val == null) || val === fileInfo) {
+            return val;
+          } else {
+            err = new Error('wrong return value => ' + task);
+            return Promise.reject(err);
           }
         });
+      };
+    };
+    return mapper = {
+      pipe: function(task) {
+        pipeList.push(runTask(task));
+        if (_.isFunction(task.onEnd)) {
+          onEndList.push(runTask(task.onEnd));
+        }
         return mapper;
       },
       to: function(to) {
