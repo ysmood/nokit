@@ -670,7 +670,7 @@ _.extend(kit, fs, {
   	 * ```
   	 * @return {String}
    */
-  inspect: function(obj, opts) {
+  xinspect: function(obj, opts) {
     var str, util;
     util = kit.require('util');
     _.defaults(opts, {
@@ -701,7 +701,7 @@ _.extend(kit, fs, {
   },
 
   /**
-  	 * A better log for debugging, it uses the `kit.inspect` to log.
+  	 * A better log for debugging, it uses the `kit.xinspect` to log.
   	 *
   	 * Use terminal command like `logReg='pattern' node app.js` to
   	 * filter the log info.
@@ -710,7 +710,7 @@ _.extend(kit, fs, {
   	 * stack trace.
   	 * @param  {Any} msg Your log message.
   	 * @param  {String} action 'log', 'error', 'warn'.
-  	 * @param  {Object} opts Default is same with `kit.inspect`,
+  	 * @param  {Object} opts Default is same with `kit.xinspect`,
   	 * but with some extra options:
   	 * ```coffee
   	 * {
@@ -769,9 +769,9 @@ _.extend(kit, fs, {
     };
     if (_.isObject(msg)) {
       if (opts.isShowTime) {
-        log(("[" + time + "] ->\n") + kit.inspect(msg, opts), timeDelta);
+        log(("[" + time + "] ->\n") + kit.xinspect(msg, opts), timeDelta);
       } else {
-        log(kit.inspect(msg, opts), timeDelta);
+        log(kit.xinspect(msg, opts), timeDelta);
       }
     } else {
       if (opts.isShowTime) {
