@@ -15,8 +15,9 @@ error = (msg) ->
 	throw err
 
 loadNofile = ->
-	try require 'coffee-script/register'
-	try require 'Livescript'
+	process.env.nokitPreload ?= 'coffee-script/register'
+	for lang in process.env.nokitPreload.split ' '
+		try require lang
 
 	paths = kit.genModulePaths('nofile', process.cwd(), '')[1..]
 	for path in paths

@@ -12,10 +12,13 @@ It's one of the core lib of [nobone](https://github.com/ysmood/nobone).
 
 # Installation
 
-As a lib dependency, install it locally: `npm i nokit`
+As a lib dependency, install it locally: `npm i nokit`.
 
-Nokit has provaided a cli tool like GNU Make. If you install it globally like this: `npm -g i nokit commander`, then have fun with your `nofile`, it can be
-js, coffee or livescript. For more information goto the `CLI` section.
+Nokit has provaided a cli tool like GNU Make. If you install it globally like this:
+
+`npm -g i nokit commander`
+
+, then have fun with your `nofile`, it can be js, coffee or livescript. For more information goto the `CLI` section.
 
 # Quick Start
 
@@ -65,6 +68,11 @@ If you want nokit support coffee, you should install it like this:
 Same works with livescript:
 
 `npm i -g nokit commander Livescript`
+
+> Remarks: for the sake of boot performance, nokit will only load `coffee-script/register` by default. For livescript or other precompiler, you have to
+> set environment varialbe `nokitPreload` to what you want, such as on unix:
+> `export nokitPreload='Livescript coffee-script/register'`. Different module
+> names are separated by spaces.
 
 Create a `nofile.coffee` (or `.js`, `.ls`) at your current working directory
 or any of its parents directory. The syntax of `nofile` is almost the same as the Cakefile, only the `option`'s first argument is slightly changed.
@@ -849,20 +857,25 @@ Goto [changelog](doc/changelog.md)
         kit.jhash.hash 'test'
         ```
 
-- ## **[requireOptional](lib/kit.coffee?source#L1171)**
+- ## **[requireOptional](lib/kit.coffee?source#L1173)**
 
     Require an optional package. If not found, it will
-    warn user to npm install it, and exit the process.
+    warn the user to npm install it, and exit the process.
 
     - **<u>param</u>**: `name` { _String_ }
 
         Package name
 
+    - **<u>param</u>**: `semver` { _String_ }
+
+        Specify what version you need,
+        such as `^0.3.1` or `>=1.2.3`, ect.
+
     - **<u>return</u>**: { _Any_ }
 
         The required package.
 
-- ## **[request](lib/kit.coffee?source#L1279)**
+- ## **[request](lib/kit.coffee?source#L1284)**
 
     A handy extended combination of `http.request` and `https.request`.
 
@@ -888,12 +901,6 @@ Goto [changelog](doc/changelog.md)
         	# The key of headers should be lowercased.
         	headers: {}
 
-        	host: 'localhost'
-        	hostname: 'localhost'
-        	port: 80
-        	method: 'GET'
-        	path: '/'
-        	auth: ''
         	agent: null
 
         	# Set "transfer-encoding" header to 'chunked'.
@@ -965,7 +972,14 @@ Goto [changelog](doc/changelog.md)
         	kit.log body
         ```
 
-- ## **[spawn](lib/kit.coffee?source#L1497)**
+- ## **[semver](lib/kit.coffee?source#L1477)**
+
+    The semantic versioner for npm, known as [semver](https://github.com/npm/node-semver).
+    You must `kit.require 'semver'` before using it.
+
+    - **<u>type</u>**: { _Object_ }
+
+- ## **[spawn](lib/kit.coffee?source#L1507)**
 
     A safer version of `child_process.spawn` to cross-platform run
     a process. In some conditions, it may be more convenient
@@ -1008,7 +1022,7 @@ Goto [changelog](doc/changelog.md)
         .then ({code}) -> kit.log code
         ```
 
-- ## **[task](lib/kit.coffee?source#L1605)**
+- ## **[task](lib/kit.coffee?source#L1615)**
 
     Sequencing and executing tasks and dependencies concurrently.
 
@@ -1089,12 +1103,12 @@ Goto [changelog](doc/changelog.md)
         	kit.log 'All Done!'
         ```
 
-- ## **[url](lib/kit.coffee?source#L1672)**
+- ## **[url](lib/kit.coffee?source#L1682)**
 
     The `url` module of [io.js](iojs.org).
     You must `kit.require 'url'` before using it.
 
-- ## **[warp](lib/kit.coffee?source#L1777)**
+- ## **[warp](lib/kit.coffee?source#L1787)**
 
     Works much like `gulp.src`, but with Promise instead.
     The warp control and error handling is more pleasant.
@@ -1209,7 +1223,7 @@ Goto [changelog](doc/changelog.md)
         .to 'dist'
         ```
 
-- ## **[which](lib/kit.coffee?source#L1854)**
+- ## **[which](lib/kit.coffee?source#L1864)**
 
     Same as the unix `which` command.
     You must `kit.require 'which'` before using it.
@@ -1220,7 +1234,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Promise_ }
 
-- ## **[whichSync](lib/kit.coffee?source#L1861)**
+- ## **[whichSync](lib/kit.coffee?source#L1871)**
 
     Sync version of `which`.
     You must `kit.require 'whichSync'` before using it.
