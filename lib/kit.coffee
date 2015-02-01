@@ -1180,7 +1180,7 @@ _.extend kit, fs,
 				cs.green "'npm install #{name}'" + cs.red " first.\n") +
 				err.stack
 			, { isShowTime: false })
-			process.exit()
+			process.exit 1
 
 	###*
 	 * A handy extended combination of `http.request` and `https.request`.
