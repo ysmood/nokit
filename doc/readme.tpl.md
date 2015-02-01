@@ -12,10 +12,13 @@ It's one of the core lib of [nobone](https://github.com/ysmood/nobone).
 
 # Installation
 
-As a lib dependency, install it locally: `npm i nokit`
+As a lib dependency, install it locally: `npm i nokit`.
 
-Nokit has provaided a cli tool like GNU Make. If you install it globally like this: `npm -g i nokit commander`, then have fun with your `nofile`, it can be
-js, coffee or livescript. For more information goto the `CLI` section.
+Nokit has provaided a cli tool like GNU Make. If you install it globally like this:
+
+`npm -g i nokit commander`
+
+, then have fun with your `nofile`, it can be js, coffee or livescript. For more information goto the `CLI` section.
 
 # Quick Start
 
@@ -65,6 +68,11 @@ If you want nokit support coffee, you should install it like this:
 Same works with livescript:
 
 `npm i -g nokit commander Livescript`
+
+> Remarks: for the sake of boot performance, nokit will only load `coffee-script/register` by default. For livescript or other precompiler, you have to
+> set environment varialbe `nokitPreload` to what you want, such as on unix:
+> `export nokitPreload='Livescript coffee-script/register'`. Different module
+> names are separated by spaces.
 
 Create a `nofile.coffee` (or `.js`, `.ls`) at your current working directory
 or any of its parents directory. The syntax of `nofile` is almost the same as the Cakefile, only the `option`'s first argument is slightly changed.
