@@ -96,9 +96,7 @@ describe 'Kit:', ->
 		createRandomServer (req, res) ->
 			res.end info
 		.then (port) ->
-			kit.request {
-				url: '127.0.0.1:' + port
-			}
+			kit.request '127.0.0.1:' + port
 			.then (body) ->
 				shouldEqual body, info
 

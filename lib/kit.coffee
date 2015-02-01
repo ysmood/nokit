@@ -1215,12 +1215,6 @@ _.extend kit, fs,
 	 * 	# The key of headers should be lowercased.
 	 * 	headers: {}
 	 *
-	 * 	host: 'localhost'
-	 * 	hostname: 'localhost'
-	 * 	port: 80
-	 * 	method: 'GET'
-	 * 	path: '/'
-	 * 	auth: ''
 	 * 	agent: null
 	 *
 	 * 	# Set "transfer-encoding" header to 'chunked'.
@@ -1295,14 +1289,12 @@ _.extend kit, fs,
 
 		if _.isObject opts.url
 			opts.url.protocol ?= 'http:'
-			opts.url = kit.url.format opts.url
 		else
 			if opts.url.indexOf('http') != 0
 				opts.url = 'http://' + opts.url
-
-		url = kit.url.parse opts.url
+			url = kit.url.parse opts.url
+			url.protocol ?= 'http:'
 		delete url.host
-		url.protocol ?= 'http:'
 
 		request = null
 		switch url.protocol
