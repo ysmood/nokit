@@ -2,7 +2,7 @@ process.chdir __dirname
 
 kit = require './lib/kit'
 
-task 'default', ['test'], 'default task is "test"'
+task 'default', ['build', 'test'], 'default task is "build -> test"'
 
 task 'dev', 'lab', ->
 	kit.monitorApp {
@@ -11,7 +11,7 @@ task 'dev', 'lab', ->
 	}
 
 option '-a, --all', 'Rebuild with dependencies, such as rebuild lodash.'
-task 'build', 'build project', build = (opts) ->
+task 'build', 'build project', (opts) ->
 	compileCoffee = ->
 		kit.spawn 'coffee', [
 			'-o', 'dist'
@@ -55,17 +55,11 @@ task 'build', 'build project', build = (opts) ->
 		kit.log cs.green 'Build done.'
 
 option '-g, --grep [pattern]', 'test pattern', '.'
-option '-b, --bare', 'don\'t compile before test'
 task 'test', 'unit tests', (opts) ->
 	clean = ->
 		kit.spawn 'git', ['clean', '-fd', kit.path.normalize('test/fixtures')]
 
-	(if opts.bare
-		kit.Promise.resolve()
-	else
-		build opts
-	).then clean
-	.then ->
+	clean().then ->
 		kit.spawn('mocha', [
 			'-t', '10000'
 			'-r', 'coffee-script/register'
