@@ -7,7 +7,7 @@ if not process.env.NODE_ENV?
 
 kit = require './kit'
 { _ } = kit
-cmder = kit.requireOptional 'commander'
+cmder = kit.requireOptional 'commander', __dirname
 
 error = (msg) ->
 	err = new Error msg
@@ -19,7 +19,7 @@ loadNofile = ->
 	for lang in process.env.nokitPreload.split ' '
 		try require lang
 
-	paths = kit.genModulePaths('nofile', process.cwd(), '')[1..]
+	paths = kit.genModulePaths 'nofile', process.cwd(), ''
 	for path in paths
 		try
 			return require path

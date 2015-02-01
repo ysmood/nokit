@@ -159,6 +159,7 @@ _.extend kit, fs,
 	 * @type {Object}
 	###
 	colors: null
+	'colors/safe': null
 
 	###*
 	 * Daemonize a program. Just a shortcut usage of `kit.spawn`.
@@ -201,7 +202,7 @@ _.extend kit, fs,
 	 * @return {Buffer}
 	###
 	decrypt: (data, password, algorithm = 'aes128') ->
-		crypto = kit.require 'crypto'
+		crypto = kit.require 'crypto', __dirname
 		decipher = crypto.createDecipher algorithm, password
 
 		if kit.nodeVersion() < 0.10
@@ -224,7 +225,7 @@ _.extend kit, fs,
 	 * @return {Buffer}
 	###
 	encrypt: (data, password, algorithm = 'aes128') ->
-		crypto = kit.require 'crypto'
+		crypto = kit.require 'crypto', __dirname
 		cipher = crypto.createCipher algorithm, password
 
 		if kit.nodeVersion() < 0.10
@@ -279,7 +280,7 @@ _.extend kit, fs,
 	 * ```
 	###
 	exec: (cmd, shell) ->
-		os = kit.require 'os'
+		os = kit.require 'os', __dirname
 
 		shell ?= process.env.SHELL or
 			process.env.ComSpec or
@@ -434,13 +435,14 @@ _.extend kit, fs,
 	###
 	genModulePaths: (moduleName, dir = process.cwd(), modDir) ->
 		modDir ?= 'node_modules'
-		names = [moduleName]
+		names = []
 		while true
 			names.push kit.path.join(dir, modDir, moduleName)
 			pDir = kit.path.dirname dir
 
 			break if dir == pDir
 			dir = pDir
+		names.push moduleName
 		names
 
 	###*
@@ -570,7 +572,7 @@ _.extend kit, fs,
 	 * @return {String}
 	###
 	xinspect: (obj, opts) ->
-		util = kit.require 'util'
+		util = kit.require 'util', __dirname
 
 		_.defaults opts, {
 			colors: kit.isDevelopment()
@@ -1115,9 +1117,11 @@ _.extend kit, fs,
 	 * Much faster than the native require of node, but you should
 	 * follow some rules to use it safely.
 	 * Use it to load nokit's internal module.
-	 * @param  {String}   moduleName Relative moudle path is not allowed!
-	 * Only allow absolute path or module name.
-	 * @param  {Function} loaded Run only the first time after the module loaded.
+	 * @param {String} moduleName The module path or name.
+	 * @param {String} dir Current file path. Not optional, expect when
+	 * requiring nokit's internal modules.
+	 * On most times, just pass `__dirname` to it is enough.
+	 * @param {Function} loaded Run only the first time after the module loaded.
 	 * @return {Module} The module that you require.
 	 * @example
 	 * Use it to load nokit's internal module.
@@ -1126,66 +1130,94 @@ _.extend kit, fs,
 	 * # Then you can use the module, or it will be null.
 	 * kit.jhash.hash 'test'
 	 * ```
+	 * To load a relative path, or you own module,
+	 * the second parameter 'dir' is required.
+	 * ```coffee
+	 * mod = kit.require './mod', __dirname
+	 *
+	 * # Or load your own 'jhash', rather than nokit's.
+	 * jhash = kit.require 'jhash', __dirname
+	 * ```
 	###
-	require: (moduleName, loaded) ->
-		if kit.requireCache[moduleName]
-			return kit.requireCache[moduleName]
+	require: (moduleName, dir, loaded) ->
+		if _.isFunction dir
+			loaded = dir
+			dir = null
 
-		if kit[moduleName] == null
+		key = moduleName + if dir then '@' + dir else ''
+
+		return kit.requireCache[key] if kit.requireCache[key]
+
+		if not dir?
+			if moduleName[0] == '.' or kit[moduleName] != null
+				err = new Error "argument 'dir' is not defined"
+				err.source = 'nokit'
+				throw err
+
 			try return kit[moduleName] =
-				kit.requireCache[moduleName] =
+				kit.requireCache[key] =
 				require './' + moduleName
+
 			return kit[moduleName] =
-				kit.requireCache[moduleName] =
+				kit.requireCache[key] =
 				require moduleName
 
-		if moduleName[0] == '.'
-			throw new Error('Relative path is not allowed: ' + moduleName)
+		names = if moduleName[0] == '.'
+			[kit.path.join dir, moduleName]
+		else
+			kit.genModulePaths moduleName, dir
+			.concat if process.env.NODE_PATH
+				for p in process.env.NODE_PATH.split kit.path.delimiter
+					kit.path.join p, moduleName
+			else []
 
-		names = kit.genModulePaths moduleName, process.cwd()
-
-		if process.env.NODE_PATH
-			for p in process.env.NODE_PATH.split(kit.path.delimiter)
-				names.push kit.path.join(p, moduleName)
 
 		for name in names
 			try
-				kit.requireCache[moduleName] = require name
-				loaded? kit.requireCache[moduleName]
+				kit.requireCache[key] = require name
+				loaded? kit.requireCache[key]
 				break
 
-		if not kit.requireCache[moduleName]
+		if not kit.requireCache[key]
 			throw new Error('Module not found: ' + moduleName)
 
 		if kit[moduleName] == null
-			kit[moduleName] = kit.requireCache[moduleName]
+			kit[moduleName] = kit.requireCache[key]
 
-		kit.requireCache[moduleName]
+		kit.requireCache[key]
 
 	###*
 	 * Require an optional package. If not found, it will
 	 * warn the user to npm install it, and exit the process.
-	 * @param  {String} name Package name
+	 * @param {String} name Package name
+	 * @param {String} dir Current file path. Not optional.
+	 * On most times, just pass `__dirname` to it is enough.
 	 * @param  {String} semver Specify what version you need,
 	 * such as `^0.3.1` or `>=1.2.3`, ect.
 	 * @return {Any} The required package.
 	###
-	requireOptional: (name, semver) ->
+	requireOptional: (name, dir, semver) ->
+		key = name + if dir then '@' + dir else ''
+		return kit.requireCache[key] if kit.requireCache[key]
+
 		try
 			if semver
 				kit.require 'semver'
-				{ version } = kit.require name + '/package.json'
+				{ version } = kit.require name + '/package.json', dir
 				if not kit.semver.satisfies version, semver
 					info = "expect #{name} version " +
-						"#{semver}, but get #{version}"
+						"'#{semver}', but get '#{version}'"
 					name = "#{name}@\"#{semver}\""
 					throw new Error info
 
-			kit.require name
+			kit.require name, dir
 		catch err
+			throw err if err.source == 'nokit'
+
 			cs = kit.require 'colors/safe'
 			kit.err(
-				(cs.red "If current module is installed globally, run " +
+				(cs.red "Optional module required.\n" +
+				cs.red "If current module is installed globally, run " +
 				cs.green "'npm install -g #{name}'" +
 				cs.red " first, else run " +
 				cs.green "'npm install #{name}'" + cs.red " first.\n") +
@@ -1299,9 +1331,9 @@ _.extend kit, fs,
 		request = null
 		switch url.protocol
 			when 'http:'
-				{ request } = kit.require 'http'
+				{ request } = kit.require 'http', __dirname
 			when 'https:'
-				{ request } = kit.require 'https'
+				{ request } = kit.require 'https', __dirname
 			else
 				Promise.reject new Error('Protocol not supported: ' + url.protocol)
 
@@ -1369,9 +1401,11 @@ _.extend kit, fs,
 					if opts.autoUnzip
 						switch res.headers['content-encoding']
 							when 'gzip'
-								unzip = kit.require('zlib').createGunzip()
+								unzip = kit.require 'zlib', __dirname
+									.createGunzip()
 							when 'deflate'
-								unzip = kit.require('zlib').createInflat()
+								unzip = kit.require 'zlib', __dirname
+									.createInflat()
 							else
 								unzip = null
 						if unzip
@@ -1428,9 +1462,11 @@ _.extend kit, fs,
 							if opts.autoUnzip
 								switch res.headers['content-encoding']
 									when 'gzip'
-										unzip = kit.require('zlib').gunzip
+										unzip = kit.require 'zlib', __dirname
+											.gunzip
 									when 'deflate'
-										unzip = kit.require('zlib').inflate
+										unzip = kit.require 'zlib', __dirname
+											.inflate
 									else
 										unzip = null
 								if unzip
@@ -1531,7 +1567,7 @@ _.extend kit, fs,
 					args = [cmd].concat args
 					cmd = 'node'
 
-		{ spawn } = kit.require 'child_process'
+		{ spawn } = kit.require 'child_process', __dirname
 
 		ps = null
 		promise = new Promise (resolve, reject) ->
