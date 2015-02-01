@@ -89,9 +89,10 @@ module.exports = launch = ->
 	.option '-v, --version',
 		'output version of nokit',
 		->
+			cs = kit.require 'colors/safe'
 			info = kit.readJsonSync(__dirname + '/../package.json')
-			console.log "nokit@#{info.version}".green,
-				"(#{require.resolve('./kit')})".grey
+			console.log cs.green("nokit@#{info.version}"),
+				cs.grey("(#{require.resolve('./kit')})")
 			process.exit()
 	.usage '[options] [commands]'
 

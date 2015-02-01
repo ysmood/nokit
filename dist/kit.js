@@ -183,6 +183,15 @@ _.extend(kit, fs, {
   },
 
   /**
+  	 * The [colors](https://github.com/Marak/colors.js) lib
+  	 * makes it easier to print colorful info in CLI.
+  	 * You must `kit.require 'colors'` before using it.
+  	 * Sometimes use `kit.require 'colors/safe'` will be better.
+  	 * @type {Object}
+   */
+  colors: null,
+
+  /**
   	 * Daemonize a program. Just a shortcut usage of `kit.spawn`.
   	 * @param  {Object} opts Defaults:
   	 * ```coffee
@@ -724,16 +733,16 @@ _.extend(kit, fs, {
   	 * ```
    */
   log: function(msg, action, opts) {
-    var colors, log, time, timeDelta;
+    var cs, log, time, timeDelta;
     if (action == null) {
       action = 'log';
     }
     if (opts == null) {
       opts = {};
     }
-    colors = kit.require('colors', function() {
+    cs = kit.require('colors/safe', function() {
       if (kit.isDevelopment()) {
-        return colors.mode = 'none';
+        return cs.mode = 'none';
       }
     });
     if (_.isObject(action)) {
@@ -751,9 +760,9 @@ _.extend(kit, fs, {
     }
     if (opts.isShowTime) {
       time = new Date();
-      timeDelta = (+time - +kit.lastLogTime).toString().magenta + 'ms';
+      timeDelta = cs.magenta(+time - +kit.lastLogTime) + 'ms';
       kit.lastLogTime = time;
-      time = [[_.padLeft(time.getFullYear(), 4, '0'), _.padLeft(time.getMonth() + 1, 2, '0'), _.padLeft(time.getDate(), 2, '0')].join('-'), [_.padLeft(time.getHours(), 2, '0'), _.padLeft(time.getMinutes(), 2, '0'), _.padLeft(time.getSeconds(), 2, '0')].join(':')].join(' ').grey;
+      time = cs.grey([[_.padLeft(time.getFullYear(), 4, '0'), _.padLeft(time.getMonth() + 1, 2, '0'), _.padLeft(time.getDate(), 2, '0')].join('-'), [_.padLeft(time.getHours(), 2, '0'), _.padLeft(time.getMinutes(), 2, '0'), _.padLeft(time.getSeconds(), 2, '0')].join(':')].join(' '));
     }
     log = function() {
       var err, str;
@@ -763,7 +772,7 @@ _.extend(kit, fs, {
       }
       console[action](str);
       if (process.env.logTrace === 'on') {
-        err = (new Error).stack.replace(/.+\n.+\n.+/, '\nStack trace:').grey;
+        err = cs.grey((new Error).stack).replace(/.+\n.+\n.+/, '\nStack trace:');
         return console.log(err);
       }
     };
@@ -804,21 +813,21 @@ _.extend(kit, fs, {
   	 * 	parseDependency: {}
   	 *
   	 * 	onStart: ->
-  	 * 		kit.log "Monitor: ".yellow + opts.watchList
+  	 * 		kit.log "Monitor: " + opts.watchList
   	 * 	onRestart: (path) ->
-  	 * 		kit.log "Reload app, modified: ".yellow + path
+  	 * 		kit.log "Reload app, modified: " + path
   	 * 	onWatchFiles: (paths) ->
-  	 * 		kit.log 'Watching:'.yellow + paths.join(', ')
+  	 * 		kit.log 'Watching:' + paths.join(', ')
   	 * 	onNormalExit: ({ code, signal }) ->
-  	 * 		kit.log 'EXIT'.yellow +
-  	 * 			" code: #{(code + '').cyan} signal: #{(signal + '').cyan}"
+  	 * 		kit.log 'EXIT' +
+  	 * 			" code: #{code} signal: #{signal}"
   	 * 	onErrorExit: ({ code, signal }) ->
-  	 * 		kit.err 'EXIT'.yellow +
-  	 * 		" code: #{(code + '').cyan} signal: #{(signal + '').cyan}\n" +
+  	 * 		kit.err 'EXIT' +
+  	 * 		" code: #{code} signal: #{signal}\n" +
   	 * 		'Process closed. Edit and save
-  	 * 			the watched file to restart.'.red
+  	 * 			the watched file to restart.'
   	 * 	sepLine: ->
-  	 * 		process.stdout.write _.repeat('*', process.stdout.columns).yellow
+  	 * 		process.stdout.write _.repeat('*', process.stdout.columns)
   	 * }
   	 * ```
   	 * @return {Promise} It has a property `process`, which is the monitored
@@ -838,7 +847,8 @@ _.extend(kit, fs, {
   	 * ```
    */
   monitorApp: function(opts) {
-    var childPromise, start, watcher;
+    var childPromise, cs, start, watcher;
+    cs = kit.require('colors/safe');
     _.defaults(opts, {
       bin: 'node',
       args: ['index.js'],
@@ -847,26 +857,26 @@ _.extend(kit, fs, {
       parseDependency: {},
       opts: {},
       onStart: function() {
-        return kit.log("Monitor: ".yellow + opts.watchList);
+        return kit.log(cs.yellow("Monitor: ") + opts.watchList);
       },
       onRestart: function(path) {
-        return kit.log("Reload app, modified: ".yellow + path);
+        return kit.log(cs.yellow("Reload app, modified: ") + path);
       },
       onWatchFiles: function(paths) {
-        return kit.log('Watching: '.yellow + paths.join(', '));
+        return kit.log(cs.yellow('Watching: ') + paths.join(', '));
       },
       onNormalExit: function(_arg) {
         var code, signal;
         code = _arg.code, signal = _arg.signal;
-        return kit.log('EXIT'.yellow + (" code: " + (code + '').cyan + " signal: " + (signal + '').cyan));
+        return kit.log(cs.yellow('EXIT') + (" code: " + (cs.cyan(code)) + " signal: " + (cs.cyan(signal))));
       },
       onErrorExit: function(_arg) {
         var code, signal;
         code = _arg.code, signal = _arg.signal;
-        return kit.err('EXIT'.yellow + (" code: " + (code + '').cyan + " signal: " + (signal + '').cyan + "\n") + 'Process closed. Edit and save the watched file to restart.'.red);
+        return kit.err(cs.yellow('EXIT') + (" code: " + (cs.cyan(code)) + " ") + ("signal: " + (cs.cyan(signal)) + "\n") + cs.red('Process closed. Edit and save the watched file to restart.'));
       },
       sepLine: function() {
-        return process.stdout.write(_.repeat('*', process.stdout.columns).yellow);
+        return process.stdout.write(cs.yellow(_.repeat('*', process.stdout.columns)));
       }
     });
     if (opts.watchList == null) {
@@ -1307,12 +1317,13 @@ _.extend(kit, fs, {
   	 * @return {Any} The required package.
    */
   requireOptional: function(name) {
-    var err;
+    var cs, err;
     try {
       return kit.require(name);
     } catch (_error) {
       err = _error;
-      kit.err("If current module is installed globally, run ".red + ("'npm install -g " + name + "'").green + " first, else run ".red + ("'npm install " + name + "'").green + " first.\n".red + err.stack, {
+      cs = kit.require('colors/safe');
+      kit.err((cs.red("If current module is installed globally, run " + cs.green(("'npm install -g " + name + "'") + cs.red(" first, else run " + cs.green(("'npm install " + name + "'") + cs.red(" first.\n")))))) + err.stack, {
         isShowTime: false
       });
       return process.exit();
@@ -1746,8 +1757,8 @@ _.extend(kit, fs, {
   	 * 	deps: String | Array
   	 * 	description: String
   	 * 	log: ->
-  	 * 		kit.log 'Run Task >> '.cyan +
-  	 * 			"[ #{name} ] ".green + this.description
+  	 * 		kit.log 'Run Task >> ' +
+  	 * 			"[ #{name} ] " + this.description
   	 *
   	 * 	# Whether to run dependency in a row.
   	 * 	isSequential: false
@@ -1798,7 +1809,8 @@ _.extend(kit, fs, {
   	 * ```
    */
   task: function(name, opts, fn) {
-    var runTask, _base, _base1;
+    var cs, runTask, _base, _base1;
+    cs = require('colors/safe');
     if (_.isFunction(opts)) {
       fn = opts;
       opts = {};
@@ -1807,7 +1819,7 @@ _.extend(kit, fs, {
       isSequential: false,
       description: '',
       log: function() {
-        return kit.log('Run Task >> '.cyan + ("[ " + name + " ] ").green + this.description);
+        return kit.log(cs.cyan('Run Task >> ') + cs.green("[ " + name + " ] ") + this.description);
       }
     });
     if (_.isString(opts.deps)) {

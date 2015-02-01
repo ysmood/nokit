@@ -1,12 +1,13 @@
 # Changelog
 
-- v0.4.3
+- v0.4.4
 
   - **API CHANGE** The `dest` of `warp` now is a path object.
   - **API CHANGE** Optimize the `require` function. Now some
     nokit libs need to be required before using. Such as `jhash` and `url`,
   - Now nokit use `io.js`'s `url` lib.
   - **API CHANGE** Rename `inspect` to `xinspect`.
+  - **API CHANGE** Now log use `colors/safe`.
 
 - v0.4.1
 

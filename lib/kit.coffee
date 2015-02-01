@@ -152,6 +152,15 @@ _.extend kit, fs,
 				break if not addTask()
 
 	###*
+	 * The [colors](https://github.com/Marak/colors.js) lib
+	 * makes it easier to print colorful info in CLI.
+	 * You must `kit.require 'colors'` before using it.
+	 * Sometimes use `kit.require 'colors/safe'` will be better.
+	 * @type {Object}
+	###
+	colors: null
+
+	###*
 	 * Daemonize a program. Just a shortcut usage of `kit.spawn`.
 	 * @param  {Object} opts Defaults:
 	 * ```coffee
@@ -612,9 +621,9 @@ _.extend kit, fs,
 	 * ```
 	###
 	log: (msg, action = 'log', opts = {}) ->
-		colors = kit.require 'colors', ->
+		cs = kit.require 'colors/safe', ->
 			if kit.isDevelopment()
-				colors.mode = 'none'
+				cs.mode = 'none'
 
 		if _.isObject action
 			opts = action
@@ -631,9 +640,9 @@ _.extend kit, fs,
 
 		if opts.isShowTime
 			time = new Date()
-			timeDelta = (+time - +kit.lastLogTime).toString().magenta + 'ms'
+			timeDelta = cs.magenta(+time - +kit.lastLogTime) + 'ms'
 			kit.lastLogTime = time
-			time = [
+			time = cs.grey [
 				[
 					_.padLeft time.getFullYear(), 4, '0'
 					_.padLeft time.getMonth() + 1, 2, '0'
@@ -644,7 +653,7 @@ _.extend kit, fs,
 					_.padLeft time.getMinutes(), 2, '0'
 					_.padLeft time.getSeconds(), 2, '0'
 				].join(':')
-			].join(' ').grey
+			].join(' ')
 
 		log = ->
 			str = _.toArray(arguments).join ' '
@@ -655,8 +664,8 @@ _.extend kit, fs,
 			console[action] str
 
 			if process.env.logTrace == 'on'
-				err = (new Error).stack
-					.replace(/.+\n.+\n.+/, '\nStack trace:').grey
+				err = cs.grey (new Error).stack
+					.replace(/.+\n.+\n.+/, '\nStack trace:')
 				console.log err
 
 		if _.isObject msg
@@ -694,21 +703,21 @@ _.extend kit, fs,
 	 * 	parseDependency: {}
 	 *
 	 * 	onStart: ->
-	 * 		kit.log "Monitor: ".yellow + opts.watchList
+	 * 		kit.log "Monitor: " + opts.watchList
 	 * 	onRestart: (path) ->
-	 * 		kit.log "Reload app, modified: ".yellow + path
+	 * 		kit.log "Reload app, modified: " + path
 	 * 	onWatchFiles: (paths) ->
-	 * 		kit.log 'Watching:'.yellow + paths.join(', ')
+	 * 		kit.log 'Watching:' + paths.join(', ')
 	 * 	onNormalExit: ({ code, signal }) ->
-	 * 		kit.log 'EXIT'.yellow +
-	 * 			" code: #{(code + '').cyan} signal: #{(signal + '').cyan}"
+	 * 		kit.log 'EXIT' +
+	 * 			" code: #{code} signal: #{signal}"
 	 * 	onErrorExit: ({ code, signal }) ->
-	 * 		kit.err 'EXIT'.yellow +
-	 * 		" code: #{(code + '').cyan} signal: #{(signal + '').cyan}\n" +
+	 * 		kit.err 'EXIT' +
+	 * 		" code: #{code} signal: #{signal}\n" +
 	 * 		'Process closed. Edit and save
-	 * 			the watched file to restart.'.red
+	 * 			the watched file to restart.'
 	 * 	sepLine: ->
-	 * 		process.stdout.write _.repeat('*', process.stdout.columns).yellow
+	 * 		process.stdout.write _.repeat('*', process.stdout.columns)
 	 * }
 	 * ```
 	 * @return {Promise} It has a property `process`, which is the monitored
@@ -728,6 +737,7 @@ _.extend kit, fs,
 	 * ```
 	###
 	monitorApp: (opts) ->
+		cs = kit.require 'colors/safe'
 		_.defaults opts, {
 			bin: 'node'
 			args: ['index.js']
@@ -736,23 +746,24 @@ _.extend kit, fs,
 			parseDependency: {}
 			opts: {}
 			onStart: ->
-				kit.log "Monitor: ".yellow + opts.watchList
+				kit.log cs.yellow("Monitor: ") + opts.watchList
 			onRestart: (path) ->
-				kit.log "Reload app, modified: ".yellow + path
+				kit.log cs.yellow("Reload app, modified: ") + path
 			onWatchFiles: (paths) ->
-				kit.log 'Watching: '.yellow + paths.join(', ')
+				kit.log cs.yellow('Watching: ') + paths.join(', ')
 			onNormalExit: ({ code, signal }) ->
-				kit.log 'EXIT'.yellow +
-					" code: #{(code + '').cyan} signal: #{(signal + '').cyan}"
+				kit.log cs.yellow('EXIT') +
+					" code: #{cs.cyan code} signal: #{cs.cyan signal}"
 			onErrorExit: ({ code, signal }) ->
-				kit.err 'EXIT'.yellow +
-				" code: #{(code + '').cyan} signal: #{(signal + '').cyan}\n" +
-				'Process closed. Edit and save
-					the watched file to restart.'.red
+				kit.err cs.yellow('EXIT') +
+				" code: #{cs.cyan code} " +
+				"signal: #{cs.cyan signal}\n" +
+				cs.red 'Process closed. Edit and save
+				the watched file to restart.'
 			sepLine: ->
-				process.stdout.write _.repeat(
+				process.stdout.write cs.yellow _.repeat(
 					'*', process.stdout.columns
-				).yellow
+				)
 		}
 
 		opts.watchList ?= opts.args
@@ -1161,11 +1172,12 @@ _.extend kit, fs,
 		try
 			kit.require name
 		catch err
+			cs = kit.require 'colors/safe'
 			kit.err(
-				"If current module is installed globally, run ".red +
-				"'npm install -g #{name}'".green +
-				" first, else run ".red +
-				"'npm install #{name}'".green + " first.\n".red +
+				(cs.red "If current module is installed globally, run " +
+				cs.green "'npm install -g #{name}'" +
+				cs.red " first, else run " +
+				cs.green "'npm install #{name}'" + cs.red " first.\n") +
 				err.stack
 			, { isShowTime: false })
 			process.exit()
@@ -1539,8 +1551,8 @@ _.extend kit, fs,
 	 * 	deps: String | Array
 	 * 	description: String
 	 * 	log: ->
-	 * 		kit.log 'Run Task >> '.cyan +
-	 * 			"[ #{name} ] ".green + this.description
+	 * 		kit.log 'Run Task >> ' +
+	 * 			"[ #{name} ] " + this.description
 	 *
 	 * 	# Whether to run dependency in a row.
 	 * 	isSequential: false
@@ -1591,6 +1603,7 @@ _.extend kit, fs,
 	 * ```
 	###
 	task: (name, opts, fn) ->
+		cs = require 'colors/safe'
 		if _.isFunction opts
 			fn = opts
 			opts = {}
@@ -1599,8 +1612,8 @@ _.extend kit, fs,
 			isSequential: false
 			description: ''
 			log: ->
-				kit.log 'Run Task >> '.cyan +
-					"[ #{name} ] ".green + @description
+				kit.log cs.cyan('Run Task >> ') +
+					cs.green("[ #{name} ] ") + @description
 		}
 
 		if _.isString opts.deps

@@ -106,9 +106,10 @@ setGlobals = function() {
 module.exports = launch = function() {
   var _i, _len, _ref;
   cmder.option('-v, --version', 'output version of nokit', function() {
-    var info;
+    var cs, info;
+    cs = kit.require('colors/safe');
     info = kit.readJsonSync(__dirname + '/../package.json');
-    console.log(("nokit@" + info.version).green, ("(" + (require.resolve('./kit')) + ")").grey);
+    console.log(cs.green("nokit@" + info.version), cs.grey("(" + (require.resolve('./kit')) + ")"));
     return process.exit();
   }).usage('[options] [commands]');
   setGlobals();
