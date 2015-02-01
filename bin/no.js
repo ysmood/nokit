@@ -5,7 +5,8 @@ try {
 } catch (err) {
 	if (err.source === 'nokit') {
 		kit = require('../dist/kit');
-		kit.err(('[Error] ' + err.message).red, { isShowTime: false });
+		cs = kit.require('colors/safe');
+		kit.err(cs.red('[Error] ' + err.message), { isShowTime: false });
 	} else {
 		throw err;
 	}
