@@ -1118,38 +1118,38 @@ _.extend kit, fs,
 	###
 	require: (moduleName, loaded) ->
 		if kit.requireCache[moduleName]
-			kit.requireCache[moduleName]
-		else
-			if kit[moduleName] == null
-				try return kit[moduleName] =
-					kit.requireCache[moduleName] =
-					require './' + moduleName
-				return kit[moduleName] =
-					kit.requireCache[moduleName] =
-					require moduleName
+			return kit.requireCache[moduleName]
 
-			if moduleName[0] == '.'
-				throw new Error('Relative path is not allowed: ' + moduleName)
+		if kit[moduleName] == null
+			try return kit[moduleName] =
+				kit.requireCache[moduleName] =
+				require './' + moduleName
+			return kit[moduleName] =
+				kit.requireCache[moduleName] =
+				require moduleName
 
-			names = kit.genModulePaths moduleName, process.cwd()
+		if moduleName[0] == '.'
+			throw new Error('Relative path is not allowed: ' + moduleName)
 
-			if process.env.NODE_PATH
-				for p in process.env.NODE_PATH.split(kit.path.delimiter)
-					names.push kit.path.join(p, moduleName)
+		names = kit.genModulePaths moduleName, process.cwd()
 
-			for name in names
-				try
-					kit.requireCache[moduleName] = require name
-					loaded? kit.requireCache[moduleName]
-					break
+		if process.env.NODE_PATH
+			for p in process.env.NODE_PATH.split(kit.path.delimiter)
+				names.push kit.path.join(p, moduleName)
 
-			if not kit.requireCache[moduleName]
-				throw new Error('Module not found: ' + moduleName)
+		for name in names
+			try
+				kit.requireCache[moduleName] = require name
+				loaded? kit.requireCache[moduleName]
+				break
 
-			if kit[moduleName] == null
-				kit[moduleName] = kit.requireCache[moduleName]
+		if not kit.requireCache[moduleName]
+			throw new Error('Module not found: ' + moduleName)
 
-			kit.requireCache[moduleName]
+		if kit[moduleName] == null
+			kit[moduleName] = kit.requireCache[moduleName]
+
+		kit.requireCache[moduleName]
 
 	###*
 	 * Require an optional package. If not found, it will

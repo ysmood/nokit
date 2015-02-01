@@ -1263,42 +1263,41 @@ _.extend(kit, fs, {
     var name, names, p, _i, _j, _len, _len1, _ref;
     if (kit.requireCache[moduleName]) {
       return kit.requireCache[moduleName];
-    } else {
-      if (kit[moduleName] === null) {
-        try {
-          return kit[moduleName] = kit.requireCache[moduleName] = require('./' + moduleName);
-        } catch (_error) {}
-        return kit[moduleName] = kit.requireCache[moduleName] = require(moduleName);
-      }
-      if (moduleName[0] === '.') {
-        throw new Error('Relative path is not allowed: ' + moduleName);
-      }
-      names = kit.genModulePaths(moduleName, process.cwd());
-      if (process.env.NODE_PATH) {
-        _ref = process.env.NODE_PATH.split(kit.path.delimiter);
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          p = _ref[_i];
-          names.push(kit.path.join(p, moduleName));
-        }
-      }
-      for (_j = 0, _len1 = names.length; _j < _len1; _j++) {
-        name = names[_j];
-        try {
-          kit.requireCache[moduleName] = require(name);
-          if (typeof loaded === "function") {
-            loaded(kit.requireCache[moduleName]);
-          }
-          break;
-        } catch (_error) {}
-      }
-      if (!kit.requireCache[moduleName]) {
-        throw new Error('Module not found: ' + moduleName);
-      }
-      if (kit[moduleName] === null) {
-        kit[moduleName] = kit.requireCache[moduleName];
-      }
-      return kit.requireCache[moduleName];
     }
+    if (kit[moduleName] === null) {
+      try {
+        return kit[moduleName] = kit.requireCache[moduleName] = require('./' + moduleName);
+      } catch (_error) {}
+      return kit[moduleName] = kit.requireCache[moduleName] = require(moduleName);
+    }
+    if (moduleName[0] === '.') {
+      throw new Error('Relative path is not allowed: ' + moduleName);
+    }
+    names = kit.genModulePaths(moduleName, process.cwd());
+    if (process.env.NODE_PATH) {
+      _ref = process.env.NODE_PATH.split(kit.path.delimiter);
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        p = _ref[_i];
+        names.push(kit.path.join(p, moduleName));
+      }
+    }
+    for (_j = 0, _len1 = names.length; _j < _len1; _j++) {
+      name = names[_j];
+      try {
+        kit.requireCache[moduleName] = require(name);
+        if (typeof loaded === "function") {
+          loaded(kit.requireCache[moduleName]);
+        }
+        break;
+      } catch (_error) {}
+    }
+    if (!kit.requireCache[moduleName]) {
+      throw new Error('Module not found: ' + moduleName);
+    }
+    if (kit[moduleName] === null) {
+      kit[moduleName] = kit.requireCache[moduleName];
+    }
+    return kit.requireCache[moduleName];
   },
 
   /**
