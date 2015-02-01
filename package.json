@@ -29,7 +29,8 @@
   "dependencies": {
     "colors": "1.0.3",
     "jhash": "0.1.6",
-    "nofs": "0.4.5"
+    "nofs": "0.4.5",
+    "semver": "4.2.0"
   },
   "devDependencies": {
     "coffee-script": "1.9.0",

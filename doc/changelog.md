@@ -1,5 +1,9 @@
 # Changelog
 
+- v0.4.6
+
+  - Add semver support for `requireOptional`.
+
 - v0.4.5
 
   - **API CHANGE** The `dest` of `warp` now is a path object.

@@ -1164,12 +1164,23 @@ _.extend kit, fs,
 
 	###*
 	 * Require an optional package. If not found, it will
-	 * warn user to npm install it, and exit the process.
+	 * warn the user to npm install it, and exit the process.
 	 * @param  {String} name Package name
+	 * @param  {String} semver Specify what version you need,
+	 * such as `^0.3.1` or `>=1.2.3`, ect.
 	 * @return {Any} The required package.
 	###
-	requireOptional: (name) ->
+	requireOptional: (name, semver) ->
 		try
+			if semver
+				kit.require 'semver'
+				{ version } = kit.require name + '/package.json'
+				if not kit.semver.satisfies version, semver
+					info = "expect #{name} version " +
+						"#{semver}, but get #{version}"
+					name = "#{name}@\"#{semver}\""
+					throw new Error info
+
 			kit.require name
 		catch err
 			cs = kit.require 'colors/safe'
@@ -1465,6 +1476,13 @@ _.extend kit, fs,
 
 		promise.req = req
 		promise
+
+	###*
+	 * The semantic versioner for npm, known as [semver](https://github.com/npm/node-semver).
+	 * You must `kit.require 'semver'` before using it.
+	 * @type {Object}
+	###
+	semver: null
 
 	###*
 	 * A safer version of `child_process.spawn` to cross-platform run
