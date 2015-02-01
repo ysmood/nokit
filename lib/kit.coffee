@@ -1,6 +1,6 @@
 'use strict'
 
-_ = require 'lodash'
+_ = require './lodash'
 fs = require 'nofs'
 { Promise } = fs
 

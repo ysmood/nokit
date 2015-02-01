@@ -10,12 +10,20 @@ task 'dev', 'lab', ->
 		args: ['test/lab.coffee']
 	}
 
-task 'build', 'build project', build = ->
+option '-a, --all', 'Rebuild with dependencies, such as rebuild lodash.'
+task 'build', 'build project', build = (opts) ->
 	compileCoffee = ->
 		kit.spawn 'coffee', [
 			'-o', 'dist'
 			'-cb', 'lib'
 		]
+
+	buildLodash = ->
+		if opts.all
+			kit.spawn 'lodash', [
+				'modern', 'strict', '-p'
+				'-o', 'lib/lodash.js'
+			]
 
 	createDoc = ->
 		path = 'lib/kit.coffee'
@@ -36,6 +44,7 @@ task 'build', 'build project', build = ->
 
 	start = kit.flow [
 		-> kit.remove 'dist'
+		buildLodash
 		-> kit.warp('lib/**/*.js').to 'dist'
 		compileCoffee
 		createDoc
@@ -54,7 +63,7 @@ task 'test', 'unit tests', (opts) ->
 	(if opts.bare
 		kit.Promise.resolve()
 	else
-		build()
+		build opts
 	).then clean
 	.then ->
 		kit.spawn('mocha', [

@@ -9,7 +9,7 @@
   "scripts": {
     "no": "no",
     "test": "node bin/no test",
-    "prepublish": "node bin/no build"
+    "prepublish": "node bin/no build -a"
   },
   "repository": {
     "type": "git",
@@ -29,7 +29,6 @@
   "dependencies": {
     "colors": "1.0.3",
     "jhash": "0.1.6",
-    "lodash": "3.0.1",
     "nofs": "0.4.5"
   },
   "devDependencies": {
@@ -38,6 +37,7 @@
     "form-data": "0.2.0",
     "formidable": "1.0.16",
     "iconv-lite": "0.4.6",
+    "lodash-cli": "3.0.1",
     "mocha": "2.1.0"
   }
 }
