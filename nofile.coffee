@@ -42,7 +42,8 @@ task 'build', 'build project', build = ->
 	]
 
 	start().then ->
-		kit.log 'Build done.'.green
+		cs = kit.require 'colors/safe'
+		kit.log cs.green 'Build done.'
 
 option '-g, --grep [pattern]', 'test pattern', '.'
 option '-b, --bare', 'don\'t compile before test'
