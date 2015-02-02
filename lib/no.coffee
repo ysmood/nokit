@@ -66,6 +66,17 @@ setGlobals = ->
 		warp: kit.warp
 	}
 
+fuzzySearchTasks = ->
+	_ cmder.args
+	.map (cmd) ->
+		pattern = cmd.replace /(\w)/g, '$1.*'
+		reg = ///#{pattern}///
+
+		_.findKey kit.task.list,
+			_.rearg(reg.test, 1).bind(reg)
+	.compact()
+	.value()
+
 module.exports = launch = ->
 
 	cmder
@@ -93,8 +104,9 @@ module.exports = launch = ->
 		else
 			cmder.outputHelp()
 
-	for task in cmder.args
-		if not kit.task.list[task]
-			error 'No such task: ' + task
+	tasks = fuzzySearchTasks()
 
-	kit.task.run cmder.args, { init: cmder }
+	if tasks.length == 0
+		error 'No such tasks: ' + cmder.args
+
+	kit.task.run tasks, { init: cmder }
