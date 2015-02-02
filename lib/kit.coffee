@@ -833,7 +833,7 @@ _.extend kit, fs,
 
 		ret = {}
 		for name, val of defaults
-			type = _.keys val
+			[type] = _.keys val
 			ret[name] = if set[type]
 				v = set[type].shift()
 				if v then v else val[type]
