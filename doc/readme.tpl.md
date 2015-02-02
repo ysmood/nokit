@@ -66,7 +66,7 @@ If you want nokit support coffee, you should install it like this:
 `npm i -g nokit commander coffee-cache coffee-script`
 
 > It's recommended to use coffee-cache, since large build project may
-> consume a large portion of your nofile's startup time. Of cause, it's
+> consume a large portion of your nofile's startup time. Of course, it's
 > optional, you may run `npm i -g nokit commander coffee-script` without
 > any problem.
 
