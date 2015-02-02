@@ -428,25 +428,69 @@ _.extend kit, fs,
 
 	###*
 	 * Fuzzy search a string list by a key word.
-	 * @param  {String} keys The key word.
-	 * @param  {Array} list The list of string to search.
+	 * @param {String} keys The key word.
+	 * @param {Array} list The list of string to search.
+	 * @param {Object} opts Defaults:
+	 * ```coffee
+	 * {
+	 * 	threshold: (cOffset, keyLen, cIndex) ->
+	 * 		Infinity
+	 * 	notFound: (cOffset, keyLen, cIndex) ->
+	 * 		Infinity
+	 * 	span: (cOffset, keyLen, cIndex) ->
+	 * 		cOffset
+	 * 	found: (cOffset, keyLen, cIndex) ->
+	 * 		cOffset * (keyLen - cIndex)
+	 * 	tail: (cOffset, keyLen, cIndex, tailLen) ->
+	 * 		tailLen
+	 * }
+	 * ```
 	 * @return {String} The best matched one. If not found,
 	 * return undefined.
+	 * @example
+	 * ```coffee
+	 * kit.fuzzySearch 'hw', ['test', 'hello world', 'hey world']
+	 * # output => 'hey world'
+	 * ```
 	###
-	fuzzySearch: (key, list, opts) ->
+	fuzzySearch: (key, list, opts = {}) ->
+		_.defaults opts,
+			threshold: (cOffset, keyLen, cIndex) ->
+				Infinity
+			notFound: (cOffset, keyLen, cIndex) ->
+				Infinity
+			span: (cOffset, keyLen, cIndex) ->
+				cOffset
+			found: (cOffset, keyLen, cIndex) ->
+				cOffset * (keyLen - cIndex)
+			tail: (cOffset, keyLen, cIndex, tailLen) ->
+				tailLen
+
 		_ list
-		.map (word) ->
+		.map (words) ->
 			distance = 0
-			len = key.length
-			for c, i in key
-				index = word.indexOf c
-				if index < 0
-					return { distance: Infinity }
+			keyLen = key.length
+			for c, cIndex in key
+				cOffset = words.indexOf c, cOffset + 1
+				distance = if cOffset < 0
+					  opts.notFound cOffset, keyLen, cIndex
 				else
-					distance += index * (len - i)
-			{ word, distance }
+					distance + opts.found(cOffset, keyLen, cIndex)
+
+				distance += opts.span cOffset, keyLen, cIndex
+
+				if distance >= opts.threshold(cOffset, keyLen, cIndex)
+					return { distance: Infinity }
+
+			distance += opts.tail cOffset, keyLen,
+				cIndex, words[cOffset..].length
+
+			if distance >= opts.threshold(cOffset, keyLen, cIndex)
+				return { distance: Infinity }
+
+			{ words, distance }
 		.min 'distance'
-		.word
+		.words
 
 	###*
 	 * Generate a list of module paths from a name and a directory.

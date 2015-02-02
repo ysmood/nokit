@@ -335,9 +335,10 @@ describe 'Kit:', ->
 		}
 
 	it 'fuzzySearch', ->
-		shouldEqual kit.fuzzySearch('ys', [
-			'sy', 'yxs', 'ysx', 'xys', 'ysb'
-		]), 'ysx'
+		ret = kit.fuzzySearch('ys', [
+			'sy', 'yxs', 'ysbb', 'ysx', 'xys', 'ysb', 'syx'
+		])
+		shouldEqual ret, 'ysx'
 
 	it 'fuzzySearch not found', ->
 		shouldEqual kit.fuzzySearch('ys', [
