@@ -314,7 +314,6 @@ describe 'Kit:', ->
 		.then (seq) ->
 			shouldDeepEqual seq, [0, [2], 1]
 
-
 	it 'defaultArgs', ->
 		fn = ->
 		shouldDeepEqual (kit.defaultArgs ['c', fn], {

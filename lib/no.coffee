@@ -6,6 +6,7 @@ if not process.env.NODE_ENV?
 	process.env.NODE_ENV = 'development'
 
 kit = require './kit'
+kit.require 'colors'
 { _ } = kit
 cmder = kit.requireOptional 'commander', __dirname
 

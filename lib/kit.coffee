@@ -820,11 +820,10 @@ _.extend kit, fs,
 	 * 		isReal: { Boolean: false }
 	 * 		fn: { Function: -> 'callback' }
 	 * 	}
-	 * # Here our args will deep equal:
-	 * { name: 'test', colors: ['red'], family: null, fn: -> 'nothing' }
 	 *
-	 * foo 'test', false, ['red'], ->
-	 * 	'nothing'
+	 * kit.log foo('test', false, ['red'], -> 'nothing')
+	 * # Here the logged value will deeply equal:
+	 * { name: 'test', colors: ['red'], family: null, fn: -> 'nothing' }
 	 * ```
 	###
 	defaultArgs: (args, defaults) ->
