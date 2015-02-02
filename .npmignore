@@ -1,7 +1,4 @@
 appveyor.yml
-.travis.yml
+.*
 *.sublime-*
 test/*
-.nobone
-.coffee
-.npmignore
