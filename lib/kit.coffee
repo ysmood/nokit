@@ -427,6 +427,28 @@ _.extend kit, fs,
 	fs: fs
 
 	###*
+	 * Fuzzy search a string list by a key word.
+	 * @param  {String} keys The key word.
+	 * @param  {Array} list The list of string to search.
+	 * @return {String} The best matched one. If not found,
+	 * return undefined.
+	###
+	fuzzySearch: (key, list, opts) ->
+		_ list
+		.map (word) ->
+			distance = 0
+			len = key.length
+			for c, i in key
+				index = word.indexOf c
+				if index < 0
+					return { distance: Infinity }
+				else
+					distance += index * (len - i)
+			{ word, distance }
+		.min 'distance'
+		.word
+
+	###*
 	 * Generate a list of module paths from a name and a directory.
 	 * @param  {String} moduleName The module name.
 	 * @param  {String} dir        The root path. Default is current working dir.

@@ -323,3 +323,23 @@ describe 'Kit:', ->
 		}), {
 			str1: 'c', fn: fn, str2: '1'
 		}
+
+	it 'defaultArgs2', ->
+		fn = ->
+		shouldDeepEqual (kit.defaultArgs ['c', fn, 'd'], {
+			str1: { String: '0' }
+			fn: { Function: -> 'test' }
+			str2: { String: '1' }
+		}), {
+			str1: 'c', fn: fn, str2: 'd'
+		}
+
+	it 'fuzzySearch', ->
+		shouldEqual kit.fuzzySearch('ys', [
+			'sy', 'yxs', 'ysx', 'xys', 'ysb'
+		]), 'ysx'
+
+	it 'fuzzySearch not found', ->
+		shouldEqual kit.fuzzySearch('ys', [
+			'ss', 'ab'
+		]), undefined
