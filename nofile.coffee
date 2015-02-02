@@ -3,7 +3,7 @@ process.chdir __dirname
 require 'coffee-cache'
 kit = require './lib/kit'
 
-task 'default', ['build', 'test'], 'default task is "build -> test"', true
+task 'default', ['build', 'test'], true
 
 task 'dev', 'lab', ->
 	kit.monitorApp {

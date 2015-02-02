@@ -1679,7 +1679,7 @@ _.extend kit, fs,
 			description: ''
 			log: ->
 				kit.log cs.cyan('Run Task >> ') +
-					cs.green("[ #{name} ] ") + @description
+					cs.green("[#{name}] ") + @description
 		}
 
 		if _.isString opts.deps

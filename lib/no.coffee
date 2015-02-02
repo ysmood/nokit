@@ -48,8 +48,17 @@ task = ->
 		fn: { Function: -> }
 	}
 
+	depsInfo = if args.deps
+		sep = if args.isSequential then ' -> ' else ', '
+		"deps: [#{args.deps.join sep}]".grey
+	else
+		''
+
+	if args.description
+		args.description += ' '
+
 	cmder.command args.name
-	.description args.description
+	.description args.description + depsInfo
 
 	kit.task args.name, args, -> args.fn cmder
 
@@ -85,7 +94,7 @@ module.exports = launch = ->
 			console.log cs.green("nokit@#{info.version}"),
 				cs.grey("(#{require.resolve('./kit')})")
 			process.exit()
-	.usage '[options] [commands]'
+	.usage '[options] [tasks]    # supports fuzzy task name'
 
 	setGlobals()
 	loadNofile()
@@ -100,6 +109,7 @@ module.exports = launch = ->
 			kit.task.run 'default', { init: cmder }
 		else
 			cmder.outputHelp()
+		return
 
 	tasks = searchTasks()
 
