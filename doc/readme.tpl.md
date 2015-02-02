@@ -63,13 +63,20 @@ kit.warp 'src/**/*.coffee'
 
 If you want nokit support coffee, you should install it like this:
 
-`npm i -g nokit commander coffee-script`
+`npm i -g nokit commander coffee-cache coffee-script`
+
+> It's recommended to use coffee-cache, since large build project may
+> consume a large portion of your nofile's startup time. Of cause, it's
+> optional, you may run `npm i -g nokit commander coffee-script` without
+> any problem.
 
 Same works with livescript:
 
 `npm i -g nokit commander Livescript`
 
-> Remarks: for the sake of boot performance, nokit will only load `coffee-script/register` by default. For livescript or other precompiler, you have to
+> Remarks: for the sake of boot performance, nokit will only load
+> `coffee-cache coffee-script/register`
+> by default. For livescript or other precompiler, you have to
 > set environment varialbe `nokitPreload` to what you want, such as on unix:
 > `export nokitPreload='Livescript coffee-script/register'`. Different module
 > names are separated by spaces.

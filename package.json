@@ -33,6 +33,7 @@
     "semver": "4.2.0"
   },
   "devDependencies": {
+    "coffee-cache": "1.0.0",
     "coffee-script": "1.9.0",
     "commander": "2.6.0",
     "form-data": "0.2.0",

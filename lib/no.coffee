@@ -15,7 +15,7 @@ error = (msg) ->
 	throw err
 
 loadNofile = ->
-	process.env.nokitPreload ?= 'coffee-script/register'
+	process.env.nokitPreload ?= 'coffee-cache coffee-script/register'
 	for lang in process.env.nokitPreload.split ' '
 		try require lang
 
