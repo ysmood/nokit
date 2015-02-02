@@ -313,3 +313,14 @@ describe 'Kit:', ->
 		kit.task.run 'default', { isSequential: true, init: 0 }
 		.then (seq) ->
 			shouldDeepEqual seq, [0, [2], 1]
+
+
+	it 'defaultArgs', ->
+		fn = ->
+		shouldDeepEqual (kit.defaultArgs ['c', fn], {
+			str1: { String: '0' }
+			fn: { Function: -> 'test' }
+			str2: { String: '1' }
+		}), {
+			str1: 'c', fn: fn, str2: '1'
+		}

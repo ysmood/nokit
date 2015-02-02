@@ -803,6 +803,46 @@ _.extend kit, fs,
 		+str
 
 	###*
+	 * A helper for arguments type based function override.
+	 * @param  {Array | Object} args The arguments to set.
+	 * @param  {Object} defaults The default argument settings.
+	 * The key value of the setting is the argument name, the value
+	 * is an object, and the key is the type of the argument, the
+	 * value is the default value of the argument.
+	 * @return {Object}
+	 * @example
+	 * ```coffee
+	 * foo = ->
+	 * 	args = kit.defaultArgs arguments, {
+	 * 		name: { String: 'A' }
+	 * 		colors: { Array: [] }
+	 * 		family: { String: null }
+	 * 		isReal: { Boolean: false }
+	 * 		fn: { Function: -> 'callback' }
+	 * 	}
+	 * # Here our args will deep equal:
+	 * { name: 'test', colors: ['red'], family: null, fn: -> 'nothing' }
+	 *
+	 * foo 'test', false, ['red'], ->
+	 * 	'nothing'
+	 * ```
+	###
+	defaultArgs: (args, defaults) ->
+		set = _(args).toArray().groupBy (e) ->
+			e.constructor.name
+		.value()
+
+		ret = {}
+		for name, val of defaults
+			type = _.keys val
+			ret[name] = if set[type]
+				v = set[type].shift()
+				if v then v else val[type]
+			else
+				val[type]
+		ret
+
+	###*
 	 * A comments parser for javascript and coffee-script.
 	 * Used to generate documentation from source code automatically.
 	 * It will traverse through all the comments of a coffee file.

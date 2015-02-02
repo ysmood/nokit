@@ -38,38 +38,19 @@ loadNofile = ->
  * @param  {Function} fn
  * @return {Promise}
 ###
-task = (name, deps, description, isSequential, fn = ->) ->
-	# Allowed option format:
-	#
-	# task name, fn
-	# task name, description, fn
-	# task name, deps, fn
-	# task name, deps, description, fn
-	if _.isFunction deps
-		fn = deps
-		deps = null
-		description = null
-		isSequential = null
-	else if _.isString(deps) and _.isFunction(description)
-		fn = description
-		description = deps
-		deps = null
-		isSequential = null
-	else if _.isArray(deps) and _.isFunction(description)
-		fn = description
-		description = null
-		isSequential = null
-	else if _.isArray(deps) and _.isString(description) and
-	_.isFunction(isSequential)
-		fn = isSequential
-		isSequential = null
+task = ->
+	args = kit.defaultArgs arguments, {
+		name: { String: 'default' }
+		deps: { Array: null }
+		description: { String: '' }
+		isSequential: { Boolean: null }
+		fn: { Function: -> }
+	}
 
-	argedFn = -> fn cmder
+	cmder.command args.name
+	.description args.description
 
-	cmder.command name
-	.description description or ''
-
-	kit.task name, { deps, description, isSequential }, argedFn
+	kit.task args.name, args, -> args.fn cmder
 
 setGlobals = ->
 	option = cmder.option.bind cmder
