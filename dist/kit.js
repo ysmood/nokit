@@ -4,7 +4,7 @@ var Promise, extend_nofs, fs, kit, _,
   __slice = [].slice,
   __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
-_ = require('lodash');
+_ = require('./lodash');
 
 fs = require('nofs');
 
@@ -190,6 +190,7 @@ _.extend(kit, fs, {
   	 * @type {Object}
    */
   colors: null,
+  'colors/safe': null,
 
   /**
   	 * Daemonize a program. Just a shortcut usage of `kit.spawn`.
@@ -241,7 +242,7 @@ _.extend(kit, fs, {
     if (algorithm == null) {
       algorithm = 'aes128';
     }
-    crypto = kit.require('crypto');
+    crypto = kit.require('crypto', __dirname);
     decipher = crypto.createDecipher(algorithm, password);
     if (kit.nodeVersion() < 0.10) {
       if (Buffer.isBuffer(data)) {
@@ -268,7 +269,7 @@ _.extend(kit, fs, {
     if (algorithm == null) {
       algorithm = 'aes128';
     }
-    crypto = kit.require('crypto');
+    crypto = kit.require('crypto', __dirname);
     cipher = crypto.createCipher(algorithm, password);
     if (kit.nodeVersion() < 0.10) {
       if (Buffer.isBuffer(data)) {
@@ -328,7 +329,7 @@ _.extend(kit, fs, {
    */
   exec: function(cmd, shell) {
     var clean, fileHandlers, os, paths, promise, randName, stderrPath, stdinPath, stdoutPath;
-    os = kit.require('os');
+    os = kit.require('os', __dirname);
     if (shell == null) {
       shell = process.env.SHELL || process.env.ComSpec || process.env.COMSPEC;
     }
@@ -510,7 +511,7 @@ _.extend(kit, fs, {
     if (modDir == null) {
       modDir = 'node_modules';
     }
-    names = [moduleName];
+    names = [];
     while (true) {
       names.push(kit.path.join(dir, modDir, moduleName));
       pDir = kit.path.dirname(dir);
@@ -519,6 +520,7 @@ _.extend(kit, fs, {
       }
       dir = pDir;
     }
+    names.push(moduleName);
     return names;
   },
 
@@ -681,7 +683,7 @@ _.extend(kit, fs, {
    */
   xinspect: function(obj, opts) {
     var str, util;
-    util = kit.require('util');
+    util = kit.require('util', __dirname);
     _.defaults(opts, {
       colors: kit.isDevelopment(),
       depth: 5
@@ -1257,9 +1259,11 @@ _.extend(kit, fs, {
   	 * Much faster than the native require of node, but you should
   	 * follow some rules to use it safely.
   	 * Use it to load nokit's internal module.
-  	 * @param  {String}   moduleName Relative moudle path is not allowed!
-  	 * Only allow absolute path or module name.
-  	 * @param  {Function} loaded Run only the first time after the module loaded.
+  	 * @param {String} moduleName The module path or name.
+  	 * @param {String} dir Current file path. Not optional, expect when
+  	 * requiring nokit's internal modules.
+  	 * On most times, just pass `__dirname` to it is enough.
+  	 * @param {Function} loaded Run only the first time after the module loaded.
   	 * @return {Module} The module that you require.
   	 * @example
   	 * Use it to load nokit's internal module.
@@ -1268,65 +1272,106 @@ _.extend(kit, fs, {
   	 * # Then you can use the module, or it will be null.
   	 * kit.jhash.hash 'test'
   	 * ```
+  	 * To load a relative path, or you own module,
+  	 * the second parameter 'dir' is required.
+  	 * ```coffee
+  	 * mod = kit.require './mod', __dirname
+  	 *
+  	 * # Or load your own 'jhash', rather than nokit's.
+  	 * jhash = kit.require 'jhash', __dirname
+  	 * ```
    */
-  require: function(moduleName, loaded) {
-    var name, names, p, _i, _j, _len, _len1, _ref;
-    if (kit.requireCache[moduleName]) {
-      return kit.requireCache[moduleName];
+  require: function(moduleName, dir, loaded) {
+    var err, key, name, names, p, _i, _len;
+    if (_.isFunction(dir)) {
+      loaded = dir;
+      dir = null;
     }
-    if (kit[moduleName] === null) {
-      try {
-        return kit[moduleName] = kit.requireCache[moduleName] = require('./' + moduleName);
-      } catch (_error) {}
-      return kit[moduleName] = kit.requireCache[moduleName] = require(moduleName);
+    key = moduleName + (dir ? '@' + dir : '');
+    if (kit.requireCache[key]) {
+      return kit.requireCache[key];
     }
-    if (moduleName[0] === '.') {
-      throw new Error('Relative path is not allowed: ' + moduleName);
-    }
-    names = kit.genModulePaths(moduleName, process.cwd());
-    if (process.env.NODE_PATH) {
-      _ref = process.env.NODE_PATH.split(kit.path.delimiter);
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        p = _ref[_i];
-        names.push(kit.path.join(p, moduleName));
+    if (dir == null) {
+      if (moduleName[0] === '.' || kit[moduleName] !== null) {
+        err = new Error("argument 'dir' is not defined");
+        err.source = 'nokit';
+        throw err;
       }
-    }
-    for (_j = 0, _len1 = names.length; _j < _len1; _j++) {
-      name = names[_j];
       try {
-        kit.requireCache[moduleName] = require(name);
+        return kit[moduleName] = kit.requireCache[key] = require('./' + moduleName);
+      } catch (_error) {}
+      return kit[moduleName] = kit.requireCache[key] = require(moduleName);
+    }
+    names = moduleName[0] === '.' ? [kit.path.join(dir, moduleName)] : kit.genModulePaths(moduleName, dir).concat((function() {
+      var _i, _len, _ref, _results;
+      if (process.env.NODE_PATH) {
+        _ref = process.env.NODE_PATH.split(kit.path.delimiter);
+        _results = [];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          p = _ref[_i];
+          _results.push(kit.path.join(p, moduleName));
+        }
+        return _results;
+      } else {
+        return [];
+      }
+    })());
+    for (_i = 0, _len = names.length; _i < _len; _i++) {
+      name = names[_i];
+      try {
+        kit.requireCache[key] = require(name);
         if (typeof loaded === "function") {
-          loaded(kit.requireCache[moduleName]);
+          loaded(kit.requireCache[key]);
         }
         break;
       } catch (_error) {}
     }
-    if (!kit.requireCache[moduleName]) {
+    if (!kit.requireCache[key]) {
       throw new Error('Module not found: ' + moduleName);
     }
     if (kit[moduleName] === null) {
-      kit[moduleName] = kit.requireCache[moduleName];
+      kit[moduleName] = kit.requireCache[key];
     }
-    return kit.requireCache[moduleName];
+    return kit.requireCache[key];
   },
 
   /**
   	 * Require an optional package. If not found, it will
-  	 * warn user to npm install it, and exit the process.
-  	 * @param  {String} name Package name
+  	 * warn the user to npm install it, and exit the process.
+  	 * @param {String} name Package name
+  	 * @param {String} dir Current file path. Not optional.
+  	 * On most times, just pass `__dirname` to it is enough.
+  	 * @param  {String} semver Specify what version you need,
+  	 * such as `^0.3.1` or `>=1.2.3`, ect.
   	 * @return {Any} The required package.
    */
-  requireOptional: function(name) {
-    var cs, err;
+  requireOptional: function(name, dir, semver) {
+    var cs, err, info, key, version;
+    key = name + (dir ? '@' + dir : '');
+    if (kit.requireCache[key]) {
+      return kit.requireCache[key];
+    }
     try {
-      return kit.require(name);
+      if (semver) {
+        kit.require('semver');
+        version = kit.require(name + '/package.json', dir).version;
+        if (!kit.semver.satisfies(version, semver)) {
+          info = ("expect " + name + " version ") + ("'" + semver + "', but get '" + version + "'");
+          name = name + "@\"" + semver + "\"";
+          throw new Error(info);
+        }
+      }
+      return kit.require(name, dir);
     } catch (_error) {
       err = _error;
+      if (err.source === 'nokit') {
+        throw err;
+      }
       cs = kit.require('colors/safe');
-      kit.err((cs.red("If current module is installed globally, run " + cs.green(("'npm install -g " + name + "'") + cs.red(" first, else run " + cs.green(("'npm install " + name + "'") + cs.red(" first.\n")))))) + err.stack, {
+      kit.err((cs.red("Optional module required.\n" + cs.red("If current module is installed globally, run " + cs.green(("'npm install -g " + name + "'") + cs.red(" first, else run " + cs.green(("'npm install " + name + "'") + cs.red(" first.\n"))))))) + err.stack, {
         isShowTime: false
       });
-      return process.exit();
+      return process.exit(1);
     }
   },
 
@@ -1352,12 +1397,6 @@ _.extend(kit, fs, {
   	 * 	# The key of headers should be lowercased.
   	 * 	headers: {}
   	 *
-  	 * 	host: 'localhost'
-  	 * 	hostname: 'localhost'
-  	 * 	port: 80
-  	 * 	method: 'GET'
-  	 * 	path: '/'
-  	 * 	auth: ''
   	 * 	agent: null
   	 *
   	 * 	# Set "transfer-encoding" header to 'chunked'.
@@ -1436,24 +1475,23 @@ _.extend(kit, fs, {
       if ((_base = opts.url).protocol == null) {
         _base.protocol = 'http:';
       }
-      opts.url = kit.url.format(opts.url);
     } else {
       if (opts.url.indexOf('http') !== 0) {
         opts.url = 'http://' + opts.url;
       }
+      url = kit.url.parse(opts.url);
+      if (url.protocol == null) {
+        url.protocol = 'http:';
+      }
     }
-    url = kit.url.parse(opts.url);
     delete url.host;
-    if (url.protocol == null) {
-      url.protocol = 'http:';
-    }
     request = null;
     switch (url.protocol) {
       case 'http:':
-        request = kit.require('http').request;
+        request = kit.require('http', __dirname).request;
         break;
       case 'https:':
-        request = kit.require('https').request;
+        request = kit.require('https', __dirname).request;
         break;
       default:
         Promise.reject(new Error('Protocol not supported: ' + url.protocol));
@@ -1522,10 +1560,10 @@ _.extend(kit, fs, {
           if (opts.autoUnzip) {
             switch (res.headers['content-encoding']) {
               case 'gzip':
-                unzip = kit.require('zlib').createGunzip();
+                unzip = kit.require('zlib', __dirname).createGunzip();
                 break;
               case 'deflate':
-                unzip = kit.require('zlib').createInflat();
+                unzip = kit.require('zlib', __dirname).createInflat();
                 break;
               default:
                 unzip = null;
@@ -1597,10 +1635,10 @@ _.extend(kit, fs, {
               if (opts.autoUnzip) {
                 switch (res.headers['content-encoding']) {
                   case 'gzip':
-                    unzip = kit.require('zlib').gunzip;
+                    unzip = kit.require('zlib', __dirname).gunzip;
                     break;
                   case 'deflate':
-                    unzip = kit.require('zlib').inflate;
+                    unzip = kit.require('zlib', __dirname).inflate;
                     break;
                   default:
                     unzip = null;
@@ -1655,6 +1693,13 @@ _.extend(kit, fs, {
     promise.req = req;
     return promise;
   },
+
+  /**
+  	 * The semantic versioner for npm, known as [semver](https://github.com/npm/node-semver).
+  	 * You must `kit.require 'semver'` before using it.
+  	 * @type {Object}
+   */
+  semver: null,
 
   /**
   	 * A safer version of `child_process.spawn` to cross-platform run
@@ -1717,7 +1762,7 @@ _.extend(kit, fs, {
         }
       }
     }
-    spawn = kit.require('child_process').spawn;
+    spawn = kit.require('child_process', __dirname).spawn;
     ps = null;
     promise = new Promise(function(resolve, reject) {
       var err;

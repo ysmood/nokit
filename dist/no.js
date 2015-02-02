@@ -13,7 +13,7 @@ kit = require('./kit');
 
 _ = kit._;
 
-cmder = kit.requireOptional('commander');
+cmder = kit.requireOptional('commander', __dirname);
 
 error = function(msg) {
   var err;
@@ -23,16 +23,20 @@ error = function(msg) {
 };
 
 loadNofile = function() {
-  var err, path, paths, _i, _len;
-  try {
-    require('coffee-script/register');
-  } catch (_error) {}
-  try {
-    require('Livescript');
-  } catch (_error) {}
-  paths = kit.genModulePaths('nofile', process.cwd(), '').slice(1);
-  for (_i = 0, _len = paths.length; _i < _len; _i++) {
-    path = paths[_i];
+  var err, lang, path, paths, _base, _i, _j, _len, _len1, _ref;
+  if ((_base = process.env).nokitPreload == null) {
+    _base.nokitPreload = 'coffee-cache coffee-script/register';
+  }
+  _ref = process.env.nokitPreload.split(' ');
+  for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+    lang = _ref[_i];
+    try {
+      require(lang);
+    } catch (_error) {}
+  }
+  paths = kit.genModulePaths('nofile', process.cwd(), '');
+  for (_j = 0, _len1 = paths.length; _j < _len1; _j++) {
+    path = paths[_j];
     try {
       return require(path);
     } catch (_error) {
