@@ -446,65 +446,6 @@ _.extend kit, fs,
 		names
 
 	###*
-	 * A fast helper to hash string or binary file.
-	 * See my [jhash](https://github.com/ysmood/jhash) project.
-	 * You must `kit.require 'jhash'` before using it.
-	 *
-	 * [Offline Documentation](?gotoDoc=jhash/readme.md)
-	 * @example
-	 * ```coffee
-	 * kit.require 'jhash'
-	 * kit.jhash.hash 'test' # output => '349o'
-	 *
-	 * jhash.hash kit.readFileSync('a.jpg')
-	 *
-	 * # Control the hash char set.
-	 * kit.jhash.setSymbols 'abcdef'
-	 * kit.jhash.hash 'test' # output => 'decfddfe'
-	 *
-	 * # Control the max length of the result hash value. Unit is bit.
-	 * jhash.setMaskLen 10
-	 * jhash.hash 'test' # output => 'ede'
-	 * ```
-	###
-	jhash: null
-
-	###*
-	 * It inserts the fnB in between the fnA and concatenates the result.
-	 * @param  {Any} fnA
-	 * @param  {Any} fnB
-	 * @return {Array}
-	 * @example
-	 * ```coffee
-	 * kit.join([1, 2, 3, 4], 'sep')
-	 * # output => [1, 'sep', 2, 'sep', 3, 'sep', 4]
-	 *
-	 * iter = ->
-	 * 	i = 0
-	 * 	-> i++
-	 * kit.join([1, 2, 3, 4], new iter)
-	 * # output => [1, 'sep', 2, 'sep', 3, 'sep', 4]
-	 * ```
-	###
-	join: (fnA, fnB) ->
-		arr = []
-		iterA = kit.iter fnA
-		iterB = kit.iter fnB
-
-		val = iterA().value
-		while val != undefined
-			arr.push val
-
-			nextVal = iterA().value
-
-			if nextVal != undefined
-				arr.push iterB().value
-
-			val = nextVal
-
-		arr
-
-	###*
 	 * Generate a iterator from a value.
 	 * @param  {Any} val
 	 * @return {Function} The every time when the function been
@@ -563,25 +504,6 @@ _.extend kit, fs,
 		text.replace reg, prefix
 
 	###*
-	 * For debugging. Dump a colorful object.
-	 * @param  {Object} obj Your target object.
-	 * @param  {Object} opts Options. Default:
-	 * ```coffee
-	 * { colors: true, depth: 5 }
-	 * ```
-	 * @return {String}
-	###
-	xinspect: (obj, opts) ->
-		util = kit.require 'util', __dirname
-
-		_.defaults opts, {
-			colors: kit.isDevelopment()
-			depth: 5
-		}
-
-		str = util.inspect obj, opts
-
-	###*
 	 * Nobone use it to check the running mode of the app.
 	 * Overwrite it if you want to control the check logic.
 	 * By default it returns the `rocess.env.NODE_ENV == 'development'`.
@@ -598,6 +520,65 @@ _.extend kit, fs,
 	###
 	isProduction: ->
 		process.env.NODE_ENV == 'production'
+
+	###*
+	 * A fast helper to hash string or binary file.
+	 * See my [jhash](https://github.com/ysmood/jhash) project.
+	 * You must `kit.require 'jhash'` before using it.
+	 *
+	 * [Offline Documentation](?gotoDoc=jhash/readme.md)
+	 * @example
+	 * ```coffee
+	 * kit.require 'jhash'
+	 * kit.jhash.hash 'test' # output => '349o'
+	 *
+	 * jhash.hash kit.readFileSync('a.jpg')
+	 *
+	 * # Control the hash char set.
+	 * kit.jhash.setSymbols 'abcdef'
+	 * kit.jhash.hash 'test' # output => 'decfddfe'
+	 *
+	 * # Control the max length of the result hash value. Unit is bit.
+	 * jhash.setMaskLen 10
+	 * jhash.hash 'test' # output => 'ede'
+	 * ```
+	###
+	jhash: null
+
+	###*
+	 * It inserts the fnB in between the fnA and concatenates the result.
+	 * @param  {Any} fnA
+	 * @param  {Any} fnB
+	 * @return {Array}
+	 * @example
+	 * ```coffee
+	 * kit.join([1, 2, 3, 4], 'sep')
+	 * # output => [1, 'sep', 2, 'sep', 3, 'sep', 4]
+	 *
+	 * iter = ->
+	 * 	i = 0
+	 * 	-> i++
+	 * kit.join([1, 2, 3, 4], new iter)
+	 * # output => [1, 'sep', 2, 'sep', 3, 'sep', 4]
+	 * ```
+	###
+	join: (fnA, fnB) ->
+		arr = []
+		iterA = kit.iter fnA
+		iterB = kit.iter fnB
+
+		val = iterA().value
+		while val != undefined
+			arr.push val
+
+			nextVal = iterA().value
+
+			if nextVal != undefined
+				arr.push iterB().value
+
+			val = nextVal
+
+		arr
 
 	###*
 	 * A better log for debugging, it uses the `kit.xinspect` to log.
@@ -820,39 +801,6 @@ _.extend kit, fs,
 		ms = process.versions.node.match /(\d+)\.(\d+)\.(\d+)/
 		str = ms[1] + '.' + _.padLeft(ms[2], 2, '0') + _.padLeft(ms[3], 2, '0')
 		+str
-
-	###*
-	 * Open a thing that your system can recognize.
-	 * Now only support Windows, OSX or system that installed 'xdg-open'.
-	 * @param  {String | Array} cmds  The thing you want to open.
-	 * @param  {Object} opts The options of the node native
-	 * `child_process.exec`.
-	 * @return {Promise} When the child process exists.
-	 * @example
-	 * ```coffee
-	 * # Open a webpage with the default browser.
-	 * kit.open 'http://ysmood.org'
-	 * ```
-	###
-	xopen: (cmds, opts = {}) ->
-		(Promise.resolve switch process.platform
-			when 'darwin'
-				'open'
-			when 'win32'
-				'start'
-			else
-				try
-					kit.require 'which'
-					kit.which 'xdg-open'
-				catch
-					null
-		).then (starter) ->
-			return if not starter
-
-			if _.isString cmds
-				cmds = [cmds]
-
-			kit.spawn starter, cmds
 
 	###*
 	 * A comments parser for javascript and coffee-script.
@@ -1513,6 +1461,17 @@ _.extend kit, fs,
 	semver: null
 
 	###*
+	 * Sleep for awhile.
+	 * @param  {Integer} time Time to sleep, millisecond.
+	 * @return {Promise}
+	###
+	sleep: (time = 0) ->
+		new Promise (resolve) ->
+			setTimeout ->
+				resolve()
+			, time
+
+	###*
 	 * A safer version of `child_process.spawn` to cross-platform run
 	 * a process. In some conditions, it may be more convenient
 	 * to use the `kit.exec`.
@@ -1905,6 +1864,58 @@ _.extend kit, fs,
 	 * @type {Function}
 	###
 	whichSync: null
+
+	###*
+	 * For debugging. Dump a colorful object.
+	 * @param  {Object} obj Your target object.
+	 * @param  {Object} opts Options. Default:
+	 * ```coffee
+	 * { colors: true, depth: 5 }
+	 * ```
+	 * @return {String}
+	###
+	xinspect: (obj, opts) ->
+		util = kit.require 'util', __dirname
+
+		_.defaults opts, {
+			colors: kit.isDevelopment()
+			depth: 5
+		}
+
+		str = util.inspect obj, opts
+
+	###*
+	 * Open a thing that your system can recognize.
+	 * Now only support Windows, OSX or system that installed 'xdg-open'.
+	 * @param  {String | Array} cmds  The thing you want to open.
+	 * @param  {Object} opts The options of the node native
+	 * `child_process.exec`.
+	 * @return {Promise} When the child process exists.
+	 * @example
+	 * ```coffee
+	 * # Open a webpage with the default browser.
+	 * kit.open 'http://ysmood.org'
+	 * ```
+	###
+	xopen: (cmds, opts = {}) ->
+		(Promise.resolve switch process.platform
+			when 'darwin'
+				'open'
+			when 'win32'
+				'start'
+			else
+				try
+					kit.require 'which'
+					kit.which 'xdg-open'
+				catch
+					null
+		).then (starter) ->
+			return if not starter
+
+			if _.isString cmds
+				cmds = [cmds]
+
+			kit.spawn starter, cmds
 
 # Some debug options.
 if kit.isDevelopment()
