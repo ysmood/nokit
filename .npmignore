@@ -4,5 +4,4 @@ appveyor.yml
 test/*
 .nobone
 .coffee
-.cake_task_cache
 .npmignore
