@@ -1863,6 +1863,9 @@ _.extend kit, fs,
 	 *
 	 * 	isDir: Boolean
 	 *
+	 * 	# Call it to disable all the followed plugins.
+	 * 	end: Function
+	 *
 	 * 	stats: fs.Stats
 	 *
 	 * 	# All the globbed files.
@@ -1917,7 +1920,6 @@ _.extend kit, fs,
 				).then fileInfo.set
 
 			writer: (fileInfo) ->
-				return if not fileInfo
 				{ dest, contents } = fileInfo
 				if dest? and contents?
 					if _.isObject dest
@@ -1936,11 +1938,9 @@ _.extend kit, fs,
 			kit.flow(pipeList)(fileInfo)
 
 		runTask = (task) -> (fileInfo) ->
-			return if not fileInfo
+			return if fileInfo.isEndWarp
 			Promise.resolve task.call(fileInfo, fileInfo)
-			.then (val) ->
-				return val if not val?
-				fileInfo
+			.then (val) -> fileInfo
 
 		mapper =
 			pipe: (task) ->
@@ -1960,6 +1960,7 @@ _.extend kit, fs,
 						dest: kit.path.parse kit.path.join to,
 							kit.path.relative fileInfo.baseDir, fileInfo.path
 						set: opts.set.bind fileInfo
+						end: -> fileInfo.isEndWarp = true
 						opts
 					})
 

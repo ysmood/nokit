@@ -261,7 +261,7 @@ describe 'Kit:', ->
 
 			c = ->
 				all += @contents
-				null
+				@end()
 			c.onEnd = ->
 				@dest = @to + '/' + name
 				@set all
