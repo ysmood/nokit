@@ -10,6 +10,11 @@ It's one of the core lib of [nobone](https://github.com/ysmood/nobone).
 
 [![NPM version](https://badge.fury.io/js/nokit.svg)](http://badge.fury.io/js/nokit) [![Build Status](https://travis-ci.org/ysmood/nokit.svg)](https://travis-ci.org/ysmood/nokit) [![Build status](https://ci.appveyor.com/api/projects/status/3pwhk4ua9c3ojm0q?svg=true)](https://ci.appveyor.com/project/ysmood/nokit) [![Deps Up to Date](https://david-dm.org/ysmood/nokit.svg?style=flat)](https://david-dm.org/ysmood/nokit)
 
+## Features
+
+- Full promise sollution.
+- All functions are highly lazy designed, minimum boot time.
+
 # Installation
 
 As a lib dependency, install it locally: `npm i nokit`.
@@ -25,36 +30,49 @@ Nokit has provaided a cli tool like GNU Make. If you install it globally like th
 ## vs Gulp
 
 ```coffee
+kit = require 'nokit'
+drives = kit.require 'drives'
+
+kit.warp 'src/**/*.coffee'
+.load drives.coffeelint()
+.load drives.coffee { bare: false }
+.load drives.uglify()
+.load concat 'main.js'
+.run 'dist/path'
+
+```
+
+```coffee
 # nokit extends nofs, so we don't have to require nofs here.
 kit = require 'nokit'
 coffee = require 'coffee-script'
 
 # A plugin for coffee, a simple curried function.
-compiler = (opts) -> (file) ->
-    file.dest.ext = '.js'
-    file.set coffee.compile(file.contents, opts)
+compiler = (opts) -> ->
+    @dest.ext = '.js'
+    @set coffee.compile(@contents, opts)
 
-# A plugin to prepend lisence to each file,
-lisencer = (lisence) -> (file) ->
-    file.set lisence + '\n' + file.contents
+# A plugin to prepend lisence to each file.
+# Here "fileInfo.set" is the same with the "@set".
+lisencer = (lisence) -> (fileInfo) ->
+    @set lisence + '\n' + @contents
 
 # A plugin to concat all files.
 concat = (outputFile) ->
     all = ''
 
-    c = (file) ->
-        all += file.contents
-        null
-    c.onEnd = (file) ->
-        file.dest = file.to + '/' + outputFile
-        file.set all
-    c
+    kit._.extend ->
+        all += @contents
+        @end() # Disable all the followed plugins.
+    , onEnd: ->
+        @dest = @to + '/' + outputFile
+        @set all
 
 kit.warp 'src/**/*.coffee'
-.pipe compiler bare: true
-.pipe lisencer '/* MIT lisence */'
-.pipe concat 'bundle.js'
-.to 'dist'
+.load compiler bare: true
+.load lisencer '/* MIT lisence */'
+.load concat 'bundle.js'
+.run 'dist'
 .then ->
     kit.log 'Build Done'
 ```
@@ -95,20 +113,28 @@ Assume your file content is:
 # kit: kit
 # Promise: kit.Promise
 
-option '-w, --hello [world]', 'Just a test option'
+option '-w, --hello [world]', 'Just a test option', ''
 
 # Define a default task, and it depends on the "clean" task.
 task 'default', ['clean'], 'This is a comment info', (opts) ->
-    kit.log opts.test
+    kit.log opts.hello
+
+    # "colors" is enabled by default.
+    kit.log 'print red words'.red
 
 task 'clean', ->
     kit.remove 'dist'
 
-task 'build', ->
+# To add alias to a task, just use space to separate names.
+# Here 'build' and 'b' are the same task.
+task 'build b', ->
     warp 'src/**/*.js'
-    .pipe (file) ->
+    .load (file) ->
         file.set '/* Nothing */' + file.contents
-    .to 'dist'
+    .run 'dist'
+
+task 'sequential', ['clean', 'build'], true, ->
+    kit.log 'Run clean and build non-concurrently.'
 ```
 
 Then you can run it in command line: `no`. Just that simple, without action
@@ -116,7 +142,7 @@ argument, `no` will try to call the `default` action directly.
 
 You can run `no -h` to display help info.
 
-Call `no build` to run the `build` task.
+Call `no build` or `no b` to run the `build` task.
 
 For more doc for the `option` goto [commander.js](https://github.com/tj/commander.js).
 
@@ -126,7 +152,7 @@ Goto [changelog](doc/changelog.md)
 
 # API
 
-<%= api %>
+<%= doc['lib/kit.coffee'] %>
 
 # Lisence
 

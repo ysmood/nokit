@@ -15,7 +15,7 @@
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[coffeelint](lib/drives.coffee?source#L40)**
+- ## **[coffeelint](lib/drives.coffee?source#L41)**
 
     coffeelint processor
 
@@ -25,21 +25,7 @@
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[concat](lib/drives.coffee?source#L69)**
-
-    a batch file concat helper
-
-    - **<u>param</u>**: `name` { _String_ }
-
-        The output file path.
-
-    - **<u>param</u>**: `dir` { _String_ }
-
-        Optional. Override the dest of warp's.
-
-    - **<u>return</u>**: { _Function_ }
-
-- ## **[comment2md](lib/drives.coffee?source#L97)**
+- ## **[comment2md](lib/drives.coffee?source#L81)**
 
     Parse commment from a js or coffee file, and output a markdown string.
 
@@ -62,7 +48,30 @@
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[livescript](lib/drives.coffee?source#L130)**
+- ## **[compiler](lib/drives.coffee?source#L115)**
+
+    Auto-compiler file by extension.
+    Supports: `.coffee`, `.ls`
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+    - **<u>return</u>**: { _Function_ }
+
+- ## **[concat](lib/drives.coffee?source#L136)**
+
+    a batch file concat helper
+
+    - **<u>param</u>**: `name` { _String_ }
+
+        The output file path.
+
+    - **<u>param</u>**: `dir` { _String_ }
+
+        Optional. Override the dest of warp's.
+
+    - **<u>return</u>**: { _Function_ }
+
+- ## **[livescript](lib/drives.coffee?source#L152)**
 
     livescript compiler
 
@@ -72,7 +81,11 @@
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[uglify](lib/drives.coffee?source#L162)**
+- ## **[reader](lib/drives.coffee?source#L173)**
+
+    read file and set `contents`
+
+- ## **[uglify](lib/drives.coffee?source#L195)**
 
     uglify-js processor
 
@@ -92,11 +105,7 @@
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[reader](lib/drives.coffee?source#L177)**
-
-    read file and set `contents`
-
-- ## **[writer](lib/drives.coffee?source#L187)**
+- ## **[writer](lib/drives.coffee?source#L210)**
 
     output file by `contents` and `dest`
 

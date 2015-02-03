@@ -1,1 +1,1 @@
-module.exports = require('./which').sync
+module.exports=require("./which").sync;

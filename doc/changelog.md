@@ -2,7 +2,11 @@
 
 - v0.4.6
 
+  - **API CHANGE** `warp`'s two function names was changed:
+    `pipe` -> `load`, `to` -> `run`.
   - Add semver support for `requireOptional`.
+  - Optimize the task and `no` cli tool.
+  - Update deps.
 
 - v0.4.5
 

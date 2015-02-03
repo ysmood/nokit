@@ -10,6 +10,11 @@ It's one of the core lib of [nobone](https://github.com/ysmood/nobone).
 
 [![NPM version](https://badge.fury.io/js/nokit.svg)](http://badge.fury.io/js/nokit) [![Build Status](https://travis-ci.org/ysmood/nokit.svg)](https://travis-ci.org/ysmood/nokit) [![Build status](https://ci.appveyor.com/api/projects/status/3pwhk4ua9c3ojm0q?svg=true)](https://ci.appveyor.com/project/ysmood/nokit) [![Deps Up to Date](https://david-dm.org/ysmood/nokit.svg?style=flat)](https://david-dm.org/ysmood/nokit)
 
+## Features
+
+- Full promise sollution.
+- All functions are highly lazy designed, minimum boot time.
+
 # Installation
 
 As a lib dependency, install it locally: `npm i nokit`.
@@ -25,36 +30,49 @@ Nokit has provaided a cli tool like GNU Make. If you install it globally like th
 ## vs Gulp
 
 ```coffee
+kit = require 'nokit'
+drives = kit.require 'drives'
+
+kit.warp 'src/**/*.coffee'
+.load drives.coffeelint()
+.load drives.coffee { bare: false }
+.load drives.uglify()
+.load concat 'main.js'
+.run 'dist/path'
+
+```
+
+```coffee
 # nokit extends nofs, so we don't have to require nofs here.
 kit = require 'nokit'
 coffee = require 'coffee-script'
 
 # A plugin for coffee, a simple curried function.
-compiler = (opts) -> (file) ->
-    file.dest.ext = '.js'
-    file.set coffee.compile(file.contents, opts)
+compiler = (opts) -> ->
+    @dest.ext = '.js'
+    @set coffee.compile(@contents, opts)
 
-# A plugin to prepend lisence to each file,
-lisencer = (lisence) -> (file) ->
-    file.set lisence + '\n' + file.contents
+# A plugin to prepend lisence to each file.
+# Here "fileInfo.set" is the same with the "@set".
+lisencer = (lisence) -> (fileInfo) ->
+    @set lisence + '\n' + @contents
 
 # A plugin to concat all files.
 concat = (outputFile) ->
     all = ''
 
-    c = (file) ->
-        all += file.contents
-        null
-    c.onEnd = (file) ->
-        file.dest = file.to + '/' + outputFile
-        file.set all
-    c
+    kit._.extend ->
+        all += @contents
+        @end() # Disable all the followed plugins.
+    , onEnd: ->
+        @dest = @to + '/' + outputFile
+        @set all
 
 kit.warp 'src/**/*.coffee'
-.pipe compiler bare: true
-.pipe lisencer '/* MIT lisence */'
-.pipe concat 'bundle.js'
-.to 'dist'
+.load compiler bare: true
+.load lisencer '/* MIT lisence */'
+.load concat 'bundle.js'
+.run 'dist'
 .then ->
     kit.log 'Build Done'
 ```
@@ -95,20 +113,28 @@ Assume your file content is:
 # kit: kit
 # Promise: kit.Promise
 
-option '-w, --hello [world]', 'Just a test option'
+option '-w, --hello [world]', 'Just a test option', ''
 
 # Define a default task, and it depends on the "clean" task.
 task 'default', ['clean'], 'This is a comment info', (opts) ->
-    kit.log opts.test
+    kit.log opts.hello
+
+    # "colors" is enabled by default.
+    kit.log 'print red words'.red
 
 task 'clean', ->
     kit.remove 'dist'
 
-task 'build', ->
+# To add alias to a task, just use space to separate names.
+# Here 'build' and 'b' are the same task.
+task 'build b', ->
     warp 'src/**/*.js'
-    .pipe (file) ->
+    .load (file) ->
         file.set '/* Nothing */' + file.contents
-    .to 'dist'
+    .run 'dist'
+
+task 'sequential', ['clean', 'build'], true, ->
+    kit.log 'Run clean and build non-concurrently.'
 ```
 
 Then you can run it in command line: `no`. Just that simple, without action
@@ -116,7 +142,7 @@ argument, `no` will try to call the `default` action directly.
 
 You can run `no -h` to display help info.
 
-Call `no build` to run the `build` task.
+Call `no build` or `no b` to run the `build` task.
 
 For more doc for the `option` goto [commander.js](https://github.com/tj/commander.js).
 
@@ -271,7 +297,14 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Buffer_ }
 
-- ## **[encrypt](lib/kit.coffee?source#L227)**
+- ## **[drives](lib/kit.coffee?source#L225)**
+
+    The warp drives.
+    You must `kit.require 'drives'` before using it.
+
+    - **<u>type</u>**: { _Object_ }
+
+- ## **[encrypt](lib/kit.coffee?source#L234)**
 
     A simple encrypt helper. Cross-version of node.
 
@@ -285,7 +318,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Buffer_ }
 
-- ## **[err](lib/kit.coffee?source#L248)**
+- ## **[err](lib/kit.coffee?source#L255)**
 
     A error log shortcut for `kit.log(msg, 'error', opts)`
 
@@ -293,7 +326,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>param</u>**: `opts` { _Object_ }
 
-- ## **[exec](lib/kit.coffee?source#L282)**
+- ## **[exec](lib/kit.coffee?source#L289)**
 
     A better `child_process.exec`. Supports multi-line shell script.
     For supporting old node version, it will create 3 temp files,
@@ -336,7 +369,7 @@ Goto [changelog](doc/changelog.md)
         """, 'zsh'
         ```
 
-- ## **[flow](lib/kit.coffee?source#L357)**
+- ## **[flow](lib/kit.coffee?source#L364)**
 
     Creates a function that is the composition of the provided functions.
     Besides, it can also accept async function that returns promise.
@@ -374,7 +407,7 @@ Goto [changelog](doc/changelog.md)
         download 'home'
         ```
 
-- ## **[formatComment](lib/kit.coffee?source#L385)**
+- ## **[formatComment](lib/kit.coffee?source#L392)**
 
     Format the parsed comments array to a markdown string.
 
@@ -398,13 +431,55 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _String_ }
 
-- ## **[fs](lib/kit.coffee?source#L427)**
+- ## **[fs](lib/kit.coffee?source#L434)**
 
     See my project [nofs](https://github.com/ysmood/nofs).
 
     [Offline Documentation](?gotoDoc=nofs/readme.md)
 
-- ## **[genModulePaths](lib/kit.coffee?source#L436)**
+- ## **[fuzzySearch](lib/kit.coffee?source#L463)**
+
+    Fuzzy search a string list by a key word.
+
+    - **<u>param</u>**: `keys` { _String_ }
+
+        The key word.
+
+    - **<u>param</u>**: `list` { _Array_ }
+
+        The list of string to search.
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+        Defaults:
+        ```coffee
+        {
+        	threshold: (cOffset, keyLen, cIndex) ->
+        		Infinity
+        	notFound: (cOffset, keyLen, cIndex) ->
+        		Infinity
+        	span: (cOffset, keyLen, cIndex) ->
+        		cOffset
+        	found: (cOffset, keyLen, cIndex) ->
+        		(Math.exp(cOffset + 1) - 1) * (keyLen - cIndex)
+        	tail: (cOffset, keyLen, cIndex, tailLen) ->
+        		tailLen
+        }
+        ```
+
+    - **<u>return</u>**: { _String_ }
+
+        The best matched one. If not found,
+        return undefined.
+
+    - **<u>example</u>**:
+
+        ```coffee
+        kit.fuzzySearch 'hw', ['test', 'hello world', 'hey world']
+        # output => 'hey world'
+        ```
+
+- ## **[genModulePaths](lib/kit.coffee?source#L509)**
 
     Generate a list of module paths from a name and a directory.
 
@@ -424,55 +499,7 @@ Goto [changelog](doc/changelog.md)
 
         Paths
 
-- ## **[jhash](lib/kit.coffee?source#L470)**
-
-    A fast helper to hash string or binary file.
-    See my [jhash](https://github.com/ysmood/jhash) project.
-    You must `kit.require 'jhash'` before using it.
-
-    [Offline Documentation](?gotoDoc=jhash/readme.md)
-
-    - **<u>example</u>**:
-
-        ```coffee
-        kit.require 'jhash'
-        kit.jhash.hash 'test' # output => '349o'
-
-        jhash.hash kit.readFileSync('a.jpg')
-
-        # Control the hash char set.
-        kit.jhash.setSymbols 'abcdef'
-        kit.jhash.hash 'test' # output => 'decfddfe'
-
-        # Control the max length of the result hash value. Unit is bit.
-        jhash.setMaskLen 10
-        jhash.hash 'test' # output => 'ede'
-        ```
-
-- ## **[join](lib/kit.coffee?source#L489)**
-
-    It inserts the fnB in between the fnA and concatenates the result.
-
-    - **<u>param</u>**: `fnA` { _Any_ }
-
-    - **<u>param</u>**: `fnB` { _Any_ }
-
-    - **<u>return</u>**: { _Array_ }
-
-    - **<u>example</u>**:
-
-        ```coffee
-        kit.join([1, 2, 3, 4], 'sep')
-        # output => [1, 'sep', 2, 'sep', 3, 'sep', 4]
-
-        iter = ->
-        	i = 0
-        	-> i++
-        kit.join([1, 2, 3, 4], new iter)
-        # output => [1, 'sep', 2, 'sep', 3, 'sep', 4]
-        ```
-
-- ## **[iter](lib/kit.coffee?source#L528)**
+- ## **[iter](lib/kit.coffee?source#L542)**
 
     Generate a iterator from a value.
 
@@ -500,7 +527,7 @@ Goto [changelog](doc/changelog.md)
         iter() # output => { key: 'a', value: 1 }
         ```
 
-- ## **[indent](lib/kit.coffee?source#L561)**
+- ## **[indent](lib/kit.coffee?source#L575)**
 
     Indent a text block.
 
@@ -530,24 +557,7 @@ Goto [changelog](doc/changelog.md)
         # => "one\ntwo"
         ```
 
-- ## **[xinspect](lib/kit.coffee?source#L574)**
-
-    For debugging. Dump a colorful object.
-
-    - **<u>param</u>**: `obj` { _Object_ }
-
-        Your target object.
-
-    - **<u>param</u>**: `opts` { _Object_ }
-
-        Options. Default:
-        ```coffee
-        { colors: true, depth: 5 }
-        ```
-
-    - **<u>return</u>**: { _String_ }
-
-- ## **[isDevelopment](lib/kit.coffee?source#L590)**
+- ## **[isDevelopment](lib/kit.coffee?source#L585)**
 
     Nobone use it to check the running mode of the app.
     Overwrite it if you want to control the check logic.
@@ -555,7 +565,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Boolean_ }
 
-- ## **[isProduction](lib/kit.coffee?source#L599)**
+- ## **[isProduction](lib/kit.coffee?source#L594)**
 
     Nobone use it to check the running mode of the app.
     Overwrite it if you want to control the check logic.
@@ -563,7 +573,55 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Boolean_ }
 
-- ## **[log](lib/kit.coffee?source#L625)**
+- ## **[jhash](lib/kit.coffee?source#L619)**
+
+    A fast helper to hash string or binary file.
+    See my [jhash](https://github.com/ysmood/jhash) project.
+    You must `kit.require 'jhash'` before using it.
+
+    [Offline Documentation](?gotoDoc=jhash/readme.md)
+
+    - **<u>example</u>**:
+
+        ```coffee
+        kit.require 'jhash'
+        kit.jhash.hash 'test' # output => '349o'
+
+        jhash.hash kit.readFileSync('a.jpg')
+
+        # Control the hash char set.
+        kit.jhash.setSymbols 'abcdef'
+        kit.jhash.hash 'test' # output => 'decfddfe'
+
+        # Control the max length of the result hash value. Unit is bit.
+        jhash.setMaskLen 10
+        jhash.hash 'test' # output => 'ede'
+        ```
+
+- ## **[join](lib/kit.coffee?source#L638)**
+
+    It inserts the fnB in between the fnA and concatenates the result.
+
+    - **<u>param</u>**: `fnA` { _Any_ }
+
+    - **<u>param</u>**: `fnB` { _Any_ }
+
+    - **<u>return</u>**: { _Array_ }
+
+    - **<u>example</u>**:
+
+        ```coffee
+        kit.join([1, 2, 3, 4], 'sep')
+        # output => [1, 'sep', 2, 'sep', 3, 'sep', 4]
+
+        iter = ->
+        	i = 0
+        	-> i++
+        kit.join([1, 2, 3, 4], new iter)
+        # output => [1, 'sep', 2, 'sep', 3, 'sep', 4]
+        ```
+
+- ## **[log](lib/kit.coffee?source#L679)**
 
     A better log for debugging, it uses the `kit.xinspect` to log.
 
@@ -598,7 +656,7 @@ Goto [changelog](doc/changelog.md)
         kit.log [A, B]
         ```
 
-- ## **[monitorApp](lib/kit.coffee?source#L741)**
+- ## **[monitorApp](lib/kit.coffee?source#L795)**
 
     Monitor an application and automatically restart it when file changed.
     Even when the monitored app exit with error, the monitor will still wait
@@ -659,38 +717,47 @@ Goto [changelog](doc/changelog.md)
         }
         ```
 
-- ## **[nodeVersion](lib/kit.coffee?source#L819)**
+- ## **[nodeVersion](lib/kit.coffee?source#L873)**
 
     Node version. Such as `v0.10.23` is `0.1023`, `v0.10.1` is `0.1001`.
 
     - **<u>type</u>**: { _Float_ }
 
-- ## **[xopen](lib/kit.coffee?source#L837)**
+- ## **[defaultArgs](lib/kit.coffee?source#L902)**
 
-    Open a thing that your system can recognize.
-    Now only support Windows, OSX or system that installed 'xdg-open'.
+    A helper for arguments type based function override.
 
-    - **<u>param</u>**: `cmds` { _String | Array_ }
+    - **<u>param</u>**: `args` { _Array | Object_ }
 
-        The thing you want to open.
+        The arguments to set.
 
-    - **<u>param</u>**: `opts` { _Object_ }
+    - **<u>param</u>**: `defaults` { _Object_ }
 
-        The options of the node native
-        `child_process.exec`.
+        The default argument settings.
+        The key value of the setting is the argument name, the value
+        is an object, and the key is the type of the argument, the
+        value is the default value of the argument.
 
-    - **<u>return</u>**: { _Promise_ }
-
-        When the child process exists.
+    - **<u>return</u>**: { _Object_ }
 
     - **<u>example</u>**:
 
         ```coffee
-        # Open a webpage with the default browser.
-        kit.open 'http://ysmood.org'
+        foo = ->
+        	args = kit.defaultArgs arguments, {
+        		name: { String: 'A' }
+        		colors: { Array: [] }
+        		family: { String: null }
+        		isReal: { Boolean: false }
+        		fn: { Function: -> 'callback' }
+        	}
+
+        kit.log foo('test', false, ['red'], -> 'nothing')
+        # Here the logged value will deeply equal:
+        { name: 'test', colors: ['red'], family: null, fn: -> 'nothing' }
         ```
 
-- ## **[parseComment](lib/kit.coffee?source#L892)**
+- ## **[parseComment](lib/kit.coffee?source#L952)**
 
     A comments parser for javascript and coffee-script.
     Used to generate documentation from source code automatically.
@@ -735,32 +802,7 @@ Goto [changelog](doc/changelog.md)
         }
         ```
 
-- ## **[parseFileComment](lib/kit.coffee?source#L981)**
-
-    Parse commment from a js or coffee file, and output a markdown string.
-
-    - **<u>param</u>**: `path` { _String_ }
-
-    - **<u>param</u>**: `opts` { _Object_ }
-
-        Defaults:
-        ```coffee
-        {
-        		parseComment: {}
-        		formatComment: {
-        			name: ({ name, line }) ->
-        				name = name.replace 'self.', ''
-        				link = "#{path}?source#L#{line}"
-        				"- \#\#\# **[#{name}](#{link})**\n\n"
-        		}
-        }
-        ```
-
-    - **<u>return</u>**: { _Promise_ }
-
-        Resolve a markdown string.
-
-- ## **[parseDependency](lib/kit.coffee?source#L1030)**
+- ## **[parseDependency](lib/kit.coffee?source#L1055)**
 
     Parse dependency tree by regex. The dependency relationships
     is not a tree, but a graph. To avoid dependency cycle, this
@@ -803,11 +845,11 @@ Goto [changelog](doc/changelog.md)
         	kit.log markdownStr
         ```
 
-- ## **[path](lib/kit.coffee?source#L1093)**
+- ## **[path](lib/kit.coffee?source#L1118)**
 
     io.js native module `path`. See `nofs` for more information.
 
-- ## **[Promise](lib/kit.coffee?source#L1101)**
+- ## **[Promise](lib/kit.coffee?source#L1126)**
 
     The promise lib. Now, it uses Bluebird as ES5 polyfill.
     In the future, the Bluebird will be replaced with native
@@ -815,7 +857,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>type</u>**: { _Object_ }
 
-- ## **[promisify](lib/kit.coffee?source#L1114)**
+- ## **[promisify](lib/kit.coffee?source#L1139)**
 
     Convert a callback style function to a promise function.
 
@@ -836,7 +878,7 @@ Goto [changelog](doc/changelog.md)
         readFile('a.txt').then kit.log
         ```
 
-- ## **[require](lib/kit.coffee?source#L1142)**
+- ## **[require](lib/kit.coffee?source#L1167)**
 
     Much faster than the native require of node, but you should
     follow some rules to use it safely.
@@ -848,7 +890,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>param</u>**: `dir` { _String_ }
 
-        Current file path. Not optional, expect when
+        Current absolute file path. Not optional, expect when
         requiring nokit's internal modules.
         On most times, just pass `__dirname` to it is enough.
 
@@ -877,7 +919,7 @@ Goto [changelog](doc/changelog.md)
         jhash = kit.require 'jhash', __dirname
         ```
 
-- ## **[requireOptional](lib/kit.coffee?source#L1199)**
+- ## **[requireOptional](lib/kit.coffee?source#L1239)**
 
     Require an optional package. If not found, it will
     warn the user to npm install it, and exit the process.
@@ -888,7 +930,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>param</u>**: `dir` { _String_ }
 
-        Current file path. Not optional.
+        Current absolute file path. Not optional.
         On most times, just pass `__dirname` to it is enough.
 
     - **<u>param</u>**: `semver` { _String_ }
@@ -900,7 +942,7 @@ Goto [changelog](doc/changelog.md)
 
         The required package.
 
-- ## **[request](lib/kit.coffee?source#L1316)**
+- ## **[request](lib/kit.coffee?source#L1356)**
 
     A handy extended combination of `http.request` and `https.request`.
 
@@ -997,14 +1039,24 @@ Goto [changelog](doc/changelog.md)
         	kit.log body
         ```
 
-- ## **[semver](lib/kit.coffee?source#L1513)**
+- ## **[semver](lib/kit.coffee?source#L1553)**
 
     The semantic versioner for npm, known as [semver](https://github.com/npm/node-semver).
     You must `kit.require 'semver'` before using it.
 
     - **<u>type</u>**: { _Object_ }
 
-- ## **[spawn](lib/kit.coffee?source#L1543)**
+- ## **[sleep](lib/kit.coffee?source#L1560)**
+
+    Sleep for awhile.
+
+    - **<u>param</u>**: `time` { _Integer_ }
+
+        Time to sleep, millisecond.
+
+    - **<u>return</u>**: { _Promise_ }
+
+- ## **[spawn](lib/kit.coffee?source#L1594)**
 
     A safer version of `child_process.spawn` to cross-platform run
     a process. In some conditions, it may be more convenient
@@ -1047,7 +1099,7 @@ Goto [changelog](doc/changelog.md)
         .then ({code}) -> kit.log code
         ```
 
-- ## **[task](lib/kit.coffee?source#L1651)**
+- ## **[task](lib/kit.coffee?source#L1702)**
 
     Sequencing and executing tasks and dependencies concurrently.
 
@@ -1128,12 +1180,12 @@ Goto [changelog](doc/changelog.md)
         	kit.log 'All Done!'
         ```
 
-- ## **[url](lib/kit.coffee?source#L1718)**
+- ## **[url](lib/kit.coffee?source#L1769)**
 
     The `url` module of [io.js](iojs.org).
     You must `kit.require 'url'` before using it.
 
-- ## **[warp](lib/kit.coffee?source#L1823)**
+- ## **[warp](lib/kit.coffee?source#L1889)**
 
     Works much like `gulp.src`, but with Promise instead.
     The warp control and error handling is more pleasant.
@@ -1156,15 +1208,15 @@ Goto [changelog](doc/changelog.md)
         	encoding: 'utf8'
 
         	# Default `set` used in the `fileInfo` object.
-        	set: (contents) -> this
+        	set: (contents) ->
 
         	# Default file reader plugin. Override it if you don't want
         	# warp read file contents automatically.
-        	reader: (fileInfo) -> fileInfo
+        	reader: kit.drives.reader
 
         	# Default file writer plugin. Override it if you don't want
         	# warp write file contents automatically.
-        	writer: (fileInfo) -> fileInfo
+        	writer: kit.drives.writer
         }
         ```
 
@@ -1186,6 +1238,9 @@ Goto [changelog](doc/changelog.md)
 
         	# The source path.
         	path: String
+
+        	# The parsed path object
+        	xpath: { root, dir, base, ext, name }
 
         	# The dest root path.
          to: String
@@ -1210,6 +1265,9 @@ Goto [changelog](doc/changelog.md)
 
         	isDir: Boolean
 
+        	# Call it to disable all the followed plugins.
+        	end: Function
+
         	stats: fs.Stats
 
         	# All the globbed files.
@@ -1229,26 +1287,35 @@ Goto [changelog](doc/changelog.md)
         ```coffee
         # Define a simple workflow.
         kit.warp 'src/**/*.js'
-        .pipe (fileInfo) ->
+        .load (fileInfo) ->
         	fileInfo.set '/* Lisence Info */' + fileInfo.contents
-        .pipe jslint()
-        .pipe minify()
-        .to 'build/minified'
+        .load jslint()
+        .load minify()
+        .run 'build/minified'
 
         # Override warp's file reader with a custom one.
-        myReader = (fileInfo) ->
-        	kit.readFile fileInfo.path, 'hex'
-        	.then fileInfo.set
-
-        # This will tell warp you want use your own reader.
-        myReader.isReader = true
+        myReader = kit._.extend (fileInfo) ->
+        	# Note that we can also use "@path",
+        	# its the same with "fileInfo.path" here.
+        	kit.readFile @path, 'hex'
+        	.then @set
+        , {
+        	# This will tell warp you want use your own reader.
+        	isReader: true
+        }
 
         kit.warp 'src/**/*.js'
-        .pipe myReader
-        .to 'dist'
+        .load myReader
+        .run 'dist'
+
+        # Use nokit's built-in warp drives.
+        drives = kit.require 'drives'
+        kit.warp src/**/*.coffee'
+        .load drives.coffee()
+        .run 'dist'
         ```
 
-- ## **[which](lib/kit.coffee?source#L1900)**
+- ## **[which](lib/kit.coffee?source#L1957)**
 
     Same as the unix `which` command.
     You must `kit.require 'which'` before using it.
@@ -1259,12 +1326,54 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Promise_ }
 
-- ## **[whichSync](lib/kit.coffee?source#L1907)**
+- ## **[whichSync](lib/kit.coffee?source#L1964)**
 
     Sync version of `which`.
     You must `kit.require 'whichSync'` before using it.
 
     - **<u>type</u>**: { _Function_ }
+
+- ## **[xinspect](lib/kit.coffee?source#L1975)**
+
+    For debugging. Dump a colorful object.
+
+    - **<u>param</u>**: `obj` { _Object_ }
+
+        Your target object.
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+        Options. Default:
+        ```coffee
+        { colors: true, depth: 5 }
+        ```
+
+    - **<u>return</u>**: { _String_ }
+
+- ## **[xopen](lib/kit.coffee?source#L1998)**
+
+    Open a thing that your system can recognize.
+    Now only support Windows, OSX or system that installed 'xdg-open'.
+
+    - **<u>param</u>**: `cmds` { _String | Array_ }
+
+        The thing you want to open.
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+        The options of the node native
+        `child_process.exec`.
+
+    - **<u>return</u>**: { _Promise_ }
+
+        When the child process exists.
+
+    - **<u>example</u>**:
+
+        ```coffee
+        # Open a webpage with the default browser.
+        kit.open 'http://ysmood.org'
+        ```
 
 
 
