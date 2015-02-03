@@ -54,8 +54,7 @@ task 'build', ['clean'], 'build project', (opts) ->
 	]
 
 	start().then ->
-		cs = kit.require 'colors/safe'
-		kit.log cs.green 'Build done.'
+		kit.log 'Build done.'.green
 
 option '-g, --grep [pattern]', 'test pattern', '.'
 task 'test', 'unit tests', (opts) ->
