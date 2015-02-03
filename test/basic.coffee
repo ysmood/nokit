@@ -2,6 +2,7 @@ assert = require 'assert'
 kit = require '../lib/kit'
 http = require 'http'
 { _, Promise } = kit
+kit.require 'warpDrives'
 
 shouldEqual = (args...) ->
 	try
@@ -256,19 +257,8 @@ describe 'Kit:', ->
 	it 'warp concat', ->
 		tmp = 'test/fixtures/warp_all.coffee'
 
-		concat = (name) ->
-			all = ''
-
-			c = ->
-				all += @contents
-				@end()
-			c.onEnd = ->
-				@dest = @to + '/' + name
-				@set all
-			c
-
 		kit.warp 'test/fixtures/**/*.coffee'
-		.pipe concat('warp_all.coffee')
+		.pipe kit.warpDrives.concat 'warp_all.coffee'
 		.to 'test/fixtures'
 		.then ->
 			kit.readFile tmp, 'utf8'

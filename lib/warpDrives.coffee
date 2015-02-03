@@ -22,6 +22,17 @@ module.exports =
 
 			kit.outputFile dest, contents, @opts
 
+	concat: (name) ->
+		all = ''
+
+		concator = ->
+			all += @contents
+			@end()
+		concator.onEnd = ->
+			@dest = kit.path.join @to, name
+			@set all
+		concator
+
 	coffee: (opts = {}) ->
 		_.defaults opts, {
 			bare: true
