@@ -11,13 +11,12 @@ task 'dev', 'lab', ->
 		args: ['test/lab.coffee']
 	}
 
+task 'clean', 'clean dist', ->
+	kit.remove 'dist'
+
 option '-a, --all', 'Rebuild with dependencies, such as rebuild lodash.'
-task 'build', 'build project', (opts) ->
-	compileCoffee = ->
-		kit.spawn 'coffee', [
-			'-o', 'dist'
-			'-cb', 'lib'
-		]
+task 'build', ['clean'], 'build project', (opts) ->
+	kit.require 'warpDrives'
 
 	buildLodash = ->
 		if opts.all
@@ -44,10 +43,13 @@ task 'build', 'build project', (opts) ->
 		])()
 
 	start = kit.flow [
-		-> kit.remove 'dist'
 		buildLodash
 		-> kit.warp('lib/**/*.js').to 'dist'
-		compileCoffee
+		->
+			kit.warp 'lib/**/*.coffee'
+			.pipe kit.warpDrives.coffeelint()
+			.pipe kit.warpDrives.coffee { bare: true }
+			.to 'dist'
 		createDoc
 	]
 
