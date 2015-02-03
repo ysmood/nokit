@@ -10,35 +10,6 @@ Overview = 'drives'
 
 module.exports =
 
-	reader: ->
-		(if @isDir
-			Promise.resolve()
-		else
-			kit.readFile @path, @opts.encoding
-		).then @set
-
-	writer: ->
-		kit.log cls.cyan('write: ') + @path
-		{ dest, contents } = @
-		if dest? and contents?
-			if _.isObject dest
-				if dest.name? and dest.ext?
-					dest.base = dest.name + dest.ext
-				dest = kit.path.format dest
-
-			kit.outputFile dest, contents, @opts
-
-	concat: (name, dir) ->
-		all = ''
-
-		_.extend ->
-			all += @contents
-			@end()
-		, onEnd: ->
-			dir ?= @to
-			@dest = kit.path.join dir, name
-			@set all
-
 	coffee: (opts = {}) ->
 		_.defaults opts, {
 			bare: true
@@ -79,22 +50,16 @@ module.exports =
 				if errors.length > 0
 					return Promise.reject errors[0]
 
-	livescript: (opts = {}) ->
-		_.defaults opts, {
-			bare: true
-		}
+	concat: (name, dir) ->
+		all = ''
 
-		Livescript = kit.requireOptional 'Livescript', __dirname, '>=1.2.0'
-
-		->
-			opts.filename = @path
-			@dest.ext = '.js'
-			try
-				@set Livescript.compile @contents + '', opts
-				kit.log cls.cyan('livescript coffee: ') + @path
-			catch err
-				kit.err cls.red err
-				Promise.reject 'livescriptCompileError'
+		_.extend ->
+			all += @contents
+			@end()
+		, onEnd: ->
+			dir ?= @to
+			@dest = kit.path.join dir, name
+			@set all
 
 	###*
 	 * Parse commment from a js or coffee file, and output a markdown string.
@@ -140,4 +105,51 @@ module.exports =
 			kit.readFile opts.tpl, 'utf8'
 			.then (tpl) ->
 				file.set _.template(tpl) { doc }
+
+	livescript: (opts = {}) ->
+		_.defaults opts, {
+			bare: true
+		}
+
+		Livescript = kit.requireOptional 'Livescript', __dirname, '>=1.2.0'
+
+		->
+			opts.filename = @path
+			@dest.ext = '.js'
+			try
+				@set Livescript.compile @contents + '', opts
+				kit.log cls.cyan('livescript coffee: ') + @path
+			catch err
+				kit.err cls.red err
+				Promise.reject 'livescriptCompileError'
+
+	uglify: (opts = {}) ->
+		uglify = kit.requireOptional 'uglify-js', __dirname, '>=2.0.0'
+		opts.fromString = true
+		opts.output =
+			comments: (node, comment) ->
+				text = comment.value
+				type = comment.type
+				if type == "comment2"
+					return /@preserve|@license|@cc_on/i.test text
+
+		-> @set (uglify.minify @contents, opts).code
+
+	reader: ->
+		(if @isDir
+			Promise.resolve()
+		else
+			kit.readFile @path, @opts.encoding
+		).then @set
+
+	writer: ->
+		{ dest, contents } = @
+		if dest? and contents?
+			if _.isObject dest
+				if dest.name? and dest.ext?
+					dest.base = dest.name + dest.ext
+				dest = kit.path.format dest
+
+			kit.log cls.cyan('writer: ') + dest
+			kit.outputFile dest, contents, @opts
 

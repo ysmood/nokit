@@ -8,7 +8,7 @@ kit = require './lib/kit'
 
 task 'default', ['build', 'test'], true
 
-task 'lab', 'run and monitor "test/lab.coffee"', ->
+task 'lab l', 'run and monitor "test/lab.coffee"', ->
 	kit.monitorApp {
 		bin: 'coffee'
 		args: ['test/lab.coffee']
@@ -18,18 +18,20 @@ task 'clean', 'clean dist', ->
 	kit.remove 'dist'
 
 option '-a, --all', 'Rebuild with dependencies, such as rebuild lodash.'
-task 'build', ['clean'], 'build project', (opts) ->
+task 'build b', ['clean'], 'build project', (opts) ->
 	kit.require 'drives'
 
 	buildLodash = ->
 		if opts.all
 			kit.spawn 'lodash', [
-				'modern', 'strict', '-p'
+				'modern', 'strict', '-d'
 				'-o', 'lib/lodash.js'
 			]
 
 	buildJs = ->
-		kit.copy 'lib/**/*.js', 'dist'
+		kit.warp 'lib/**/*.js'
+		.load kit.drives.uglify()
+		.run 'dist'
 
 	buildCoffee = ->
 		kit.warp 'lib/**/*.coffee'
@@ -59,7 +61,7 @@ task 'build', ['clean'], 'build project', (opts) ->
 		process.exit 1
 
 option '-g, --grep [pattern]', 'test pattern', '.'
-task 'test', 'unit tests', (opts) ->
+task 'test t', 'unit tests', (opts) ->
 	clean = ->
 		kit.spawn 'git', ['clean', '-fd', kit.path.normalize('test/fixtures')]
 

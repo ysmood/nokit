@@ -62,10 +62,16 @@ task = ->
 	if args.description
 		args.description += '  '
 
-	cmder.command args.name
-	.description args.description + depsInfo
+	helpInfo = args.description + depsInfo
 
-	kit.task args.name, args, -> args.fn cmder
+	names = args.name.split ' '
+	names.forEach (name) ->
+		cmder.command name
+		.description helpInfo
+
+		helpInfo = 'alias' + ' -> '.cyan + names[0]
+
+		kit.task name, args, -> args.fn cmder
 
 setGlobals = ->
 	option = cmder.option.bind cmder

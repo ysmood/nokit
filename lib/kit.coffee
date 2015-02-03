@@ -1143,7 +1143,7 @@ _.extend kit, fs,
 	 * follow some rules to use it safely.
 	 * Use it to load nokit's internal module.
 	 * @param {String} moduleName The module path or name.
-	 * @param {String} dir Current file path. Not optional, expect when
+	 * @param {String} dir Current absolute file path. Not optional, expect when
 	 * requiring nokit's internal modules.
 	 * On most times, just pass `__dirname` to it is enough.
 	 * @param {Function} loaded Run only the first time after the module loaded.
@@ -1230,7 +1230,7 @@ _.extend kit, fs,
 	 * Require an optional package. If not found, it will
 	 * warn the user to npm install it, and exit the process.
 	 * @param {String} name Package name
-	 * @param {String} dir Current file path. Not optional.
+	 * @param {String} dir Current absolute file path. Not optional.
 	 * On most times, just pass `__dirname` to it is enough.
 	 * @param  {String} semver Specify what version you need,
 	 * such as `^0.3.1` or `>=1.2.3`, ect.
