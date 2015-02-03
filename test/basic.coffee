@@ -2,7 +2,7 @@ assert = require 'assert'
 kit = require '../lib/kit'
 http = require 'http'
 { _, Promise } = kit
-kit.require 'warpDrives'
+kit.require 'drives'
 
 shouldEqual = (args...) ->
 	try
@@ -227,8 +227,8 @@ describe 'Kit:', ->
 			info.set info.contents.length
 
 		kit.warp 'test/fixtures/**/*.js'
-		.pipe counter
-		.to tmp
+		.load counter
+		.run tmp
 		.then ->
 			kit.glob tmp + '/**/*.coffee'
 		.then (paths) ->
@@ -247,8 +247,8 @@ describe 'Kit:', ->
 		myReader.isReader = true
 
 		kit.warp 'test/fixtures/**/*.js'
-		.pipe myReader
-		.to tmp
+		.load myReader
+		.run tmp
 		.then ->
 			kit.readFile tmp + '/comment.js', 'utf8'
 		.then (str) ->
@@ -258,8 +258,8 @@ describe 'Kit:', ->
 		tmp = 'test/fixtures/warp_all.coffee'
 
 		kit.warp 'test/fixtures/**/*.coffee'
-		.pipe kit.warpDrives.concat 'warp_all.coffee'
-		.to 'test/fixtures'
+		.load kit.drives.concat 'warp_all.coffee'
+		.run 'test/fixtures'
 		.then ->
 			kit.readFile tmp, 'utf8'
 		.then (str) ->
@@ -329,6 +329,12 @@ describe 'Kit:', ->
 			'sy', 'yxs', 'ysbb', 'xys', 'ysx', 'ysb', 'syx'
 		])
 		shouldEqual ret, 'ysx'
+
+	it 'fuzzySearch order', ->
+		ret = kit.fuzzySearch('b', [
+			'lb', 'build'
+		])
+		shouldEqual ret, 'build'
 
 	it 'fuzzySearch not found', ->
 		shouldEqual kit.fuzzySearch('ys', [

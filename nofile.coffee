@@ -1,11 +1,14 @@
+###
+	For help info run "npm run no -- -h"
+###
+
 process.chdir __dirname
 
-require 'coffee-cache'
 kit = require './lib/kit'
 
 task 'default', ['build', 'test'], true
 
-task 'dev', 'lab', ->
+task 'lab', 'run and monitor "test/lab.coffee"', ->
 	kit.monitorApp {
 		bin: 'coffee'
 		args: ['test/lab.coffee']
@@ -16,7 +19,7 @@ task 'clean', 'clean dist', ->
 
 option '-a, --all', 'Rebuild with dependencies, such as rebuild lodash.'
 task 'build', ['clean'], 'build project', (opts) ->
-	kit.require 'warpDrives'
+	kit.require 'drives'
 
 	buildLodash = ->
 		if opts.all
@@ -25,36 +28,35 @@ task 'build', ['clean'], 'build project', (opts) ->
 				'-o', 'lib/lodash.js'
 			]
 
-	createDoc = ->
-		path = 'lib/kit.coffee'
-		kit.flow([
-			kit.parseFileComment path, {
-				formatComment: {
-					name: ({ name, line }) ->
-						name = name.replace 'self.', ''
-						link = "#{path}?source#L#{line}"
-						"- ## **[#{name}](#{link})**\n\n"
-				}
-			}
-			(doc) ->
-				tpl = kit.fs.readFileSync 'doc/readme.tpl.md', 'utf8'
+	buildJs = ->
+		kit.copy 'lib/**/*.js', 'dist'
 
-				kit.outputFile 'readme.md', _.template(tpl)({ api: doc })
-		])()
+	buildCoffee = ->
+		kit.warp 'lib/**/*.coffee'
+		.load kit.drives.coffeelint()
+		.load kit.drives.coffee()
+		.run 'dist'
+
+	buildDoc = ->
+		kit.warp 'lib/kit.coffee'
+		.load kit.drives.comment2md {
+			h: 2
+			tpl: 'doc/readme.tpl.md'
+		}
+		.run()
 
 	start = kit.flow [
 		buildLodash
-		-> kit.warp('lib/**/*.js').to 'dist'
-		->
-			kit.warp 'lib/**/*.coffee'
-			.pipe kit.warpDrives.coffeelint()
-			.pipe kit.warpDrives.coffee()
-			.to 'dist'
-		createDoc
+		buildJs
+		buildCoffee
+		buildDoc
 	]
 
 	start().then ->
 		kit.log 'Build done.'.green
+	.catch (err) ->
+		kit.err err
+		process.exit 1
 
 option '-g, --grep [pattern]', 'test pattern', '.'
 task 'test', 'unit tests', (opts) ->

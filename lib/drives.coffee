@@ -2,6 +2,12 @@ kit = require './kit'
 { _, Promise } = kit
 cls = kit.require 'colors/safe'
 
+###*
+ * The built-in plguins for warp. It's more like examples
+ * to show how to use nokit efficiently.
+###
+Overview = 'drives'
+
 module.exports =
 
 	reader: ->
@@ -22,16 +28,16 @@ module.exports =
 
 			kit.outputFile dest, contents, @opts
 
-	concat: (name) ->
+	concat: (name, dir) ->
 		all = ''
 
-		concator = ->
+		_.extend ->
 			all += @contents
 			@end()
-		concator.onEnd = ->
-			@dest = kit.path.join @to, name
+		, onEnd: ->
+			dir ?= @to
+			@dest = kit.path.join dir, name
 			@set all
-		concator
 
 	coffee: (opts = {}) ->
 		_.defaults opts, {
@@ -89,3 +95,49 @@ module.exports =
 			catch err
 				kit.err cls.red err
 				Promise.reject 'livescriptCompileError'
+
+	###*
+	 * Parse commment from a js or coffee file, and output a markdown string.
+	 * @param  {String} path
+	 * @param  {Object} opts Defaults:
+	 * ```coffee
+	 * {
+	 * 		parseComment: {}
+	 * 		formatComment: {
+	 * 			name: ({ name, line }) ->
+	 * 				name = name.replace 'self.', ''
+	 * 				link = "#{path}?source#L#{line}"
+	 * 				"- \#\#\# **[#{name}](#{link})**\n\n"
+	 * 		}
+	 * }
+	 * ```
+	 * @return {Promise} Resolve a markdown string.
+	###
+	comment2md: (opts = {}) ->
+		_.defaults opts, {
+			out: 'readme.md'
+			tpl: 'readme.tpl.md'
+			h: 3
+			parseComment: {}
+			formatComment: {}
+		}
+
+		doc = {}
+
+		_.extend (file) ->
+			opts.formatComment.name = ({ name, line }) ->
+				name = name.replace 'self.', ''
+				link = "#{file.path}?source#L#{line}"
+				"- #{_.repeat '#', opts.h} **[#{name}](#{link})**\n\n"
+
+			comments = kit.parseComment @contents, opts.parseComment
+			doc[@path] = kit.formatComment comments, opts.formatComment
+
+			@end()
+		, onEnd: (file) ->
+			@dest = kit.path.join @to, opts.out
+
+			kit.readFile opts.tpl, 'utf8'
+			.then (tpl) ->
+				file.set _.template(tpl) { doc }
+

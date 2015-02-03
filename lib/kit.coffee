@@ -218,6 +218,13 @@ _.extend kit, fs,
 			Buffer.concat [decipher.update(data), decipher.final()]
 
 	###*
+	 * The warp drives.
+	 * You must `kit.require 'drives'` before using it.
+	 * @type {Object}
+	###
+	drives: null
+
+	###*
 	 * A simple encrypt helper. Cross-version of node.
 	 * @param  {Any} data
 	 * @param  {String | Buffer} password
@@ -440,7 +447,7 @@ _.extend kit, fs,
 	 * 	span: (cOffset, keyLen, cIndex) ->
 	 * 		cOffset
 	 * 	found: (cOffset, keyLen, cIndex) ->
-	 * 		cOffset * (keyLen - cIndex)
+	 * 		(Math.exp(cOffset + 1) - 1) * (keyLen - cIndex)
 	 * 	tail: (cOffset, keyLen, cIndex, tailLen) ->
 	 * 		tailLen
 	 * }
@@ -462,7 +469,7 @@ _.extend kit, fs,
 			span: (cOffset, keyLen, cIndex) ->
 				cOffset
 			found: (cOffset, keyLen, cIndex) ->
-				cOffset * (keyLen - cIndex)
+				(Math.exp(cOffset + 1) - 1) * (keyLen - cIndex)
 			tail: (cOffset, keyLen, cIndex, tailLen) ->
 				tailLen
 
@@ -1013,41 +1020,6 @@ _.extend kit, fs,
 			}
 
 		return comments
-
-	###*
-	 * Parse commment from a js or coffee file, and output a markdown string.
-	 * @param  {String} path
-	 * @param  {Object} opts Defaults:
-	 * ```coffee
-	 * {
-	 * 		parseComment: {}
-	 * 		formatComment: {
-	 * 			name: ({ name, line }) ->
-	 * 				name = name.replace 'self.', ''
-	 * 				link = "#{path}?source#L#{line}"
-	 * 				"- \#\#\# **[#{name}](#{link})**\n\n"
-	 * 		}
-	 * }
-	 * ```
-	 * @return {Promise} Resolve a markdown string.
-	###
-	parseFileComment: (path, opts = {}) ->
-		_.defaults opts, {
-			parseComment: {}
-			formatComment: {
-				name: ({ name, line }) ->
-					name = name.replace 'self.', ''
-					link = "#{path}?source#L#{line}"
-					"- ### **[#{name}](#{link})**\n\n"
-			}
-		}
-
-		kit.readFile path, 'utf8'
-		.then (str) ->
-			kit.parseComment str, opts.parseComment
-		.then (comments) ->
-			ret = kit.formatComment comments, opts.formatComment
-			ret
 
 	###*
 	 * Parse dependency tree by regex. The dependency relationships
@@ -1816,11 +1788,11 @@ _.extend kit, fs,
 	 *
 	 * 	# Default file reader plugin. Override it if you don't want
 	 * 	# warp read file contents automatically.
-	 * 	reader: (fileInfo) ->
+	 * 	reader: kit.drives.reader
 	 *
 	 * 	# Default file writer plugin. Override it if you don't want
 	 * 	# warp write file contents automatically.
-	 * 	writer: (fileInfo) ->
+	 * 	writer: kit.drives.writer
 	 * }
 	 * ```
 	 * @return {Object} The returned warp object has these members:
@@ -1883,29 +1855,36 @@ _.extend kit, fs,
 	 * ```coffee
 	 * # Define a simple workflow.
 	 * kit.warp 'src/**\/*.js'
-	 * .pipe (fileInfo) ->
+	 * .load (fileInfo) ->
 	 * 	fileInfo.set '/* Lisence Info *\/' + fileInfo.contents
-	 * .pipe jslint()
-	 * .pipe minify()
-	 * .to 'build/minified'
+	 * .load jslint()
+	 * .load minify()
+	 * .run 'build/minified'
 	 *
 	 * # Override warp's file reader with a custom one.
-	 * myReader = (fileInfo) ->
+	 * myReader = kit._.extend (fileInfo) ->
 	 * 	# Note that we can also use "@path",
 	 * 	# its the same with "fileInfo.path" here.
 	 * 	kit.readFile @path, 'hex'
 	 * 	.then @set
-	 *
-	 * # This will tell warp you want use your own reader.
-	 * myReader.isReader = true
+	 * , {
+	 * 	# This will tell warp you want use your own reader.
+	 * 	isReader: true
+	 * }
 	 *
 	 * kit.warp 'src/**\/*.js'
-	 * .pipe myReader
-	 * .to 'dist'
+	 * .load myReader
+	 * .run 'dist'
+	 *
+	 * # Use nokit's built-in warp drives.
+	 * drives = kit.require 'drives'
+	 * kit.warp src/**\/*.coffee'
+	 * .load drives.coffee()
+	 * .run 'dist'
 	 * ```
 	###
 	warp: (from, opts = {}) ->
-		drives = kit.require 'warpDrives'
+		drives = kit.require 'drives'
 
 		_.defaults opts, {
 			encoding: 'utf8'
@@ -1927,11 +1906,15 @@ _.extend kit, fs,
 
 		runTask = (task) -> (fileInfo) ->
 			return if fileInfo.isEndWarp
+
+			if _.isString fileInfo.dest
+				fileInfo.dest = kit.path.parse fileInfo.dest
+
 			Promise.resolve task.call(fileInfo, fileInfo)
 			.then (val) -> fileInfo
 
 		mapper =
-			pipe: (task) ->
+			load: (task) ->
 				if task.isReader
 					opts.reader = task
 				else
@@ -1940,12 +1923,12 @@ _.extend kit, fs,
 				if _.isFunction task.onEnd
 					onEndList.push runTask(task.onEnd)
 				mapper
-			to: (to) ->
+			run: (to = '.') ->
 				pipeList.unshift (fileInfo) ->
 					fileInfo.baseDir = opts.baseDir if opts.baseDir
 					runTask(opts.reader) _.extend(fileInfo, {
 						to
-						dest: kit.path.parse kit.path.join to,
+						dest: kit.path.join to,
 							kit.path.relative fileInfo.baseDir, fileInfo.path
 						set: opts.set.bind fileInfo
 						end: -> fileInfo.isEndWarp = true
@@ -1957,13 +1940,6 @@ _.extend kit, fs,
 
 				kit.glob(from, opts).then (list) ->
 					kit.flow(onEndList)({ set: opts.set, to, list, opts })
-
-	###*
-	 * The warp drives.
-	 * You must `kit.require 'warpDrives'` before using it.
-	 * @type {Object}
-	###
-	warpDrives: null
 
 	###*
 	 * Same as the unix `which` command.

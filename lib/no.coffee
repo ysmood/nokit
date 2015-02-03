@@ -60,7 +60,7 @@ task = ->
 		''
 
 	if args.description
-		args.description += ' '
+		args.description += '  '
 
 	cmder.command args.name
 	.description args.description + depsInfo
