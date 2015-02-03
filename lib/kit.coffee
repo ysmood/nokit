@@ -1207,9 +1207,16 @@ _.extend kit, fs,
 				err.source = 'nokit'
 				throw err
 
-			try return kit[moduleName] =
-				kit.requireCache[key] =
-				require './' + moduleName
+			try
+				modPath = require.resolve './' + moduleName
+			catch e
+				if e.code != 'MODULE_NOT_FOUND'
+					throw e
+
+			if modPath
+				return kit[moduleName] =
+					kit.requireCache[key] =
+					require modPath
 
 			return kit[moduleName] =
 				kit.requireCache[key] =
@@ -1227,7 +1234,15 @@ _.extend kit, fs,
 
 		for name in names
 			try
-				kit.requireCache[key] = require name
+				modPath = require.resolve name
+			catch e
+				if e.code == 'MODULE_NOT_FOUND'
+					modPath = null
+				else
+					throw e
+
+			if modPath
+				kit.requireCache[key] = require modPath
 				loaded? kit.requireCache[key]
 				break
 
