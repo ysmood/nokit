@@ -473,7 +473,7 @@ _.extend kit, fs,
 			for c, cIndex in key
 				cOffset = words.indexOf c, cOffset + 1
 				distance = if cOffset < 0
-					  opts.notFound cOffset, keyLen, cIndex
+					opts.notFound cOffset, keyLen, cIndex
 				else
 					distance + opts.found(cOffset, keyLen, cIndex)
 
@@ -1969,6 +1969,13 @@ _.extend kit, fs,
 
 				kit.glob(from, opts).then (list) ->
 					kit.flow(onEndList)({ set: opts.set, to, list, opts })
+
+	###*
+	 * The warp drives.
+	 * You must `kit.require 'warpDrives'` before using it.
+	 * @type {Object}
+	###
+	warpDrives: null
 
 	###*
 	 * Same as the unix `which` command.
