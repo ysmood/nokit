@@ -20,13 +20,18 @@ loadNofile = ->
 	for lang in process.env.nokitPreload.split ' '
 		try require lang
 
+	exts = _(require.extensions).keys().filter (ext) ->
+		['.json', '.node', '.litcoffee', '.coffee.md'].indexOf(ext) == -1
+
 	paths = kit.genModulePaths 'nofile', process.cwd(), ''
+		.reduce (s, p) ->
+			s.concat exts.map((ext) -> p + ext).value()
+		, []
+
 	for path in paths
-		try
-			return require path
-		catch err
-			if err.code != 'MODULE_NOT_FOUND'
-				throw err
+		if kit.existsSync path
+			require path
+			return kit.path.parse path
 
 	error 'Cannot find nofile'
 

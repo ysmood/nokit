@@ -336,7 +336,7 @@ describe 'Kit:', ->
 
 	it 'fuzzySearch', ->
 		ret = kit.fuzzySearch('ys', [
-			'sy', 'yxs', 'ysbb', 'ysx', 'xys', 'ysb', 'syx'
+			'sy', 'yxs', 'ysbb', 'xys', 'ysx', 'ysb', 'syx'
 		])
 		shouldEqual ret, 'ysx'
 
