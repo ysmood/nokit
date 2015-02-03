@@ -1939,11 +1939,8 @@ _.extend kit, fs,
 			return if not fileInfo
 			Promise.resolve task.call(fileInfo, fileInfo)
 			.then (val) ->
-				if not val? or val == fileInfo
-					val
-				else
-					err = new Error 'wrong return value => ' + task
-					Promise.reject err
+				return val if not val?
+				fileInfo
 
 		mapper =
 			pipe: (task) ->
