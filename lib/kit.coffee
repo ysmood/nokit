@@ -1873,8 +1873,10 @@ _.extend kit, fs,
 	 *
 	 * # Override warp's file reader with a custom one.
 	 * myReader = (fileInfo) ->
-	 * 	kit.readFile fileInfo.path, 'hex'
-	 * 	.then fileInfo.set
+	 * 	# Note that we can also use "@path",
+	 * 	# its the same with "fileInfo.path" here.
+	 * 	kit.readFile @path, 'hex'
+	 * 	.then @set
 	 *
 	 * # This will tell warp you want use your own reader.
 	 * myReader.isReader = true
@@ -1920,7 +1922,7 @@ _.extend kit, fs,
 
 		runTask = (task) -> (fileInfo) ->
 			return if not fileInfo
-			Promise.resolve task fileInfo
+			Promise.resolve task.call(fileInfo, fileInfo)
 			.then (val) ->
 				if not val? or val == fileInfo
 					val
@@ -1941,7 +1943,7 @@ _.extend kit, fs,
 			to: (to) ->
 				pipeList.unshift (fileInfo) ->
 					fileInfo.baseDir = opts.baseDir if opts.baseDir
-					opts.reader _.extend(fileInfo, {
+					runTask(opts.reader) _.extend(fileInfo, {
 						to
 						dest: kit.path.parse kit.path.join to,
 							kit.path.relative fileInfo.baseDir, fileInfo.path

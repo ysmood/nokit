@@ -241,8 +241,8 @@ describe 'Kit:', ->
 		tmp = 'test/fixtures/warp-custom-reader'
 
 		myReader = (info) ->
-			kit.readFile info.path, 'hex'
-			.then info.set
+			kit.readFile @path, 'hex'
+			.then @set
 		myReader.isReader = true
 
 		kit.warp 'test/fixtures/**/*.js'
@@ -259,12 +259,12 @@ describe 'Kit:', ->
 		concat = (name) ->
 			all = ''
 
-			c = (info) ->
-				all += info.contents
+			c = ->
+				all += @contents
 				null
-			c.onEnd = (info) ->
-				info.dest = info.to + '/' + name
-				info.set all
+			c.onEnd = ->
+				@dest = @to + '/' + name
+				@set all
 			c
 
 		kit.warp 'test/fixtures/**/*.coffee'
