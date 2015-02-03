@@ -1812,6 +1812,9 @@ _.extend kit, fs,
 	 * 	# The source path.
 	 * 	path: String
 	 *
+	 * 	# The parsed path object
+	 * 	xpath: { root, dir, base, ext, name }
+	 *
 	 * 	# The dest root path.
 	 *  to: String
 	 *
@@ -1901,6 +1904,7 @@ _.extend kit, fs,
 		onEndList = []
 
 		opts.iter = (fileInfo, list) ->
+			fileInfo.xpath = kit.path.parse fileInfo.path
 			list.push fileInfo
 			kit.flow(pipeList)(fileInfo)
 
@@ -1910,8 +1914,11 @@ _.extend kit, fs,
 			if _.isString fileInfo.dest
 				fileInfo.dest = kit.path.parse fileInfo.dest
 
-			Promise.resolve task.call(fileInfo, fileInfo)
-			.then (val) -> fileInfo
+			try
+				Promise.resolve task.call(fileInfo, fileInfo)
+				.then (val) -> fileInfo
+			catch err
+				Promise.reject err
 
 		mapper =
 			load: (task) ->

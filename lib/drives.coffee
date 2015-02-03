@@ -15,7 +15,7 @@ module.exports =
 	 * @param  {Object} opts Default is `{ bare: true }`.
 	 * @return {Function}
 	###
-	coffee: (opts = {}) ->
+	coffee: _.extend (opts = {}) ->
 		_.defaults opts, {
 			bare: true
 		}
@@ -31,6 +31,7 @@ module.exports =
 			catch err
 				kit.err cls.red err.stack
 				Promise.reject 'coffeescriptCompileError'
+	, extensions: ['.coffee']
 
 	###*
 	 * coffeelint processor
@@ -59,23 +60,6 @@ module.exports =
 				kit.log cls.cyan('coffeelint: ') + _.trim reporter.reportPath(path, errors)
 				if errors.length > 0
 					return Promise.reject errors[0]
-
-	###*
-	 * a batch file concat helper
-	 * @param {String} name The output file path.
-	 * @param {String} dir Optional. Override the dest of warp's.
-	 * @return {Function}
-	###
-	concat: (name, dir) ->
-		all = ''
-
-		_.extend ->
-			all += @contents
-			@end()
-		, onEnd: ->
-			dir ?= @to
-			@dest = kit.path.join dir, name
-			@set all
 
 	###*
 	 * Parse commment from a js or coffee file, and output a markdown string.
@@ -123,11 +107,49 @@ module.exports =
 				file.set _.template(tpl) { doc }
 
 	###*
+	 * Auto-compiler file by extension.
+	 * Supports: `.coffee`, `.ls`
+	 * @param  {Object} opts
+	 * @return {Function}
+	###
+	compiler: (opts = {}) ->
+		compilers = {}
+		->
+			ext = @xpath.ext.toLowerCase()
+			if not compilers[ext]
+				d = _.find kit.drives, (drive) ->
+					drive.extensions.indexOf(ext) > -1
+				if d
+					compilers[ext] = d opts[ext]
+				else
+					return Promise.reject new Error "no drive
+						can match extension: '#{ext}'"
+
+			compilers[ext].call @, @
+
+	###*
+	 * a batch file concat helper
+	 * @param {String} name The output file path.
+	 * @param {String} dir Optional. Override the dest of warp's.
+	 * @return {Function}
+	###
+	concat: (name, dir) ->
+		all = ''
+
+		_.extend ->
+			all += @contents
+			@end()
+		, onEnd: ->
+			dir ?= @to
+			@dest = kit.path.join dir, name
+			@set all
+
+	###*
 	 * livescript compiler
 	 * @param  {Object} opts Default is `{ bare: true }`.
 	 * @return {Function}
 	###
-	livescript: (opts = {}) ->
+	livescript: _.extend (opts = {}) ->
 		_.defaults opts, {
 			bare: true
 		}
@@ -143,6 +165,7 @@ module.exports =
 			catch err
 				kit.err cls.red err
 				Promise.reject 'livescriptCompileError'
+	, extensions: ['.ls']
 
 	###*
 	 * read file and set `contents`

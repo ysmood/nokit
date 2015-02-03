@@ -36,7 +36,7 @@ task 'build b', ['clean'], 'build project', (opts) ->
 	buildCoffee = ->
 		kit.warp 'lib/**/*.coffee'
 		.load kit.drives.coffeelint()
-		.load kit.drives.coffee()
+		.load kit.drives.compiler()
 		.run 'dist'
 
 	buildDoc = ->
