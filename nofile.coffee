@@ -48,7 +48,7 @@ task 'build', ['clean'], 'build project', (opts) ->
 		->
 			kit.warp 'lib/**/*.coffee'
 			.pipe kit.warpDrives.coffeelint()
-			.pipe kit.warpDrives.coffee { bare: true }
+			.pipe kit.warpDrives.coffee()
 			.to 'dist'
 		createDoc
 	]

@@ -1812,15 +1812,15 @@ _.extend kit, fs,
 	 * 	encoding: 'utf8'
 	 *
 	 * 	# Default `set` used in the `fileInfo` object.
-	 * 	set: (contents) -> this
+	 * 	set: (contents) ->
 	 *
 	 * 	# Default file reader plugin. Override it if you don't want
 	 * 	# warp read file contents automatically.
-	 * 	reader: (fileInfo) -> fileInfo
+	 * 	reader: (fileInfo) ->
 	 *
 	 * 	# Default file writer plugin. Override it if you don't want
 	 * 	# warp write file contents automatically.
-	 * 	writer: (fileInfo) -> fileInfo
+	 * 	writer: (fileInfo) ->
 	 * }
 	 * ```
 	 * @return {Object} The returned warp object has these members:
@@ -1905,29 +1905,17 @@ _.extend kit, fs,
 	 * ```
 	###
 	warp: (from, opts = {}) ->
+		drives = kit.require 'warpDrives'
+
 		_.defaults opts, {
 			encoding: 'utf8'
 
 			set: (contents) ->
 				@contents = contents
-				@
 
-			reader: (fileInfo) ->
-				(if fileInfo.isDir
-					Promise.resolve()
-				else
-					kit.readFile fileInfo.path, opts.encoding
-				).then fileInfo.set
+			reader: drives.reader
 
-			writer: (fileInfo) ->
-				{ dest, contents } = fileInfo
-				if dest? and contents?
-					if _.isObject dest
-						if dest.name? and dest.ext?
-							dest.base = dest.name + dest.ext
-						dest = kit.path.format dest
-
-					fs.outputFile dest, contents, fileInfo.opts
+			writer: drives.writer
 		}
 
 		pipeList = []
@@ -1964,8 +1952,8 @@ _.extend kit, fs,
 						opts
 					})
 
-				pipeList.push opts.writer
-				onEndList.push opts.writer if onEndList.length > 0
+				pipeList.push runTask(opts.writer)
+				onEndList.push runTask(opts.writer) if onEndList.length > 0
 
 				kit.glob(from, opts).then (list) ->
 					kit.flow(onEndList)({ set: opts.set, to, list, opts })
