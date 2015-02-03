@@ -40,12 +40,22 @@ task 'build b', ['clean'], 'build project', (opts) ->
 		.run 'dist'
 
 	buildDoc = ->
-		kit.warp 'lib/kit.coffee'
-		.load kit.drives.comment2md {
-			h: 2
-			tpl: 'doc/readme.tpl.md'
-		}
-		.run()
+		Promise.all [
+			kit.warp 'lib/kit.coffee'
+				.load kit.drives.comment2md {
+					h: 2
+					tpl: 'doc/readme.tpl.md'
+				}
+				.run()
+
+			kit.warp 'lib/drives.coffee'
+				.load kit.drives.comment2md {
+					h: 2
+					out: 'doc/drives.md'
+					tpl: 'doc/drives.tpl.md'
+				}
+				.run()
+		]
 
 	start = kit.flow [
 		buildLodash
