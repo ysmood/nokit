@@ -265,6 +265,21 @@ describe 'Kit:', ->
 		.then (str) ->
 			shouldEqual str.indexOf('indent') > 0, true
 
+	it 'warp auto', ->
+		path = 'test/fixtures/compiler.all'
+		kit.warp 'test/fixtures/compiler/*'
+			.load kit.drives.auto 'lint'
+			.load kit.drives.auto 'compile'
+			.load kit.drives.auto 'compress'
+			.load kit.drives.concat 'compiler.all'
+		.run 'test/fixtures'
+		.then ->
+			shouldEqual _.trim(kit.readFileSync path, 'utf8'),
+				'''var a;a=function(){return console.log("OK")};
+				.test .bar{color:red}
+				var table1;table1=[{id:1,name:"george"},{id:2}];
+				.test{color:red}'''
+
 	it 'task deps', ->
 		seq = []
 

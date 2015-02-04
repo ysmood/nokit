@@ -186,7 +186,7 @@ module.exports =
 		all = ''
 
 		_.extend ->
-			all += @contents
+			all += @contents + '\n'
 			kit.log cls.cyan('concat: ') + @path
 			@end()
 		, onEnd: ->

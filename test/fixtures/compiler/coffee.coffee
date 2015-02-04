@@ -1,0 +1,1 @@
+a = -> console.log 'OK'
