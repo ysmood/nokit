@@ -280,6 +280,29 @@ module.exports =
 	, compile: ['.ls']
 
 	###*
+	 * mocha test
+	 * @param  {Object} opts
+	 * ```
+	 * {
+	 * 	timeout: 5000
+	 * }
+	 * ```
+	 * @return {Function}
+	###
+	mocha: (opts = {}) ->
+		_.defaults opts,
+			timeout: 5000
+
+		Mocha = kit.requireOptional 'mocha', __dirname
+		mocha = new Mocha opts
+
+		_.extend ->
+			mocha.addFile @path
+			@end()
+		, onEnd: ->
+			mocha.run process.exit
+
+	###*
 	 * read file and set `contents`
 	###
 	reader: ->

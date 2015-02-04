@@ -274,11 +274,13 @@ describe 'Kit:', ->
 			.load kit.drives.concat 'compiler.all'
 		.run 'test/fixtures'
 		.then ->
-			shouldEqual _.trim(kit.readFileSync path, 'utf8'),
-				'''var a;a=function(){return console.log("OK")};
-				.test .bar{color:red}
-				var table1;table1=[{id:1,name:"george"},{id:2}];
-				.test{color:red}'''
+			str = kit.readFileSync path, 'utf8'
+			shouldDeepEqual _.trim(str).split('\n').sort(), [
+				'.test .bar{color:red}'
+				'.test{color:red}'
+				'var a;a=function(){return console.log("OK")};'
+				'var table1;table1=[{id:1,name:"george"},{id:2}];'
+			]
 
 	it 'task deps', ->
 		seq = []

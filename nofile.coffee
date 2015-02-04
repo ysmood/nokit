@@ -42,18 +42,18 @@ task 'build b', ['clean'], 'build project', (opts) ->
 	buildDoc = ->
 		Promise.all [
 			kit.warp 'lib/kit.coffee'
-				.load kit.drives.comment2md {
-					h: 2
-					tpl: 'doc/readme.tpl.md'
-				}
+			.load kit.drives.comment2md {
+				h: 2
+				tpl: 'doc/readme.tpl.md'
+			}
 			.run()
 
 			kit.warp 'lib/drives.coffee'
-				.load kit.drives.comment2md {
-					h: 2
-					out: 'doc/drives.md'
-					tpl: 'doc/drives.tpl.md'
-				}
+			.load kit.drives.comment2md {
+				h: 2
+				out: 'doc/drives.md'
+				tpl: 'doc/drives.tpl.md'
+			}
 			.run()
 		]
 
@@ -76,13 +76,9 @@ task 'test t', 'unit tests', (opts) ->
 		kit.spawn 'git', ['clean', '-fd', kit.path.normalize('test/fixtures')]
 
 	clean().then ->
-		kit.spawn('mocha', [
-			'-t', '10000'
-			'-r', 'coffee-script/register'
-			'-R', 'spec'
-			'-g', opts.grep
-			'test/basic.coffee'
-		])
+		kit.warp 'test/basic.coffee'
+		.load kit.drives.mocha { timeout: 10 * 1000 }
+		.run()
 	.then -> clean()
 	.catch (err) ->
 		if err.code
