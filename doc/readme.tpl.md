@@ -33,11 +33,14 @@ Nokit has provaided a cli tool like GNU Make. If you install it globally like th
 kit = require 'nokit'
 drives = kit.require 'drives'
 
-kit.warp 'src/**/*.coffee'
-.load drives.coffeelint()
-.load drives.coffee { bare: false }
-.load drives.uglify()
-.load concat 'main.js'
+kit.warp 'src/**/*.@(coffee|ls)'
+    # These two drive will automatically
+    # lint and compile files by their extensions.
+    .load drives.lint()
+    .load drives.compile { bare: false }
+
+    .load drives.uglify()
+    .load concat 'main.js'
 .run 'dist/path'
 
 ```
@@ -69,9 +72,9 @@ concat = (outputFile) ->
         @set all
 
 kit.warp 'src/**/*.coffee'
-.load compiler bare: true
-.load lisencer '/* MIT lisence */'
-.load concat 'bundle.js'
+    .load compiler bare: true
+    .load lisencer '/* MIT lisence */'
+    .load concat 'bundle.js'
 .run 'dist'
 .then ->
     kit.log 'Build Done'
@@ -153,6 +156,10 @@ Goto [changelog](doc/changelog.md)
 # API
 
 <%= doc['lib/kit.coffee'] %>
+
+# Drives
+
+<%= doc['lib/drives.coffee'] %>
 
 # Lisence
 
