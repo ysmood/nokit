@@ -77,7 +77,6 @@ task 'test t', 'unit tests', (opts) ->
 		kit.spawn 'git', ['clean', '-fd', kit.path.normalize('test/fixtures')]
 
 	clean().then ->
-		process.env.watchPersistent = 'off'
 		kit.warp 'test/basic.coffee'
 		.load kit.drives.mocha {
 			timeout: opts.timeout

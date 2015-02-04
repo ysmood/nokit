@@ -777,7 +777,18 @@ _.extend kit, fs,
 	 * }
 	 * ```
 	 * @return {Promise} It has a property `process`, which is the monitored
-	 * child process.
+	 * child process. Properties:
+	 * ```coffee
+	 * {
+	 * 	process: Object
+	 *
+	 * 	# Call it to stop monitor.
+	 * 	stop: ->
+	 *
+	 * 	# Resolve a list of watch handlers.
+	 * 	watchPromise: Promise
+	 * }
+	 * ```
 	 * @example
 	 * ```coffee
 	 * kit.monitorApp {
@@ -850,11 +861,15 @@ _.extend kit, fs,
 				childPromise.catch(->).then(start)
 				childPromise.process.kill 'SIGINT'
 
+		stop = ->
+			childPromise.watchPromise.then (list) ->
+				kit.unwatchFile w.path, w.handler for w in list
+
 		process.on 'SIGINT', ->
 			childPromise.process.kill 'SIGINT'
 			process.exit()
 
-		if opts.isNodeDeps
+		watchPromise = if opts.isNodeDeps
 			kit.parseDependency opts.watchList, opts.parseDependency
 			.then (paths) ->
 				opts.onWatchFiles paths
@@ -866,7 +881,7 @@ _.extend kit, fs,
 
 		start()
 
-		childPromise
+		_.extend childPromise, { watchPromise, stop }
 
 	###*
 	 * Node version. Such as `v0.10.23` is `0.1023`, `v0.10.1` is `0.1001`.

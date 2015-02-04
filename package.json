@@ -8,7 +8,7 @@
   },
   "scripts": {
     "no": "no",
-    "test": "node bin/no test",
+    "test": "node bin/no test -t 10000",
     "prepublish": "node bin/no build"
   },
   "repository": {
@@ -29,7 +29,7 @@
   "dependencies": {
     "colors": "1.0.3",
     "jhash": "0.1.6",
-    "nofs": "0.4.8",
+    "nofs": "0.5.1",
     "semver": "4.2.0"
   },
   "devDependencies": {
