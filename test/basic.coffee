@@ -16,16 +16,22 @@ shouldDeepEqual = (args...) ->
 	catch err
 		Promise.reject err
 
+serverList = []
 createRandomServer = (fn) ->
 	server = http.createServer fn
+	serverList.push server
 
 	listen = kit.promisify server.listen, server
 
-	listen(0).then -> server.address().port
+	listen(0).then ->
+		server.address().port
 
 unixSep = (p) -> p.replace /\\/g, '\/'
 
 describe 'Kit:', ->
+	after ->
+		for s in serverList
+			s.close -> kit.log 'close'
 
 	it 'parseComment coffee', ->
 		path = 'test/fixtures/comment.coffee'
@@ -102,7 +108,10 @@ describe 'Kit:', ->
 				shouldEqual body, info
 
 	it 'request timeout', ->
-		createRandomServer().then (port) ->
+		createRandomServer (req, res) ->
+			kit.sleep(60).then ->
+				res.end()
+		.then (port) ->
 			promise = kit.request {
 				url: '127.0.0.1:' + port
 				timeout: 50

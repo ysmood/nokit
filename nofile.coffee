@@ -70,14 +70,19 @@ task 'build b', ['clean'], 'build project', (opts) ->
 		kit.err err.stack
 		process.exit 1
 
-option '-g, --grep [pattern]', 'test pattern', '.'
+option '-g, --grep [.]', 'test pattern', /./
+option '-t, --timeout [3000]', 'test timeout', 3000
 task 'test t', 'unit tests', (opts) ->
 	clean = ->
 		kit.spawn 'git', ['clean', '-fd', kit.path.normalize('test/fixtures')]
 
 	clean().then ->
+		process.env.watchPersistent = 'off'
 		kit.warp 'test/basic.coffee'
-		.load kit.drives.mocha { timeout: 10 * 1000 }
+		.load kit.drives.mocha {
+			timeout: opts.timeout
+			grep: opts.grep
+		}
 		.run()
 	.then -> clean()
 	.catch (err) ->

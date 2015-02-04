@@ -300,7 +300,13 @@ module.exports =
 			mocha.addFile @path
 			@end()
 		, onEnd: ->
-			mocha.run process.exit
+			new Promise (resolve, reject) ->
+				mocha.run (code) ->
+					if code == 0
+						resolve()
+					else
+						reject { code }
+
 
 	###*
 	 * read file and set `contents`

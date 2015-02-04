@@ -841,7 +841,9 @@ _.extend kit, fs,
 					return Promise.reject err.stack
 				opts.onErrorExit err
 
-		watcher = (path, curr, prev) ->
+		watcher = (path, curr, prev, isDelete) ->
+			return if isDelete
+
 			if curr.mtime != prev.mtime
 				opts.onRestart path
 
