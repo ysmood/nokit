@@ -16,9 +16,8 @@ module.exports =
 	 * @return {Function}
 	###
 	coffee: _.extend (opts = {}) ->
-		_.defaults opts, {
+		_.defaults opts,
 			bare: true
-		}
 
 		coffee = kit.requireOptional 'coffee-script', __dirname, '>=1.8.0'
 
@@ -31,7 +30,7 @@ module.exports =
 			catch err
 				kit.err cls.red err.stack
 				Promise.reject 'coffeescriptCompileError'
-	, extensions: ['.coffee']
+	, compiler: ['.coffee']
 
 	###*
 	 * coffeelint processor
@@ -39,9 +38,8 @@ module.exports =
 	 * @return {Function}
 	###
 	coffeelint: (opts = {}) ->
-		_.defaults opts, {
+		_.defaults opts,
 			colorize: true
-		}
 
 		coffeelint = kit.requireOptional 'coffeelint', __dirname
 
@@ -79,13 +77,12 @@ module.exports =
 	 * @return {Function}
 	###
 	comment2md: (opts = {}) ->
-		_.defaults opts, {
+		_.defaults opts,
 			out: 'readme.md'
 			tpl: 'readme.tpl.md'
 			h: 3
 			parseComment: {}
 			formatComment: {}
-		}
 
 		doc = {}
 
@@ -108,7 +105,13 @@ module.exports =
 
 	###*
 	 * Auto-compiler file by extension.
-	 * Supports: `.coffee`, `.ls`
+	 * Supports: `.coffee`, `.ls`, `stylus`.
+	 * You can extend `kit.drives` to let it support more.
+	 * ```coffee
+	 * kit.drives.myCompiler = kit._.extend ->
+	 * 	# your compile logic
+	 * , compiler: ['.jsx']
+	 * ```
 	 * @param  {Object} opts
 	 * @return {Function}
 	###
@@ -118,9 +121,9 @@ module.exports =
 			ext = @xpath.ext.toLowerCase()
 			if not compilers[ext]
 				d = _.find kit.drives, (drive) ->
-					drive.extensions.indexOf(ext) > -1
+					drive.compiler.indexOf(ext) > -1
 				if d
-					compilers[ext] = d opts[ext]
+					compilers[ext] = d opts[ext] or opts
 				else
 					return Promise.reject new Error "no drive
 						can match extension: '#{ext}'"
@@ -165,7 +168,7 @@ module.exports =
 			catch err
 				kit.err cls.red err
 				Promise.reject 'livescriptCompileError'
-	, extensions: ['.ls']
+	, compiler: ['.ls']
 
 	###*
 	 * read file and set `contents`
@@ -176,6 +179,50 @@ module.exports =
 		else
 			kit.readFile @path, @opts.encoding
 		).then @set
+
+	###*
+	 * compile stylus
+	 * @param  {Object} opts It will use `stylus.set` to
+	 * iterate `opts` and set the key-value, is the value is
+	 * not a function.
+	 * ```coffee
+	 * {
+	 * 	config: (styl) ->
+	 * }
+	 * ```
+	 * @return {Function}
+	 * @example
+	 * ```coffee
+	 * kit.drives.stylus {
+	 * 	compress: true
+	 * 	config: (styl) ->
+	 * 		styl.define 'jack', 'a persion'
+	 * }
+	 * ```
+	###
+	stylus: _.extend (opts = {}) ->
+		_.defaults opts,
+			config: ->
+
+		stylus = kit.requireOptional 'stylus', __dirname
+
+		(file) ->
+			@dest.ext = '.css'
+
+			styl = stylus @contents
+				.set 'filename', @path
+
+			for k, v of opts
+				continue if _.isFunction v
+				styl.set k, v
+
+			opts.config.call @, styl
+
+			kit.promisify(styl.render, styl)()
+			.then (css) ->
+				file.set css
+				kit.log cls.cyan('compile stylus: ') + file.path
+	, compiler: ['.styl']
 
 	###*
 	 * uglify-js processor
