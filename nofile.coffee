@@ -30,13 +30,13 @@ task 'build b', ['clean'], 'build project', (opts) ->
 
 	buildJs = ->
 		kit.warp 'lib/**/*.js'
-		.load kit.drives.uglify()
+		.load kit.drives.auto 'compress'
 		.run 'dist'
 
 	buildCoffee = ->
 		kit.warp 'lib/**/*.coffee'
 		.load kit.drives.coffeelint()
-		.load kit.drives.compiler()
+		.load kit.drives.coffee()
 		.run 'dist'
 
 	buildDoc = ->
@@ -46,7 +46,7 @@ task 'build b', ['clean'], 'build project', (opts) ->
 					h: 2
 					tpl: 'doc/readme.tpl.md'
 				}
-				.run()
+			.run()
 
 			kit.warp 'lib/drives.coffee'
 				.load kit.drives.comment2md {
@@ -54,7 +54,7 @@ task 'build b', ['clean'], 'build project', (opts) ->
 					out: 'doc/drives.md'
 					tpl: 'doc/drives.tpl.md'
 				}
-				.run()
+			.run()
 		]
 
 	start = kit.flow [
@@ -67,7 +67,7 @@ task 'build b', ['clean'], 'build project', (opts) ->
 	start().then ->
 		kit.log 'Build done.'.green
 	.catch (err) ->
-		kit.err err
+		kit.err err.stack
 		process.exit 1
 
 option '-g, --grep [pattern]', 'test pattern', '.'

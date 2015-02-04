@@ -1809,11 +1809,8 @@ _.extend kit, fs,
 	 * 	# Set the contents and return self.
 	 * 	set: (String | Buffer) -> fileInfo
 	 *
-	 * 	# The source path.
-	 * 	path: String
-	 *
 	 * 	# The parsed path object
-	 * 	xpath: { root, dir, base, ext, name }
+	 * 	path: String
 	 *
 	 * 	# The dest root path.
 	 *  to: String
@@ -1821,17 +1818,8 @@ _.extend kit, fs,
 	 * 	# The destination path.
 	 * 	# Alter it if you want to change the output file's location.
 	 * 	# You can set it to string if you don't want "path.format".
-	 * 	dest: {
-	 * 		# These properties are parsed via io.js 'path.parse'.
-	 *  	root: String
-	 *  	dir: String
-	 *
-	 * 		# If the 'ext' or 'name' is not null,
-	 * 		# the 'base' will be override by the 'ext' and 'name'.
-	 *  	base: String
-	 *  	ext: String
-	 *  	name: String
-	 * 	}
+	 * 	# It's "valueOf" has been override by format function.
+	 * 	dest: { root, dir, base, ext, name }
 	 *
 	 * 	# The file content.
 	 * 	contents: String | Buffer
@@ -1904,15 +1892,16 @@ _.extend kit, fs,
 		onEndList = []
 
 		opts.iter = (fileInfo, list) ->
-			fileInfo.xpath = kit.path.parse fileInfo.path
 			list.push fileInfo
 			kit.flow(pipeList)(fileInfo)
 
 		runTask = (task) -> (fileInfo) ->
 			return if fileInfo.isEndWarp
 
-			if _.isString fileInfo.dest
-				fileInfo.dest = kit.path.parse fileInfo.dest
+			if fileInfo.dest and not _.isObject fileInfo.dest
+				fileInfo.dest = _.extend new String,
+					kit.path.parse(fileInfo.dest),
+					valueOf: -> kit.path.join @dir, @name + @ext
 
 			try
 				Promise.resolve task.call(fileInfo, fileInfo)

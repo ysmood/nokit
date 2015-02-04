@@ -11,6 +11,19 @@ Overview = 'drives'
 module.exports =
 
 	###*
+	 * clean-css
+	 * @param  {Object} opts
+	 * @return {Function}
+	###
+	cleanCss: _.extend (opts = {}) ->
+		clean = kit.requireOptional 'clean-css', __dirname
+
+		->
+			@set (new clean(opts).minify @contents).styles
+			kit.log cls.cyan('clean css: ') + @dest
+	, compress: ['.css']
+
+	###*
 	 * coffee-script compiler
 	 * @param  {Object} opts Default is `{ bare: true }`.
 	 * @return {Function}
@@ -26,20 +39,33 @@ module.exports =
 			@dest.ext = '.js'
 			try
 				@set coffee.compile @contents + '', opts
-				kit.log cls.cyan('compile coffee: ') + @path
+				kit.log cls.cyan('coffee: ') + @path
 			catch err
 				kit.err cls.red err.stack
 				Promise.reject 'coffeescriptCompileError'
-	, compiler: ['.coffee']
+	, compile: ['.coffee']
 
 	###*
 	 * coffeelint processor
-	 * @param  {Object} opts Default is `{ colorize: true }`.
+	 * @param  {Object} opts It extends the default config
+	 * of coffeelint, properties:
+	 * ```coffee
+	 * {
+	 * 	colorize: true
+	 * 	reporter: 'default'
+	 *
+	 * 	# The json of the "coffeelint.json".
+	 * 	# If it's null, coffeelint will try to find
+	 * 	# "coffeelint.json" as its content.
+	 * 	config: null | JSON | JsonFilePath
+	 * }
+	 * ```
 	 * @return {Function}
 	###
-	coffeelint: (opts = {}) ->
+	coffeelint: _.extend (opts = {}) ->
 		_.defaults opts,
 			colorize: true
+			reporter: 'default'
 
 		coffeelint = kit.requireOptional 'coffeelint', __dirname
 
@@ -47,7 +73,10 @@ module.exports =
 			configfinder = require 'coffeelint/lib/configfinder'
 			opts.config = configfinder.getConfig()
 
-		Reporter = require 'coffeelint/lib/reporters/default'
+		if _.isString opts.config
+			opts.config = kit.readJsonSync opts.config
+
+		Reporter = require 'coffeelint/lib/reporters/' + opts.reporter
 
 		->
 			errorReport = new coffeelint.getErrorReport()
@@ -58,6 +87,7 @@ module.exports =
 				kit.log cls.cyan('coffeelint: ') + _.trim reporter.reportPath(path, errors)
 				if errors.length > 0
 					return Promise.reject errors[0]
+	, lint: ['.coffee']
 
 	###*
 	 * Parse commment from a js or coffee file, and output a markdown string.
@@ -92,41 +122,57 @@ module.exports =
 				link = "#{file.path}?source#L#{line}"
 				"- #{_.repeat '#', opts.h} **[#{name}](#{link})**\n\n"
 
-			comments = kit.parseComment @contents, opts.parseComment
+			comments = kit.parseComment @contents + '', opts.parseComment
 			doc[@path] = kit.formatComment comments, opts.formatComment
+			kit.log cls.cyan('comment2md: ') + kit.path.join(@to, opts.out)
 
 			@end()
 		, onEnd: (file) ->
 			@dest = kit.path.join @to, opts.out
-
 			kit.readFile opts.tpl, 'utf8'
 			.then (tpl) ->
 				file.set _.template(tpl) { doc }
 
 	###*
-	 * Auto-compiler file by extension.
-	 * Supports: `.coffee`, `.ls`, `stylus`.
+	 * Auto-compiler file by extension. It will search through
+	 * `kit.drives`, and find proper drive to run the task.
 	 * You can extend `kit.drives` to let it support more.
+	 * For example:
 	 * ```coffee
 	 * kit.drives.myCompiler = kit._.extend ->
 	 * 	# your compile logic
 	 * , compiler: ['.jsx']
 	 * ```
+	 * @param {String} action By default, it can be
+	 * 'compile' or 'compress' or 'lint'
 	 * @param  {Object} opts
+	 * ```coffee
+	 * {
+	 * 	# If no compiler match.
+	 * 	onNotFound: (fileInfo) ->
+	 * }
+	 * ```
 	 * @return {Function}
 	###
-	compiler: (opts = {}) ->
+	auto: (action, opts = {}) ->
+		_.defaults opts,
+			onNotFound: ->
+
+		list = _(kit.drives).map(action)
+			.compact().flatten().value().join ' '
+		kit.log cls.green("#{action}: ") + "[ #{list} ]"
+
 		compilers = {}
 		->
-			ext = @xpath.ext.toLowerCase()
+			ext = @dest.ext.toLowerCase()
 			if not compilers[ext]
 				d = _.find kit.drives, (drive) ->
-					drive.compiler.indexOf(ext) > -1
+					drive[action] and
+					drive[action].indexOf(ext) > -1
 				if d
-					compilers[ext] = d opts[ext] or opts
+					compilers[ext] = d opts[ext]
 				else
-					return Promise.reject new Error "no drive
-						can match extension: '#{ext}'"
+					return opts.onNotFound.call @, @
 
 			compilers[ext].call @, @
 
@@ -141,6 +187,7 @@ module.exports =
 
 		_.extend ->
 			all += @contents
+			kit.log cls.cyan('concat: ') + @path
 			@end()
 		, onEnd: ->
 			dir ?= @to
@@ -148,7 +195,69 @@ module.exports =
 			@set all
 
 	###*
-	 * livescript compiler
+	 * Lint js via `jshint`.
+	 * @param  {Object} opts Properties:
+	 * ```coffee
+	 * {
+	 * 	global: null
+	 * 	config: null | JSON | JsonFilePath
+	 * }
+	 * ```
+	 * @return {Function}
+	###
+	jshint: _.extend (opts = {}) ->
+		_.defaults opts, {}
+
+		{ JSHINT } = kit.requireOptional 'jshint', __dirname
+
+		if _.isString opts.config
+			opts.config = kit.readJsonSync opts.config
+
+		(file) ->
+			if JSHINT @contents, opts.config, opts.global
+				kit.log cls.cyan('jshint: ') + @path
+				return
+
+			errs = ''
+			JSHINT.errors.forEach (err) ->
+				if err
+					errs += """\nJshint #{cls.red err.id}: \
+						#{file.path}:#{err.line}:#{err.character}
+						"#{cls.cyan err.evidence}"
+						#{cls.yellow err.reason}
+						------------------------------------
+					"""
+			Promise.reject errs
+	, lint: ['.js']
+
+	###*
+	 * Compile less.
+	 * @param  {Object}
+	 * @return {Function}
+	###
+	less: _.extend (opts = {}) ->
+		less = kit.requireOptional 'less', __dirname, '>=2.0.0'
+
+		(file) ->
+			@dest.ext = '.css'
+			opts.filename = @path
+			less.render @contents + '', opts
+			.then (output) ->
+				file.set output.css
+				kit.log cls.cyan('less: ') + file.path
+			, (err) ->
+				if not err.line?
+					return Promise.reject err
+				# The error message of less is the worst.
+				err.message = err.filename +
+					":#{err.line}:#{err.column}\n" +
+					err.extract?.join('\n') + '\n--------\n' +
+					err.message
+				Promise.reject err
+	, compile: ['.less']
+
+	###*
+	 * Livescript compiler.
 	 * @param  {Object} opts Default is `{ bare: true }`.
 	 * @return {Function}
 	###
@@ -164,11 +273,11 @@ module.exports =
 			@dest.ext = '.js'
 			try
 				@set Livescript.compile @contents + '', opts
-				kit.log cls.cyan('livescript coffee: ') + @path
+				kit.log cls.cyan('livescript: ') + @path
 			catch err
 				kit.err cls.red err
 				Promise.reject 'livescriptCompileError'
-	, compiler: ['.ls']
+	, compile: ['.ls']
 
 	###*
 	 * read file and set `contents`
@@ -181,7 +290,7 @@ module.exports =
 		).then @set
 
 	###*
-	 * compile stylus
+	 * Compile stylus.
 	 * @param  {Object} opts It will use `stylus.set` to
 	 * iterate `opts` and set the key-value, is the value is
 	 * not a function.
@@ -221,8 +330,8 @@ module.exports =
 			kit.promisify(styl.render, styl)()
 			.then (css) ->
 				file.set css
-				kit.log cls.cyan('compile stylus: ') + file.path
-	, compiler: ['.styl']
+				kit.log cls.cyan('stylus: ') + file.path
+	, compile: ['.styl']
 
 	###*
 	 * uglify-js processor
@@ -239,7 +348,7 @@ module.exports =
 	 * ```
 	 * @return {Function}
 	###
-	uglify: (opts = {}) ->
+	uglifyjs: _.extend (opts = {}) ->
 		uglify = kit.requireOptional 'uglify-js', __dirname, '>=2.0.0'
 		opts.fromString = true
 		opts.output ?=
@@ -249,18 +358,22 @@ module.exports =
 				if type == "comment2"
 					return /@preserve|@license|@cc_on/i.test text
 
-		-> @set (uglify.minify @contents, opts).code
+		->
+			@set (uglify.minify @contents + '', opts).code
+			kit.log cls.cyan('uglifyjs: ') + @dest
+	, compress: ['.js']
 
 	###*
-	 * output file by `contents` and `dest`
+	 * Output file by `contents` and `dest`.
+	 * If the 'ext' or 'name' is not null,
+	 * the 'base' will be override by the 'ext' and 'name'.
 	###
 	writer: ->
 		{ dest, contents } = @
 		if dest? and contents?
-			if _.isObject dest
-				if dest.name? and dest.ext?
-					dest.base = dest.name + dest.ext
-				dest = kit.path.format dest
+			if dest.name? and dest.ext?
+				dest.base = dest.name + dest.ext
+			dest = kit.path.format dest
 
 			kit.log cls.cyan('writer: ') + dest
 			kit.outputFile dest, contents, @opts
