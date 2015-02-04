@@ -59,10 +59,9 @@ task = ->
 	else
 		''
 
-	if args.description
-		args.description += '  '
+	sep = if args.description then ' ' else ''
 
-	helpInfo = args.description + depsInfo
+	helpInfo = args.description + sep + depsInfo
 
 	names = args.name.split ' '
 	names.forEach (name) ->

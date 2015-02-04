@@ -9,7 +9,7 @@
   "scripts": {
     "no": "no",
     "test": "node bin/no test",
-    "prepublish": "node bin/no build -a"
+    "prepublish": "node bin/no build"
   },
   "repository": {
     "type": "git",
