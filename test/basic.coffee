@@ -105,13 +105,18 @@ describe 'Kit:', ->
 			shouldEqual v, 'bc'
 
 	it 'flow iter', ->
+		list = []
 		(kit.flow (v) ->
 			return kit.flow.end if v == 3
 			kit.sleep 1
-			.then -> ++v
+			.then ->
+				list.push v
+				++v
 		)(0)
 		.then (v) ->
 			shouldEqual v, 3
+		.then ->
+			shouldDeepEqual list, [0, 1, 2]
 
 	it 'crypto', ->
 		en = kit.encrypt '123', 'test'
