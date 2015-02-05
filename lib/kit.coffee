@@ -185,13 +185,13 @@ _.extend kit, fs,
 	 * @example
 	 * ```coffee
 	 * # Set cache
-	 * kit.cahce {
+	 * kit.depsCache {
 	 * 	deps: 'a.coffee'
 	 * 	contents: 'var a = function() {}' # The contents to cache.
 	 * }
 	 *
 	 * # Get cache
-	 * kit.cache { deps: ['a.coffee'] }
+	 * kit.depsCache { deps: ['a.coffee'] }
 	 * .then (info) ->
 	 * 	if info.contents?
 	 * 		kit.log 'cache is newer'.
@@ -206,13 +206,13 @@ _.extend kit, fs,
 			isReadFile: true
 		}
 
-		kit.cacheDeps.jhash ?= new (kit.require('jhash').constructor)
+		kit.depsCache.jhash ?= new (kit.require('jhash').constructor)
 
 		keyPath = opts.deps[0]
 
 		cachePath = kit.path.join(
 			opts.cacheDir
-			kit.cacheDeps.jhash.hash(keyPath, true) + '-' +
+			kit.depsCache.jhash.hash(keyPath, true) + '-' +
 			kit.path.basename(keyPath)
 		)
 		cacheInfoPath = cachePath + '.json'

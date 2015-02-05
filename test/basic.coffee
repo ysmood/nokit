@@ -31,7 +31,7 @@ unixSep = (p) -> p.replace /\\/g, '\/'
 describe 'Kit:', ->
 	after ->
 		for s in serverList
-			s.close -> kit.log 'close'
+			s.close()
 
 	it 'parseComment coffee', ->
 		path = 'test/fixtures/comment.coffee'
@@ -370,7 +370,7 @@ describe 'Kit:', ->
 	it 'depsCache cache newer', ->
 		file = 'test/fixtures/depsCache.txt'
 		cacheDir = 'test/fixtures/cacheDir'
-		cacheFile = 'test/fixtures/cacheDir/1345821525-depsCache.txt'
+		cacheFile = 'test/fixtures/cacheDir/1345816117-depsCache.txt'
 		contents = kit.readFileSync file, 'utf8'
 		kit.depsCache {
 			deps: [file]
@@ -392,7 +392,7 @@ describe 'Kit:', ->
 		file = 'test/fixtures/depsCacheFileNewer.txt'
 		file1 = 'test/fixtures/depsCacheFileNewer1.txt'
 		cacheDir = 'test/fixtures/cacheDir'
-		cacheFile = 'test/fixtures/cacheDir/1865472580-depsCacheFileNewer.txt'
+		cacheFile = 'test/fixtures/cacheDir/1862933060-depsCacheFileNewer.txt'
 
 		kit.outputFileSync file1, 'test'
 
@@ -402,7 +402,7 @@ describe 'Kit:', ->
 			contents
 			cacheDir
 		}
-		.then -> kit.sleep(500)
+		.then -> kit.sleep(1000)
 		.then ->
 			txt = Date.now() + ''
 			kit.outputFileSync file1, txt
