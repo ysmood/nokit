@@ -163,24 +163,16 @@ _.extend kit, fs,
 	 * 	contents: undefined
 	 *
 	 * 	cacheDir: '.nokit'
-	 *
-	 * 	isReadFile: true
 	 * }
 	 * ```
 	 * If the `contents` is specified, it will set the info to memory
 	 * and file. Else it will get the info memeory or cache.
-	 *
-	 * If the `isReadFile` is `true` and the cache is not newer, the `deps[0]`
-	 * will be read into the `info.origin`.
 	 * @return {Promise} Resolve a info object.
 	 * If cahce is newer the `info.contents` will be set, else it will
 	 * be undefined.
 	 * ```coffee
 	 * {
 	 * 	contents: undefined | String | Buffer
-	 *
-	 * 	# Whether it's read from cache or from file.
-	 * 	isFromCache: Boolean
 	 *
 	 * 	cacheError: undefined | Error
 	 * }
@@ -206,7 +198,6 @@ _.extend kit, fs,
 	depsCache: (opts) ->
 		_.defaults opts, {
 			cacheDir: '.nokit'
-			isReadFile: true
 		}
 
 		kit.depsCache.jhash ?= new (kit.require('jhash').constructor)
@@ -225,7 +216,8 @@ _.extend kit, fs,
 				when 'String', 'Buffer'
 					null
 				else
-					err = new Error 'only String and Buffer is allowed'
+					err = new Error 'only String and Buffer is allowed,
+					but get: ' + opts.contents
 					return Promise.reject err
 
 			info = {
@@ -234,7 +226,9 @@ _.extend kit, fs,
 			}
 			Promise.all [
 				kit.outputFile cachePath, opts.contents
-				Promise.all(opts.deps.map (path) ->
+				Promise.all(opts.deps.map (path, i) ->
+					if i == 0
+						return info.deps[path] = Date.now()
 					kit.stat(path).then (stats) ->
 						info.deps[path] = stats.mtime.getTime()
 				).then ->
@@ -255,15 +249,10 @@ _.extend kit, fs,
 			.then (latestList) ->
 				if _.all latestList
 					kit.readFile cachePath, info.encoding
+					.then (contents) ->
+						opts.isFromCache = true
+						opts.contents = contents
 			.catch (err) -> opts.cacheError = err
-			.then (contents) ->
-				if contents?
-					opts.isFromCache = true
-					opts.contents = contents
-				else if opts.isReadFile
-					opts.isFromCache = false
-					kit.readFile keyPath, info.encoding
-					.then (contents) -> opts.contents = contents
 			.then -> opts
 
 	###*
@@ -1918,6 +1907,8 @@ _.extend kit, fs,
 	 * 	# Default `set` used in the `fileInfo` object.
 	 * 	set: (contents) ->
 	 *
+	 * 	cacheDir: '.nokit'
+	 *
 	 * 	# Default file reader plugin. Override it if you don't want
 	 * 	# warp read file contents automatically.
 	 * 	reader: kit.drives.reader
@@ -1972,8 +1963,12 @@ _.extend kit, fs,
 	 * ```
 	 * The handler can have a `onEnd` function, which will be called after the
 	 * whole warp ended.
+	 *
 	 * The handler can have a `isReader` property, which will make the handler
 	 * override the default file reader.
+	 *
+	 * The handler can have a `isWriter` property, which will make the handler
+	 * override the default file writer.
 	 * @example
 	 * ```coffee
 	 * # Define a simple workflow.
@@ -2015,9 +2010,9 @@ _.extend kit, fs,
 			set: (contents) ->
 				@contents = contents
 
-			reader: drives.reader()
+			reader: drives.reader opts
 
-			writer: drives.writer()
+			writer: drives.writer opts
 		}
 
 		pipeList = []
@@ -2041,6 +2036,8 @@ _.extend kit, fs,
 			catch err
 				Promise.reject err
 
+		end = -> @isEndWarp = true
+
 		mapper =
 			load: (task) ->
 				if task.isReader
@@ -2059,7 +2056,7 @@ _.extend kit, fs,
 						dest: kit.path.join to,
 							kit.path.relative fileInfo.baseDir, fileInfo.path
 						set: opts.set.bind fileInfo
-						end: -> fileInfo.isEndWarp = true
+						end: end.bind fileInfo
 						opts
 					})
 
@@ -2067,7 +2064,11 @@ _.extend kit, fs,
 				onEndList.push runTask(opts.writer) if onEndList.length > 0
 
 				kit.glob(from, opts).then (list) ->
-					kit.flow(onEndList)({ set: opts.set, to, list, opts })
+					fileInfo = { to, list, opts }
+					kit.flow(onEndList) _.extend fileInfo, {
+						set: opts.set.bind fileInfo
+						end: end.bind fileInfo
+					}
 
 	###*
 	 * Same as the unix `which` command.

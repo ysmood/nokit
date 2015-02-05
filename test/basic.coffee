@@ -4,6 +4,8 @@ http = require 'http'
 { _, Promise } = kit
 kit.require 'drives'
 
+cacheDir = 'test/fixtures/cacheDir'
+
 shouldEqual = (args...) ->
 	try
 		assert.strictEqual.apply assert, args
@@ -230,7 +232,6 @@ describe 'Kit:', ->
 
 	it 'depsCache cache newer', ->
 		file = 'test/fixtures/depsCache.txt'
-		cacheDir = 'test/fixtures/cacheDir'
 		cacheFile = 'test/fixtures/cacheDir/1345816117-depsCache.txt'
 		contents = kit.readFileSync file, 'utf8'
 		kit.depsCache {
@@ -274,10 +275,7 @@ describe 'Kit:', ->
 				cacheDir
 			}
 			.then (cache) ->
-				shouldEqual cache.contents, contents
-				cache
-			.then (cache) ->
-				shouldEqual cache.isFromCache, false
+				shouldEqual cache.contents, undefined
 
 	it 'warp map', ->
 		tmp = 'test/fixtures/warp'
@@ -286,16 +284,15 @@ describe 'Kit:', ->
 			info.dest.ext = '.coffee'
 			info.set info.contents.length
 
-		kit.warp 'test/fixtures/**/*.js'
+		kit.warp 'test/fixtures/depDir/**/*.js', { cacheDir }
 		.load counter
 		.run tmp
 		.then ->
 			kit.glob tmp + '/**/*.coffee'
 		.then (paths) ->
 			shouldDeepEqual paths.map(unixSep) , [
-				"test/fixtures/warp/comment.coffee"
-				"test/fixtures/warp/depDir/dep4.coffee"
-				"test/fixtures/warp/depDir/lib/index.coffee"
+				"test/fixtures/warp/dep4.coffee"
+				"test/fixtures/warp/lib/index.coffee"
 			]
 
 	it 'warp custom reader', ->
@@ -306,7 +303,7 @@ describe 'Kit:', ->
 			.then @set
 		myReader.isReader = true
 
-		kit.warp 'test/fixtures/**/*.js'
+		kit.warp 'test/fixtures/**/*.js', { cacheDir }
 		.load myReader
 		.run tmp
 		.then ->
@@ -317,17 +314,17 @@ describe 'Kit:', ->
 	it 'warp concat', ->
 		tmp = 'test/fixtures/warp_all.coffee'
 
-		kit.warp 'test/fixtures/**/*.coffee'
+		kit.warp 'test/fixtures/depDir/**/*.coffee', { cacheDir }
 		.load kit.drives.concat 'warp_all.coffee'
 		.run 'test/fixtures'
 		.then ->
 			kit.readFile tmp, 'utf8'
 		.then (str) ->
-			shouldEqual str.indexOf('indent') > 0, true
+			shouldEqual str.indexOf("require './lib'") > 0, true
 
 	it 'warp auto', ->
 		path = 'test/fixtures/compiler.all'
-		kit.warp 'test/fixtures/compiler/*'
+		kit.warp 'test/fixtures/compiler/*', { cacheDir }
 			.load kit.drives.auto 'lint'
 			.load kit.drives.auto 'compile'
 			.load kit.drives.auto 'compress'

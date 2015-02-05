@@ -2,3 +2,4 @@
 node_modules
 .nobone
 .coffee
+.nokit

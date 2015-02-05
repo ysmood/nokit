@@ -64,7 +64,7 @@ option '-g, --grep [.]', 'test pattern', /./
 option '-t, --timeout [3000]', 'test timeout', 3000
 task 'test t', 'unit tests', (opts) ->
 	clean = ->
-		kit.spawn 'git', ['clean', '-fd', kit.path.normalize('test/fixtures')]
+		kit.spawn 'git', ['clean', '-fd', 'test/fixtures']
 
 	clean().then ->
 		kit.warp 'test/basic.coffee'

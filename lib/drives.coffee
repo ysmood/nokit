@@ -36,6 +36,7 @@ module.exports =
 
 		->
 			opts.filename = @path
+			@deps = [@path]
 			@dest.ext = '.js'
 			try
 				@set coffee.compile @contents + '', opts
@@ -192,6 +193,7 @@ module.exports =
 		, onEnd: ->
 			dir ?= @to
 			@dest = kit.path.join dir, name
+			@deps = [@dest].concat _.pluck @list, 'path'
 			@set all
 
 	###*
@@ -307,16 +309,40 @@ module.exports =
 					else
 						reject { code }
 
-
 	###*
 	 * read file and set `contents`
+	 * @param  {Object} opts Defaults:
+	 * ```coffee
+	 * {
+	 * 	isCache: true
+	 * 	cacheDir: '.nokit'
+	 * }
+	 * ```
+	 * @return {Function}
 	###
-	reader: ->
-		(if @isDir
-			Promise.resolve()
-		else
+	reader: _.extend (opts = {}) ->
+		_.defaults opts, {
+			isCache: true
+		}
+
+		read = ->
 			kit.readFile @path, @opts.encoding
-		).then @set
+			.then @set
+
+		(file) ->
+			return if @isDir
+			if opts.isCache
+				kit.depsCache
+					deps: [@path]
+					cacheDir: opts.cacheDir
+				.then (cache) ->
+					if cache.contents
+						file.set cache.contents
+					else
+						read.call file
+			else
+				read.call file
+	, isReader: true
 
 	###*
 	 * Compile stylus.
@@ -396,13 +422,37 @@ module.exports =
 	 * Output file by `contents` and `dest`.
 	 * If the 'ext' or 'name' is not null,
 	 * the 'base' will be override by the 'ext' and 'name'.
+	 * @param  {Object} opts Defaults:
+	 * ```coffee
+	 * {
+	 * 	isCache: true
+	 * 	cacheDir: '.nokit'
+	 * }
+	 * ```
+	 * @return {Function}
 	###
-	writer: ->
-		{ dest, contents } = @
-		if dest? and contents?
-			if dest.name? and dest.ext?
-				dest.base = dest.name + dest.ext
-			dest = kit.path.format dest
+	writer: (opts = {}) ->
+		_.defaults opts, {
+			isCache: true
+		}
 
-			kit.log cls.cyan('writer: ') + dest
-			kit.outputFile dest, contents, @opts
+		write = ->
+			{ dest, contents } = @
+			if dest? and contents?
+				if dest.name? and dest.ext?
+					dest.base = dest.name + dest.ext
+				dest = kit.path.format dest
+
+				kit.log cls.cyan('writer: ') + dest
+				kit.outputFile dest, contents, @opts
+
+		(file) ->
+			if opts.isCache and @deps
+				kit.depsCache
+					deps: @deps
+					cacheDir: opts.cacheDir
+					contents: @contents
+				.then ->
+					write.call file
+			else
+				write.call file
