@@ -469,7 +469,7 @@ _.extend kit, fs,
 		fns = fns[0] if _.isArray fns[0]
 
 		fns.reduce (preFn, fn) ->
-			if _.isFunction fn.then
+			if fn and _.isFunction fn.then
 				preFn.then -> fn
 			else
 				preFn.then fn
