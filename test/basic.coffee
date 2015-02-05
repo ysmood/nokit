@@ -366,3 +366,21 @@ describe 'Kit:', ->
 		shouldEqual kit.fuzzySearch('ys', [
 			'ss', 'ab'
 		]), undefined
+
+	it 'cacheDeps', ->
+		file = 'test/fixtures/cacheDeps.txt'
+		file1 = 'test/fixtures/cacheDeps1.txt'
+		cacheDir = 'test/fixtures/cacheDir'
+		contents = kit.readFileSync file, 'utf8'
+		kit.cacheDeps {
+			deps: [file, file1]
+			contents
+			cacheDir
+		}
+		.then ->
+			kit.cacheDeps {
+				deps: [file]
+				cacheDir
+			}
+			.then (cache) ->
+				shouldEqual cache, contents
