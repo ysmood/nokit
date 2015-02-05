@@ -58,7 +58,7 @@ _.extend kit, fs,
 	 * If the list is an array, it should be a list of functions or promises,
 	 * and each function will return a promise.
 	 * If the list is a function, it should be a iterator that returns
-	 * a promise, hen it returns `undefined`, the iteration ends.
+	 * a promise, when it returns `kit.async.end`, the iteration ends.
 	 * @param {Boolean} saveResutls Whether to save each promise's result or
 	 * not. Default is true.
 	 * @param {Function} progress If a task ends, the resolve value will be
@@ -89,6 +89,8 @@ _.extend kit, fs,
 	 * 	url = urls.pop()
 	 * 	if url
 	 * 		kit.request url
+	 * 	else
+	 * 		kit.async.end
 	 * .then ->
 	 * 	kit.log 'all done!'
 	 * ```
@@ -108,18 +110,29 @@ _.extend kit, fs,
 
 		if _.isArray list
 			iter = ->
-				el = list.pop()
-				if _.isFunction el then el() else el
+				el = list.shift()
+				if el == undefined
+					kit.async.end
+				else if _.isFunction el
+					el()
+				else
+					el
 
 		else if _.isFunction list
 			iter = list
 		else
-			Promise.reject new Error('unknown list type: ' + typeof list)
+			return Promise.reject new Error 'wrong argument type: ' + list
+
+		kit.async.end ?= {}
 
 		new Promise (resolve, reject) ->
 			addTask = ->
-				task = iter()
-				if isIterDone or task == undefined
+				try
+					task = iter()
+				catch err
+					return Promise.reject err
+
+				if isIterDone or task == kit.async.end
 					isIterDone = true
 					allDone() if running == 0
 					return false
@@ -442,7 +455,9 @@ _.extend kit, fs,
 	 * See `kit.async`, if you need concurrent support.
 	 * @param  {Function | Array} fns Functions that return
 	 * promise or any value.
-	 * And the array can also contains promises.
+	 * And the array can also contains promises or values other than function.
+	 * If there's only one argument and it's a function, it will treat as an iterator,
+	 * when it returns `kit.flow.end`, the iteration ends.
 	 * @return {Function} `(val) -> Promise` A function that will return a promise.
 	 * @example
 	 * ```coffee
@@ -464,16 +479,59 @@ _.extend kit, fs,
 	 *
 	 * download 'home'
 	 * ```
+	 * @example
+	 * Walk through first link of each page.
+	 * ```coffee
+	 * list = []
+	 * iter = (url) ->
+	 * 	return kit.flow.end if not url
+	 *
+	 * 	kit.request url
+	 * 	.then (body) ->
+	 * 		list.push body
+	 * 		m = body.match /href="(.+?)"/
+	 * 		m[0] if m
+	 *
+	 * walker = kit.flow iter
+	 * walker 'test.com'
+	 * ```
 	###
 	flow: (fns...) -> (val) ->
-		fns = fns[0] if _.isArray fns[0]
+		genIter = (arr) ->
+			(val) ->
+				fn = arr.shift()
+				if fn == undefined
+					kit.flow.end
+				else if _.isFunction fn
+					fn val
+				else
+					fn
 
-		fns.reduce (preFn, fn) ->
-			if fn and _.isFunction fn.then
-				preFn.then -> fn
-			else
-				preFn.then fn
-		, Promise.resolve(val)
+		if _.isArray fns[0]
+			iter = genIter fns[0]
+		else if fns.length == 1 and _.isFunction fns[0]
+			iter = fns[0]
+		else if fns.length > 1
+			iter = genIter fns
+		else
+			return Promise.reject new Error 'wrong argument type: ' + fn
+
+		kit.flow.end ?= {}
+
+		run = (preFn) ->
+			preFn.then (val) ->
+				try
+					fn = iter val
+				catch err
+					Promise.reject err
+
+				return val if fn == kit.flow.end
+				run if fn and _.isFunction fn.then
+					fn
+				else
+					Promise.resolve fn
+
+		run Promise.resolve val
 
 	###*
 	 * Format the parsed comments array to a markdown string.

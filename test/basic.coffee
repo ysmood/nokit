@@ -76,7 +76,7 @@ describe 'Kit:', ->
 			i = 0
 			->
 				if i++ == 10
-					return
+					return kit.async.end
 				kit.readFile __filename
 
 		kit.async 3, iter(), false, (ret) ->
@@ -94,6 +94,24 @@ describe 'Kit:', ->
 			shouldEqual ret.length, len
 		).then (rets) ->
 			shouldEqual rets.length, 10
+
+	it 'flow array', ->
+		(kit.flow [
+			'a'
+			Promise.resolve 'b'
+			(v) -> v + 'c'
+		])(0)
+		.then (v) ->
+			shouldEqual v, 'bc'
+
+	it 'flow iter', ->
+		(kit.flow (v) ->
+			return kit.flow.end if v == 3
+			kit.sleep 1
+			.then -> ++v
+		)(0)
+		.then (v) ->
+			shouldEqual v, 3
 
 	it 'crypto', ->
 		en = kit.encrypt '123', 'test'
