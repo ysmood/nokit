@@ -228,6 +228,57 @@ describe 'Kit:', ->
 	it 'indent', ->
 		assert kit.indent('a\nb', 2), '  a\n  b'
 
+	it 'depsCache cache newer', ->
+		file = 'test/fixtures/depsCache.txt'
+		cacheDir = 'test/fixtures/cacheDir'
+		cacheFile = 'test/fixtures/cacheDir/1345816117-depsCache.txt'
+		contents = kit.readFileSync file, 'utf8'
+		kit.depsCache {
+			deps: [file]
+			contents
+			cacheDir
+		}
+		.then ->
+			txt = Date.now() + ''
+			kit.outputFileSync cacheFile, txt
+
+			kit.depsCache {
+				deps: [file]
+				cacheDir
+			}
+			.then (cache) ->
+				shouldEqual cache.contents, txt
+
+	it 'depsCache file newer', ->
+		file = 'test/fixtures/depsCacheFileNewer.txt'
+		file1 = 'test/fixtures/depsCacheFileNewer1.txt'
+		cacheDir = 'test/fixtures/cacheDir'
+		cacheFile = 'test/fixtures/cacheDir/1862933060-depsCacheFileNewer.txt'
+
+		kit.outputFileSync file1, 'test'
+
+		contents = kit.readFileSync file, 'utf8'
+		kit.depsCache {
+			deps: [file, file1]
+			contents
+			cacheDir
+		}
+		.then -> kit.sleep(1000)
+		.then ->
+			txt = Date.now() + ''
+			kit.outputFileSync file1, txt
+			kit.outputFileSync cacheFile, txt
+
+			kit.depsCache {
+				deps: [file]
+				cacheDir
+			}
+			.then (cache) ->
+				shouldEqual cache.contents, contents
+				cache
+			.then (cache) ->
+				shouldEqual cache.isFromCache, false
+
 	it 'warp map', ->
 		tmp = 'test/fixtures/warp'
 
@@ -366,51 +417,3 @@ describe 'Kit:', ->
 		shouldEqual kit.fuzzySearch('ys', [
 			'ss', 'ab'
 		]), undefined
-
-	it 'depsCache cache newer', ->
-		file = 'test/fixtures/depsCache.txt'
-		cacheDir = 'test/fixtures/cacheDir'
-		cacheFile = 'test/fixtures/cacheDir/1345816117-depsCache.txt'
-		contents = kit.readFileSync file, 'utf8'
-		kit.depsCache {
-			deps: [file]
-			contents
-			cacheDir
-		}
-		.then ->
-			txt = Date.now() + ''
-			kit.outputFileSync cacheFile, txt
-
-			kit.depsCache {
-				deps: [file]
-				cacheDir
-			}
-			.then (cache) ->
-				shouldEqual cache.contents, txt
-
-	it 'depsCache file newer', ->
-		file = 'test/fixtures/depsCacheFileNewer.txt'
-		file1 = 'test/fixtures/depsCacheFileNewer1.txt'
-		cacheDir = 'test/fixtures/cacheDir'
-		cacheFile = 'test/fixtures/cacheDir/1862933060-depsCacheFileNewer.txt'
-
-		kit.outputFileSync file1, 'test'
-
-		contents = kit.readFileSync file, 'utf8'
-		kit.depsCache {
-			deps: [file, file1]
-			contents
-			cacheDir
-		}
-		.then -> kit.sleep(1000)
-		.then ->
-			txt = Date.now() + ''
-			kit.outputFileSync file1, txt
-			kit.outputFileSync cacheFile, txt
-
-			kit.depsCache {
-				deps: [file]
-				cacheDir
-			}
-			.then (cache) ->
-				shouldEqual cache.origin, contents

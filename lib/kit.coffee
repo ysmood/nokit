@@ -178,7 +178,10 @@ _.extend kit, fs,
 	 * ```coffee
 	 * {
 	 * 	contents: undefined | String | Buffer
-	 * 	origin: undefined | String | Buffer
+	 *
+	 * 	# Whether it's read from cache or from file.
+	 * 	isFromCache: Boolean
+	 *
 	 * 	cacheError: undefined | Error
 	 * }
 	 * ```
@@ -252,13 +255,15 @@ _.extend kit, fs,
 			.then (latestList) ->
 				if _.all latestList
 					kit.readFile cachePath, info.encoding
-			.catch(->)
+			.catch (err) -> opts.cacheError = err
 			.then (contents) ->
 				if contents?
+					opts.isFromCache = true
 					opts.contents = contents
 				else if opts.isReadFile
-					kit.readFile(keyPath, info.encoding).then (origin) ->
-						opts.origin = origin
+					opts.isFromCache = false
+					kit.readFile keyPath, info.encoding
+					.then (contents) -> opts.contents = contents
 			.then -> opts
 
 	###*
