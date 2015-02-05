@@ -367,20 +367,50 @@ describe 'Kit:', ->
 			'ss', 'ab'
 		]), undefined
 
-	it 'cacheDeps', ->
+	it 'cacheDeps cache newer', ->
 		file = 'test/fixtures/cacheDeps.txt'
-		file1 = 'test/fixtures/cacheDeps1.txt'
 		cacheDir = 'test/fixtures/cacheDir'
+		cacheFile = 'test/fixtures/cacheDir/1345821525-cacheDeps.txt'
+		contents = kit.readFileSync file, 'utf8'
+		kit.cacheDeps {
+			deps: [file]
+			contents
+			cacheDir
+		}
+		.then ->
+			txt = Date.now() + ''
+			kit.outputFileSync cacheFile, txt
+
+			kit.cacheDeps {
+				deps: [file]
+				cacheDir
+			}
+			.then (cache) ->
+				shouldEqual cache.contents, txt
+
+	it 'cacheDeps file newer', ->
+		file = 'test/fixtures/cacheDepsFileNewer.txt'
+		file1 = 'test/fixtures/cacheDepsFileNewer1.txt'
+		cacheDir = 'test/fixtures/cacheDir'
+		cacheFile = 'test/fixtures/cacheDir/1865472580-cacheDepsFileNewer.txt'
+
+		kit.outputFileSync file1, 'test'
+
 		contents = kit.readFileSync file, 'utf8'
 		kit.cacheDeps {
 			deps: [file, file1]
 			contents
 			cacheDir
 		}
+		.then -> kit.sleep(500)
 		.then ->
+			txt = Date.now() + ''
+			kit.outputFileSync file1, txt
+			kit.outputFileSync cacheFile, txt
+
 			kit.cacheDeps {
 				deps: [file]
 				cacheDir
 			}
 			.then (cache) ->
-				shouldEqual cache, contents
+				shouldEqual cache.origin, contents

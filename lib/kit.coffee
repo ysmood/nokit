@@ -152,6 +152,116 @@ _.extend kit, fs,
 				break if not addTask()
 
 	###*
+	 * A file cache helper.
+	 * @param  {Object} info Not optional.
+	 * ```coffee
+	 * {
+	 * 	# The first item is the key path, others are
+	 * 	# its dependencies.
+	 * 	deps: String | Array
+	 *
+	 * 	contents: undefined
+	 *
+	 * 	cacheDir: '.nokit'
+	 *
+	 * 	isReadFile: true
+	 * }
+	 * ```
+	 * If the `contents` is specified, it will set the info to memory
+	 * and file. Else it will get the info memeory or cache.
+	 *
+	 * If the `isReadFile` is `true` and the cache is not newer, the `deps[0]`
+	 * will be read into the `info.origin`.
+	 * @return {Promise} Resolve a info object.
+	 * If cahce is newer the `info.contents` will be set, else it will
+	 * be undefined.
+	 * ```coffee
+	 * {
+	 * 	contents: undefined | String | Buffer
+	 * 	origin: undefined | String | Buffer
+	 * 	cacheError: undefined | Error
+	 * }
+	 * ```
+	 * @example
+	 * ```coffee
+	 * # Set cache
+	 * kit.cahce {
+	 * 	deps: 'a.coffee'
+	 * 	contents: 'var a = function() {}' # The contents to cache.
+	 * }
+	 *
+	 * # Get cache
+	 * kit.cache { deps: ['a.coffee'] }
+	 * .then (info) ->
+	 * 	if info.contents?
+	 * 		kit.log 'cache is newer'.
+	 * 		info.contents
+	 * 	else
+	 * 		info.origin
+	 * ```
+	###
+	cacheDeps: (opts) ->
+		_.defaults opts, {
+			cacheDir: '.nokit'
+			isReadFile: true
+		}
+
+		kit.cacheDeps.jhash ?= new (kit.require('jhash').constructor)
+
+		keyPath = opts.deps[0]
+
+		cachePath = kit.path.join(
+			opts.cacheDir
+			kit.cacheDeps.jhash.hash(keyPath, true) + '-' +
+			kit.path.basename(keyPath)
+		)
+		cacheInfoPath = cachePath + '.json'
+
+		if opts.contents
+			switch opts.contents.constructor.name
+				when 'String', 'Buffer'
+					null
+				else
+					err = new Error 'only String and Buffer is allowed'
+					return Promise.reject err
+
+			info = {
+				type: opts.contents.constructor.name
+				deps: {}
+			}
+			Promise.all [
+				kit.outputFile cachePath, opts.contents
+				Promise.all(opts.deps.map (path) ->
+					kit.stat(path).then (stats) ->
+						info.deps[path] = stats.mtime.getTime()
+				).then ->
+					kit.outputJson cacheInfoPath, info
+			]
+
+		else
+			kit.readJson cacheInfoPath
+			.then (data) ->
+				info = data
+				info.encoding =
+					if info.type == 'String' then'utf8' else undefined
+				Promise.all _(info.deps).keys().map((path) ->
+					kit.stat(path).then (stats) ->
+						# cache mtime             file mtime
+						info.deps[path] >= stats.mtime.getTime()
+				).value()
+			.then (latestList) ->
+				if _.all latestList
+					kit.readFile cachePath, info.encoding
+			.catch(->)
+			.then (contents) ->
+				if contents?
+					opts.contents = contents
+				else if opts.isReadFile
+					kit.readFile(keyPath, info.encoding).then (origin) ->
+						opts.origin = origin
+			.then -> opts
+
+	###*
 	 * The [colors](https://github.com/Marak/colors.js) lib
 	 * makes it easier to print colorful info in CLI.
 	 * You must `kit.require 'colors'` before using it.
