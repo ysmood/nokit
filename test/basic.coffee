@@ -367,12 +367,12 @@ describe 'Kit:', ->
 			'ss', 'ab'
 		]), undefined
 
-	it 'cacheDeps cache newer', ->
-		file = 'test/fixtures/cacheDeps.txt'
+	it 'depsCache cache newer', ->
+		file = 'test/fixtures/depsCache.txt'
 		cacheDir = 'test/fixtures/cacheDir'
-		cacheFile = 'test/fixtures/cacheDir/1345821525-cacheDeps.txt'
+		cacheFile = 'test/fixtures/cacheDir/1345821525-depsCache.txt'
 		contents = kit.readFileSync file, 'utf8'
-		kit.cacheDeps {
+		kit.depsCache {
 			deps: [file]
 			contents
 			cacheDir
@@ -381,23 +381,23 @@ describe 'Kit:', ->
 			txt = Date.now() + ''
 			kit.outputFileSync cacheFile, txt
 
-			kit.cacheDeps {
+			kit.depsCache {
 				deps: [file]
 				cacheDir
 			}
 			.then (cache) ->
 				shouldEqual cache.contents, txt
 
-	it 'cacheDeps file newer', ->
-		file = 'test/fixtures/cacheDepsFileNewer.txt'
-		file1 = 'test/fixtures/cacheDepsFileNewer1.txt'
+	it 'depsCache file newer', ->
+		file = 'test/fixtures/depsCacheFileNewer.txt'
+		file1 = 'test/fixtures/depsCacheFileNewer1.txt'
 		cacheDir = 'test/fixtures/cacheDir'
-		cacheFile = 'test/fixtures/cacheDir/1865472580-cacheDepsFileNewer.txt'
+		cacheFile = 'test/fixtures/cacheDir/1865472580-depsCacheFileNewer.txt'
 
 		kit.outputFileSync file1, 'test'
 
 		contents = kit.readFileSync file, 'utf8'
-		kit.cacheDeps {
+		kit.depsCache {
 			deps: [file, file1]
 			contents
 			cacheDir
@@ -408,7 +408,7 @@ describe 'Kit:', ->
 			kit.outputFileSync file1, txt
 			kit.outputFileSync cacheFile, txt
 
-			kit.cacheDeps {
+			kit.depsCache {
 				deps: [file]
 				cacheDir
 			}

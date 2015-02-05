@@ -200,7 +200,7 @@ _.extend kit, fs,
 	 * 		info.origin
 	 * ```
 	###
-	cacheDeps: (opts) ->
+	depsCache: (opts) ->
 		_.defaults opts, {
 			cacheDir: '.nokit'
 			isReadFile: true
@@ -2010,9 +2010,9 @@ _.extend kit, fs,
 			set: (contents) ->
 				@contents = contents
 
-			reader: drives.reader
+			reader: drives.reader()
 
-			writer: drives.writer
+			writer: drives.writer()
 		}
 
 		pipeList = []
