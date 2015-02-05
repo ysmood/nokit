@@ -338,6 +338,7 @@ module.exports =
 				.then (cache) ->
 					if cache.contents
 						file.set cache.contents
+						file.end()
 					else
 						read.call file
 			else
@@ -446,7 +447,7 @@ module.exports =
 				kit.log cls.cyan('writer: ') + dest
 				kit.outputFile dest, contents, @opts
 
-		(file) ->
+		_.extend (file) ->
 			if opts.isCache and @deps
 				kit.depsCache
 					deps: @deps
@@ -456,3 +457,4 @@ module.exports =
 					write.call file
 			else
 				write.call file
+		, onEnd: write

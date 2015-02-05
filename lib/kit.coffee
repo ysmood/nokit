@@ -2038,7 +2038,7 @@ _.extend kit, fs,
 
 		end = -> @isEndWarp = true
 
-		mapper =
+		warpper =
 			load: (task) ->
 				if task.isReader
 					opts.reader = task
@@ -2047,7 +2047,8 @@ _.extend kit, fs,
 
 				if _.isFunction task.onEnd
 					onEndList.push runTask(task.onEnd)
-				mapper
+				warpper
+
 			run: (to = '.') ->
 				pipeList.unshift (fileInfo) ->
 					fileInfo.baseDir = opts.baseDir if opts.baseDir
@@ -2060,8 +2061,7 @@ _.extend kit, fs,
 						opts
 					})
 
-				pipeList.push runTask(opts.writer)
-				onEndList.push runTask(opts.writer) if onEndList.length > 0
+				warpper.load opts.writer
 
 				kit.glob(from, opts).then (list) ->
 					fileInfo = { to, list, opts }
