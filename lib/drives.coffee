@@ -322,7 +322,7 @@ module.exports =
 	###
 	reader: (opts = {}) ->
 		_.defaults opts, {
-			isCache: false
+			isCache: true
 		}
 
 		read = ->
@@ -336,6 +336,8 @@ module.exports =
 					deps: [@path]
 					cacheDir: opts.cacheDir
 				.then (cache) ->
+					kit.log cache
+					file.deps = cache.deps
 					if cache.contents
 						kit.log cls.green('reader cache: ') + file.path
 						file.set cache.contents
@@ -441,17 +443,18 @@ module.exports =
 		write = ->
 			{ dest, contents } = @
 			if dest? and contents?
-				kit.log cls.cyan('writer: ') + dest
 				kit.outputFile dest + '', contents, @opts
 
 		_.extend (file) ->
-			if opts.isCache and @deps
+			if opts.isCache and @deps and @deps.length
 				kit.depsCache
 					deps: @deps
 					cacheDir: opts.cacheDir
 					contents: @contents
 				.then ->
+					kit.log cls.cyan('writer cache: ') + file.dest
 					write.call file
 			else
+				kit.log cls.cyan('writer: ') + @dest
 				write.call file
 		, isWriter: true, onEnd: write

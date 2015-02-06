@@ -33,7 +33,7 @@ unixSep = (p) -> p.replace /\\/g, '\/'
 describe 'Kit:', ->
 	after ->
 		for s in serverList
-			s.close()
+			try s.close()
 
 	it 'parseComment coffee', ->
 		path = 'test/fixtures/comment.coffee'
