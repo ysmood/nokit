@@ -1011,6 +1011,8 @@ _.extend kit, fs,
 				opts.opts
 			)
 
+			childPromise.watchPromise = watchPromise
+
 			childPromise.then (msg) ->
 				opts.onNormalExit msg
 			.catch (err) ->

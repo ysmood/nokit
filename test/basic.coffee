@@ -196,12 +196,13 @@ describe 'Kit:', ->
 	it 'monitorApp', (tdone) ->
 		p = 'test/fixtures/monitorApp-test.coffee'
 		kit.copySync 'test/fixtures/monitorApp.coffee', p
-		kit.monitorApp {
+		promise = kit.monitorApp {
 			bin: 'coffee'
 			args: [p]
 			onErrorExit: ({ code, signal }) ->
 				try
 					assert.strictEqual code, 10
+					promise.stop()
 					tdone()
 				catch err
 					tdone err
