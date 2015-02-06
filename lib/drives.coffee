@@ -193,7 +193,7 @@ module.exports =
 		, onEnd: ->
 			dir ?= @to
 			@dest = kit.path.join dir, name
-			@deps = [@dest].concat _.pluck @list, 'path'
+			@deps = [@dest + ''].concat _.pluck @list, 'path'
 			@set all
 
 	###*
@@ -291,7 +291,7 @@ module.exports =
 	 * ```
 	 * @return {Function}
 	###
-	mocha: (opts = {}) ->
+	mocha: _.extend (opts = {}) ->
 		_.defaults opts,
 			timeout: 5000
 
@@ -301,7 +301,7 @@ module.exports =
 		_.extend ->
 			mocha.addFile @path
 			@end()
-		, onEnd: ->
+		, isReader: true, onEnd: ->
 			new Promise (resolve, reject) ->
 				mocha.run (code) ->
 					if code == 0
@@ -320,16 +320,16 @@ module.exports =
 	 * ```
 	 * @return {Function}
 	###
-	reader: _.extend (opts = {}) ->
+	reader: (opts = {}) ->
 		_.defaults opts, {
-			isCache: true
+			isCache: false
 		}
 
 		read = ->
 			kit.readFile @path, @opts.encoding
 			.then @set
 
-		(file) ->
+		_.extend (file) ->
 			return if @isDir
 			if opts.isCache
 				kit.depsCache
@@ -337,13 +337,14 @@ module.exports =
 					cacheDir: opts.cacheDir
 				.then (cache) ->
 					if cache.contents
+						kit.log cls.green('reader cache: ') + file.path
 						file.set cache.contents
-						file.end()
+						file.gotoEnd()
 					else
 						read.call file
 			else
 				read.call file
-	, isReader: true
+		, isReader: true
 
 	###*
 	 * Compile stylus.
@@ -440,12 +441,8 @@ module.exports =
 		write = ->
 			{ dest, contents } = @
 			if dest? and contents?
-				if dest.name? and dest.ext?
-					dest.base = dest.name + dest.ext
-				dest = kit.path.format dest
-
 				kit.log cls.cyan('writer: ') + dest
-				kit.outputFile dest, contents, @opts
+				kit.outputFile dest + '', contents, @opts
 
 		_.extend (file) ->
 			if opts.isCache and @deps
@@ -457,4 +454,4 @@ module.exports =
 					write.call file
 			else
 				write.call file
-		, onEnd: write
+		, isWriter: true, onEnd: write

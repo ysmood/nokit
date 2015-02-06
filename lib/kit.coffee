@@ -1966,18 +1966,7 @@ _.extend kit, fs,
 	 * 	# Set null if you want raw buffer.
 	 * 	encoding: 'utf8'
 	 *
-	 * 	# Default `set` used in the `fileInfo` object.
-	 * 	set: (contents) ->
-	 *
 	 * 	cacheDir: '.nokit'
-	 *
-	 * 	# Default file reader plugin. Override it if you don't want
-	 * 	# warp read file contents automatically.
-	 * 	reader: kit.drives.reader
-	 *
-	 * 	# Default file writer plugin. Override it if you don't want
-	 * 	# warp write file contents automatically.
-	 * 	writer: kit.drives.writer
 	 * }
 	 * ```
 	 * @return {Object} The returned warp object has these members:
@@ -2000,10 +1989,12 @@ _.extend kit, fs,
 	 * 	# The dest root path.
 	 *  to: String
 	 *
+	 * 	baseDir: String
+	 *
 	 * 	# The destination path.
 	 * 	# Alter it if you want to change the output file's location.
 	 * 	# You can set it to string if you don't want "path.format".
-	 * 	# It's "valueOf" has been override by format function.
+	 * 	# It's "valueOf" will return "kit.path.join dir, name + ext".
 	 * 	dest: { root, dir, base, ext, name }
 	 *
 	 * 	# The file content.
@@ -2068,69 +2059,64 @@ _.extend kit, fs,
 
 		_.defaults opts, {
 			encoding: 'utf8'
-
-			set: (contents) ->
-				@contents = contents
-
-			reader: drives.reader opts
-
-			writer: drives.writer opts
 		}
 
-		pipeList = []
+		driveList = []
 		onEndList = []
 
-		opts.iter = (fileInfo, list) ->
-			list.push fileInfo
-			kit.flow(pipeList)(fileInfo)
+		reader = drives.reader opts
+		writer = drives.writer opts
 
-		runTask = (task) -> (fileInfo) ->
-			return if fileInfo.isEndWarp
-
-			if fileInfo.dest and not _.isObject fileInfo.dest
-				fileInfo.dest = _.extend new String,
-					kit.path.parse(fileInfo.dest),
+		runTask = (task) -> (info) ->
+			if _.isString info.dest
+				info.dest = _.extend kit.path.parse(info.dest),
 					valueOf: -> kit.path.join @dir, @name + @ext
-
 			try
-				Promise.resolve task.call(fileInfo, fileInfo)
-				.then (val) -> fileInfo
+				Promise.resolve task.call(info, info)
+				.then (val) -> info
 			catch err
 				Promise.reject err
 
-		end = -> @isEndWarp = true
+		initInfo = (info, to) ->
+			info.baseDir = opts.baseDir if opts.baseDir
+			if info.path?
+				info.dest = kit.path.join to,
+					kit.path.relative info.baseDir, info.path
+
+			_.extend info, {
+				to, opts
+				set: (contents) -> info.contents = contents
+				end: -> @tasks.length = 0
+				gotoEnd: -> @tasks.splice 0, @tasks.length - 1
+			}
 
 		warpper =
 			load: (task) ->
 				if task.isReader
-					opts.reader = task
+					reader = task
+				else if task.isWriter
+					writer = task
 				else
-					pipeList.push runTask(task)
+					driveList.push runTask task
 
 				if _.isFunction task.onEnd
-					onEndList.push runTask(task.onEnd)
+					onEndList.push runTask task.onEnd
 				warpper
 
 			run: (to = '.') ->
-				pipeList.unshift (fileInfo) ->
-					fileInfo.baseDir = opts.baseDir if opts.baseDir
-					runTask(opts.reader) _.extend(fileInfo, {
-						to
-						dest: kit.path.join to,
-							kit.path.relative fileInfo.baseDir, fileInfo.path
-						set: opts.set.bind fileInfo
-						end: end.bind fileInfo
-						opts
-					})
+				warpper.load reader
+				driveList.unshift (info) ->
+					runTask(reader) initInfo(info, to)
 
-				warpper.load opts.writer
+				warpper.load writer
+				driveList.push (info) ->
+					runTask(writer) info
 
+				opts.iter = (info, list) ->
+					info.tasks = _.clone driveList
+					kit.flow(info.tasks) info
 				kit.glob(from, opts).then (list) ->
-					fileInfo = { to, list, opts }
-					kit.flow(onEndList) _.extend fileInfo, {
-						set: opts.set.bind fileInfo
-						end: end.bind fileInfo
-					}
+					kit.flow(onEndList) initInfo({ tasks: onEndList }, to)
 
 	###*
 	 * Same as the unix `which` command.

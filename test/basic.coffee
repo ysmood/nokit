@@ -321,10 +321,10 @@ describe 'Kit:', ->
 	it 'warp custom reader', ->
 		tmp = 'test/fixtures/warp-custom-reader'
 
-		myReader = (info) ->
+		myReader = _.extend (info) ->
 			kit.readFile @path, 'hex'
 			.then @set
-		myReader.isReader = true
+		, isReader: true
 
 		kit.warp 'test/fixtures/**/*.js', { cacheDir }
 		.load myReader
