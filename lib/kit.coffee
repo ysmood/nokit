@@ -830,6 +830,8 @@ _.extend kit, fs,
 	 * ```coffee
 	 * {
 	 * 	isShowTime: true
+	 * 	logReg: process.env.logReg and new RegExp process.env.logReg
+	 * 	logTrace: process.env.logTrace == 'on'
 	 * }
 	 * ```
 	 * @example
@@ -849,12 +851,14 @@ _.extend kit, fs,
 
 		_.defaults opts, {
 			isShowTime: true
+			logReg: process.env.logReg and new RegExp process.env.logReg
+			logTrace: process.env.logTrace == 'on'
 		}
 
 		if not kit.lastLogTime
 			kit.lastLogTime = new Date
-			if process.env.logReg
-				kit.logReg = new RegExp(process.env.logReg)
+			if opts.logReg
+				kit.logReg = opts.logReg
 
 		if opts.isShowTime
 			time = new Date()
@@ -881,7 +885,7 @@ _.extend kit, fs,
 
 			console[action] str
 
-			if process.env.logTrace == 'on'
+			if opts.logTrace
 				err = cs.grey (new Error).stack
 					.replace(/.+\n.+\n.+/, '\nStack trace:')
 				console.log err
