@@ -2139,11 +2139,9 @@ _.extend kit, fs,
 				warpper
 
 			run: (to = '.') ->
-				warpper.load reader
 				driveList.unshift (info) ->
 					runTask(reader) initInfo(info, to)
 
-				warpper.load writer
 				driveList.push (info) ->
 					runTask(writer) info
 
