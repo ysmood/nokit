@@ -336,7 +336,6 @@ module.exports =
 					deps: [@path]
 					cacheDir: opts.cacheDir
 				.then (cache) ->
-					kit.log cache
 					file.deps = cache.deps
 					if cache.contents
 						kit.log cls.green('reader cache: ') + file.path

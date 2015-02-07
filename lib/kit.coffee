@@ -906,7 +906,12 @@ _.extend kit, fs,
 					.replace(/.+\n.+\n.+/, '\nStack trace:')
 				console.log err
 
-		if _.isString msg
+		if _.isObject msg
+			if opts.isShowTime
+				log "[#{time}] ->\n" + kit.xinspect(msg, opts), timeDelta
+			else
+				log kit.xinspect(msg, opts), timeDelta
+		else
 			if formats
 				formats.unshift msg
 				util = kit.require 'util', __dirname
@@ -916,11 +921,6 @@ _.extend kit, fs,
 				log "[#{time}] " + msg, timeDelta
 			else
 				log msg, timeDelta
-		else
-			if opts.isShowTime
-				log "[#{time}] ->\n" + kit.xinspect(msg, opts), timeDelta
-			else
-				log kit.xinspect(msg, opts), timeDelta
 
 		if action == 'error'
 			process.stdout.write "\u0007"
@@ -2097,60 +2097,57 @@ _.extend kit, fs,
 			cacheDir: '.nokit/warp'
 		}
 
-		driveList = []
-		onEndList = []
-
-		reader = drives.reader opts
-		writer = drives.writer opts
-
-		runTask = (task) -> (info) ->
+		safeDrive = (task) -> (info) ->
 			if _.isString info.dest
 				info.dest = _.extend kit.path.parse(info.dest),
 					valueOf: -> kit.path.join @dir, @name + @ext
-			try
-				Promise.resolve task.call(info, info)
-				.then (val) -> info
-			catch err
-				Promise.reject err
+			Promise.resolve task.call(info, info)
+			.then (val) -> info
 
-		initInfo = (info, to) ->
+		initInfo = (info) ->
 			info.baseDir = opts.baseDir if opts.baseDir
 			if info.path?
-				info.dest = kit.path.join to,
+				info.dest = kit.path.join info.to,
 					kit.path.relative info.baseDir, info.path
 
 			_.extend info, {
-				to, opts
+				opts
 				set: (contents) -> info.contents = contents
 				end: -> @tasks.length = 0
 				gotoEnd: -> @tasks.splice 0, @tasks.length - 1
 			}
 
-		warpper =
-			load: (task) ->
-				if task.isReader
-					reader = task
-				else if task.isWriter
-					writer = task
-				else
-					driveList.push runTask task
+		driveList = []
+		onEndList = []
+		taskList  = [] # safe drives
+		reader = drives.reader opts
+		writer = drives.writer opts
 
-				if _.isFunction task.onEnd
-					onEndList.push runTask task.onEnd
+		warpper =
+			load: (drive) ->
+				if drive.isReader
+					reader = drive
+				else if drive.isWriter
+					writer = drive
+				else
+					driveList.push drive
 				warpper
 
 			run: (to = '.') ->
-				driveList.unshift (info) ->
-					runTask(reader) initInfo(info, to)
+				driveList.unshift reader
+				driveList.push writer
 
-				driveList.push (info) ->
-					runTask(writer) info
+				_.map driveList, (drive) ->
+					if _.isFunction drive.onEnd
+						onEndList.push safeDrive drive.onEnd
+					taskList.push safeDrive drive
 
-				opts.iter = (info, list) ->
-					info.tasks = _.clone driveList
-					kit.flow(info.tasks) info
-				kit.glob(from, opts).then (list) ->
-					kit.flow(onEndList) initInfo({ tasks: onEndList }, to)
+				globOpts = _.extend {}, opts, iter: (info, list) ->
+					_.extend info, { to, tasks: _.clone(taskList) }
+					kit.flow(info.tasks) initInfo(info)
+
+				kit.glob(from, globOpts).then (list) ->
+					kit.flow(onEndList) initInfo({ to, tasks: onEndList })
 
 	###*
 	 * Same as the unix `which` command.
