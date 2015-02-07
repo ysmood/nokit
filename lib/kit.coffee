@@ -110,7 +110,7 @@ _.extend kit, fs,
 
 		if _.isArray list
 			iter = ->
-				el = list.shift()
+				[el] = list.splice 0, 1
 				if el == undefined
 					kit.async.end
 				else if _.isFunction el
@@ -499,7 +499,7 @@ _.extend kit, fs,
 	flow: (fns...) -> (val) ->
 		genIter = (arr) ->
 			(val) ->
-				fn = arr.shift()
+				[fn] = arr.splice 0, 1
 				if fn == undefined
 					kit.flow.end
 				else if _.isFunction fn
@@ -1126,7 +1126,7 @@ _.extend kit, fs,
 		for name, val of defaults
 			[type] = _.keys val
 			ret[name] = if set[type]
-				v = set[type].shift()
+				[v] = set[type].splice 0, 1
 				if v then v else val[type]
 			else
 				val[type]
@@ -2001,7 +2001,7 @@ _.extend kit, fs,
 	 * 	# Set null if you want raw buffer.
 	 * 	encoding: 'utf8'
 	 *
-	 * 	cacheDir: '.nokit'
+	 * 	cacheDir: '.nokit/warp'
 	 * }
 	 * ```
 	 * @return {Object} The returned warp object has these members:
@@ -2094,6 +2094,7 @@ _.extend kit, fs,
 
 		_.defaults opts, {
 			encoding: 'utf8'
+			cacheDir: '.nokit/warp'
 		}
 
 		driveList = []
