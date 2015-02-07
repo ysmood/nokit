@@ -14,12 +14,14 @@ It's one of the core lib of [nobone](https://github.com/ysmood/nobone).
 
 - Full promise sollution.
 - All functions are highly lazy designed, minimum boot time.
+- Test on Node 0.8 - 0.11 on Mac, Linux and Windows.
+- Light weight and self-reference.
 
 # Installation
 
 As a lib dependency, install it locally: `npm i nokit`.
 
-Nokit has provaided a cli tool like GNU Make. If you install it globally like this:
+Nokit has provided a cli tool like GNU Make. If you install it globally like this:
 
 `npm -g i nokit commander`
 
@@ -29,38 +31,47 @@ Nokit has provaided a cli tool like GNU Make. If you install it globally like th
 
 ## vs Gulp
 
+Here it will automatically lint, compile, compress and cache files by their extensions. You can goto Drives section to see what extensions are supported,
+or write your own.
+
 ```coffee
 kit = require 'nokit'
 drives = kit.require 'drives'
 
 kit.warp 'src/**/*.@(coffee|ls)'
-    # These two drive will automatically
-    # lint and compile files by their extensions.
-    .load drives.lint()
-    .load drives.compile { bare: false }
-
-    .load drives.uglify()
+    .load drives.auto 'lint'
+    .load drives.auto 'compile', '.coffee': { bare: false }
+    .load drives.auto 'compress'
     .load concat 'main.js'
 .run 'dist/path'
 
 ```
 
+### Write your own drives
+
+Nokit has already provided some handy examples drives, you
+can check them in the Drives section.
+
 ```coffee
-# nokit extends nofs, so we don't have to require nofs here.
 kit = require 'nokit'
 coffee = require 'coffee-script'
 
-# A plugin for coffee, a simple curried function.
+# A drive for coffee, a simple curried function.
 compiler = (opts) -> ->
+    # Change '.coffee' to '.js'.
     @dest.ext = '.js'
+
+    # This will enable the auto-cache.
+    @deps = [@path]
+
     @set coffee.compile(@contents, opts)
 
-# A plugin to prepend lisence to each file.
+# A drive to prepend lisence to each file.
 # Here "fileInfo.set" is the same with the "@set".
 lisencer = (lisence) -> (fileInfo) ->
     @set lisence + '\n' + @contents
 
-# A plugin to concat all files.
+# A drive to concat all files.
 concat = (outputFile) ->
     all = ''
 
@@ -69,6 +80,10 @@ concat = (outputFile) ->
         @end() # Disable all the followed plugins.
     , onEnd: ->
         @dest = @to + '/' + outputFile
+
+        # This will enable the auto-cache.
+        @deps = [@dest].concat _.pluck @list, 'path'
+
         @set all
 
 kit.warp 'src/**/*.coffee'
