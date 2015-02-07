@@ -226,10 +226,10 @@ _.extend kit, fs,
 
 		if opts.contents
 			switch opts.contents.constructor.name
-				when 'String', 'Buffer'
+				when 'Number', 'String', 'Buffer'
 					null
 				else
-					err = new Error 'only String and Buffer is allowed,
+					err = new Error 'only Number, String and Buffer is allowed,
 					but get: ' + opts.contents
 					return Promise.reject err
 
