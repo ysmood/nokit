@@ -836,11 +836,20 @@ _.extend kit, fs,
 	 * ```
 	 * @example
 	 * ```coffee
-	 * # To achieve "console.log A, B"
-	 * kit.log [A, B]
+	 * kit.log 'test'
+	 * # => '[2015-02-07 08:31:49] test'
+	 *
+	 * kit.log 'test', { isShowTime: false }
+	 * # => 'test'
+	 *
+	 * kit.log 'test', { logReg: /a/ }
+	 * # => ''
+	 *
+	 * kit.log '%s %s %d', ['a', 'b', 10]
+	 * # => '[2015-02-07 08:31:49] a b 10'
 	 * ```
 	###
-	log: (msg, action = 'log', opts = {}) ->
+	log: (args...) ->
 		cs = kit.require 'colors/safe', ->
 			if kit.isDevelopment()
 				cs.mode = 'none'
@@ -848,6 +857,13 @@ _.extend kit, fs,
 		if _.isObject action
 			opts = action
 			action = 'log'
+
+		msg = args[0]
+		{ action, formats, opts } = kit.defaultArgs args[1..], {
+			action: { String: 'log' }
+			formats: { Array: null }
+			opts: { Object: {} }
+		}
 
 		_.defaults opts, {
 			isShowTime: true
@@ -866,15 +882,15 @@ _.extend kit, fs,
 			kit.lastLogTime = time
 			time = cs.grey [
 				[
-					_.padLeft time.getFullYear(), 4, '0'
-					_.padLeft time.getMonth() + 1, 2, '0'
-					_.padLeft time.getDate(), 2, '0'
-				].join('-')
+					[time.getFullYear(), 4, '0']
+					[time.getMonth() + 1, 2, '0']
+					[time.getDate(), 2, '0']
+				].map((e) -> _.padLeft.apply 0, e).join('-')
 				[
-					_.padLeft time.getHours(), 2, '0'
-					_.padLeft time.getMinutes(), 2, '0'
-					_.padLeft time.getSeconds(), 2, '0'
-				].join(':')
+					[time.getHours(), 2, '0']
+					[time.getMinutes(), 2, '0']
+					[time.getSeconds(), 2, '0']
+				].map((e) -> _.padLeft.apply 0, e).join(':')
 			].join(' ')
 
 		log = ->
@@ -890,21 +906,38 @@ _.extend kit, fs,
 					.replace(/.+\n.+\n.+/, '\nStack trace:')
 				console.log err
 
-		if _.isObject msg
-			if opts.isShowTime
-				log "[#{time}] ->\n" + kit.xinspect(msg, opts), timeDelta
-			else
-				log kit.xinspect(msg, opts), timeDelta
-		else
+		if _.isString msg
+			if formats
+				formats.unshift msg
+				util = kit.require 'util', __dirname
+				msg = util.format.apply 0, formats
+
 			if opts.isShowTime
 				log "[#{time}] " + msg, timeDelta
 			else
 				log msg, timeDelta
+		else
+			if opts.isShowTime
+				log "[#{time}] ->\n" + kit.xinspect(msg, opts), timeDelta
+			else
+				log kit.xinspect(msg, opts), timeDelta
 
 		if action == 'error'
 			process.stdout.write "\u0007"
 
 		return
+
+	###*
+	 * Shortcut for logging multiple strings.
+	 * @param  {Any} args...
+	 * @example
+	 * ```coffee
+	 * kit.log 'test1', 'test2', test3'
+	 * # => [2015-02-07 08:31:49] test1 test2 test3
+	 * ```
+	###
+	logs: (args...) ->
+		kit.log args.join ' '
 
 	###*
 	 * Monitor an application and automatically restart it when file changed.

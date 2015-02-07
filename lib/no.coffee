@@ -63,14 +63,16 @@ task = ->
 
 	helpInfo = args.description + sep + depsInfo
 
-	names = args.name.split ' '
-	names.forEach (name) ->
+	alias = args.name.split ' '
+	aliasSym = ''
+	alias.forEach (name) ->
 		cmder.command name
 		.description helpInfo
+		kit.task name + aliasSym, args, -> args.fn cmder
 
-		helpInfo = 'alias' + ' -> '.cyan + names[0]
+		aliasSym = '@'.magenta
+		helpInfo = '-> '.cyan + alias[0]
 
-		kit.task name, args, -> args.fn cmder
 
 setGlobals = ->
 	option = cmder.option.bind cmder

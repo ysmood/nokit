@@ -35,6 +35,10 @@ describe 'Kit:', ->
 		for s in serverList
 			try s.close()
 
+	it 'log', ->
+		kit.logs 'a', 'b', 'c'
+		kit.log '%s + %s + %s', ['red'.red, 'green'.green, 'blue'.blue]
+
 	it 'parseComment coffee', ->
 		path = 'test/fixtures/comment.coffee'
 		kit.readFile path, 'utf8'
