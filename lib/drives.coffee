@@ -291,7 +291,7 @@ module.exports =
 	 * ```
 	 * @return {Function}
 	###
-	mocha: _.extend (opts = {}) ->
+	mocha: (opts = {}) ->
 		_.defaults opts,
 			timeout: 5000
 
