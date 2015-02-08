@@ -23,6 +23,12 @@ error = function(msg) {
   throw err;
 };
 
+
+/**
+ * Load nofile.
+ * @return {String} The path of found nofile.
+ */
+
 loadNofile = function() {
   var exts, lang, path, paths, _base, _i, _j, _len, _len1, _ref;
   if ((_base = process.env).nokitPreload == null) {
@@ -47,7 +53,7 @@ loadNofile = function() {
     path = paths[_j];
     if (kit.existsSync(path)) {
       require(path);
-      return kit.path.parse(path);
+      return path;
     }
   }
   return error('Cannot find nofile');
@@ -120,15 +126,15 @@ searchTasks = function() {
 };
 
 module.exports = launch = function() {
-  var tasks;
+  var nofilePath, tasks;
+  setGlobals();
+  nofilePath = loadNofile();
   cmder.option('-v, --version', 'output version of nokit', function() {
     var info;
     info = kit.readJsonSync(__dirname + '/../package.json');
     console.log(("nokit@" + info.version).green, ("(" + (require.resolve('./kit')) + ")").grey);
     return process.exit();
-  }).usage('[options] [tasks]    # supports fuzzy task name');
-  setGlobals();
-  loadNofile();
+  }).usage('[options] [fuzzy_task_name]...' + ("  # " + (kit.path.relative('.', nofilePath))).grey);
   if (!kit.task.list) {
     return;
   }

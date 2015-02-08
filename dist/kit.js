@@ -2242,11 +2242,8 @@ _.extend(kit, fs, {
   	 * 	# The base directory of the pattern.
   	 * 	baseDir: String
   	 *
-  	 * 	# The encoding of the contents.
-  	 * 	# Set null if you want raw buffer.
-  	 * 	encoding: 'utf8'
-  	 *
   	 * 	isCache: true
+  	 * 	cacheDir: '.nokit/warp'
   	 * }
   	 * ```
   	 * @return {Object} The returned warp object has these members:
@@ -2284,10 +2281,10 @@ _.extend(kit, fs, {
   	 *
   	 * 	isFromCache: Boolean
   	 *
-  	 * 	# Call it to disable all the followed drives.
-  	 * 	end: Function
-  	 *
   	 * 	stats: fs.Stats
+  	 *
+  	 * 	# Alter it to control the left drives dynamically.
+  	 * 	tasks: [Function]
   	 *
   	 * 	# All the globbed files.
   	 * 	list: Array
@@ -2346,7 +2343,6 @@ _.extend(kit, fs, {
       _base.jhash = new (kit.require('jhash').constructor);
     }
     _.defaults(opts, {
-      encoding: 'utf8',
       cacheDir: '.nokit/warp'
     });
     runDrive = function(task) {
@@ -2377,12 +2373,6 @@ _.extend(kit, fs, {
         opts: opts,
         set: function(contents) {
           return info.contents = contents;
-        },
-        end: function() {
-          return this.tasks.length = 0;
-        },
-        gotoWriter: function() {
-          return this.tasks.splice(0, this.tasks.length - 1);
         }
       });
     };

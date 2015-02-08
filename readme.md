@@ -49,8 +49,9 @@ kit.warp 'src/**/*.@(coffee|ls)'
 
 ### Write your own drives
 
-Nokit has already provided some handy examples drives, you
-can check them in the Drives section.
+Nokit has already provided some handy example drives, you
+can check them in the Drives section. It's fairly easy to
+write your own.
 
 ```coffee
 kit = require 'nokit'
@@ -58,12 +59,8 @@ coffee = require 'coffee-script'
 
 # A drive for coffee, a simple curried function.
 compiler = (opts) -> ->
-    # Change '.coffee' to '.js'.
+    # Change extension from '.coffee' to '.js'.
     @dest.ext = '.js'
-
-    # This will enable the auto-cache.
-    @deps = [@path]
-
     @set coffee.compile(@contents, opts)
 
 # A drive to prepend lisence to each file.
@@ -71,20 +68,23 @@ compiler = (opts) -> ->
 lisencer = (lisence) -> (fileInfo) ->
     @set lisence + '\n' + @contents
 
-# A drive to concat all files.
+# A drive to concat all files. It will override the default writer.
 concat = (outputFile) ->
     all = ''
 
     kit._.extend ->
-        all += @contents
-        @end() # Disable all the followed plugins.
-    , onEnd: ->
-        @dest = @to + '/' + outputFile
+        if @isWarpEnd
+            # This will enable the auto-cache.
+            @deps = kit._.pluck @list, 'path'
 
-        # This will enable the auto-cache.
-        @deps = [@dest].concat _.pluck @list, 'path'
+            @dest = @to + '/' + outputFile
+            @set all
 
-        @set all
+            # Call the build-in writer.
+            kit.drives.writer(@opts).call @, @
+        else
+            all += @contents
+    , isWriter: true
 
 kit.warp 'src/**/*.coffee'
     .load compiler bare: true
@@ -155,12 +155,14 @@ task 'sequential', ['clean', 'build'], true, ->
     kit.log 'Run clean and build non-concurrently.'
 ```
 
-Then you can run it in command line: `no`. Just that simple, without action
-argument, `no` will try to call the `default` action directly.
+Then you can run it in command line: `no`. Just that simple, without task
+name, `no` will try to call the `default` task directly.
 
 You can run `no -h` to display help info.
 
 Call `no build` or `no b` to run the `build` task.
+
+For real world example, just see the [nofile](nofile.coffee?source) that nokit is using.
 
 For more doc for the `option` goto [commander.js](https://github.com/tj/commander.js).
 
@@ -1320,7 +1322,7 @@ Goto [changelog](doc/changelog.md)
     The `url` module of [io.js](iojs.org).
     You must `kit.require 'url'` before using it.
 
-- ## **[warp](lib/kit.coffee?source#L2101)**
+- ## **[warp](lib/kit.coffee?source#L2098)**
 
     Works much like `gulp.src`, but with Promise instead.
     The warp control and error handling is more pleasant.
@@ -1338,11 +1340,8 @@ Goto [changelog](doc/changelog.md)
         	# The base directory of the pattern.
         	baseDir: String
 
-        	# The encoding of the contents.
-        	# Set null if you want raw buffer.
-        	encoding: 'utf8'
-
         	isCache: true
+        	cacheDir: '.nokit/warp'
         }
         ```
 
@@ -1383,10 +1382,10 @@ Goto [changelog](doc/changelog.md)
 
         	isFromCache: Boolean
 
-        	# Call it to disable all the followed drives.
-        	end: Function
-
         	stats: fs.Stats
+
+        	# Alter it to control the left drives dynamically.
+        	tasks: [Function]
 
         	# All the globbed files.
         	list: Array
@@ -1437,7 +1436,7 @@ Goto [changelog](doc/changelog.md)
         .run 'dist'
         ```
 
-- ## **[which](lib/kit.coffee?source#L2178)**
+- ## **[which](lib/kit.coffee?source#L2173)**
 
     Same as the unix `which` command.
     You must `kit.require 'which'` before using it.
@@ -1448,14 +1447,14 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Promise_ }
 
-- ## **[whichSync](lib/kit.coffee?source#L2185)**
+- ## **[whichSync](lib/kit.coffee?source#L2180)**
 
     Sync version of `which`.
     You must `kit.require 'whichSync'` before using it.
 
     - **<u>type</u>**: { _Function_ }
 
-- ## **[xinspect](lib/kit.coffee?source#L2196)**
+- ## **[xinspect](lib/kit.coffee?source#L2191)**
 
     For debugging. Dump a colorful object.
 
@@ -1472,7 +1471,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _String_ }
 
-- ## **[xopen](lib/kit.coffee?source#L2219)**
+- ## **[xopen](lib/kit.coffee?source#L2214)**
 
     Open a thing that your system can recognize.
     Now only support Windows, OSX or system that installed 'xdg-open'.
@@ -1612,7 +1611,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[jshint](lib/drives.coffee?source#L233)**
+- ## **[jshint](lib/drives.coffee?source#L232)**
 
     Lint js via `jshint`.
 
@@ -1628,7 +1627,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[less](lib/drives.coffee?source#L264)**
+- ## **[less](lib/drives.coffee?source#L263)**
 
     Compile less.
 
@@ -1636,7 +1635,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[livescript](lib/drives.coffee?source#L291)**
+- ## **[livescript](lib/drives.coffee?source#L290)**
 
     Livescript compiler.
 
@@ -1646,7 +1645,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[mocha](lib/drives.coffee?source#L320)**
+- ## **[mocha](lib/drives.coffee?source#L319)**
 
     mocha test
 
@@ -1670,12 +1669,13 @@ Goto [changelog](doc/changelog.md)
         ```coffee
         {
         	isCache: true
+        	endcoding: 'utf8'
         }
         ```
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[stylus](lib/drives.coffee?source#L399)**
+- ## **[stylus](lib/drives.coffee?source#L400)**
 
     Compile stylus.
 
@@ -1702,7 +1702,7 @@ Goto [changelog](doc/changelog.md)
         }
         ```
 
-- ## **[uglifyjs](lib/drives.coffee?source#L439)**
+- ## **[uglifyjs](lib/drives.coffee?source#L440)**
 
     uglify-js processor
 
@@ -1722,7 +1722,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[writer](lib/drives.coffee?source#L467)**
+- ## **[writer](lib/drives.coffee?source#L468)**
 
     Output file by `contents` and `dest`.
     If the 'ext' or 'name' is not null,

@@ -49,8 +49,9 @@ kit.warp 'src/**/*.@(coffee|ls)'
 
 ### Write your own drives
 
-Nokit has already provided some handy examples drives, you
-can check them in the Drives section.
+Nokit has already provided some handy example drives, you
+can check them in the Drives section. It's fairly easy to
+write your own.
 
 ```coffee
 kit = require 'nokit'
@@ -58,12 +59,8 @@ coffee = require 'coffee-script'
 
 # A drive for coffee, a simple curried function.
 compiler = (opts) -> ->
-    # Change '.coffee' to '.js'.
+    # Change extension from '.coffee' to '.js'.
     @dest.ext = '.js'
-
-    # This will enable the auto-cache.
-    @deps = [@path]
-
     @set coffee.compile(@contents, opts)
 
 # A drive to prepend lisence to each file.
@@ -71,20 +68,23 @@ compiler = (opts) -> ->
 lisencer = (lisence) -> (fileInfo) ->
     @set lisence + '\n' + @contents
 
-# A drive to concat all files.
+# A drive to concat all files. It will override the default writer.
 concat = (outputFile) ->
     all = ''
 
     kit._.extend ->
-        all += @contents
-        @end() # Disable all the followed plugins.
-    , onEnd: ->
-        @dest = @to + '/' + outputFile
+        if @isWarpEnd
+            # This will enable the auto-cache.
+            @deps = kit._.pluck @list, 'path'
 
-        # This will enable the auto-cache.
-        @deps = [@dest].concat _.pluck @list, 'path'
+            @dest = @to + '/' + outputFile
+            @set all
 
-        @set all
+            # Call the build-in writer.
+            kit.drives.writer(@opts).call @, @
+        else
+            all += @contents
+    , isWriter: true
 
 kit.warp 'src/**/*.coffee'
     .load compiler bare: true
@@ -155,12 +155,14 @@ task 'sequential', ['clean', 'build'], true, ->
     kit.log 'Run clean and build non-concurrently.'
 ```
 
-Then you can run it in command line: `no`. Just that simple, without action
-argument, `no` will try to call the `default` action directly.
+Then you can run it in command line: `no`. Just that simple, without task
+name, `no` will try to call the `default` task directly.
 
 You can run `no -h` to display help info.
 
 Call `no build` or `no b` to run the `build` task.
+
+For real world example, just see the [nofile](nofile.coffee?source) that nokit is using.
 
 For more doc for the `option` goto [commander.js](https://github.com/tj/commander.js).
 

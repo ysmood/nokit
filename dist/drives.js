@@ -263,8 +263,7 @@ module.exports = {
         return kit.drives.writer(this.opts).call(this, this);
       } else {
         all += this.contents + '\n';
-        kit.log(cls.cyan('concat: ') + this.path);
-        return this.end();
+        return kit.log(cls.cyan('concat: ') + this.path);
       }
     }, {
       isWriter: true
@@ -407,9 +406,10 @@ module.exports = {
             }
           });
         });
+      } else {
+        mocha.addFile(this.path);
+        return this.tasks.length = 0;
       }
-      mocha.addFile(this.path);
-      return this.end();
     }, {
       isReader: true,
       isWriter: true
@@ -422,6 +422,7 @@ module.exports = {
   	 * ```coffee
   	 * {
   	 * 	isCache: true
+  	 * 	endcoding: 'utf8'
   	 * }
   	 * ```
   	 * @return {Function}
@@ -432,10 +433,11 @@ module.exports = {
       opts = {};
     }
     _.defaults(opts, {
-      isCache: true
+      isCache: true,
+      encoding: 'utf8'
     });
     read = function() {
-      return kit.readFile(this.path, this.opts.encoding).then(this.set);
+      return kit.readFile(this.path, opts.encoding).then(this.set);
     };
     return _.extend(function(file) {
       if (this.isDir) {
