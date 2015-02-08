@@ -19,6 +19,7 @@ module.exports =
 		clean = kit.requireOptional 'clean-css', __dirname
 
 		->
+			@deps = [@path]
 			@set (new clean(opts).minify @contents).styles
 			kit.log cls.cyan('clean css: ') + @dest
 	, compress: ['.css']
@@ -80,6 +81,7 @@ module.exports =
 		Reporter = require 'coffeelint/lib/reporters/' + opts.reporter
 
 		->
+			@deps = [@path]
 			errorReport = new coffeelint.getErrorReport()
 			errorReport.lint @path, @contents, opts.config
 			reporter = new Reporter errorReport, opts
@@ -91,7 +93,8 @@ module.exports =
 	, lint: ['.coffee']
 
 	###*
-	 * Parse commment from a js or coffee file, and output a markdown string.
+	 * Parse commment from a js, coffee, or livescript file,
+	 * and output a markdown string.
 	 * @param  {String} path
 	 * @param  {Object} opts Defaults:
 	 * ```coffee
@@ -117,7 +120,30 @@ module.exports =
 
 		doc = {}
 
+		cache = null
+		writer = kit.drives.writer opts
+
 		_.extend (file) ->
+			if @isWarpEnd
+				if cache
+					_.extend @, cache
+					return writer.call @, @
+
+				@deps = _.pluck @list, 'path'
+				@dest = kit.path.join @to, opts.out
+				return kit.readFile opts.tpl, 'utf8'
+				.then (tpl) ->
+					file.set _.template(tpl) { doc }
+				.then ->
+					kit.log cls.cyan('comment2md: ') +
+						kit.path.join(file.to, opts.out)
+					writer.call file, file
+
+			return if cache
+
+			if @isFromCache
+				return cache = @
+
 			opts.formatComment.name = ({ name, line }) ->
 				name = name.replace 'self.', ''
 				link = "#{file.path}?source#L#{line}"
@@ -125,14 +151,8 @@ module.exports =
 
 			comments = kit.parseComment @contents + '', opts.parseComment
 			doc[@path] = kit.formatComment comments, opts.formatComment
-			kit.log cls.cyan('comment2md: ') + kit.path.join(@to, opts.out)
 
-			@end()
-		, onEnd: (file) ->
-			@dest = kit.path.join @to, opts.out
-			kit.readFile opts.tpl, 'utf8'
-			.then (tpl) ->
-				file.set _.template(tpl) { doc }
+		, isWriter: true, isHandleCache: true
 
 	###*
 	 * Auto-compiler file by extension. It will search through
@@ -216,6 +236,7 @@ module.exports =
 			opts.config = kit.readJsonSync opts.config
 
 		(file) ->
+			@deps = [@path]
 			if JSHINT @contents, opts.config, opts.global
 				kit.log cls.cyan('jshint: ') + @path
 				return
@@ -245,6 +266,7 @@ module.exports =
 			opts.filename = @path
 			less.render @contents + '', opts
 			.then (output) ->
+				file.deps = _.keys output.imports
 				file.set output.css
 				kit.log cls.cyan('less: ') + file.path
 			, (err) ->
@@ -271,6 +293,7 @@ module.exports =
 		Livescript = kit.requireOptional 'Livescript', __dirname, '>=1.2.0'
 
 		->
+			@deps = [@path]
 			opts.filename = @path
 			@dest.ext = '.js'
 			try
@@ -315,7 +338,6 @@ module.exports =
 	 * ```coffee
 	 * {
 	 * 	isCache: true
-	 * 	cacheDir: '.nokit'
 	 * }
 	 * ```
 	 * @return {Function}
@@ -337,10 +359,12 @@ module.exports =
 					cacheDir: opts.cacheDir
 				.then (cache) ->
 					file.deps = cache.deps
-					if cache.contents
-						kit.log cls.green('reader cache: ') + file.path
+					if cache.contents?
+						kit.log cls.green('reader cache: ') +
+							file.deps.join cls.grey ', '
+						file.dest = cache.dest
+						file.isFromCache = true
 						file.set cache.contents
-						file.gotoEnd()
 					else
 						read.call file
 			else
@@ -387,6 +411,7 @@ module.exports =
 
 			kit.promisify(styl.render, styl)()
 			.then (css) ->
+				file.deps = styl.deps()
 				file.set css
 				kit.log cls.cyan('stylus: ') + file.path
 	, compile: ['.styl']
@@ -417,6 +442,7 @@ module.exports =
 					return /@preserve|@license|@cc_on/i.test text
 
 		->
+			@deps = [@path]
 			@set (uglify.minify @contents + '', opts).code
 			kit.log cls.cyan('uglifyjs: ') + @dest
 	, compress: ['.js']
@@ -429,7 +455,6 @@ module.exports =
 	 * ```coffee
 	 * {
 	 * 	isCache: true
-	 * 	cacheDir: '.nokit'
 	 * }
 	 * ```
 	 * @return {Function}
@@ -441,19 +466,23 @@ module.exports =
 
 		write = ->
 			{ dest, contents } = @
-			if dest? and contents?
-				kit.outputFile dest + '', contents, @opts
+			return if not dest? or not contents?
 
-		_.extend (file) ->
-			if opts.isCache and @deps and @deps.length
-				kit.depsCache
-					deps: @deps
-					cacheDir: opts.cacheDir
-					contents: @contents
-				.then ->
-					kit.log cls.cyan('writer cache: ') + file.dest
-					write.call file
-			else
-				kit.log cls.cyan('writer: ') + @dest
-				write.call file
-		, isWriter: true, onEnd: write
+			kit.log cls.cyan('writer: ') + @dest
+			p = kit.outputFile dest + '', contents, @opts
+
+			if not opts.isCache or not @deps or @isFromCache
+				return p
+
+			kit.log cls.cyan('writer cache: ') + @dest
+			pCache = kit.depsCache
+				dest: @dest + ''
+				deps: @deps
+				cacheDir: @opts.cacheDir
+				contents: @contents
+
+			Promise.all [p, pCache]
+
+		_.extend write,
+			isWriter: true
+			isHandleCache: true

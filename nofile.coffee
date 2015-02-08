@@ -40,7 +40,7 @@ task 'build b', ['clean'], 'build project', (opts) ->
 		.run 'dist'
 
 	buildDoc = ->
-		kit.warp ['lib/kit.coffee', 'lib/drives.coffee']
+		kit.warp 'lib/{drives,kit}.coffee'
 		.load kit.drives.comment2md {
 			h: 2
 			tpl: 'doc/readme.tpl.md'

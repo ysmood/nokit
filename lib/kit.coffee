@@ -169,9 +169,12 @@ _.extend kit, fs,
 	 * @param  {Object} info Not optional.
 	 * ```coffee
 	 * {
+	 * 	# The path of the output file.
+	 * 	dest: String
+	 *
 	 * 	# The first item is the key path, others are
 	 * 	# its dependencies.
-	 * 	deps: String | Array
+	 * 	deps: Array
 	 *
 	 * 	contents: undefined
 	 *
@@ -194,12 +197,14 @@ _.extend kit, fs,
 	 * ```coffee
 	 * # Set cache
 	 * kit.depsCache {
-	 * 	deps: 'a.coffee'
+	 * 	dest: 'index.css'
+	 * 	deps: ['index.less', 'b.less', 'c.less']
 	 * 	contents: 'var a = function() {}' # The contents to cache.
 	 * }
 	 *
 	 * # Get cache
-	 * kit.depsCache { deps: ['a.coffee'] }
+	 * # You don't have to sepecify 'b.less', 'c.less'.
+	 * kit.depsCache { deps: ['index.less'] }
 	 * .then (info) ->
 	 * 	if info.contents?
 	 * 		kit.log 'cache is newer'.
@@ -224,6 +229,7 @@ _.extend kit, fs,
 		)
 		cacheInfoPath = cachePath + '.json'
 
+		info = {}
 		if opts.contents
 			switch opts.contents.constructor.name
 				when 'Number', 'String', 'Buffer'
@@ -235,6 +241,7 @@ _.extend kit, fs,
 
 			info = {
 				type: opts.contents.constructor.name
+				dest: opts.dest
 				deps: {}
 			}
 			Promise.all [
@@ -263,10 +270,10 @@ _.extend kit, fs,
 				if _.all latestList
 					kit.readFile cachePath, info.encoding
 					.then (contents) ->
-						opts.isFromCache = true
-						opts.contents = contents
-			.catch (err) -> opts.cacheError = err
-			.then -> opts
+						info.deps = _.keys info.deps
+						info.contents = contents
+			.catch (err) -> info.cacheError = err
+			.then -> info
 
 	###*
 	 * The [colors](https://github.com/Marak/colors.js) lib
@@ -285,8 +292,8 @@ _.extend kit, fs,
 	 * {
 	 * 	bin: 'node'
 	 * 	args: ['app.js']
-	 * 	stdout: 'stdout.log' # Can also be a stream
-	 * 	stderr: 'stderr.log' # Can also be a stream
+	 * 	stdout: 'stdout.log' # Can also be a fd
+	 * 	stderr: 'stderr.log' # Can also be a fd
 	 * }
 	 * ```
 	 * @return {Porcess} The daemonized process.
@@ -2001,7 +2008,7 @@ _.extend kit, fs,
 	 * 	# Set null if you want raw buffer.
 	 * 	encoding: 'utf8'
 	 *
-	 * 	cacheDir: '.nokit/warp'
+	 * 	isCache: true
 	 * }
 	 * ```
 	 * @return {Object} The returned warp object has these members:
@@ -2037,7 +2044,9 @@ _.extend kit, fs,
 	 *
 	 * 	isDir: Boolean
 	 *
-	 * 	# Call it to disable all the followed plugins.
+	 * 	isFromCache: Boolean
+	 *
+	 * 	# Call it to disable all the followed drives.
 	 * 	end: Function
 	 *
 	 * 	stats: fs.Stats
@@ -2045,7 +2054,7 @@ _.extend kit, fs,
 	 * 	# All the globbed files.
 	 * 	list: Array
 	 *
-	 * 	# The opts you passed to "nofs.glob".
+	 * 	# The opts you passed to "kit.warp", it will be extended.
 	 * 	opts: Object
 	 * }
 	 * ```
@@ -2091,13 +2100,17 @@ _.extend kit, fs,
 	###
 	warp: (from, opts = {}) ->
 		drives = kit.require 'drives'
+		kit.warp.jhash ?= new (kit.require('jhash').constructor)
 
 		_.defaults opts, {
 			encoding: 'utf8'
 			cacheDir: '.nokit/warp'
 		}
 
-		safeDrive = (task) -> (info) ->
+		runDrive = (task) -> (info) ->
+			if info.isFromCache and not task.isHandleCache
+				return info
+
 			if _.isString info.dest
 				info.dest = _.extend kit.path.parse(info.dest),
 					valueOf: -> kit.path.join @dir, @name + @ext
@@ -2114,11 +2127,14 @@ _.extend kit, fs,
 				opts
 				set: (contents) -> info.contents = contents
 				end: -> @tasks.length = 0
-				gotoEnd: -> @tasks.splice 0, @tasks.length - 1
+				gotoWriter: -> @tasks.splice 0, @tasks.length - 1
 			}
 
+		hashDrives = (ds) ->
+			str = _.map(ds, (d) -> d.toString()).join()
+			kit.warp.jhash.hash str, true
+
 		driveList = []
-		onEndList = []
 		taskList  = [] # safe drives
 		reader = drives.reader opts
 		writer = drives.writer opts
@@ -2137,17 +2153,20 @@ _.extend kit, fs,
 				driveList.unshift reader
 				driveList.push writer
 
-				_.map driveList, (drive) ->
-					if _.isFunction drive.onEnd
-						onEndList.push safeDrive drive.onEnd
-					taskList.push safeDrive drive
+				opts.cacheDir += '/' + hashDrives(driveList)
+
+				_.each driveList, (drive) ->
+					taskList.push runDrive drive
 
 				globOpts = _.extend {}, opts, iter: (info, list) ->
-					_.extend info, { to, tasks: _.clone(taskList) }
-					kit.flow(info.tasks) initInfo(info)
+					list.push info
+					info.baseDir = opts.baseDir if opts.baseDir
+					_.extend info, { tasks: _.clone(taskList), to, list }
+
+					kit.flow(info.tasks) initInfo info
 
 				kit.glob(from, globOpts).then (list) ->
-					kit.flow(onEndList) initInfo({ to, tasks: onEndList })
+					runDrive(writer) initInfo { isWarpEnd: true, to, list }
 
 	###*
 	 * Same as the unix `which` command.
