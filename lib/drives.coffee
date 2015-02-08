@@ -99,26 +99,34 @@ module.exports =
 	 * @param  {Object} opts Defaults:
 	 * ```coffee
 	 * {
-	 * 	parseComment: {}
-	 * 	formatComment: {
-	 * 		name: ({ name, line }) ->
-	 * 			name = name.replace 'self.', ''
-	 * 			link = "#{path}?source#L#{line}"
-	 * 			"- \#\#\# **[#{name}](#{link})**\n\n"
-	 * 	}
+	 * 	# Output doc path.
+	 * 	out: 'readme.md'
+	 *
+	 * 	# jst template path.
+	 * 	tpl: 'readme.jst.md'
+	 *
+	 * 	# Init doc info.
+	 * 	doc: {}
+	 *
+	 * 	# Header size.
+	 * 	h: 3
+	 *
+	 * 	parseComment: -> ...
+	 * 	formatComment: -> ...
 	 * }
 	 * ```
 	 * @return {Function}
+	 * @example
+	 * The nofile of nokit shows how to use it.
 	###
 	comment2md: (opts = {}) ->
 		_.defaults opts,
 			out: 'readme.md'
-			tpl: 'readme.tpl.md'
+			tpl: 'readme.jst.md'
+			doc: {}
 			h: 3
 			parseComment: {}
 			formatComment: {}
-
-		doc = {}
 
 		cache = null
 
@@ -133,7 +141,7 @@ module.exports =
 				@dest = kit.path.join @to, opts.out
 				return kit.readFile opts.tpl, 'utf8'
 				.then (tpl) ->
-					file.set _.template(tpl) { doc }
+					file.set _.template(tpl) { doc: opts.doc }
 				.then ->
 					kit.log cls.cyan('comment2md: ') +
 						kit.path.join(file.to, opts.out)
@@ -150,7 +158,7 @@ module.exports =
 				"- #{_.repeat '#', opts.h} **[#{name}](#{link})**\n\n"
 
 			comments = kit.parseComment @contents + '', opts.parseComment
-			doc[@path] = kit.formatComment comments, opts.formatComment
+			opts.doc[@path] = kit.formatComment comments, opts.formatComment
 
 		, isWriter: true, isHandleCache: true
 

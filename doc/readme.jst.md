@@ -124,12 +124,16 @@ Assume your file content is:
 
 ```coffee
 # There are some global variables you can call directly:
-# _: lodash
-# option: commander.option
-# task: kit.task
-# warp: kit.warp
-# kit: kit
-# Promise: kit.Promise
+#   option: commander.option
+#   task: kit.task
+
+# It will expose some handy helpers to global.
+#   kit: kit
+#   _: lodash
+#   Promise: Bluebird
+#   warp: kit.warp
+#   drives: kit.drives
+require 'nokit/global'
 
 option '-w, --hello [world]', 'Just a test option', ''
 

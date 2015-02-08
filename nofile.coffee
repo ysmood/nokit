@@ -50,7 +50,7 @@ task 'build b', ['clean'], 'build project', (opts) ->
 	buildDoc = ->
 		kit.warp 'lib/{drives,kit}.coffee'
 		.load kit.drives.comment2md
-			h: 2, tpl: 'doc/readme.tpl.md'
+			h: 2, tpl: 'doc/readme.jst.md'
 		.run()
 
 	start = kit.flow [
