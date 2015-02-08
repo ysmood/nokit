@@ -121,10 +121,10 @@ module.exports =
 		doc = {}
 
 		cache = null
-		writer = kit.drives.writer opts
 
 		_.extend (file) ->
 			if @isWarpEnd
+				writer = kit.drives.writer opts
 				if cache
 					_.extend @, cache
 					return writer.call @, @
@@ -207,14 +207,17 @@ module.exports =
 		all = ''
 
 		_.extend ->
-			all += @contents + '\n'
-			kit.log cls.cyan('concat: ') + @path
-			@end()
-		, onEnd: ->
-			dir ?= @to
-			@dest = kit.path.join dir, name
-			@deps = [@dest + ''].concat _.pluck @list, 'path'
-			@set all
+			if @isWarpEnd
+				dir ?= @to
+				@dest = kit.path.join dir, name
+				@deps = _.pluck @list, 'path'
+				@set all
+				kit.drives.writer(@opts).call @, @
+			else
+				all += @contents + '\n'
+				kit.log cls.cyan('concat: ') + @path
+				@end()
+		, isWriter: true
 
 	###*
 	 * Lint js via `jshint`.
@@ -322,15 +325,17 @@ module.exports =
 		mocha = new Mocha opts
 
 		_.extend ->
+			if @isWarpEnd
+				return new Promise (resolve, reject) ->
+					mocha.run (code) ->
+						if code == 0
+							resolve()
+						else
+							reject { code }
+
 			mocha.addFile @path
 			@end()
-		, isReader: true, onEnd: ->
-			new Promise (resolve, reject) ->
-				mocha.run (code) ->
-					if code == 0
-						resolve()
-					else
-						reject { code }
+		, isReader: true, isWriter: true
 
 	###*
 	 * read file and set `contents`

@@ -2141,10 +2141,11 @@ _.extend kit, fs,
 
 		warpper =
 			load: (drive) ->
-				if drive.isReader
-					reader = drive
-				else if drive.isWriter
-					writer = drive
+				if drive.isReader or drive.isWriter
+					if drive.isWriter
+						writer = drive
+					else
+						reader = drive
 				else
 					driveList.push drive
 				warpper
