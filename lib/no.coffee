@@ -15,6 +15,10 @@ error = (msg) ->
 	err.source = 'nokit'
 	throw err
 
+###*
+ * Load nofile.
+ * @return {String} The path of found nofile.
+###
 loadNofile = ->
 	process.env.nokitPreload ?= 'coffee-cache coffee-script/register'
 	for lang in process.env.nokitPreload.split ' '
@@ -31,7 +35,7 @@ loadNofile = ->
 	for path in paths
 		if kit.existsSync path
 			require path
-			return kit.path.parse path
+			return path
 
 	error 'Cannot find nofile'
 
@@ -73,7 +77,6 @@ task = ->
 		aliasSym = '@'.magenta
 		helpInfo = '-> '.cyan + alias[0]
 
-
 setGlobals = ->
 	option = cmder.option.bind cmder
 
@@ -97,6 +100,9 @@ searchTasks = ->
 
 module.exports = launch = ->
 
+	setGlobals()
+	nofilePath = loadNofile()
+
 	cmder
 	.option '-v, --version',
 		'output version of nokit',
@@ -105,10 +111,8 @@ module.exports = launch = ->
 			console.log "nokit@#{info.version}".green,
 				"(#{require.resolve('./kit')})".grey
 			process.exit()
-	.usage '[options] [tasks]    # supports fuzzy task name'
-
-	setGlobals()
-	loadNofile()
+	.usage '[options] [fuzzy_task_name]...' +
+		"  # #{kit.path.relative '.', nofilePath}".grey
 
 	if not kit.task.list
 		return

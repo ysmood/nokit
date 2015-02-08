@@ -14,10 +14,13 @@ task 'lab l', 'run and monitor "test/lab.coffee"', ->
 		args: ['test/lab.coffee']
 	}
 
-task 'clean', 'clean dist', ->
-	kit.remove 'dist'
+task 'clean', 'clean dist & cache', (opts) ->
+	kit.async [
+		kit.remove 'dist'
+		kit.remove '.nokit' if opts.all
+	]
 
-option '-a, --all', 'Rebuild with dependencies, such as rebuild lodash.'
+option '-a, --all', 'rebuild with dependencies, such as rebuild lodash.'
 task 'build b', ['clean'], 'build project', (opts) ->
 	kit.require 'drives'
 
@@ -41,10 +44,8 @@ task 'build b', ['clean'], 'build project', (opts) ->
 
 	buildDoc = ->
 		kit.warp 'lib/{drives,kit}.coffee'
-		.load kit.drives.comment2md {
-			h: 2
-			tpl: 'doc/readme.tpl.md'
-		}
+		.load kit.drives.comment2md
+			h: 2, tpl: 'doc/readme.tpl.md'
 		.run()
 
 	start = kit.flow [
