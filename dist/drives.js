@@ -141,7 +141,7 @@ module.exports = {
   	 * @return {Function}
    */
   comment2md: function(opts) {
-    var cache, doc, writer;
+    var cache, doc;
     if (opts == null) {
       opts = {};
     }
@@ -154,10 +154,10 @@ module.exports = {
     });
     doc = {};
     cache = null;
-    writer = kit.drives.writer(opts);
     return _.extend(function(file) {
-      var comments;
+      var comments, writer;
       if (this.isWarpEnd) {
+        writer = kit.drives.writer(opts);
         if (cache) {
           _.extend(this, cache);
           return writer.call(this, this);
@@ -253,18 +253,21 @@ module.exports = {
     var all;
     all = '';
     return _.extend(function() {
-      all += this.contents + '\n';
-      kit.log(cls.cyan('concat: ') + this.path);
-      return this.end();
-    }, {
-      onEnd: function() {
+      if (this.isWarpEnd) {
         if (dir == null) {
           dir = this.to;
         }
         this.dest = kit.path.join(dir, name);
-        this.deps = [this.dest + ''].concat(_.pluck(this.list, 'path'));
-        return this.set(all);
+        this.deps = _.pluck(this.list, 'path');
+        this.set(all);
+        return kit.drives.writer(this.opts).call(this, this);
+      } else {
+        all += this.contents + '\n';
+        kit.log(cls.cyan('concat: ') + this.path);
+        return this.end();
       }
+    }, {
+      isWriter: true
     });
   },
 
@@ -392,11 +395,7 @@ module.exports = {
     Mocha = kit.requireOptional('mocha', __dirname);
     mocha = new Mocha(opts);
     return _.extend(function() {
-      mocha.addFile(this.path);
-      return this.end();
-    }, {
-      isReader: true,
-      onEnd: function() {
+      if (this.isWarpEnd) {
         return new Promise(function(resolve, reject) {
           return mocha.run(function(code) {
             if (code === 0) {
@@ -409,6 +408,11 @@ module.exports = {
           });
         });
       }
+      mocha.addFile(this.path);
+      return this.end();
+    }, {
+      isReader: true,
+      isWriter: true
     });
   },
 

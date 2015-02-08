@@ -2399,10 +2399,12 @@ _.extend(kit, fs, {
     writer = drives.writer(opts);
     return warpper = {
       load: function(drive) {
-        if (drive.isReader) {
-          reader = drive;
-        } else if (drive.isWriter) {
-          writer = drive;
+        if (drive.isReader || drive.isWriter) {
+          if (drive.isWriter) {
+            writer = drive;
+          } else {
+            reader = drive;
+          }
         } else {
           driveList.push(drive);
         }

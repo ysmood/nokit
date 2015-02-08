@@ -1437,7 +1437,7 @@ Goto [changelog](doc/changelog.md)
         .run 'dist'
         ```
 
-- ## **[which](lib/kit.coffee?source#L2177)**
+- ## **[which](lib/kit.coffee?source#L2178)**
 
     Same as the unix `which` command.
     You must `kit.require 'which'` before using it.
@@ -1448,14 +1448,14 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Promise_ }
 
-- ## **[whichSync](lib/kit.coffee?source#L2184)**
+- ## **[whichSync](lib/kit.coffee?source#L2185)**
 
     Sync version of `which`.
     You must `kit.require 'whichSync'` before using it.
 
     - **<u>type</u>**: { _Function_ }
 
-- ## **[xinspect](lib/kit.coffee?source#L2195)**
+- ## **[xinspect](lib/kit.coffee?source#L2196)**
 
     For debugging. Dump a colorful object.
 
@@ -1472,7 +1472,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _String_ }
 
-- ## **[xopen](lib/kit.coffee?source#L2218)**
+- ## **[xopen](lib/kit.coffee?source#L2219)**
 
     Open a thing that your system can recognize.
     Now only support Windows, OSX or system that installed 'xdg-open'.
@@ -1612,7 +1612,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[jshint](lib/drives.coffee?source#L230)**
+- ## **[jshint](lib/drives.coffee?source#L233)**
 
     Lint js via `jshint`.
 
@@ -1628,7 +1628,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[less](lib/drives.coffee?source#L261)**
+- ## **[less](lib/drives.coffee?source#L264)**
 
     Compile less.
 
@@ -1636,7 +1636,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[livescript](lib/drives.coffee?source#L288)**
+- ## **[livescript](lib/drives.coffee?source#L291)**
 
     Livescript compiler.
 
@@ -1646,7 +1646,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[mocha](lib/drives.coffee?source#L317)**
+- ## **[mocha](lib/drives.coffee?source#L320)**
 
     mocha test
 
@@ -1660,7 +1660,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[reader](lib/drives.coffee?source#L345)**
+- ## **[reader](lib/drives.coffee?source#L350)**
 
     read file and set `contents`
 
@@ -1675,7 +1675,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[stylus](lib/drives.coffee?source#L394)**
+- ## **[stylus](lib/drives.coffee?source#L399)**
 
     Compile stylus.
 
@@ -1702,7 +1702,7 @@ Goto [changelog](doc/changelog.md)
         }
         ```
 
-- ## **[uglifyjs](lib/drives.coffee?source#L434)**
+- ## **[uglifyjs](lib/drives.coffee?source#L439)**
 
     uglify-js processor
 
@@ -1722,7 +1722,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[writer](lib/drives.coffee?source#L462)**
+- ## **[writer](lib/drives.coffee?source#L467)**
 
     Output file by `contents` and `dest`.
     If the 'ext' or 'name' is not null,
