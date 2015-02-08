@@ -65,7 +65,7 @@ loadNofile = function() {
  */
 
 task = function() {
-  var args, depsInfo, helpInfo, names, sep;
+  var alias, aliasSym, args, depsInfo, helpInfo, sep;
   args = kit.defaultArgs(arguments, {
     name: {
       String: 'default'
@@ -84,17 +84,17 @@ task = function() {
     }
   });
   depsInfo = args.deps ? (sep = args.isSequential ? ' -> ' : ', ', ("deps: [" + (args.deps.join(sep)) + "]").grey) : '';
-  if (args.description) {
-    args.description += '  ';
-  }
-  helpInfo = args.description + depsInfo;
-  names = args.name.split(' ');
-  return names.forEach(function(name) {
+  sep = args.description ? ' ' : '';
+  helpInfo = args.description + sep + depsInfo;
+  alias = args.name.split(' ');
+  aliasSym = '';
+  return alias.forEach(function(name) {
     cmder.command(name).description(helpInfo);
-    helpInfo = 'alias' + ' -> '.cyan + names[0];
-    return kit.task(name, args, function() {
+    kit.task(name + aliasSym, args, function() {
       return args.fn(cmder);
     });
+    aliasSym = '@'.magenta;
+    return helpInfo = '-> '.cyan + alias[0];
   });
 };
 

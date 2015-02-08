@@ -17,6 +17,26 @@ Overview = 'drives';
 module.exports = {
 
   /**
+  	 * clean-css
+  	 * @param  {Object} opts
+  	 * @return {Function}
+   */
+  cleanCss: _.extend(function(opts) {
+    var clean;
+    if (opts == null) {
+      opts = {};
+    }
+    clean = kit.requireOptional('clean-css', __dirname);
+    return function() {
+      this.deps = [this.path];
+      this.set((new clean(opts).minify(this.contents)).styles);
+      return kit.log(cls.cyan('clean css: ') + this.dest);
+    };
+  }, {
+    compress: ['.css']
+  }),
+
+  /**
   	 * coffee-script compiler
   	 * @param  {Object} opts Default is `{ bare: true }`.
   	 * @return {Function}
@@ -33,10 +53,11 @@ module.exports = {
     return function() {
       var err;
       opts.filename = this.path;
+      this.deps = [this.path];
       this.dest.ext = '.js';
       try {
         this.set(coffee.compile(this.contents + '', opts));
-        return kit.log(cls.cyan('compile coffee: ') + this.path);
+        return kit.log(cls.cyan('coffee: ') + this.path);
       } catch (_error) {
         err = _error;
         kit.err(cls.red(err.stack));
@@ -44,30 +65,47 @@ module.exports = {
       }
     };
   }, {
-    extensions: ['.coffee']
+    compile: ['.coffee']
   }),
 
   /**
   	 * coffeelint processor
-  	 * @param  {Object} opts Default is `{ colorize: true }`.
+  	 * @param  {Object} opts It extends the default config
+  	 * of coffeelint, properties:
+  	 * ```coffee
+  	 * {
+  	 * 	colorize: true
+  	 * 	reporter: 'default'
+  	 *
+  	 * 	# The json of the "coffeelint.json".
+  	 * 	# If it's null, coffeelint will try to find
+  	 * 	# "coffeelint.json" as its content.
+  	 * 	config: null | JSON | JsonFilePath
+  	 * }
+  	 * ```
   	 * @return {Function}
    */
-  coffeelint: function(opts) {
+  coffeelint: _.extend(function(opts) {
     var Reporter, coffeelint, configfinder;
     if (opts == null) {
       opts = {};
     }
     _.defaults(opts, {
-      colorize: true
+      colorize: true,
+      reporter: 'default'
     });
     coffeelint = kit.requireOptional('coffeelint', __dirname);
     if (!opts.config) {
       configfinder = require('coffeelint/lib/configfinder');
       opts.config = configfinder.getConfig();
     }
-    Reporter = require('coffeelint/lib/reporters/default');
+    if (_.isString(opts.config)) {
+      opts.config = kit.readJsonSync(opts.config);
+    }
+    Reporter = require('coffeelint/lib/reporters/' + opts.reporter);
     return function() {
       var errorReport, errors, path, reporter, _ref;
+      this.deps = [this.path];
       errorReport = new coffeelint.getErrorReport();
       errorReport.lint(this.path, this.contents, opts.config);
       reporter = new Reporter(errorReport, opts);
@@ -80,10 +118,13 @@ module.exports = {
         }
       }
     };
-  },
+  }, {
+    lint: ['.coffee']
+  }),
 
   /**
-  	 * Parse commment from a js or coffee file, and output a markdown string.
+  	 * Parse commment from a js, coffee, or livescript file,
+  	 * and output a markdown string.
   	 * @param  {String} path
   	 * @param  {Object} opts Defaults:
   	 * ```coffee
@@ -100,7 +141,7 @@ module.exports = {
   	 * @return {Function}
    */
   comment2md: function(opts) {
-    var doc;
+    var cache, doc, writer;
     if (opts == null) {
       opts = {};
     }
@@ -112,8 +153,32 @@ module.exports = {
       formatComment: {}
     });
     doc = {};
+    cache = null;
+    writer = kit.drives.writer(opts);
     return _.extend(function(file) {
       var comments;
+      if (this.isWarpEnd) {
+        if (cache) {
+          _.extend(this, cache);
+          return writer.call(this, this);
+        }
+        this.deps = _.pluck(this.list, 'path');
+        this.dest = kit.path.join(this.to, opts.out);
+        return kit.readFile(opts.tpl, 'utf8').then(function(tpl) {
+          return file.set(_.template(tpl)({
+            doc: doc
+          }));
+        }).then(function() {
+          kit.log(cls.cyan('comment2md: ') + kit.path.join(file.to, opts.out));
+          return writer.call(file, file);
+        });
+      }
+      if (cache) {
+        return;
+      }
+      if (this.isFromCache) {
+        return cache = this;
+      }
       opts.formatComment.name = function(_arg) {
         var line, link, name;
         name = _arg.name, line = _arg.line;
@@ -121,44 +186,57 @@ module.exports = {
         link = file.path + "?source#L" + line;
         return "- " + (_.repeat('#', opts.h)) + " **[" + name + "](" + link + ")**\n\n";
       };
-      comments = kit.parseComment(this.contents, opts.parseComment);
-      doc[this.path] = kit.formatComment(comments, opts.formatComment);
-      return this.end();
+      comments = kit.parseComment(this.contents + '', opts.parseComment);
+      return doc[this.path] = kit.formatComment(comments, opts.formatComment);
     }, {
-      onEnd: function(file) {
-        this.dest = kit.path.join(this.to, opts.out);
-        return kit.readFile(opts.tpl, 'utf8').then(function(tpl) {
-          return file.set(_.template(tpl)({
-            doc: doc
-          }));
-        });
-      }
+      isWriter: true,
+      isHandleCache: true
     });
   },
 
   /**
-  	 * Auto-compiler file by extension.
-  	 * Supports: `.coffee`, `.ls`
+  	 * Auto-compiler file by extension. It will search through
+  	 * `kit.drives`, and find proper drive to run the task.
+  	 * You can extend `kit.drives` to let it support more.
+  	 * For example:
+  	 * ```coffee
+  	 * kit.drives.myCompiler = kit._.extend ->
+  	 * 	# your compile logic
+  	 * , compiler: ['.jsx']
+  	 * ```
+  	 * @param {String} action By default, it can be
+  	 * 'compile' or 'compress' or 'lint'
   	 * @param  {Object} opts
+  	 * ```coffee
+  	 * {
+  	 * 	# If no compiler match.
+  	 * 	onNotFound: (fileInfo) ->
+  	 * }
+  	 * ```
   	 * @return {Function}
    */
-  compiler: function(opts) {
-    var compilers;
+  auto: function(action, opts) {
+    var compilers, list;
     if (opts == null) {
       opts = {};
     }
+    _.defaults(opts, {
+      onNotFound: function() {}
+    });
+    list = _(kit.drives).map(action).compact().flatten().value().join(' ');
+    kit.log(cls.green(action + ": ") + ("[ " + list + " ]"));
     compilers = {};
     return function() {
       var d, ext;
-      ext = this.xpath.ext.toLowerCase();
+      ext = this.dest.ext.toLowerCase();
       if (!compilers[ext]) {
         d = _.find(kit.drives, function(drive) {
-          return drive.extensions.indexOf(ext) > -1;
+          return drive[action] && drive[action].indexOf(ext) > -1;
         });
         if (d) {
           compilers[ext] = d(opts[ext]);
         } else {
-          return Promise.reject(new Error("no drive can match extension: '" + ext + "'"));
+          return opts.onNotFound.call(this, this);
         }
       }
       return compilers[ext].call(this, this);
@@ -175,7 +253,8 @@ module.exports = {
     var all;
     all = '';
     return _.extend(function() {
-      all += this.contents;
+      all += this.contents + '\n';
+      kit.log(cls.cyan('concat: ') + this.path);
       return this.end();
     }, {
       onEnd: function() {
@@ -183,13 +262,85 @@ module.exports = {
           dir = this.to;
         }
         this.dest = kit.path.join(dir, name);
+        this.deps = [this.dest + ''].concat(_.pluck(this.list, 'path'));
         return this.set(all);
       }
     });
   },
 
   /**
-  	 * livescript compiler
+  	 * Lint js via `jshint`.
+  	 * @param  {Object} opts Properties:
+  	 * ```coffee
+  	 * {
+  	 * 	global: null
+  	 * 	config: null | JSON | JsonFilePath
+  	 * }
+  	 * ```
+  	 * @return {Function}
+   */
+  jshint: _.extend(function(opts) {
+    var JSHINT;
+    if (opts == null) {
+      opts = {};
+    }
+    _.defaults(opts, {});
+    JSHINT = kit.requireOptional('jshint', __dirname).JSHINT;
+    if (_.isString(opts.config)) {
+      opts.config = kit.readJsonSync(opts.config);
+    }
+    return function(file) {
+      var errs;
+      this.deps = [this.path];
+      if (JSHINT(this.contents, opts.config, opts.global)) {
+        kit.log(cls.cyan('jshint: ') + this.path);
+        return;
+      }
+      errs = '';
+      JSHINT.errors.forEach(function(err) {
+        if (err) {
+          return errs += "\nJshint " + (cls.red(err.id)) + ": " + file.path + ":" + err.line + ":" + err.character + "\n\"" + (cls.cyan(err.evidence)) + "\"\n" + (cls.yellow(err.reason)) + "\n------------------------------------";
+        }
+      });
+      return Promise.reject(errs);
+    };
+  }, {
+    lint: ['.js']
+  }),
+
+  /**
+  	 * Compile less.
+  	 * @param  {Object}
+  	 * @return {Function}
+   */
+  less: _.extend(function(opts) {
+    var less;
+    if (opts == null) {
+      opts = {};
+    }
+    less = kit.requireOptional('less', __dirname, '>=2.0.0');
+    return function(file) {
+      this.dest.ext = '.css';
+      opts.filename = this.path;
+      return less.render(this.contents + '', opts).then(function(output) {
+        file.deps = _.keys(output.imports);
+        file.set(output.css);
+        return kit.log(cls.cyan('less: ') + file.path);
+      }, function(err) {
+        var _ref;
+        if (err.line == null) {
+          return Promise.reject(err);
+        }
+        err.message = err.filename + (":" + err.line + ":" + err.column + "\n") + ((_ref = err.extract) != null ? _ref.join('\n') : void 0) + '\n--------\n' + err.message;
+        return Promise.reject(err);
+      });
+    };
+  }, {
+    compile: ['.less']
+  }),
+
+  /**
+  	 * Livescript compiler.
   	 * @param  {Object} opts Default is `{ bare: true }`.
   	 * @return {Function}
    */
@@ -204,11 +355,12 @@ module.exports = {
     Livescript = kit.requireOptional('Livescript', __dirname, '>=1.2.0');
     return function() {
       var err;
+      this.deps = [this.path];
       opts.filename = this.path;
       this.dest.ext = '.js';
       try {
         this.set(Livescript.compile(this.contents + '', opts));
-        return kit.log(cls.cyan('livescript coffee: ') + this.path);
+        return kit.log(cls.cyan('livescript: ') + this.path);
       } catch (_error) {
         err = _error;
         kit.err(cls.red(err));
@@ -216,15 +368,148 @@ module.exports = {
       }
     };
   }, {
-    extensions: ['.ls']
+    compile: ['.ls']
   }),
 
   /**
-  	 * read file and set `contents`
+  	 * mocha test
+  	 * @param  {Object} opts
+  	 * ```
+  	 * {
+  	 * 	timeout: 5000
+  	 * }
+  	 * ```
+  	 * @return {Function}
    */
-  reader: function() {
-    return (this.isDir ? Promise.resolve() : kit.readFile(this.path, this.opts.encoding)).then(this.set);
+  mocha: function(opts) {
+    var Mocha, mocha;
+    if (opts == null) {
+      opts = {};
+    }
+    _.defaults(opts, {
+      timeout: 5000
+    });
+    Mocha = kit.requireOptional('mocha', __dirname);
+    mocha = new Mocha(opts);
+    return _.extend(function() {
+      mocha.addFile(this.path);
+      return this.end();
+    }, {
+      isReader: true,
+      onEnd: function() {
+        return new Promise(function(resolve, reject) {
+          return mocha.run(function(code) {
+            if (code === 0) {
+              return resolve();
+            } else {
+              return reject({
+                code: code
+              });
+            }
+          });
+        });
+      }
+    });
   },
+
+  /**
+  	 * read file and set `contents`
+  	 * @param  {Object} opts Defaults:
+  	 * ```coffee
+  	 * {
+  	 * 	isCache: true
+  	 * }
+  	 * ```
+  	 * @return {Function}
+   */
+  reader: function(opts) {
+    var read;
+    if (opts == null) {
+      opts = {};
+    }
+    _.defaults(opts, {
+      isCache: true
+    });
+    read = function() {
+      return kit.readFile(this.path, this.opts.encoding).then(this.set);
+    };
+    return _.extend(function(file) {
+      if (this.isDir) {
+        return;
+      }
+      if (opts.isCache) {
+        return kit.depsCache({
+          deps: [this.path],
+          cacheDir: opts.cacheDir
+        }).then(function(cache) {
+          file.deps = cache.deps;
+          if (cache.contents != null) {
+            kit.log(cls.green('reader cache: ') + file.deps.join(cls.grey(', ')));
+            file.dest = cache.dest;
+            file.isFromCache = true;
+            return file.set(cache.contents);
+          } else {
+            return read.call(file);
+          }
+        });
+      } else {
+        return read.call(file);
+      }
+    }, {
+      isReader: true
+    });
+  },
+
+  /**
+  	 * Compile stylus.
+  	 * @param  {Object} opts It will use `stylus.set` to
+  	 * iterate `opts` and set the key-value, is the value is
+  	 * not a function.
+  	 * ```coffee
+  	 * {
+  	 * 	config: (styl) ->
+  	 * }
+  	 * ```
+  	 * @return {Function}
+  	 * @example
+  	 * ```coffee
+  	 * kit.drives.stylus {
+  	 * 	compress: true
+  	 * 	config: (styl) ->
+  	 * 		styl.define 'jack', 'a persion'
+  	 * }
+  	 * ```
+   */
+  stylus: _.extend(function(opts) {
+    var stylus;
+    if (opts == null) {
+      opts = {};
+    }
+    _.defaults(opts, {
+      config: function() {}
+    });
+    stylus = kit.requireOptional('stylus', __dirname);
+    return function(file) {
+      var k, styl, v;
+      this.dest.ext = '.css';
+      styl = stylus(this.contents).set('filename', this.path);
+      for (k in opts) {
+        v = opts[k];
+        if (_.isFunction(v)) {
+          continue;
+        }
+        styl.set(k, v);
+      }
+      opts.config.call(this, styl);
+      return kit.promisify(styl.render, styl)().then(function(css) {
+        file.deps = styl.deps();
+        file.set(css);
+        return kit.log(cls.cyan('stylus: ') + file.path);
+      });
+    };
+  }, {
+    compile: ['.styl']
+  }),
 
   /**
   	 * uglify-js processor
@@ -241,7 +526,7 @@ module.exports = {
   	 * ```
   	 * @return {Function}
    */
-  uglify: function(opts) {
+  uglifyjs: _.extend(function(opts) {
     var uglify;
     if (opts == null) {
       opts = {};
@@ -261,25 +546,57 @@ module.exports = {
       };
     }
     return function() {
-      return this.set((uglify.minify(this.contents, opts)).code);
+      this.deps = [this.path];
+      this.set((uglify.minify(this.contents + '', opts)).code);
+      return kit.log(cls.cyan('uglifyjs: ') + this.dest);
     };
-  },
+  }, {
+    compress: ['.js']
+  }),
 
   /**
-  	 * output file by `contents` and `dest`
+  	 * Output file by `contents` and `dest`.
+  	 * If the 'ext' or 'name' is not null,
+  	 * the 'base' will be override by the 'ext' and 'name'.
+  	 * @param  {Object} opts Defaults:
+  	 * ```coffee
+  	 * {
+  	 * 	isCache: true
+  	 * }
+  	 * ```
+  	 * @return {Function}
    */
-  writer: function() {
-    var contents, dest;
-    dest = this.dest, contents = this.contents;
-    if ((dest != null) && (contents != null)) {
-      if (_.isObject(dest)) {
-        if ((dest.name != null) && (dest.ext != null)) {
-          dest.base = dest.name + dest.ext;
-        }
-        dest = kit.path.format(dest);
-      }
-      kit.log(cls.cyan('writer: ') + dest);
-      return kit.outputFile(dest, contents, this.opts);
+  writer: function(opts) {
+    var write;
+    if (opts == null) {
+      opts = {};
     }
+    _.defaults(opts, {
+      isCache: true
+    });
+    write = function() {
+      var contents, dest, p, pCache;
+      dest = this.dest, contents = this.contents;
+      if ((dest == null) || (contents == null)) {
+        return;
+      }
+      kit.log(cls.cyan('writer: ') + this.dest);
+      p = kit.outputFile(dest + '', contents, this.opts);
+      if (!opts.isCache || !this.deps || this.isFromCache) {
+        return p;
+      }
+      kit.log(cls.cyan('writer cache: ') + this.dest);
+      pCache = kit.depsCache({
+        dest: this.dest + '',
+        deps: this.deps,
+        cacheDir: this.opts.cacheDir,
+        contents: this.contents
+      });
+      return Promise.all([p, pCache]);
+    };
+    return _.extend(write, {
+      isWriter: true,
+      isHandleCache: true
+    });
   }
 };

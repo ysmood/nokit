@@ -65,7 +65,7 @@ _.extend(kit, fs, {
   	 * If the list is an array, it should be a list of functions or promises,
   	 * and each function will return a promise.
   	 * If the list is a function, it should be a iterator that returns
-  	 * a promise, hen it returns `undefined`, the iteration ends.
+  	 * a promise, when it returns `kit.async.end`, the iteration ends.
   	 * @param {Boolean} saveResutls Whether to save each promise's result or
   	 * not. Default is true.
   	 * @param {Function} progress If a task ends, the resolve value will be
@@ -96,12 +96,14 @@ _.extend(kit, fs, {
   	 * 	url = urls.pop()
   	 * 	if url
   	 * 		kit.request url
+  	 * 	else
+  	 * 		kit.async.end
   	 * .then ->
   	 * 	kit.log 'all done!'
   	 * ```
    */
   async: function(limit, list, saveResutls, progress) {
-    var isIterDone, iter, resutls, running;
+    var isIterDone, iter, resutls, running, _base;
     resutls = [];
     running = 0;
     isIterDone = false;
@@ -117,8 +119,10 @@ _.extend(kit, fs, {
     if (_.isArray(list)) {
       iter = function() {
         var el;
-        el = list.pop();
-        if (_.isFunction(el)) {
+        el = list.splice(0, 1)[0];
+        if (el === void 0) {
+          return kit.async.end;
+        } else if (_.isFunction(el)) {
           return el();
         } else {
           return el;
@@ -127,14 +131,22 @@ _.extend(kit, fs, {
     } else if (_.isFunction(list)) {
       iter = list;
     } else {
-      Promise.reject(new Error('unknown list type: ' + typeof list));
+      return Promise.reject(new Error('wrong argument type: ' + list));
+    }
+    if ((_base = kit.async).end == null) {
+      _base.end = {};
     }
     return new Promise(function(resolve, reject) {
       var addTask, allDone, i, _i, _results;
       addTask = function() {
-        var p, task;
-        task = iter();
-        if (isIterDone || task === void 0) {
+        var err, p, task;
+        try {
+          task = iter();
+        } catch (_error) {
+          err = _error;
+          return Promise.reject(err);
+        }
+        if (isIterDone || task === kit.async.end) {
           isIterDone = true;
           if (running === 0) {
             allDone();
@@ -182,6 +194,119 @@ _.extend(kit, fs, {
   },
 
   /**
+  	 * A file cache helper.
+  	 * @param  {Object} info Not optional.
+  	 * ```coffee
+  	 * {
+  	 * 	# The path of the output file.
+  	 * 	dest: String
+  	 *
+  	 * 	# The first item is the key path, others are
+  	 * 	# its dependencies.
+  	 * 	deps: Array
+  	 *
+  	 * 	contents: undefined
+  	 *
+  	 * 	cacheDir: '.nokit'
+  	 * }
+  	 * ```
+  	 * If the `contents` is specified, it will set the info to memory
+  	 * and file. Else it will get the info memeory or cache.
+  	 * @return {Promise} Resolve a info object.
+  	 * If cahce is newer the `info.contents` will be set, else it will
+  	 * be undefined.
+  	 * ```coffee
+  	 * {
+  	 * 	contents: undefined | String | Buffer
+  	 *
+  	 * 	cacheError: undefined | Error
+  	 * }
+  	 * ```
+  	 * @example
+  	 * ```coffee
+  	 * # Set cache
+  	 * kit.depsCache {
+  	 * 	dest: 'index.css'
+  	 * 	deps: ['index.less', 'b.less', 'c.less']
+  	 * 	contents: 'var a = function() {}' # The contents to cache.
+  	 * }
+  	 *
+  	 * # Get cache
+  	 * # You don't have to sepecify 'b.less', 'c.less'.
+  	 * kit.depsCache { deps: ['index.less'] }
+  	 * .then (info) ->
+  	 * 	if info.contents?
+  	 * 		kit.log 'cache is newer'.
+  	 * 		info.contents
+  	 * 	else
+  	 * 		info.origin
+  	 * ```
+   */
+  depsCache: function(opts) {
+    var cacheInfoPath, cachePath, err, info, keyPath, _base;
+    _.defaults(opts, {
+      cacheDir: '.nokit'
+    });
+    if ((_base = kit.depsCache).jhash == null) {
+      _base.jhash = new (kit.require('jhash').constructor);
+    }
+    keyPath = opts.deps[0];
+    cachePath = kit.path.join(opts.cacheDir, kit.depsCache.jhash.hash(keyPath, true) + '-' + kit.path.basename(keyPath));
+    cacheInfoPath = cachePath + '.json';
+    info = {};
+    if (opts.contents) {
+      switch (opts.contents.constructor.name) {
+        case 'Number':
+        case 'String':
+        case 'Buffer':
+          null;
+          break;
+        default:
+          err = new Error('only Number, String and Buffer is allowed, but get: ' + opts.contents);
+          return Promise.reject(err);
+      }
+      info = {
+        type: opts.contents.constructor.name,
+        dest: opts.dest,
+        deps: {}
+      };
+      return Promise.all([
+        kit.outputFile(cachePath, opts.contents), Promise.all(opts.deps.map(function(path, i) {
+          if (i === 0) {
+            return info.deps[path] = Date.now();
+          }
+          return kit.stat(path).then(function(stats) {
+            return info.deps[path] = stats.mtime.getTime();
+          });
+        })).then(function() {
+          return kit.outputJson(cacheInfoPath, info);
+        })
+      ]);
+    } else {
+      return kit.readJson(cacheInfoPath).then(function(data) {
+        info = data;
+        info.encoding = info.type === 'String' ? 'utf8' : void 0;
+        return Promise.all(_(info.deps).keys().map(function(path) {
+          return kit.stat(path).then(function(stats) {
+            return info.deps[path] >= stats.mtime.getTime();
+          });
+        }).value());
+      }).then(function(latestList) {
+        if (_.all(latestList)) {
+          return kit.readFile(cachePath, info.encoding).then(function(contents) {
+            info.deps = _.keys(info.deps);
+            return info.contents = contents;
+          });
+        }
+      })["catch"](function(err) {
+        return info.cacheError = err;
+      }).then(function() {
+        return info;
+      });
+    }
+  },
+
+  /**
   	 * The [colors](https://github.com/Marak/colors.js) lib
   	 * makes it easier to print colorful info in CLI.
   	 * You must `kit.require 'colors'` before using it.
@@ -198,8 +323,8 @@ _.extend(kit, fs, {
   	 * {
   	 * 	bin: 'node'
   	 * 	args: ['app.js']
-  	 * 	stdout: 'stdout.log' # Can also be a stream
-  	 * 	stderr: 'stderr.log' # Can also be a stream
+  	 * 	stdout: 'stdout.log' # Can also be a fd
+  	 * 	stderr: 'stderr.log' # Can also be a fd
   	 * }
   	 * ```
   	 * @return {Porcess} The daemonized process.
@@ -385,7 +510,9 @@ _.extend(kit, fs, {
   	 * See `kit.async`, if you need concurrent support.
   	 * @param  {Function | Array} fns Functions that return
   	 * promise or any value.
-  	 * And the array can also contains promises.
+  	 * And the array can also contains promises or values other than function.
+  	 * If there's only one argument and it's a function, it will treat as an iterator,
+  	 * when it returns `kit.flow.end`, the iteration ends.
   	 * @return {Function} `(val) -> Promise` A function that will return a promise.
   	 * @example
   	 * ```coffee
@@ -407,23 +534,69 @@ _.extend(kit, fs, {
   	 *
   	 * download 'home'
   	 * ```
+  	 * @example
+  	 * Walk through first link of each page.
+  	 * ```coffee
+  	 * list = []
+  	 * iter = (url) ->
+  	 * 	return kit.flow.end if not url
+  	 *
+  	 * 	kit.request url
+  	 * 	.then (body) ->
+  	 * 		list.push body
+  	 * 		m = body.match /href="(.+?)"/
+  	 * 		m[0] if m
+  	 *
+  	 * walker = kit.flow iter
+  	 * walker 'test.com'
+  	 * ```
    */
   flow: function() {
     var fns;
     fns = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
     return function(val) {
-      if (_.isArray(fns[0])) {
-        fns = fns[0];
-      }
-      return fns.reduce(function(preFn, fn) {
-        if (_.isFunction(fn.then)) {
-          return preFn.then(function() {
+      var genIter, iter, run, _base;
+      genIter = function(arr) {
+        return function(val) {
+          var fn;
+          fn = arr.splice(0, 1)[0];
+          if (fn === void 0) {
+            return kit.flow.end;
+          } else if (_.isFunction(fn)) {
+            return fn(val);
+          } else {
             return fn;
-          });
-        } else {
-          return preFn.then(fn);
-        }
-      }, Promise.resolve(val));
+          }
+        };
+      };
+      if (_.isArray(fns[0])) {
+        iter = genIter(fns[0]);
+      } else if (fns.length === 1 && _.isFunction(fns[0])) {
+        iter = fns[0];
+      } else if (fns.length > 1) {
+        iter = genIter(fns);
+      } else {
+        return Promise.reject(new Error('wrong argument type: ' + fn));
+      }
+      if ((_base = kit.flow).end == null) {
+        _base.end = {};
+      }
+      run = function(preFn) {
+        return preFn.then(function(val) {
+          var err, fn;
+          try {
+            fn = iter(val);
+          } catch (_error) {
+            err = _error;
+            Promise.reject(err);
+          }
+          if (fn === kit.flow.end) {
+            return val;
+          }
+          return run(fn && _.isFunction(fn.then) ? fn : Promise.resolve(fn));
+        });
+      };
+      return run(Promise.resolve(val));
     };
   },
 
@@ -789,22 +962,28 @@ _.extend(kit, fs, {
   	 * ```coffee
   	 * {
   	 * 	isShowTime: true
+  	 * 	logReg: process.env.logReg and new RegExp process.env.logReg
+  	 * 	logTrace: process.env.logTrace == 'on'
   	 * }
   	 * ```
   	 * @example
   	 * ```coffee
-  	 * # To achieve "console.log A, B"
-  	 * kit.log [A, B]
+  	 * kit.log 'test'
+  	 * # => '[2015-02-07 08:31:49] test'
+  	 *
+  	 * kit.log 'test', { isShowTime: false }
+  	 * # => 'test'
+  	 *
+  	 * kit.log 'test', { logReg: /a/ }
+  	 * # => ''
+  	 *
+  	 * kit.log '%s %s %d', ['a', 'b', 10]
+  	 * # => '[2015-02-07 08:31:49] a b 10'
   	 * ```
    */
-  log: function(msg, action, opts) {
-    var cs, log, time, timeDelta;
-    if (action == null) {
-      action = 'log';
-    }
-    if (opts == null) {
-      opts = {};
-    }
+  log: function() {
+    var action, args, cs, formats, log, msg, opts, time, timeDelta, util, _ref;
+    args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
     cs = kit.require('colors/safe', function() {
       if (kit.isDevelopment()) {
         return cs.mode = 'none';
@@ -814,20 +993,40 @@ _.extend(kit, fs, {
       opts = action;
       action = 'log';
     }
+    msg = args[0];
+    _ref = kit.defaultArgs(args.slice(1), {
+      action: {
+        String: 'log'
+      },
+      formats: {
+        Array: null
+      },
+      opts: {
+        Object: {}
+      }
+    }), action = _ref.action, formats = _ref.formats, opts = _ref.opts;
     _.defaults(opts, {
-      isShowTime: true
+      isShowTime: true,
+      logReg: process.env.logReg && new RegExp(process.env.logReg),
+      logTrace: process.env.logTrace === 'on'
     });
     if (!kit.lastLogTime) {
       kit.lastLogTime = new Date;
-      if (process.env.logReg) {
-        kit.logReg = new RegExp(process.env.logReg);
+      if (opts.logReg) {
+        kit.logReg = opts.logReg;
       }
     }
     if (opts.isShowTime) {
       time = new Date();
       timeDelta = cs.magenta(+time - +kit.lastLogTime) + 'ms';
       kit.lastLogTime = time;
-      time = cs.grey([[_.padLeft(time.getFullYear(), 4, '0'), _.padLeft(time.getMonth() + 1, 2, '0'), _.padLeft(time.getDate(), 2, '0')].join('-'), [_.padLeft(time.getHours(), 2, '0'), _.padLeft(time.getMinutes(), 2, '0'), _.padLeft(time.getSeconds(), 2, '0')].join(':')].join(' '));
+      time = cs.grey([
+        [[time.getFullYear(), 4, '0'], [time.getMonth() + 1, 2, '0'], [time.getDate(), 2, '0']].map(function(e) {
+          return _.padLeft.apply(0, e);
+        }).join('-'), [[time.getHours(), 2, '0'], [time.getMinutes(), 2, '0'], [time.getSeconds(), 2, '0']].map(function(e) {
+          return _.padLeft.apply(0, e);
+        }).join(':')
+      ].join(' '));
     }
     log = function() {
       var err, str;
@@ -836,7 +1035,7 @@ _.extend(kit, fs, {
         return;
       }
       console[action](str);
-      if (process.env.logTrace === 'on') {
+      if (opts.logTrace) {
         err = cs.grey((new Error).stack).replace(/.+\n.+\n.+/, '\nStack trace:');
         return console.log(err);
       }
@@ -848,6 +1047,11 @@ _.extend(kit, fs, {
         log(kit.xinspect(msg, opts), timeDelta);
       }
     } else {
+      if (formats) {
+        formats.unshift(msg);
+        util = kit.require('util', __dirname);
+        msg = util.format.apply(0, formats);
+      }
       if (opts.isShowTime) {
         log(("[" + time + "] ") + msg, timeDelta);
       } else {
@@ -857,6 +1061,21 @@ _.extend(kit, fs, {
     if (action === 'error') {
       process.stdout.write("\u0007");
     }
+  },
+
+  /**
+  	 * Shortcut for logging multiple strings.
+  	 * @param  {Any} args...
+  	 * @example
+  	 * ```coffee
+  	 * kit.log 'test1', 'test2', test3'
+  	 * # => [2015-02-07 08:31:49] test1 test2 test3
+  	 * ```
+   */
+  logs: function() {
+    var args;
+    args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+    return kit.log(args.join(' '));
   },
 
   /**
@@ -896,7 +1115,18 @@ _.extend(kit, fs, {
   	 * }
   	 * ```
   	 * @return {Promise} It has a property `process`, which is the monitored
-  	 * child process.
+  	 * child process. Properties:
+  	 * ```coffee
+  	 * {
+  	 * 	process: Object
+  	 *
+  	 * 	# Call it to stop monitor.
+  	 * 	stop: ->
+  	 *
+  	 * 	# Resolve a list of watch handlers.
+  	 * 	watchPromise: Promise
+  	 * }
+  	 * ```
   	 * @example
   	 * ```coffee
   	 * kit.monitorApp {
@@ -912,7 +1142,7 @@ _.extend(kit, fs, {
   	 * ```
    */
   monitorApp: function(opts) {
-    var childPromise, cs, start, watcher;
+    var childPromise, cs, start, stop, watchPromise, watcher;
     cs = kit.require('colors/safe');
     _.defaults(opts, {
       bin: 'node',
@@ -951,6 +1181,7 @@ _.extend(kit, fs, {
     start = function() {
       opts.sepLine();
       childPromise = kit.spawn(opts.bin, opts.args, opts.opts);
+      childPromise.watchPromise = watchPromise;
       return childPromise.then(function(msg) {
         return opts.onNormalExit(msg);
       })["catch"](function(err) {
@@ -960,32 +1191,45 @@ _.extend(kit, fs, {
         return opts.onErrorExit(err);
       });
     };
-    watcher = function(path, curr, prev) {
+    watcher = function(path, curr, prev, isDelete) {
+      if (isDelete) {
+        return;
+      }
       if (curr.mtime !== prev.mtime) {
         opts.onRestart(path);
         childPromise["catch"](function() {}).then(start);
         return childPromise.process.kill('SIGINT');
       }
     };
+    stop = function() {
+      return childPromise.watchPromise.then(function(list) {
+        var w, _i, _len, _results;
+        _results = [];
+        for (_i = 0, _len = list.length; _i < _len; _i++) {
+          w = list[_i];
+          _results.push(kit.unwatchFile(w.path, w.handler));
+        }
+        return _results;
+      });
+    };
     process.on('SIGINT', function() {
       childPromise.process.kill('SIGINT');
       return process.exit();
     });
-    if (opts.isNodeDeps) {
-      kit.parseDependency(opts.watchList, opts.parseDependency).then(function(paths) {
-        opts.onWatchFiles(paths);
-        return kit.watchFiles(paths, {
-          handler: watcher
-        });
-      });
-    } else {
-      kit.watchFiles(opts.watchList, {
+    watchPromise = opts.isNodeDeps ? kit.parseDependency(opts.watchList, opts.parseDependency).then(function(paths) {
+      opts.onWatchFiles(paths);
+      return kit.watchFiles(paths, {
         handler: watcher
       });
-    }
+    }) : kit.watchFiles(opts.watchList, {
+      handler: watcher
+    });
     opts.onStart();
     start();
-    return childPromise;
+    return _.extend(childPromise, {
+      watchPromise: watchPromise,
+      stop: stop
+    });
   },
 
   /**
@@ -1024,7 +1268,7 @@ _.extend(kit, fs, {
   	 * ```
    */
   defaultArgs: function(args, defaults) {
-    var name, ret, set, type, v, val;
+    var name, ret, set, type, v, val, _ref;
     set = _(args).toArray().groupBy(function(e) {
       return e.constructor.name;
     }).value();
@@ -1032,7 +1276,7 @@ _.extend(kit, fs, {
     for (name in defaults) {
       val = defaults[name];
       type = _.keys(val)[0];
-      ret[name] = set[type] ? (v = set[type].shift(), v ? v : val[type]) : val[type];
+      ret[name] = set[type] ? ((_ref = set[type].splice(0, 1), v = _ref[0], _ref), v ? v : val[type]) : val[type];
     }
     return ret;
   },
@@ -2002,16 +2246,7 @@ _.extend(kit, fs, {
   	 * 	# Set null if you want raw buffer.
   	 * 	encoding: 'utf8'
   	 *
-  	 * 	# Default `set` used in the `fileInfo` object.
-  	 * 	set: (contents) ->
-  	 *
-  	 * 	# Default file reader plugin. Override it if you don't want
-  	 * 	# warp read file contents automatically.
-  	 * 	reader: kit.drives.reader
-  	 *
-  	 * 	# Default file writer plugin. Override it if you don't want
-  	 * 	# warp write file contents automatically.
-  	 * 	writer: kit.drives.writer
+  	 * 	isCache: true
   	 * }
   	 * ```
   	 * @return {Object} The returned warp object has these members:
@@ -2028,36 +2263,28 @@ _.extend(kit, fs, {
   	 * 	# Set the contents and return self.
   	 * 	set: (String | Buffer) -> fileInfo
   	 *
-  	 * 	# The source path.
-  	 * 	path: String
-  	 *
   	 * 	# The parsed path object
-  	 * 	xpath: { root, dir, base, ext, name }
+  	 * 	path: String
   	 *
   	 * 	# The dest root path.
   	 *  to: String
   	 *
+  	 * 	baseDir: String
+  	 *
   	 * 	# The destination path.
   	 * 	# Alter it if you want to change the output file's location.
   	 * 	# You can set it to string if you don't want "path.format".
-  	 * 	dest: {
-  	 * 		# These properties are parsed via io.js 'path.parse'.
-  	 *  	root: String
-  	 *  	dir: String
-  	 *
-  	 * 		# If the 'ext' or 'name' is not null,
-  	 * 		# the 'base' will be override by the 'ext' and 'name'.
-  	 *  	base: String
-  	 *  	ext: String
-  	 *  	name: String
-  	 * 	}
+  	 * 	# It's "valueOf" will return "kit.path.join dir, name + ext".
+  	 * 	dest: { root, dir, base, ext, name }
   	 *
   	 * 	# The file content.
   	 * 	contents: String | Buffer
   	 *
   	 * 	isDir: Boolean
   	 *
-  	 * 	# Call it to disable all the followed plugins.
+  	 * 	isFromCache: Boolean
+  	 *
+  	 * 	# Call it to disable all the followed drives.
   	 * 	end: Function
   	 *
   	 * 	stats: fs.Stats
@@ -2065,14 +2292,18 @@ _.extend(kit, fs, {
   	 * 	# All the globbed files.
   	 * 	list: Array
   	 *
-  	 * 	# The opts you passed to "nofs.glob".
+  	 * 	# The opts you passed to "kit.warp", it will be extended.
   	 * 	opts: Object
   	 * }
   	 * ```
   	 * The handler can have a `onEnd` function, which will be called after the
   	 * whole warp ended.
+  	 *
   	 * The handler can have a `isReader` property, which will make the handler
   	 * override the default file reader.
+  	 *
+  	 * The handler can have a `isWriter` property, which will make the handler
+  	 * override the default file writer.
   	 * @example
   	 * ```coffee
   	 * # Define a simple workflow.
@@ -2106,86 +2337,108 @@ _.extend(kit, fs, {
   	 * ```
    */
   warp: function(from, opts) {
-    var drives, mapper, onEndList, pipeList, runTask;
+    var driveList, drives, hashDrives, initInfo, reader, runDrive, taskList, warpper, writer, _base;
     if (opts == null) {
       opts = {};
     }
     drives = kit.require('drives');
+    if ((_base = kit.warp).jhash == null) {
+      _base.jhash = new (kit.require('jhash').constructor);
+    }
     _.defaults(opts, {
       encoding: 'utf8',
-      set: function(contents) {
-        return this.contents = contents;
-      },
-      reader: drives.reader,
-      writer: drives.writer
+      cacheDir: '.nokit/warp'
     });
-    pipeList = [];
-    onEndList = [];
-    opts.iter = function(fileInfo, list) {
-      fileInfo.xpath = kit.path.parse(fileInfo.path);
-      list.push(fileInfo);
-      return kit.flow(pipeList)(fileInfo);
-    };
-    runTask = function(task) {
-      return function(fileInfo) {
-        var err;
-        if (fileInfo.isEndWarp) {
-          return;
+    runDrive = function(task) {
+      return function(info) {
+        if (info.isFromCache && !task.isHandleCache) {
+          return info;
         }
-        if (_.isString(fileInfo.dest)) {
-          fileInfo.dest = kit.path.parse(fileInfo.dest);
-        }
-        try {
-          return Promise.resolve(task.call(fileInfo, fileInfo)).then(function(val) {
-            return fileInfo;
+        if (_.isString(info.dest)) {
+          info.dest = _.extend(kit.path.parse(info.dest), {
+            valueOf: function() {
+              return kit.path.join(this.dir, this.name + this.ext);
+            }
           });
-        } catch (_error) {
-          err = _error;
-          return Promise.reject(err);
         }
+        return Promise.resolve(task.call(info, info)).then(function(val) {
+          return info;
+        });
       };
     };
-    return mapper = {
-      load: function(task) {
-        if (task.isReader) {
-          opts.reader = task;
+    initInfo = function(info) {
+      if (opts.baseDir) {
+        info.baseDir = opts.baseDir;
+      }
+      if (info.path != null) {
+        info.dest = kit.path.join(info.to, kit.path.relative(info.baseDir, info.path));
+      }
+      return _.extend(info, {
+        opts: opts,
+        set: function(contents) {
+          return info.contents = contents;
+        },
+        end: function() {
+          return this.tasks.length = 0;
+        },
+        gotoWriter: function() {
+          return this.tasks.splice(0, this.tasks.length - 1);
+        }
+      });
+    };
+    hashDrives = function(ds) {
+      var str;
+      str = _.map(ds, function(d) {
+        return d.toString();
+      }).join();
+      return kit.warp.jhash.hash(str, true);
+    };
+    driveList = [];
+    taskList = [];
+    reader = drives.reader(opts);
+    writer = drives.writer(opts);
+    return warpper = {
+      load: function(drive) {
+        if (drive.isReader) {
+          reader = drive;
+        } else if (drive.isWriter) {
+          writer = drive;
         } else {
-          pipeList.push(runTask(task));
+          driveList.push(drive);
         }
-        if (_.isFunction(task.onEnd)) {
-          onEndList.push(runTask(task.onEnd));
-        }
-        return mapper;
+        return warpper;
       },
       run: function(to) {
+        var globOpts;
         if (to == null) {
           to = '.';
         }
-        pipeList.unshift(function(fileInfo) {
-          if (opts.baseDir) {
-            fileInfo.baseDir = opts.baseDir;
-          }
-          return runTask(opts.reader)(_.extend(fileInfo, {
-            to: to,
-            dest: kit.path.join(to, kit.path.relative(fileInfo.baseDir, fileInfo.path)),
-            set: opts.set.bind(fileInfo),
-            end: function() {
-              return fileInfo.isEndWarp = true;
-            },
-            opts: opts
-          }));
+        driveList.unshift(reader);
+        driveList.push(writer);
+        opts.cacheDir += '/' + hashDrives(driveList);
+        _.each(driveList, function(drive) {
+          return taskList.push(runDrive(drive));
         });
-        pipeList.push(runTask(opts.writer));
-        if (onEndList.length > 0) {
-          onEndList.push(runTask(opts.writer));
-        }
-        return kit.glob(from, opts).then(function(list) {
-          return kit.flow(onEndList)({
-            set: opts.set,
+        globOpts = _.extend({}, opts, {
+          iter: function(info, list) {
+            list.push(info);
+            if (opts.baseDir) {
+              info.baseDir = opts.baseDir;
+            }
+            _.extend(info, {
+              tasks: _.clone(taskList),
+              to: to,
+              list: list
+            });
+            return kit.flow(info.tasks)(initInfo(info));
+          }
+        });
+        return kit.glob(from, globOpts).then(function(list) {
+          return runDrive(writer)(initInfo({
+            isWarpEnd: true,
             to: to,
-            list: list,
-            opts: opts
-          });
+            list: list
+          }));
         });
       }
     };
