@@ -9,7 +9,7 @@
   "scripts": {
     "no": "no",
     "test": "node bin/no test -t 10000",
-    "prepublish": "node bin/no build"
+    "prepublish": "node bin/no build -a"
   },
   "repository": {
     "type": "git",
@@ -34,7 +34,7 @@
   },
   "devDependencies": {
     "LiveScript": "1.3.1",
-    "clean-css": "3.0.9",
+    "clean-css": "3.0.10",
     "coffee-cache": "1.0.1",
     "coffee-script": "1.9.0",
     "coffeelint": "1.8.1",
@@ -43,7 +43,7 @@
     "formidable": "1.0.16",
     "iconv-lite": "0.4.7",
     "jshint": "2.6.0",
-    "less": "2.3.1",
+    "less": "2.4.0",
     "lodash-cli": "3.1.1",
     "mocha": "2.1.0",
     "stylus": "0.50.0",

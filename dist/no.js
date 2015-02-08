@@ -127,14 +127,15 @@ searchTasks = function() {
 
 module.exports = launch = function() {
   var nofilePath, tasks;
-  setGlobals();
-  nofilePath = loadNofile();
   cmder.option('-v, --version', 'output version of nokit', function() {
     var info;
     info = kit.readJsonSync(__dirname + '/../package.json');
     console.log(("nokit@" + info.version).green, ("(" + (require.resolve('./kit')) + ")").grey);
     return process.exit();
-  }).usage('[options] [fuzzy_task_name]...' + ("  # " + (kit.path.relative('.', nofilePath))).grey);
+  });
+  setGlobals();
+  nofilePath = loadNofile();
+  cmder.usage('[options] [fuzzy_task_name]...' + ("  # " + (kit.path.relative('.', nofilePath))).grey);
   if (!kit.task.list) {
     return;
   }

@@ -100,9 +100,6 @@ searchTasks = ->
 
 module.exports = launch = ->
 
-	setGlobals()
-	nofilePath = loadNofile()
-
 	cmder
 	.option '-v, --version',
 		'output version of nokit',
@@ -111,7 +108,11 @@ module.exports = launch = ->
 			console.log "nokit@#{info.version}".green,
 				"(#{require.resolve('./kit')})".grey
 			process.exit()
-	.usage '[options] [fuzzy_task_name]...' +
+
+	setGlobals()
+	nofilePath = loadNofile()
+
+	cmder.usage '[options] [fuzzy_task_name]...' +
 		"  # #{kit.path.relative '.', nofilePath}".grey
 
 	if not kit.task.list
