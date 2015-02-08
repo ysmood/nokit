@@ -129,30 +129,39 @@ module.exports = {
   	 * @param  {Object} opts Defaults:
   	 * ```coffee
   	 * {
-  	 * 	parseComment: {}
-  	 * 	formatComment: {
-  	 * 		name: ({ name, line }) ->
-  	 * 			name = name.replace 'self.', ''
-  	 * 			link = "#{path}?source#L#{line}"
-  	 * 			"- \#\#\# **[#{name}](#{link})**\n\n"
-  	 * 	}
+  	 * 	# Output doc path.
+  	 * 	out: 'readme.md'
+  	 *
+  	 * 	# jst template path.
+  	 * 	tpl: 'readme.jst.md'
+  	 *
+  	 * 	# Init doc info.
+  	 * 	doc: {}
+  	 *
+  	 * 	# Header size.
+  	 * 	h: 3
+  	 *
+  	 * 	parseComment: -> ...
+  	 * 	formatComment: -> ...
   	 * }
   	 * ```
   	 * @return {Function}
+  	 * @example
+  	 * The nofile of nokit shows how to use it.
    */
   comment2md: function(opts) {
-    var cache, doc;
+    var cache;
     if (opts == null) {
       opts = {};
     }
     _.defaults(opts, {
       out: 'readme.md',
-      tpl: 'readme.tpl.md',
+      tpl: 'readme.jst.md',
+      doc: {},
       h: 3,
       parseComment: {},
       formatComment: {}
     });
-    doc = {};
     cache = null;
     return _.extend(function(file) {
       var comments, writer;
@@ -166,7 +175,7 @@ module.exports = {
         this.dest = kit.path.join(this.to, opts.out);
         return kit.readFile(opts.tpl, 'utf8').then(function(tpl) {
           return file.set(_.template(tpl)({
-            doc: doc
+            doc: opts.doc
           }));
         }).then(function() {
           kit.log(cls.cyan('comment2md: ') + kit.path.join(file.to, opts.out));
@@ -187,7 +196,7 @@ module.exports = {
         return "- " + (_.repeat('#', opts.h)) + " **[" + name + "](" + link + ")**\n\n";
       };
       comments = kit.parseComment(this.contents + '', opts.parseComment);
-      return doc[this.path] = kit.formatComment(comments, opts.formatComment);
+      return opts.doc[this.path] = kit.formatComment(comments, opts.formatComment);
     }, {
       isWriter: true,
       isHandleCache: true
@@ -342,26 +351,26 @@ module.exports = {
   }),
 
   /**
-  	 * Livescript compiler.
+  	 * LiveScript compiler.
   	 * @param  {Object} opts Default is `{ bare: true }`.
   	 * @return {Function}
    */
   livescript: _.extend(function(opts) {
-    var Livescript;
+    var LiveScript;
     if (opts == null) {
       opts = {};
     }
     _.defaults(opts, {
       bare: true
     });
-    Livescript = kit.requireOptional('Livescript', __dirname, '>=1.2.0');
+    LiveScript = kit.requireOptional('LiveScript', __dirname, '>=1.2.0');
     return function() {
       var err;
       this.deps = [this.path];
       opts.filename = this.path;
       this.dest.ext = '.js';
       try {
-        this.set(Livescript.compile(this.contents + '', opts));
+        this.set(LiveScript.compile(this.contents + '', opts));
         return kit.log(cls.cyan('livescript: ') + this.path);
       } catch (_error) {
         err = _error;

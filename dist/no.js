@@ -108,12 +108,8 @@ setGlobals = function() {
   var option;
   option = cmder.option.bind(cmder);
   return kit._.extend(global, {
-    _: _,
-    kit: kit,
     task: task,
-    option: option,
-    Promise: kit.Promise,
-    warp: kit.warp
+    option: option
   });
 };
 

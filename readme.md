@@ -124,12 +124,16 @@ Assume your file content is:
 
 ```coffee
 # There are some global variables you can call directly:
-# _: lodash
-# option: commander.option
-# task: kit.task
-# warp: kit.warp
-# kit: kit
-# Promise: kit.Promise
+#   option: commander.option
+#   task: kit.task
+
+# It will expose some handy helpers to global.
+#   kit: kit
+#   _: lodash
+#   Promise: Bluebird
+#   warp: kit.warp
+#   drives: kit.drives
+require 'nokit/global'
 
 option '-w, --hello [world]', 'Just a test option', ''
 
@@ -1545,7 +1549,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[comment2md](lib/drives.coffee?source#L113)**
+- ## **[comment2md](lib/drives.coffee?source#L122)**
 
     Parse commment from a js, coffee, or livescript file,
     and output a markdown string.
@@ -1557,19 +1561,30 @@ Goto [changelog](doc/changelog.md)
         Defaults:
         ```coffee
         {
-        	parseComment: {}
-        	formatComment: {
-        		name: ({ name, line }) ->
-        			name = name.replace 'self.', ''
-        			link = "#{path}?source#L#{line}"
-        			"- \#\#\# **[#{name}](#{link})**\n\n"
-        	}
+        	# Output doc path.
+        	out: 'readme.md'
+
+        	# jst template path.
+        	tpl: 'readme.jst.md'
+
+        	# Init doc info.
+        	doc: {}
+
+        	# Header size.
+        	h: 3
+
+        	parseComment: -> ...
+        	formatComment: -> ...
         }
         ```
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[auto](lib/drives.coffee?source#L178)**
+    - **<u>example</u>**:
+
+        The nofile of nokit shows how to use it.
+
+- ## **[auto](lib/drives.coffee?source#L186)**
 
     Auto-compiler file by extension. It will search through
     `kit.drives`, and find proper drive to run the task.
@@ -1597,7 +1612,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[concat](lib/drives.coffee?source#L206)**
+- ## **[concat](lib/drives.coffee?source#L214)**
 
     a batch file concat helper
 
@@ -1611,7 +1626,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[jshint](lib/drives.coffee?source#L232)**
+- ## **[jshint](lib/drives.coffee?source#L240)**
 
     Lint js via `jshint`.
 
@@ -1627,7 +1642,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[less](lib/drives.coffee?source#L263)**
+- ## **[less](lib/drives.coffee?source#L271)**
 
     Compile less.
 
@@ -1635,7 +1650,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[livescript](lib/drives.coffee?source#L290)**
+- ## **[livescript](lib/drives.coffee?source#L298)**
 
     LiveScript compiler.
 
@@ -1645,7 +1660,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[mocha](lib/drives.coffee?source#L319)**
+- ## **[mocha](lib/drives.coffee?source#L327)**
 
     mocha test
 
@@ -1659,7 +1674,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[reader](lib/drives.coffee?source#L350)**
+- ## **[reader](lib/drives.coffee?source#L358)**
 
     read file and set `contents`
 
@@ -1675,7 +1690,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[stylus](lib/drives.coffee?source#L400)**
+- ## **[stylus](lib/drives.coffee?source#L408)**
 
     Compile stylus.
 
@@ -1702,7 +1717,7 @@ Goto [changelog](doc/changelog.md)
         }
         ```
 
-- ## **[uglifyjs](lib/drives.coffee?source#L440)**
+- ## **[uglifyjs](lib/drives.coffee?source#L448)**
 
     uglify-js processor
 
@@ -1722,7 +1737,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[writer](lib/drives.coffee?source#L468)**
+- ## **[writer](lib/drives.coffee?source#L476)**
 
     Output file by `contents` and `dest`.
     If the 'ext' or 'name' is not null,
