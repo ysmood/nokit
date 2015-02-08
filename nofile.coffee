@@ -5,14 +5,19 @@
 process.chdir __dirname
 
 kit = require './lib/kit'
+{ _, Promise } = kit
 
 task 'default', ['build', 'test'], true
 
-task 'lab l', 'run and monitor "test/lab.coffee"', ->
-	kit.monitorApp {
-		bin: 'coffee'
-		args: ['test/lab.coffee']
-	}
+option '-d, --debug', 'enable node debug mode'
+option '-p, --port [8283]', 'node debug mode', 8283
+task 'lab l', 'run and monitor "test/lab.coffee"', (opts) ->
+	args = ['test/lab.coffee']
+
+	if opts.debug
+		args.splice 0, 0, '--nodejs', '--debug-brk=' + opts.port
+
+	kit.monitorApp { bin: 'coffee', args }
 
 task 'clean', 'clean dist & cache', (opts) ->
 	kit.async [

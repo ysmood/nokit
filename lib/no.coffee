@@ -82,12 +82,8 @@ setGlobals = ->
 
 	# Expose global helpers.
 	kit._.extend global, {
-		_
-		kit
 		task
 		option
-		Promise: kit.Promise
-		warp: kit.warp
 	}
 
 searchTasks = ->
