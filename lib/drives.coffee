@@ -216,7 +216,6 @@ module.exports =
 			else
 				all += @contents + '\n'
 				kit.log cls.cyan('concat: ') + @path
-				@end()
 		, isWriter: true
 
 	###*
@@ -332,9 +331,9 @@ module.exports =
 							resolve()
 						else
 							reject { code }
-
-			mocha.addFile @path
-			@end()
+			else
+				mocha.addFile @path
+				@tasks.length = 0
 		, isReader: true, isWriter: true
 
 	###*
@@ -343,6 +342,7 @@ module.exports =
 	 * ```coffee
 	 * {
 	 * 	isCache: true
+	 * 	endcoding: 'utf8'
 	 * }
 	 * ```
 	 * @return {Function}
@@ -350,10 +350,11 @@ module.exports =
 	reader: (opts = {}) ->
 		_.defaults opts, {
 			isCache: true
+			encoding: 'utf8'
 		}
 
 		read = ->
-			kit.readFile @path, @opts.encoding
+			kit.readFile @path, opts.encoding
 			.then @set
 
 		_.extend (file) ->

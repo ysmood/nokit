@@ -2004,11 +2004,8 @@ _.extend kit, fs,
 	 * 	# The base directory of the pattern.
 	 * 	baseDir: String
 	 *
-	 * 	# The encoding of the contents.
-	 * 	# Set null if you want raw buffer.
-	 * 	encoding: 'utf8'
-	 *
 	 * 	isCache: true
+	 * 	cacheDir: '.nokit/warp'
 	 * }
 	 * ```
 	 * @return {Object} The returned warp object has these members:
@@ -2046,10 +2043,10 @@ _.extend kit, fs,
 	 *
 	 * 	isFromCache: Boolean
 	 *
-	 * 	# Call it to disable all the followed drives.
-	 * 	end: Function
-	 *
 	 * 	stats: fs.Stats
+	 *
+	 * 	# Alter it to control the left drives dynamically.
+	 * 	tasks: [Function]
 	 *
 	 * 	# All the globbed files.
 	 * 	list: Array
@@ -2103,7 +2100,6 @@ _.extend kit, fs,
 		kit.warp.jhash ?= new (kit.require('jhash').constructor)
 
 		_.defaults opts, {
-			encoding: 'utf8'
 			cacheDir: '.nokit/warp'
 		}
 
@@ -2126,10 +2122,9 @@ _.extend kit, fs,
 			_.extend info, {
 				opts
 				set: (contents) -> info.contents = contents
-				end: -> @tasks.length = 0
-				gotoWriter: -> @tasks.splice 0, @tasks.length - 1
 			}
 
+		# Create a unique id for each workflow.
 		hashDrives = (ds) ->
 			str = _.map(ds, (d) -> d.toString()).join()
 			kit.warp.jhash.hash str, true
