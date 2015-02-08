@@ -108,13 +108,13 @@ If you want nokit support coffee, you should install it like this:
 
 Same works with livescript:
 
-`npm i -g nokit commander Livescript`
+`npm i -g nokit commander LiveScript`
 
 > Remarks: for the sake of boot performance, nokit will only load
 > `coffee-cache coffee-script/register`
 > by default. For livescript or other precompiler, you have to
 > set environment varialbe `nokitPreload` to what you want, such as on unix:
-> `export nokitPreload='Livescript coffee-script/register'`. Different module
+> `export nokitPreload='LiveScript coffee-script/register'`. Different module
 > names are separated by spaces.
 
 Create a `nofile.coffee` (or `.js`, `.ls`) at your current working directory
@@ -1637,7 +1637,7 @@ Goto [changelog](doc/changelog.md)
 
 - ## **[livescript](lib/drives.coffee?source#L290)**
 
-    Livescript compiler.
+    LiveScript compiler.
 
     - **<u>param</u>**: `opts` { _Object_ }
 

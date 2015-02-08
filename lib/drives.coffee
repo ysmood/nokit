@@ -283,7 +283,7 @@ module.exports =
 	, compile: ['.less']
 
 	###*
-	 * Livescript compiler.
+	 * LiveScript compiler.
 	 * @param  {Object} opts Default is `{ bare: true }`.
 	 * @return {Function}
 	###
@@ -292,14 +292,14 @@ module.exports =
 			bare: true
 		}
 
-		Livescript = kit.requireOptional 'Livescript', __dirname, '>=1.2.0'
+		LiveScript = kit.requireOptional 'LiveScript', __dirname, '>=1.2.0'
 
 		->
 			@deps = [@path]
 			opts.filename = @path
 			@dest.ext = '.js'
 			try
-				@set Livescript.compile @contents + '', opts
+				@set LiveScript.compile @contents + '', opts
 				kit.log cls.cyan('livescript: ') + @path
 			catch err
 				kit.err cls.red err
