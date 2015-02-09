@@ -60,9 +60,7 @@ task 'build b', ['clean'], 'build project', (opts) ->
 		buildDoc
 	]
 
-	start().then ->
-		kit.log 'Build done.'.green
-	.catch (err) ->
+	start().catch (err) ->
 		kit.err err.stack
 		process.exit 1
 

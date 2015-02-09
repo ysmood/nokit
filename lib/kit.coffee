@@ -1872,9 +1872,8 @@ _.extend kit, fs,
 	 * {
 	 * 	deps: String | Array
 	 * 	description: String
-	 * 	log: ->
-	 * 		kit.log 'Run Task >> ' +
-	 * 			"[ #{name} ] " + this.description
+	 * 	logStart: ->
+	 * 	logEnd: ->
 	 *
 	 * 	# Whether to run dependency in a row.
 	 * 	isSequential: false
@@ -1933,8 +1932,11 @@ _.extend kit, fs,
 		_.defaults opts, {
 			isSequential: false
 			description: ''
-			log: ->
-				kit.log cs.cyan('Run Task >> ') +
+			logStart: ->
+				kit.log cs.cyan('Task Start >> ') +
+					cs.green("[#{name}] ") + @description
+			logEnd: ->
+				kit.log cs.cyan('Task Done >> ') +
 					cs.green("[#{name}] ") + @description
 		}
 
@@ -1954,18 +1956,18 @@ _.extend kit, fs,
 			if warp.$stop
 				return Promise.reject new Error('runStopped')
 
-			opts.log()
+			opts.logStart()
 
-			if not opts.deps or opts.deps.length < 1
-				return Promise.resolve fn(val)
-
-			depTasks = opts.deps.map runTask(warp)
-
-			(if opts.isSequential
-				kit.flow(depTasks)(val)
+			(if not opts.deps or opts.deps.length < 1
+				Promise.resolve val
 			else
-				Promise.all depTasks.map (task) -> task val
-			).then fn
+				depTasks = opts.deps.map runTask(warp)
+
+				if opts.isSequential
+					kit.flow(depTasks)(val)
+				else
+					Promise.all depTasks.map (task) -> task val
+			).then(fn).then opts.logEnd.bind opts
 
 		kit.task.list[name].opts = opts
 

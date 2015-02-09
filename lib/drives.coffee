@@ -137,7 +137,7 @@ module.exports =
 					_.extend @, cache
 					return writer.call @, @
 
-				@deps = _.pluck @list, 'path'
+				@deps = [opts.tpl].concat _.pluck @list, 'path'
 				@dest = kit.path.join @to, opts.out
 				return kit.readFile opts.tpl, 'utf8'
 				.then (tpl) ->
