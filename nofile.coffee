@@ -2,8 +2,6 @@
 	For help info run "npm run no -- -h"
 ###
 
-process.chdir __dirname
-
 kit = require './lib/kit'
 { _, Promise } = kit
 

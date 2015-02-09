@@ -30,16 +30,23 @@ error = function(msg) {
  */
 
 loadNofile = function() {
-  var exts, lang, path, paths, _base, _i, _j, _len, _len1, _ref;
-  if ((_base = process.env).nokitPreload == null) {
-    _base.nokitPreload = 'coffee-cache coffee-script/register';
-  }
-  _ref = process.env.nokitPreload.split(' ');
-  for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-    lang = _ref[_i];
+  var dir, exts, lang, path, paths, rdir, _i, _j, _len, _len1, _ref;
+  if (process.env.nokitPreload) {
+    _ref = process.env.nokitPreload.split(' ');
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      lang = _ref[_i];
+      try {
+        require(lang);
+      } catch (_error) {}
+    }
+  } else {
     try {
-      require(lang);
-    } catch (_error) {}
+      require('coffee-cache');
+    } catch (_error) {
+      try {
+        require('coffee-script');
+      } catch (_error) {}
+    }
   }
   exts = _(require.extensions).keys().filter(function(ext) {
     return ['.json', '.node', '.litcoffee', '.coffee.md'].indexOf(ext) === -1;
@@ -52,6 +59,12 @@ loadNofile = function() {
   for (_j = 0, _len1 = paths.length; _j < _len1; _j++) {
     path = paths[_j];
     if (kit.existsSync(path)) {
+      dir = kit.path.dirname(path);
+      rdir = kit.path.relative('.', dir);
+      if (rdir) {
+        kit.log('Change Working Direcoty: '.cyan + rdir.green);
+      }
+      process.chdir(dir);
       require(path);
       return path;
     }
@@ -122,7 +135,8 @@ searchTasks = function() {
 };
 
 module.exports = launch = function() {
-  var nofilePath, tasks;
+  var cwd, nofilePath, tasks;
+  cwd = process.cwd();
   cmder.option('-v, --version', 'output version of nokit', function() {
     var info;
     info = kit.readJsonSync(__dirname + '/../package.json');
@@ -131,7 +145,7 @@ module.exports = launch = function() {
   });
   setGlobals();
   nofilePath = loadNofile();
-  cmder.usage('[options] [fuzzy_task_name]...' + ("  # " + (kit.path.relative('.', nofilePath))).grey);
+  cmder.usage('[options] [fuzzy_task_name]...' + ("  # " + (kit.path.relative(cwd, nofilePath))).grey);
   if (!kit.task.list) {
     return;
   }

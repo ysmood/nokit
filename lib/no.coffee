@@ -20,9 +20,14 @@ error = (msg) ->
  * @return {String} The path of found nofile.
 ###
 loadNofile = ->
-	process.env.nokitPreload ?= 'coffee-cache coffee-script/register'
-	for lang in process.env.nokitPreload.split ' '
-		try require lang
+	if process.env.nokitPreload
+		for lang in process.env.nokitPreload.split ' '
+			try require lang
+	else
+		try
+			require 'coffee-cache'
+		catch
+			try require 'coffee-script'
 
 	exts = _(require.extensions).keys().filter (ext) ->
 		['.json', '.node', '.litcoffee', '.coffee.md'].indexOf(ext) == -1
@@ -34,6 +39,13 @@ loadNofile = ->
 
 	for path in paths
 		if kit.existsSync path
+			dir = kit.path.dirname path
+
+			rdir = kit.path.relative '.', dir
+			if rdir
+				kit.log 'Change Working Direcoty: '.cyan + rdir.green
+
+			process.chdir dir
 			require path
 			return path
 
@@ -95,6 +107,7 @@ searchTasks = ->
 	.value()
 
 module.exports = launch = ->
+	cwd = process.cwd()
 
 	cmder
 	.option '-v, --version',
@@ -109,7 +122,7 @@ module.exports = launch = ->
 	nofilePath = loadNofile()
 
 	cmder.usage '[options] [fuzzy_task_name]...' +
-		"  # #{kit.path.relative '.', nofilePath}".grey
+		"  # #{kit.path.relative cwd, nofilePath}".grey
 
 	if not kit.task.list
 		return
