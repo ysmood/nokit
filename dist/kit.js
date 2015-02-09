@@ -9,18 +9,11 @@ fs = require('nofs');
 
 Promise = fs.Promise;
 
-
-/**
- * All the async functions in `kit` return promise object.
- * Most time I use it to handle files and system staffs.
- * @type {Object}
- */
-
 kit = {};
 
 
 /**
- * kit extends all the functions of [nofs](https://github.com/ysmood/nofs).
+ * Nokit extends all the functions of [nofs](https://github.com/ysmood/nofs).
  * You can use it as same as nofs. For more info, see the doc:
  *
  * [Offline Documentation](?gotoDoc=nofs/readme.md)
@@ -194,30 +187,32 @@ _.extend(kit, fs, {
   },
 
   /**
-  	 * A file cache helper.
+  	 * A file cache helper. It use hard link to cache files.
   	 * @param  {Object} info Not optional.
   	 * ```coffee
   	 * {
   	 * 	# The path of the output file.
+  	 * 	# If it's undefined, depsCache will try to get cache.
   	 * 	dest: String
   	 *
   	 * 	# The first item is the key path, others are
   	 * 	# its dependencies.
   	 * 	deps: Array
   	 *
-  	 * 	contents: undefined
-  	 *
   	 * 	cacheDir: '.nokit'
   	 * }
   	 * ```
-  	 * If the `contents` is specified, it will set the info to memory
-  	 * and file. Else it will get the info memeory or cache.
   	 * @return {Promise} Resolve a info object.
-  	 * If cahce is newer the `info.contents` will be set, else it will
-  	 * be undefined.
   	 * ```coffee
   	 * {
-  	 * 	contents: undefined | String | Buffer
+  	 * 	isNewer: Boolean
+  	 *
+  	 * 	deps: Array
+  	 *
+  	 * 	dest: String
+  	 *
+  	 * 	# The path of the cache.
+  	 * 	path: String
   	 *
   	 * 	cacheError: undefined | Error
   	 * }
@@ -228,22 +223,18 @@ _.extend(kit, fs, {
   	 * kit.depsCache {
   	 * 	dest: 'index.css'
   	 * 	deps: ['index.less', 'b.less', 'c.less']
-  	 * 	contents: 'var a = function() {}' # The contents to cache.
   	 * }
   	 *
   	 * # Get cache
   	 * # You don't have to sepecify 'b.less', 'c.less'.
   	 * kit.depsCache { deps: ['index.less'] }
   	 * .then (info) ->
-  	 * 	if info.contents?
+  	 * 	if info.isNewer
   	 * 		kit.log 'cache is newer'.
-  	 * 		info.contents
-  	 * 	else
-  	 * 		info.origin
   	 * ```
    */
   depsCache: function(opts) {
-    var cacheInfoPath, cachePath, err, info, keyPath, _base;
+    var cacheInfoPath, cachePath, info, keyPath, saveCache, _base;
     _.defaults(opts, {
       cacheDir: '.nokit'
     });
@@ -254,24 +245,25 @@ _.extend(kit, fs, {
     cachePath = kit.path.join(opts.cacheDir, kit.depsCache.jhash.hash(keyPath, true) + '-' + kit.path.basename(keyPath));
     cacheInfoPath = cachePath + '.json';
     info = {};
-    if (opts.contents) {
-      switch (opts.contents.constructor.name) {
-        case 'Number':
-        case 'String':
-        case 'Buffer':
-          null;
-          break;
-        default:
-          err = new Error('only Number, String and Buffer is allowed, but get: ' + opts.contents);
-          return Promise.reject(err);
-      }
+    if (opts.dest) {
+      saveCache = function() {
+        return kit.mkdirs(opts.cacheDir).then(function() {
+          return kit.link(opts.dest, cachePath);
+        })["catch"](function(err) {
+          if (err.code !== 'EEXIST') {
+            return Promise.reject(err);
+          }
+          return kit.unlink(cachePath).then(function() {
+            return kit.link(opts.dest, cachePath);
+          });
+        });
+      };
       info = {
-        type: opts.contents.constructor.name,
         dest: opts.dest,
         deps: {}
       };
       return Promise.all([
-        kit.outputFile(cachePath, opts.contents), Promise.all(opts.deps.map(function(path, i) {
+        saveCache(), Promise.all(opts.deps.map(function(path, i) {
           if (i === 0) {
             return info.deps[path] = Date.now();
           }
@@ -285,19 +277,15 @@ _.extend(kit, fs, {
     } else {
       return kit.readJson(cacheInfoPath).then(function(data) {
         info = data;
-        info.encoding = info.type === 'String' ? 'utf8' : void 0;
+        info.path = cachePath;
         return Promise.all(_(info.deps).keys().map(function(path) {
           return kit.stat(path).then(function(stats) {
             return info.deps[path] >= stats.mtime.getTime();
           });
         }).value());
       }).then(function(latestList) {
-        if (_.all(latestList)) {
-          return kit.readFile(cachePath, info.encoding).then(function(contents) {
-            info.deps = _.keys(info.deps);
-            return info.contents = contents;
-          });
-        }
+        info.deps = _.keys(info.deps);
+        return info.isNewer = _.all(latestList);
       })["catch"](function(err) {
         return info.cacheError = err;
       }).then(function() {
@@ -2096,9 +2084,8 @@ _.extend(kit, fs, {
   	 * {
   	 * 	deps: String | Array
   	 * 	description: String
-  	 * 	log: ->
-  	 * 		kit.log 'Run Task >> ' +
-  	 * 			"[ #{name} ] " + this.description
+  	 * 	logStart: ->
+  	 * 	logEnd: ->
   	 *
   	 * 	# Whether to run dependency in a row.
   	 * 	isSequential: false
@@ -2158,8 +2145,11 @@ _.extend(kit, fs, {
     _.defaults(opts, {
       isSequential: false,
       description: '',
-      log: function() {
-        return kit.log(cs.cyan('Run Task >> ') + cs.green("[" + name + "] ") + this.description);
+      logStart: function() {
+        return kit.log(cs.cyan('Task Start >> ') + cs.green("[" + name + "] ") + this.description);
+      },
+      logEnd: function() {
+        return kit.log(cs.cyan('Task Done >> ') + cs.green("[" + name + "] ") + this.description);
       }
     });
     if (_.isString(opts.deps)) {
@@ -2181,18 +2171,16 @@ _.extend(kit, fs, {
     };
     kit.task.list[name] = function(warp) {
       return function(val) {
-        var depTasks;
+        var depTasks, p;
         if (warp.$stop) {
           return Promise.reject(new Error('runStopped'));
         }
-        opts.log();
-        if (!opts.deps || opts.deps.length < 1) {
-          return Promise.resolve(fn(val));
-        }
-        depTasks = opts.deps.map(runTask(warp));
-        return (opts.isSequential ? kit.flow(depTasks)(val) : Promise.all(depTasks.map(function(task) {
+        opts.logStart();
+        p = (!opts.deps || opts.deps.length < 1 ? Promise.resolve(val) : (depTasks = opts.deps.map(runTask(warp)), opts.isSequential ? kit.flow(depTasks)(val) : Promise.all(depTasks.map(function(task) {
           return task(val);
-        }))).then(fn);
+        })))).then(fn);
+        p.then(opts.logEnd.bind(opts));
+        return p;
       };
     };
     kit.task.list[name].opts = opts;
@@ -2279,8 +2267,6 @@ _.extend(kit, fs, {
   	 *
   	 * 	isDir: Boolean
   	 *
-  	 * 	isFromCache: Boolean
-  	 *
   	 * 	stats: fs.Stats
   	 *
   	 * 	# Alter it to control the left drives dynamically.
@@ -2347,9 +2333,6 @@ _.extend(kit, fs, {
     });
     runDrive = function(task) {
       return function(info) {
-        if (info.isFromCache && !task.isHandleCache) {
-          return info;
-        }
         if (_.isString(info.dest)) {
           info.dest = _.extend(kit.path.parse(info.dest), {
             valueOf: function() {

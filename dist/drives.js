@@ -150,7 +150,6 @@ module.exports = {
   	 * The nofile of nokit shows how to use it.
    */
   comment2md: function(opts) {
-    var cache;
     if (opts == null) {
       opts = {};
     }
@@ -162,16 +161,15 @@ module.exports = {
       parseComment: {},
       formatComment: {}
     });
-    cache = null;
     return _.extend(function(file) {
       var comments, writer;
       if (this.isWarpEnd) {
-        writer = kit.drives.writer(opts);
-        if (cache) {
-          _.extend(this, cache);
-          return writer.call(this, this);
+        if (_.keys(opts.doc).length < this.list.length) {
+          return;
         }
+        writer = kit.drives.writer(opts);
         this.deps = _.pluck(this.list, 'path');
+        this.deps.push(opts.tpl);
         this.dest = kit.path.join(this.to, opts.out);
         return kit.readFile(opts.tpl, 'utf8').then(function(tpl) {
           return file.set(_.template(tpl)({
@@ -181,12 +179,6 @@ module.exports = {
           kit.log(cls.cyan('comment2md: ') + kit.path.join(file.to, opts.out));
           return writer.call(file, file);
         });
-      }
-      if (cache) {
-        return;
-      }
-      if (this.isFromCache) {
-        return cache = this;
       }
       opts.formatComment.name = function(_arg) {
         var line, link, name;
@@ -198,8 +190,7 @@ module.exports = {
       comments = kit.parseComment(this.contents + '', opts.parseComment);
       return opts.doc[this.path] = kit.formatComment(comments, opts.formatComment);
     }, {
-      isWriter: true,
-      isHandleCache: true
+      isWriter: true
     });
   },
 
@@ -260,18 +251,21 @@ module.exports = {
    */
   concat: function(name, dir) {
     var all;
-    all = '';
+    all = [];
     return _.extend(function() {
       if (this.isWarpEnd) {
+        if (all.length < this.list.length) {
+          return;
+        }
         if (dir == null) {
           dir = this.to;
         }
         this.dest = kit.path.join(dir, name);
         this.deps = _.pluck(this.list, 'path');
-        this.set(all);
+        this.set(all.join('\n'));
         return kit.drives.writer(this.opts).call(this, this);
       } else {
-        all += this.contents + '\n';
+        all.push(this.contents);
         return kit.log(cls.cyan('concat: ') + this.path);
       }
     }, {
@@ -458,11 +452,16 @@ module.exports = {
           cacheDir: opts.cacheDir
         }).then(function(cache) {
           file.deps = cache.deps;
-          if (cache.contents != null) {
+          if (cache.isNewer) {
             kit.log(cls.green('reader cache: ') + file.deps.join(cls.grey(', ')));
-            file.dest = cache.dest;
-            file.isFromCache = true;
-            return file.set(cache.contents);
+            file.tasks.length = 0;
+            return kit.mkdirs(kit.path.dirname(cache.dest)).then(function() {
+              return kit.link(cache.path, cache.dest)["catch"](function(err) {
+                if (err.code !== 'EEXIST') {
+                  return Promise.reject(err);
+                }
+              });
+            });
           } else {
             return read.call(file);
           }
@@ -597,21 +596,19 @@ module.exports = {
       }
       kit.log(cls.cyan('writer: ') + this.dest);
       p = kit.outputFile(dest + '', contents, this.opts);
-      if (!opts.isCache || !this.deps || this.isFromCache) {
+      if (!opts.isCache || !this.deps) {
         return p;
       }
       kit.log(cls.cyan('writer cache: ') + this.dest);
       pCache = kit.depsCache({
         dest: this.dest + '',
         deps: this.deps,
-        cacheDir: this.opts.cacheDir,
-        contents: this.contents
+        cacheDir: this.opts.cacheDir
       });
       return Promise.all([p, pCache]);
     };
     return _.extend(write, {
-      isWriter: true,
-      isHandleCache: true
+      isWriter: true
     });
   }
 };
