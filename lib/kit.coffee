@@ -2043,6 +2043,7 @@ _.extend kit, fs,
 	 * 	list: Array
 	 *
 	 * 	# The opts you passed to "kit.warp", it will be extended.
+	 * 	# Extra properties: { driveList, taskList }
 	 * 	opts: Object
 	 * }
 	 * ```
@@ -2088,7 +2089,6 @@ _.extend kit, fs,
 	###
 	warp: (from, opts = {}) ->
 		drives = kit.require 'drives'
-		kit.warp.jhash ?= new (kit.require('jhash').constructor)
 
 		_.defaults opts, {
 			cacheDir: '.nokit/warp'
@@ -2112,13 +2112,8 @@ _.extend kit, fs,
 				set: (contents) -> info.contents = contents
 			}
 
-		# Create a unique id for each workflow.
-		hashDrives = (ds) ->
-			str = _.map(ds, (d) -> d.toString()).join()
-			kit.warp.jhash.hash str, true
-
-		driveList = []
-		taskList  = [] # safe drives
+		opts.driveList = []
+		opts.taskList  = [] # safe drives
 		reader = drives.reader opts
 		writer = drives.writer opts
 
@@ -2130,22 +2125,20 @@ _.extend kit, fs,
 					else
 						reader = drive
 				else
-					driveList.push drive
+					opts.driveList.push drive
 				warpper
 
 			run: (to = '.') ->
-				driveList.unshift reader
-				driveList.push writer
+				opts.driveList.unshift reader
+				opts.driveList.push writer
 
-				opts.cacheDir += '/' + hashDrives(driveList)
-
-				_.each driveList, (drive) ->
-					taskList.push runDrive drive
+				_.each opts.driveList, (drive) ->
+					opts.taskList.push runDrive drive
 
 				globOpts = _.extend {}, opts, iter: (info, list) ->
 					list.push info
 					info.baseDir = opts.baseDir if opts.baseDir
-					_.extend info, { tasks: _.clone(taskList), to, list }
+					_.extend info, { tasks: _.clone(opts.taskList), to, list }
 
 					kit.flow(info.tasks) initInfo info
 

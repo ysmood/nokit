@@ -1,6 +1,7 @@
 kit = require './kit'
 { _, Promise } = kit
 cls = kit.require 'colors/safe'
+jhash = null
 
 ###*
  * The built-in plguins for warp. It's more like examples
@@ -358,16 +359,30 @@ module.exports =
 			encoding: 'utf8'
 		}
 
+		jhash ?= new (kit.require('jhash').constructor)
+
+		# Create a unique id for each workflow.
+		hashDrives = (ds) ->
+			str = _.map(ds, (d) -> d.toString()).join()
+			jhash.hash(str, true) + ''
+
 		read = ->
 			kit.readFile @path, opts.encoding
 			.then @set
 
+		cacheDir = null
+
 		_.extend (file) ->
+			if cacheDir == null
+				cacheDir = kit.path.join @opts.cacheDir,
+					hashDrives @opts.driveList
+				@opts.cacheDir = cacheDir
+
 			return if @isDir
 			if opts.isCache
 				kit.depsCache
 					deps: [@path]
-					cacheDir: opts.cacheDir
+					cacheDir: cacheDir
 				.then (cache) ->
 					file.deps = cache.deps
 					if cache.isNewer
