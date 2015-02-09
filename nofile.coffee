@@ -20,10 +20,11 @@ task 'lab l', 'run and monitor "test/lab.coffee"', (opts) ->
 	kit.monitorApp { bin: 'coffee', args }
 
 task 'clean', 'clean dist & cache', (opts) ->
-	kit.async [
-		kit.remove 'dist'
-		kit.remove '.nokit' if opts.all
-	]
+	if opts.all
+		kit.async [
+			kit.remove 'dist'
+			kit.remove '.nokit'
+		]
 
 option '-a, --all', 'rebuild with dependencies, such as rebuild lodash.'
 task 'build b', ['clean'], 'build project', (opts) ->

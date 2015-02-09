@@ -4,15 +4,10 @@ _ = require './lodash'
 fs = require 'nofs'
 { Promise } = fs
 
-###*
- * All the async functions in `kit` return promise object.
- * Most time I use it to handle files and system staffs.
- * @type {Object}
-###
 kit = {}
 
 ###*
- * kit extends all the functions of [nofs](https://github.com/ysmood/nofs).
+ * Nokit extends all the functions of [nofs](https://github.com/ysmood/nofs).
  * You can use it as same as nofs. For more info, see the doc:
  *
  * [Offline Documentation](?gotoDoc=nofs/readme.md)
@@ -165,30 +160,32 @@ _.extend kit, fs,
 				break if not addTask()
 
 	###*
-	 * A file cache helper.
+	 * A file cache helper. It use hard link to cache files.
 	 * @param  {Object} info Not optional.
 	 * ```coffee
 	 * {
 	 * 	# The path of the output file.
+	 * 	# If it's undefined, depsCache will try to get cache.
 	 * 	dest: String
 	 *
 	 * 	# The first item is the key path, others are
 	 * 	# its dependencies.
 	 * 	deps: Array
 	 *
-	 * 	contents: undefined
-	 *
 	 * 	cacheDir: '.nokit'
 	 * }
 	 * ```
-	 * If the `contents` is specified, it will set the info to memory
-	 * and file. Else it will get the info memeory or cache.
 	 * @return {Promise} Resolve a info object.
-	 * If cahce is newer the `info.contents` will be set, else it will
-	 * be undefined.
 	 * ```coffee
 	 * {
-	 * 	contents: undefined | String | Buffer
+	 * 	isNewer: Boolean
+	 *
+	 * 	deps: Array
+	 *
+	 * 	dest: String
+	 *
+	 * 	# The path of the cache.
+	 * 	path: String
 	 *
 	 * 	cacheError: undefined | Error
 	 * }
@@ -199,18 +196,14 @@ _.extend kit, fs,
 	 * kit.depsCache {
 	 * 	dest: 'index.css'
 	 * 	deps: ['index.less', 'b.less', 'c.less']
-	 * 	contents: 'var a = function() {}' # The contents to cache.
 	 * }
 	 *
 	 * # Get cache
 	 * # You don't have to sepecify 'b.less', 'c.less'.
 	 * kit.depsCache { deps: ['index.less'] }
 	 * .then (info) ->
-	 * 	if info.contents?
+	 * 	if info.isNewer
 	 * 		kit.log 'cache is newer'.
-	 * 		info.contents
-	 * 	else
-	 * 		info.origin
 	 * ```
 	###
 	depsCache: (opts) ->
@@ -230,22 +223,22 @@ _.extend kit, fs,
 		cacheInfoPath = cachePath + '.json'
 
 		info = {}
-		if opts.contents
-			switch opts.contents.constructor.name
-				when 'Number', 'String', 'Buffer'
-					null
-				else
-					err = new Error 'only Number, String and Buffer is allowed,
-					but get: ' + opts.contents
-					return Promise.reject err
+		if opts.dest
+			saveCache = ->
+				kit.mkdirs(opts.cacheDir).then ->
+					kit.link opts.dest, cachePath
+				.catch (err) ->
+					if err.code != 'EEXIST'
+						return Promise.reject err
+					kit.unlink(cachePath).then ->
+						kit.link opts.dest, cachePath
 
 			info = {
-				type: opts.contents.constructor.name
 				dest: opts.dest
 				deps: {}
 			}
 			Promise.all [
-				kit.outputFile cachePath, opts.contents
+				saveCache()
 				Promise.all(opts.deps.map (path, i) ->
 					if i == 0
 						return info.deps[path] = Date.now()
@@ -259,19 +252,15 @@ _.extend kit, fs,
 			kit.readJson cacheInfoPath
 			.then (data) ->
 				info = data
-				info.encoding =
-					if info.type == 'String' then'utf8' else undefined
+				info.path = cachePath
 				Promise.all _(info.deps).keys().map((path) ->
 					kit.stat(path).then (stats) ->
 						# cache mtime             file mtime
 						info.deps[path] >= stats.mtime.getTime()
 				).value()
 			.then (latestList) ->
-				if _.all latestList
-					kit.readFile cachePath, info.encoding
-					.then (contents) ->
-						info.deps = _.keys info.deps
-						info.contents = contents
+				info.deps = _.keys info.deps
+				info.isNewer = _.all latestList
 			.catch (err) -> info.cacheError = err
 			.then -> info
 
@@ -1958,7 +1947,7 @@ _.extend kit, fs,
 
 			opts.logStart()
 
-			(if not opts.deps or opts.deps.length < 1
+			p = (if not opts.deps or opts.deps.length < 1
 				Promise.resolve val
 			else
 				depTasks = opts.deps.map runTask(warp)
@@ -1967,7 +1956,9 @@ _.extend kit, fs,
 					kit.flow(depTasks)(val)
 				else
 					Promise.all depTasks.map (task) -> task val
-			).then(fn).then opts.logEnd.bind opts
+			).then fn
+			p.then opts.logEnd.bind opts
+			p
 
 		kit.task.list[name].opts = opts
 
@@ -2043,8 +2034,6 @@ _.extend kit, fs,
 	 *
 	 * 	isDir: Boolean
 	 *
-	 * 	isFromCache: Boolean
-	 *
 	 * 	stats: fs.Stats
 	 *
 	 * 	# Alter it to control the left drives dynamically.
@@ -2106,9 +2095,6 @@ _.extend kit, fs,
 		}
 
 		runDrive = (task) -> (info) ->
-			if info.isFromCache and not task.isHandleCache
-				return info
-
 			if _.isString info.dest
 				info.dest = _.extend kit.path.parse(info.dest),
 					valueOf: -> kit.path.join @dir, @name + @ext

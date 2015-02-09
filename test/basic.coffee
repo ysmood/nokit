@@ -261,49 +261,46 @@ describe 'Kit:', ->
 	it 'depsCache cache newer', ->
 		file = 'test/fixtures/depsCache.txt'
 		cacheFile = 'test/fixtures/cacheDir/1345816117-depsCache.txt'
-		contents = kit.readFileSync file, 'utf8'
+		dest = file + '.dest'
+		kit.outputFileSync dest, 'out'
 		kit.depsCache {
 			deps: [file]
-			contents
+			dest
 			cacheDir
 		}
 		.then ->
-			txt = Date.now() + ''
-			kit.outputFileSync cacheFile, txt
-
 			kit.depsCache {
 				deps: [file]
 				cacheDir
 			}
 			.then (cache) ->
-				shouldEqual cache.contents, txt
+				shouldEqual cache.isNewer, true
 
 	it 'depsCache file newer', ->
 		file = 'test/fixtures/depsCacheFileNewer.txt'
 		file1 = 'test/fixtures/depsCacheFileNewer1.txt'
 		cacheDir = 'test/fixtures/cacheDir'
+		dest = file + '.dest'
 		cacheFile = 'test/fixtures/cacheDir/1862933060-depsCacheFileNewer.txt'
 
 		kit.outputFileSync file1, 'test'
+		kit.outputFileSync dest, 'out'
 
-		contents = kit.readFileSync file, 'utf8'
 		kit.depsCache {
 			deps: [file, file1]
-			contents
+			dest
 			cacheDir
 		}
 		.then -> kit.sleep(1000)
 		.then ->
-			txt = Date.now() + ''
-			kit.outputFileSync file1, txt
-			kit.outputFileSync cacheFile, txt
+			kit.outputFileSync file1, 'txt'
 
 			kit.depsCache {
 				deps: [file]
 				cacheDir
 			}
 			.then (cache) ->
-				shouldEqual cache.contents, undefined
+				shouldEqual cache.isNewer, false
 
 	it 'warp map', ->
 		tmp = 'test/fixtures/warp'
@@ -374,7 +371,7 @@ describe 'Kit:', ->
 			seq.push 'default'
 			seq
 
-		kit.task 'one', { deps: ['two']} , ->
+		kit.task 'one', { deps: ['two'] } , ->
 			seq.push 'one'
 
 		kit.task 'two', { description: '2' } , ->

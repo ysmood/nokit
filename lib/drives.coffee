@@ -128,17 +128,17 @@ module.exports =
 			parseComment: {}
 			formatComment: {}
 
-		cache = null
-
 		_.extend (file) ->
 			if @isWarpEnd
-				writer = kit.drives.writer opts
-				if cache
-					_.extend @, cache
-					return writer.call @, @
+				return if _.keys(opts.doc).length < @list.length
 
-				@deps = [opts.tpl].concat _.pluck @list, 'path'
+				writer = kit.drives.writer opts
+
+				@deps = _.pluck @list, 'path'
+				@deps.push opts.tpl
+
 				@dest = kit.path.join @to, opts.out
+
 				return kit.readFile opts.tpl, 'utf8'
 				.then (tpl) ->
 					file.set _.template(tpl) { doc: opts.doc }
@@ -146,11 +146,6 @@ module.exports =
 					kit.log cls.cyan('comment2md: ') +
 						kit.path.join(file.to, opts.out)
 					writer.call file, file
-
-			return if cache
-
-			if @isFromCache
-				return cache = @
 
 			opts.formatComment.name = ({ name, line }) ->
 				name = name.replace 'self.', ''
@@ -160,7 +155,7 @@ module.exports =
 			comments = kit.parseComment @contents + '', opts.parseComment
 			opts.doc[@path] = kit.formatComment comments, opts.formatComment
 
-		, isWriter: true, isHandleCache: true
+		, isWriter: true
 
 	###*
 	 * Auto-compiler file by extension. It will search through
@@ -212,17 +207,19 @@ module.exports =
 	 * @return {Function}
 	###
 	concat: (name, dir) ->
-		all = ''
+		all = []
 
 		_.extend ->
 			if @isWarpEnd
+				return if all.length < @list.length
+
 				dir ?= @to
 				@dest = kit.path.join dir, name
 				@deps = _.pluck @list, 'path'
-				@set all
+				@set all.join '\n'
 				kit.drives.writer(@opts).call @, @
 			else
-				all += @contents + '\n'
+				all.push @contents
 				kit.log cls.cyan('concat: ') + @path
 		, isWriter: true
 
@@ -373,12 +370,17 @@ module.exports =
 					cacheDir: opts.cacheDir
 				.then (cache) ->
 					file.deps = cache.deps
-					if cache.contents?
+					if cache.isNewer
 						kit.log cls.green('reader cache: ') +
 							file.deps.join cls.grey ', '
-						file.dest = cache.dest
-						file.isFromCache = true
-						file.set cache.contents
+						file.tasks.length = 0
+
+						kit.mkdirs kit.path.dirname cache.dest
+						.then ->
+							kit.link cache.path, cache.dest
+							.catch (err) ->
+								if err.code != 'EEXIST'
+									Promise.reject err
 					else
 						read.call file
 			else
@@ -485,7 +487,7 @@ module.exports =
 			kit.log cls.cyan('writer: ') + @dest
 			p = kit.outputFile dest + '', contents, @opts
 
-			if not opts.isCache or not @deps or @isFromCache
+			if not opts.isCache or not @deps
 				return p
 
 			kit.log cls.cyan('writer cache: ') + @dest
@@ -493,10 +495,7 @@ module.exports =
 				dest: @dest + ''
 				deps: @deps
 				cacheDir: @opts.cacheDir
-				contents: @contents
 
 			Promise.all [p, pCache]
 
-		_.extend write,
-			isWriter: true
-			isHandleCache: true
+		_.extend write, isWriter: true
