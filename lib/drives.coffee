@@ -188,7 +188,7 @@ module.exports =
 		kit.log cls.green("#{action}: ") + "[ #{list} ]"
 
 		compilers = {}
-		->
+		auto = ->
 			ext = @dest.ext.toLowerCase()
 			if not compilers[ext]
 				d = _.find kit.drives, (drive) ->
@@ -200,6 +200,14 @@ module.exports =
 					return opts.onNotFound.call @, @
 
 			compilers[ext].call @, @
+
+		# For hash
+		_str = auto.toString
+		auto.toString = ->
+			hash = _str.call auto
+			hash += JSON.stringify opts
+
+		auto
 
 	###*
 	 * a batch file concat helper
