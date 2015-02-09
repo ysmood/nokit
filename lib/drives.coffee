@@ -503,22 +503,22 @@ module.exports =
 			isCache: true
 		}
 
-		write = ->
+		_.extend ->
 			{ dest, contents } = @
 			return if not dest? or not contents?
 
 			kit.log cls.cyan('writer: ') + @dest
 			p = kit.outputFile dest + '', contents, @opts
 
-			if not opts.isCache or not @deps
+			if not opts.isCache
 				return p
 
 			kit.log cls.cyan('writer cache: ') + @dest
 			pCache = kit.depsCache
 				dest: @dest + ''
-				deps: @deps
+				deps: @deps or [@path]
 				cacheDir: @opts.cacheDir
 
 			Promise.all [p, pCache]
 
-		_.extend write, isWriter: true
+		, isWriter: true
