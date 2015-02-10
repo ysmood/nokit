@@ -27,7 +27,7 @@ loadNofile = ->
 		try
 			require 'coffee-cache'
 		catch
-			try require 'coffee-script'
+			try require 'coffee-script/register'
 
 	exts = _(require.extensions).keys().filter (ext) ->
 		['.json', '.node', '.litcoffee', '.coffee.md'].indexOf(ext) == -1

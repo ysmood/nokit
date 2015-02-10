@@ -44,7 +44,7 @@ loadNofile = function() {
       require('coffee-cache');
     } catch (_error) {
       try {
-        require('coffee-script');
+        require('coffee-script/register');
       } catch (_error) {}
     }
   }
