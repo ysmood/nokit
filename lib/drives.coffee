@@ -496,7 +496,7 @@ module.exports =
 			isCache: true
 		}
 
-		_.extend ->
+		write = ->
 			{ dest, contents } = @
 			return if not dest? or not contents?
 
@@ -513,4 +513,5 @@ module.exports =
 				cacheDir: @opts.cacheDir
 
 			Promise.all [p, pCache]
-		, isWriter: true
+
+		_.extend write , { isWriter: true, onEnd: write }

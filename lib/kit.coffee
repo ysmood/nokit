@@ -2078,6 +2078,15 @@ _.extend kit, fs,
 	 * 	isReader: true
 	 * }
 	 *
+	 * # Override writer.
+	 * myWriter = kit._.extend (fileInfo) ->
+	 * 	return if @dest == 'a.js'
+	 *
+	 * 	# Call the overrided writer.
+	 * 	@super()
+	 * , isWriter: true, onEnd: -> @super()
+	 * 	kit.log @list
+	 *
 	 * kit.warp 'src/**\/*.js'
 	 * .load myReader
 	 * .run 'dist'
@@ -2127,7 +2136,7 @@ _.extend kit, fs,
 				if drive.isReader or drive.isWriter
 					if drive.isWriter
 						drive.super = writer
-						drive.onEnd.super = writer
+						drive.onEnd.super = writer.onEnd
 						writer = drive
 					else
 						drive.super = reader

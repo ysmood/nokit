@@ -38,7 +38,7 @@ or write your own.
 kit = require 'nokit'
 drives = kit.require 'drives'
 
-kit.warp 'src/**/*.@(coffee|ls)'
+kit.warp 'src/**/*.@(coffee|ls)', { isCache: false }
     .load drives.auto 'lint'
     .load drives.auto 'compile', '.coffee': { bare: false }
     .load drives.auto 'compress'
@@ -72,19 +72,18 @@ lisencer = (lisence) -> (fileInfo) ->
 concat = (outputFile) ->
     all = ''
 
-    kit._.extend ->
-        if @isWarpEnd
+    # Object.assign
+    kit._.assign ->
+        all += @contents
+    , isWriter: true, onEnd: ->
             # This will enable the auto-cache.
             @deps = kit._.pluck @list, 'path'
 
             @dest = @to + '/' + outputFile
             @set all
 
-            # Call the build-in writer.
-            kit.drives.writer(@opts).call @, @
-        else
-            all += @contents
-    , isWriter: true
+            # Call the overrided writer.
+            @super()
 
 kit.warp 'src/**/*.coffee'
     .load compiler bare: true
