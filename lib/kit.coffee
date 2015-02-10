@@ -2015,17 +2015,17 @@ _.extend kit, fs,
 	 * 	# Set the contents and return self.
 	 * 	set: (String | Buffer) -> fileInfo
 	 *
-	 * 	# The parsed path object
+	 * 	# The src file path.
 	 * 	path: String
 	 *
 	 * 	# The dest root path.
-	 *  to: String
+	 * 	to: String
 	 *
 	 * 	baseDir: String
 	 *
 	 * 	# The destination path.
 	 * 	# Alter it if you want to change the output file's location.
-	 * 	# You can set it to string if you don't want "path.format".
+	 * 	# You can set it to string, warp will auto-convert it to object.
 	 * 	# It's "valueOf" will return "kit.path.join dir, name + ext".
 	 * 	dest: { root, dir, base, ext, name }
 	 *
