@@ -165,6 +165,7 @@ module.exports = launch = function() {
     error('No such tasks: ' + cmder.args);
   }
   return kit.task.run(tasks, {
-    init: cmder
+    init: cmder,
+    isSequential: true
   });
 };

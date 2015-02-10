@@ -38,7 +38,7 @@ or write your own.
 kit = require 'nokit'
 drives = kit.require 'drives'
 
-kit.warp 'src/**/*.@(coffee|ls)'
+kit.warp 'src/**/*.@(coffee|ls)', { isCache: false }
     .load drives.auto 'lint'
     .load drives.auto 'compile', '.coffee': { bare: false }
     .load drives.auto 'compress'
@@ -72,19 +72,18 @@ lisencer = (lisence) -> (fileInfo) ->
 concat = (outputFile) ->
     all = ''
 
-    kit._.extend ->
-        if @isWarpEnd
+    # Object.assign
+    kit._.assign ->
+        all += @contents
+    , isWriter: true, onEnd: ->
             # This will enable the auto-cache.
             @deps = kit._.pluck @list, 'path'
 
             @dest = @to + '/' + outputFile
             @set all
 
-            # Call the build-in writer.
-            kit.drives.writer(@opts).call @, @
-        else
-            all += @contents
-    , isWriter: true
+            # Call the overrided writer.
+            @super()
 
 kit.warp 'src/**/*.coffee'
     .load compiler bare: true
@@ -1316,7 +1315,7 @@ Goto [changelog](doc/changelog.md)
     The `url` module of [io.js](iojs.org).
     You must `kit.require 'url'` before using it.
 
-- ## **[warp](lib/kit.coffee?source#L2089)**
+- ## **[warp](lib/kit.coffee?source#L2101)**
 
     Works much like `gulp.src`, but with Promise instead.
     The warp control and error handling is more pleasant.
@@ -1355,17 +1354,17 @@ Goto [changelog](doc/changelog.md)
         	# Set the contents and return self.
         	set: (String | Buffer) -> fileInfo
 
-        	# The parsed path object
+        	# The src file path.
         	path: String
 
         	# The dest root path.
-         to: String
+        	to: String
 
         	baseDir: String
 
         	# The destination path.
         	# Alter it if you want to change the output file's location.
-        	# You can set it to string if you don't want "path.format".
+        	# You can set it to string, warp will auto-convert it to object.
         	# It's "valueOf" will return "kit.path.join dir, name + ext".
         	dest: { root, dir, base, ext, name }
 
@@ -1383,17 +1382,20 @@ Goto [changelog](doc/changelog.md)
         	list: Array
 
         	# The opts you passed to "kit.warp", it will be extended.
+        	# Extra properties: { driveList, taskList }
         	opts: Object
         }
         ```
-        The handler can have a `onEnd` function, which will be called after the
-        whole warp ended.
 
         The handler can have a `isReader` property, which will make the handler
         override the default file reader.
 
         The handler can have a `isWriter` property, which will make the handler
         override the default file writer.
+        The writer can have a `onEnd` function, which will be called after the
+        whole warp ended.
+
+        If a drive overrides another, it can call `fileInfo.super()` to use it again.
 
     - **<u>example</u>**:
 
@@ -1417,6 +1419,15 @@ Goto [changelog](doc/changelog.md)
         	isReader: true
         }
 
+        # Override writer.
+        myWriter = kit._.extend (fileInfo) ->
+        	return if @dest == 'a.js'
+
+        	# Call the overrided writer.
+        	@super()
+        , isWriter: true, onEnd: -> @super()
+        	kit.log @list
+
         kit.warp 'src/**/*.js'
         .load myReader
         .run 'dist'
@@ -1428,7 +1439,7 @@ Goto [changelog](doc/changelog.md)
         .run 'dist'
         ```
 
-- ## **[which](lib/kit.coffee?source#L2161)**
+- ## **[which](lib/kit.coffee?source#L2172)**
 
     Same as the unix `which` command.
     You must `kit.require 'which'` before using it.
@@ -1439,14 +1450,14 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Promise_ }
 
-- ## **[whichSync](lib/kit.coffee?source#L2168)**
+- ## **[whichSync](lib/kit.coffee?source#L2179)**
 
     Sync version of `which`.
     You must `kit.require 'whichSync'` before using it.
 
     - **<u>type</u>**: { _Function_ }
 
-- ## **[xinspect](lib/kit.coffee?source#L2179)**
+- ## **[xinspect](lib/kit.coffee?source#L2190)**
 
     For debugging. Dump a colorful object.
 
@@ -1463,7 +1474,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _String_ }
 
-- ## **[xopen](lib/kit.coffee?source#L2202)**
+- ## **[xopen](lib/kit.coffee?source#L2213)**
 
     Open a thing that your system can recognize.
     Now only support Windows, OSX or system that installed 'xdg-open'.
@@ -1492,12 +1503,12 @@ Goto [changelog](doc/changelog.md)
 
 # Drives
 
-- ## **[Overview](lib/drives.coffee?source#L9)**
+- ## **[Overview](lib/drives.coffee?source#L10)**
 
     The built-in plguins for warp. It's more like examples
     to show how to use nokit efficiently.
 
-- ## **[cleanCss](lib/drives.coffee?source#L18)**
+- ## **[cleanCss](lib/drives.coffee?source#L19)**
 
     clean-css
 
@@ -1505,7 +1516,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[coffee](lib/drives.coffee?source#L32)**
+- ## **[coffee](lib/drives.coffee?source#L33)**
 
     coffee-script compiler
 
@@ -1515,7 +1526,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[coffeelint](lib/drives.coffee?source#L67)**
+- ## **[coffeelint](lib/drives.coffee?source#L68)**
 
     coffeelint processor
 
@@ -1537,7 +1548,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[comment2md](lib/drives.coffee?source#L122)**
+- ## **[comment2md](lib/drives.coffee?source#L123)**
 
     Parse commment from a js, coffee, or livescript file,
     and output a markdown string.
@@ -1572,7 +1583,7 @@ Goto [changelog](doc/changelog.md)
 
         The nofile of nokit shows how to use it.
 
-- ## **[auto](lib/drives.coffee?source#L181)**
+- ## **[auto](lib/drives.coffee?source#L178)**
 
     Auto-compiler file by extension. It will search through
     `kit.drives`, and find proper drive to run the task.
@@ -1600,7 +1611,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[concat](lib/drives.coffee?source#L209)**
+- ## **[concat](lib/drives.coffee?source#L214)**
 
     a batch file concat helper
 
@@ -1614,7 +1625,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[jshint](lib/drives.coffee?source#L237)**
+- ## **[jshint](lib/drives.coffee?source#L241)**
 
     Lint js via `jshint`.
 
@@ -1630,7 +1641,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[less](lib/drives.coffee?source#L268)**
+- ## **[less](lib/drives.coffee?source#L272)**
 
     Compile less.
 
@@ -1638,7 +1649,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[livescript](lib/drives.coffee?source#L295)**
+- ## **[livescript](lib/drives.coffee?source#L299)**
 
     LiveScript compiler.
 
@@ -1648,7 +1659,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[mocha](lib/drives.coffee?source#L324)**
+- ## **[mocha](lib/drives.coffee?source#L328)**
 
     mocha test
 
@@ -1662,7 +1673,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[reader](lib/drives.coffee?source#L355)**
+- ## **[reader](lib/drives.coffee?source#L357)**
 
     read file and set `contents`
 
@@ -1678,7 +1689,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[stylus](lib/drives.coffee?source#L410)**
+- ## **[stylus](lib/drives.coffee?source#L426)**
 
     Compile stylus.
 
@@ -1705,7 +1716,7 @@ Goto [changelog](doc/changelog.md)
         }
         ```
 
-- ## **[uglifyjs](lib/drives.coffee?source#L450)**
+- ## **[uglifyjs](lib/drives.coffee?source#L466)**
 
     uglify-js processor
 
@@ -1725,7 +1736,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[writer](lib/drives.coffee?source#L478)**
+- ## **[writer](lib/drives.coffee?source#L494)**
 
     Output file by `contents` and `dest`.
     If the 'ext' or 'name' is not null,

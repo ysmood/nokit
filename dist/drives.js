@@ -1,10 +1,12 @@
-var Overview, Promise, cls, kit, _;
+var Overview, Promise, cls, jhash, kit, _;
 
 kit = require('./kit');
 
 _ = kit._, Promise = kit.Promise;
 
 cls = kit.require('colors/safe');
+
+jhash = null;
 
 
 /**
@@ -162,24 +164,7 @@ module.exports = {
       formatComment: {}
     });
     return _.extend(function(file) {
-      var comments, writer;
-      if (this.isWarpEnd) {
-        if (_.keys(opts.doc).length < this.list.length) {
-          return;
-        }
-        writer = kit.drives.writer(opts);
-        this.deps = _.pluck(this.list, 'path');
-        this.deps.push(opts.tpl);
-        this.dest = kit.path.join(this.to, opts.out);
-        return kit.readFile(opts.tpl, 'utf8').then(function(tpl) {
-          return file.set(_.template(tpl)({
-            doc: opts.doc
-          }));
-        }).then(function() {
-          kit.log(cls.cyan('comment2md: ') + kit.path.join(file.to, opts.out));
-          return writer.call(file, file);
-        });
-      }
+      var comments;
       opts.formatComment.name = function(_arg) {
         var line, link, name;
         name = _arg.name, line = _arg.line;
@@ -190,7 +175,23 @@ module.exports = {
       comments = kit.parseComment(this.contents + '', opts.parseComment);
       return opts.doc[this.path] = kit.formatComment(comments, opts.formatComment);
     }, {
-      isWriter: true
+      isWriter: true,
+      onEnd: function(file) {
+        if (_.keys(opts.doc).length < this.list.length) {
+          return;
+        }
+        this.deps = _.pluck(this.list, 'path');
+        this.deps.push(opts.tpl);
+        this.dest = kit.path.join(this.to, opts.out);
+        return kit.readFile(opts.tpl, 'utf8').then(function(tpl) {
+          return file.set(_.template(tpl)({
+            doc: opts.doc
+          }));
+        }).then(function() {
+          kit.log(cls.cyan('comment2md: ') + kit.path.join(file.to, opts.out));
+          return file["super"]();
+        });
+      }
     });
   },
 
@@ -216,7 +217,7 @@ module.exports = {
   	 * @return {Function}
    */
   auto: function(action, opts) {
-    var compilers, list;
+    var auto, compilers, list, _str;
     if (opts == null) {
       opts = {};
     }
@@ -226,7 +227,7 @@ module.exports = {
     list = _(kit.drives).map(action).compact().flatten().value().join(' ');
     kit.log(cls.green(action + ": ") + ("[ " + list + " ]"));
     compilers = {};
-    return function() {
+    auto = function() {
       var d, ext;
       ext = this.dest.ext.toLowerCase();
       if (!compilers[ext]) {
@@ -241,6 +242,13 @@ module.exports = {
       }
       return compilers[ext].call(this, this);
     };
+    _str = auto.toString;
+    auto.toString = function() {
+      var hash;
+      hash = _str.call(auto);
+      return hash += JSON.stringify(opts);
+    };
+    return auto;
   },
 
   /**
@@ -253,7 +261,11 @@ module.exports = {
     var all;
     all = [];
     return _.extend(function() {
-      if (this.isWarpEnd) {
+      all.push(this.contents);
+      return kit.log(cls.cyan('concat: ') + this.path);
+    }, {
+      isWriter: true,
+      onEnd: function() {
         if (all.length < this.list.length) {
           return;
         }
@@ -263,13 +275,8 @@ module.exports = {
         this.dest = kit.path.join(dir, name);
         this.deps = _.pluck(this.list, 'path');
         this.set(all.join('\n'));
-        return kit.drives.writer(this.opts).call(this, this);
-      } else {
-        all.push(this.contents);
-        return kit.log(cls.cyan('concat: ') + this.path);
+        return this["super"]();
       }
-    }, {
-      isWriter: true
     });
   },
 
@@ -397,7 +404,12 @@ module.exports = {
     Mocha = kit.requireOptional('mocha', __dirname);
     mocha = new Mocha(opts);
     return _.extend(function() {
-      if (this.isWarpEnd) {
+      mocha.addFile(this.path);
+      return this.tasks.length = 0;
+    }, {
+      isReader: true,
+      isWriter: true,
+      onEnd: function() {
         return new Promise(function(resolve, reject) {
           return mocha.run(function(code) {
             if (code === 0) {
@@ -409,13 +421,7 @@ module.exports = {
             }
           });
         });
-      } else {
-        mocha.addFile(this.path);
-        return this.tasks.length = 0;
       }
-    }, {
-      isReader: true,
-      isWriter: true
     });
   },
 
@@ -431,7 +437,7 @@ module.exports = {
   	 * @return {Function}
    */
   reader: function(opts) {
-    var read;
+    var cacheDir, hashDrives, read;
     if (opts == null) {
       opts = {};
     }
@@ -439,17 +445,32 @@ module.exports = {
       isCache: true,
       encoding: 'utf8'
     });
+    if (jhash == null) {
+      jhash = new (kit.require('jhash').constructor);
+    }
+    hashDrives = function(ds) {
+      var str;
+      str = _.map(ds, function(d) {
+        return d.toString();
+      }).join();
+      return jhash.hash(str, true) + '';
+    };
     read = function() {
       return kit.readFile(this.path, opts.encoding).then(this.set);
     };
+    cacheDir = null;
     return _.extend(function(file) {
+      if (cacheDir === null) {
+        cacheDir = kit.path.join(this.opts.cacheDir, hashDrives(this.opts.driveList));
+        this.opts.cacheDir = cacheDir;
+      }
       if (this.isDir) {
         return;
       }
       if (opts.isCache) {
         return kit.depsCache({
           deps: [this.path],
-          cacheDir: opts.cacheDir
+          cacheDir: cacheDir
         }).then(function(cache) {
           file.deps = cache.deps;
           if (cache.isNewer) {
@@ -596,19 +617,20 @@ module.exports = {
       }
       kit.log(cls.cyan('writer: ') + this.dest);
       p = kit.outputFile(dest + '', contents, this.opts);
-      if (!opts.isCache || !this.deps) {
+      if (!opts.isCache) {
         return p;
       }
       kit.log(cls.cyan('writer cache: ') + this.dest);
       pCache = kit.depsCache({
         dest: this.dest + '',
-        deps: this.deps,
+        deps: this.deps || [this.path],
         cacheDir: this.opts.cacheDir
       });
       return Promise.all([p, pCache]);
     };
     return _.extend(write, {
-      isWriter: true
+      isWriter: true,
+      onEnd: write
     });
   }
 };

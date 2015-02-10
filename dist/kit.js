@@ -2248,17 +2248,17 @@ _.extend(kit, fs, {
   	 * 	# Set the contents and return self.
   	 * 	set: (String | Buffer) -> fileInfo
   	 *
-  	 * 	# The parsed path object
+  	 * 	# The src file path.
   	 * 	path: String
   	 *
   	 * 	# The dest root path.
-  	 *  to: String
+  	 * 	to: String
   	 *
   	 * 	baseDir: String
   	 *
   	 * 	# The destination path.
   	 * 	# Alter it if you want to change the output file's location.
-  	 * 	# You can set it to string if you don't want "path.format".
+  	 * 	# You can set it to string, warp will auto-convert it to object.
   	 * 	# It's "valueOf" will return "kit.path.join dir, name + ext".
   	 * 	dest: { root, dir, base, ext, name }
   	 *
@@ -2276,17 +2276,20 @@ _.extend(kit, fs, {
   	 * 	list: Array
   	 *
   	 * 	# The opts you passed to "kit.warp", it will be extended.
+  	 * 	# Extra properties: { driveList, taskList }
   	 * 	opts: Object
   	 * }
   	 * ```
-  	 * The handler can have a `onEnd` function, which will be called after the
-  	 * whole warp ended.
   	 *
   	 * The handler can have a `isReader` property, which will make the handler
   	 * override the default file reader.
   	 *
   	 * The handler can have a `isWriter` property, which will make the handler
   	 * override the default file writer.
+  	 * The writer can have a `onEnd` function, which will be called after the
+  	 * whole warp ended.
+  	 *
+  	 * If a drive overrides another, it can call `fileInfo.super()` to use it again.
   	 * @example
   	 * ```coffee
   	 * # Define a simple workflow.
@@ -2308,6 +2311,15 @@ _.extend(kit, fs, {
   	 * 	isReader: true
   	 * }
   	 *
+  	 * # Override writer.
+  	 * myWriter = kit._.extend (fileInfo) ->
+  	 * 	return if @dest == 'a.js'
+  	 *
+  	 * 	# Call the overrided writer.
+  	 * 	@super()
+  	 * , isWriter: true, onEnd: -> @super()
+  	 * 	kit.log @list
+  	 *
   	 * kit.warp 'src/**\/*.js'
   	 * .load myReader
   	 * .run 'dist'
@@ -2320,18 +2332,15 @@ _.extend(kit, fs, {
   	 * ```
    */
   warp: function(from, opts) {
-    var driveList, drives, hashDrives, initInfo, reader, runDrive, taskList, warpper, writer, _base;
+    var drives, initInfo, reader, runDrive, warpper, writer;
     if (opts == null) {
       opts = {};
     }
     drives = kit.require('drives');
-    if ((_base = kit.warp).jhash == null) {
-      _base.jhash = new (kit.require('jhash').constructor);
-    }
     _.defaults(opts, {
       cacheDir: '.nokit/warp'
     });
-    runDrive = function(task) {
+    runDrive = function(drive) {
       return function(info) {
         if (_.isString(info.dest)) {
           info.dest = _.extend(kit.path.parse(info.dest), {
@@ -2340,7 +2349,12 @@ _.extend(kit, fs, {
             }
           });
         }
-        return Promise.resolve(task.call(info, info)).then(function(val) {
+        if (drive["super"]) {
+          info["super"] = function() {
+            return drive["super"].call(info, info);
+          };
+        }
+        return Promise.resolve(drive.call(info, info)).then(function(val) {
           return info;
         });
       };
@@ -2359,27 +2373,23 @@ _.extend(kit, fs, {
         }
       });
     };
-    hashDrives = function(ds) {
-      var str;
-      str = _.map(ds, function(d) {
-        return d.toString();
-      }).join();
-      return kit.warp.jhash.hash(str, true);
-    };
-    driveList = [];
-    taskList = [];
+    opts.driveList = [];
+    opts.taskList = [];
     reader = drives.reader(opts);
     writer = drives.writer(opts);
     return warpper = {
       load: function(drive) {
         if (drive.isReader || drive.isWriter) {
           if (drive.isWriter) {
+            drive["super"] = writer;
+            drive.onEnd["super"] = writer.onEnd;
             writer = drive;
           } else {
+            drive["super"] = reader;
             reader = drive;
           }
         } else {
-          driveList.push(drive);
+          opts.driveList.push(drive);
         }
         return warpper;
       },
@@ -2388,11 +2398,10 @@ _.extend(kit, fs, {
         if (to == null) {
           to = '.';
         }
-        driveList.unshift(reader);
-        driveList.push(writer);
-        opts.cacheDir += '/' + hashDrives(driveList);
-        _.each(driveList, function(drive) {
-          return taskList.push(runDrive(drive));
+        opts.driveList.unshift(reader);
+        opts.driveList.push(writer);
+        _.each(opts.driveList, function(drive) {
+          return opts.taskList.push(runDrive(drive));
         });
         globOpts = _.extend({}, opts, {
           iter: function(info, list) {
@@ -2401,7 +2410,7 @@ _.extend(kit, fs, {
               info.baseDir = opts.baseDir;
             }
             _.extend(info, {
-              tasks: _.clone(taskList),
+              tasks: _.clone(opts.taskList),
               to: to,
               list: list
             });
@@ -2409,8 +2418,10 @@ _.extend(kit, fs, {
           }
         });
         return kit.glob(from, globOpts).then(function(list) {
-          return runDrive(writer)(initInfo({
-            isWarpEnd: true,
+          if (!writer.onEnd) {
+            return;
+          }
+          return runDrive(writer.onEnd)(initInfo({
             to: to,
             list: list
           }));
