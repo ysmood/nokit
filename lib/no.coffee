@@ -141,4 +141,4 @@ module.exports = launch = ->
 	if tasks.length == 0
 		error 'No such tasks: ' + cmder.args
 
-	kit.task.run tasks, { init: cmder }
+	kit.task.run tasks, { init: cmder, isSequential: true }
