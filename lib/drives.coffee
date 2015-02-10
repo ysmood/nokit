@@ -130,24 +130,6 @@ module.exports =
 			formatComment: {}
 
 		_.extend (file) ->
-			if @isWarpEnd
-				return if _.keys(opts.doc).length < @list.length
-
-				writer = kit.drives.writer opts
-
-				@deps = _.pluck @list, 'path'
-				@deps.push opts.tpl
-
-				@dest = kit.path.join @to, opts.out
-
-				return kit.readFile opts.tpl, 'utf8'
-				.then (tpl) ->
-					file.set _.template(tpl) { doc: opts.doc }
-				.then ->
-					kit.log cls.cyan('comment2md: ') +
-						kit.path.join(file.to, opts.out)
-					writer.call file, file
-
 			opts.formatComment.name = ({ name, line }) ->
 				name = name.replace 'self.', ''
 				link = "#{file.path}?source#L#{line}"
@@ -156,7 +138,21 @@ module.exports =
 			comments = kit.parseComment @contents + '', opts.parseComment
 			opts.doc[@path] = kit.formatComment comments, opts.formatComment
 
-		, isWriter: true
+		, isWriter: true, onEnd: (file) ->
+			return if _.keys(opts.doc).length < @list.length
+
+			@deps = _.pluck @list, 'path'
+			@deps.push opts.tpl
+
+			@dest = kit.path.join @to, opts.out
+
+			kit.readFile opts.tpl, 'utf8'
+			.then (tpl) ->
+				file.set _.template(tpl) { doc: opts.doc }
+			.then ->
+				kit.log cls.cyan('comment2md: ') +
+					kit.path.join(file.to, opts.out)
+				file.super()
 
 	###*
 	 * Auto-compiler file by extension. It will search through
@@ -219,18 +215,17 @@ module.exports =
 		all = []
 
 		_.extend ->
-			if @isWarpEnd
-				return if all.length < @list.length
+			all.push @contents
+			kit.log cls.cyan('concat: ') + @path
+		, isWriter: true, onEnd: ->
+			return if all.length < @list.length
 
-				dir ?= @to
-				@dest = kit.path.join dir, name
-				@deps = _.pluck @list, 'path'
-				@set all.join '\n'
-				kit.drives.writer(@opts).call @, @
-			else
-				all.push @contents
-				kit.log cls.cyan('concat: ') + @path
-		, isWriter: true
+			dir ?= @to
+			@dest = kit.path.join dir, name
+			@deps = _.pluck @list, 'path'
+			@set all.join '\n'
+			@super()
+
 
 	###*
 	 * Lint js via `jshint`.
@@ -338,17 +333,15 @@ module.exports =
 		mocha = new Mocha opts
 
 		_.extend ->
-			if @isWarpEnd
-				return new Promise (resolve, reject) ->
-					mocha.run (code) ->
-						if code == 0
-							resolve()
-						else
-							reject { code }
-			else
-				mocha.addFile @path
-				@tasks.length = 0
-		, isReader: true, isWriter: true
+			mocha.addFile @path
+			@tasks.length = 0
+		, isReader: true, isWriter: true, onEnd: ->
+			new Promise (resolve, reject) ->
+				mocha.run (code) ->
+					if code == 0
+						resolve()
+					else
+						reject { code }
 
 	###*
 	 * read file and set `contents`
@@ -520,5 +513,4 @@ module.exports =
 				cacheDir: @opts.cacheDir
 
 			Promise.all [p, pCache]
-
 		, isWriter: true

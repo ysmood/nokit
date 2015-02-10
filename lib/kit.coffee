@@ -2047,14 +2047,16 @@ _.extend kit, fs,
 	 * 	opts: Object
 	 * }
 	 * ```
-	 * The handler can have a `onEnd` function, which will be called after the
-	 * whole warp ended.
 	 *
 	 * The handler can have a `isReader` property, which will make the handler
 	 * override the default file reader.
 	 *
 	 * The handler can have a `isWriter` property, which will make the handler
 	 * override the default file writer.
+	 * The writer can have a `onEnd` function, which will be called after the
+	 * whole warp ended.
+	 *
+	 * If a drive overrides another, it can call `fileInfo.super()` to use it again.
 	 * @example
 	 * ```coffee
 	 * # Define a simple workflow.
@@ -2094,11 +2096,14 @@ _.extend kit, fs,
 			cacheDir: '.nokit/warp'
 		}
 
-		runDrive = (task) -> (info) ->
+		runDrive = (drive) -> (info) ->
 			if _.isString info.dest
 				info.dest = _.extend kit.path.parse(info.dest),
 					valueOf: -> kit.path.join @dir, @name + @ext
-			Promise.resolve task.call(info, info)
+			if drive.super
+				info.super = -> drive.super.call info, info
+
+			Promise.resolve drive.call(info, info)
 			.then (val) -> info
 
 		initInfo = (info) ->
@@ -2121,8 +2126,11 @@ _.extend kit, fs,
 			load: (drive) ->
 				if drive.isReader or drive.isWriter
 					if drive.isWriter
+						drive.super = writer
+						drive.onEnd.super = writer
 						writer = drive
 					else
+						drive.super = reader
 						reader = drive
 				else
 					opts.driveList.push drive
@@ -2143,7 +2151,8 @@ _.extend kit, fs,
 					kit.flow(info.tasks) initInfo info
 
 				kit.glob(from, globOpts).then (list) ->
-					runDrive(writer) initInfo { isWarpEnd: true, to, list }
+					return if not writer.onEnd
+					runDrive(writer.onEnd) initInfo { to, list }
 
 	###*
 	 * Same as the unix `which` command.
