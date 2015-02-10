@@ -215,25 +215,6 @@ describe 'Kit:', ->
 			kit.outputFileSync p, 'process.exit 10'
 		, 500
 
-	it 'iter', ->
-		assert.deepEqual kit.iter([1, 2, 3])(), { key: 0, value: 1 }
-		assert.deepEqual kit.iter('test')(), { value: 'test' }
-
-		iter = kit.iter({ a: 1, b: 2, c: 3 })
-		iter()
-		assert.deepEqual iter(), { key: 'b', value: 2 }
-
-	it 'join', ->
-		assert.deepEqual(
-			kit.join([1, 2, 3, 4], 'sep')
-			[1, 'sep', 2, 'sep', 3, 'sep', 4]
-		)
-
-		assert.deepEqual(
-			kit.join([1, 2, 3, 4], -> 's')
-			[1, 's', 2, 's', 3, 's', 4]
-		)
-
 	it 'exec', ->
 		kit.exec 'echo exec_ok'
 		.then ({ stdout }) ->

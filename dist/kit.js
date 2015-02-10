@@ -768,63 +768,6 @@ _.extend(kit, fs, {
   },
 
   /**
-  	 * Generate a iterator from a value.
-  	 * @param  {Any} val
-  	 * @return {Function} The every time when the function been
-  	 * called, it returns a object looks like:
-  	 * ```coffee
-  	 * { key: 10, value: 'hello world' }
-  	 * ```
-  	 * The `key` can be `undefined`, `number` or `string`.
-  	 * @example
-  	 * ```coffee
-  	 * iter = kit.iter [1, 2, 3]
-  	 * iter() # output => { key: 0, value: 1 }
-  	 *
-  	 * iter = kit.iter 'test'
-  	 * iter() # output => { key: 0, value: 't' }
-  	 *
-  	 * iter = kit.iter { a: 1, b: 2, c: 3 }
-  	 * iter() # output => { key: 'a', value: 1 }
-  	 * ```
-   */
-  iter: function(val) {
-    var i, keys;
-    if (_.isArray(val)) {
-      i = 0;
-      return function() {
-        return {
-          key: i,
-          value: val[i++]
-        };
-      };
-    } else if (_.isFunction(val)) {
-      return function() {
-        return {
-          value: val.apply(void 0, arguments)
-        };
-      };
-    } else if (_.isObject(val)) {
-      i = 0;
-      keys = _.keys(val);
-      return function() {
-        var key;
-        key = keys[i++];
-        return {
-          key: key,
-          value: val[key]
-        };
-      };
-    } else {
-      return function() {
-        return {
-          value: val
-        };
-      };
-    }
-  },
-
-  /**
   	 * Indent a text block.
   	 * @param {String} text
   	 * @param {Int} num
@@ -900,40 +843,6 @@ _.extend(kit, fs, {
   	 * ```
    */
   jhash: null,
-
-  /**
-  	 * It inserts the fnB in between the fnA and concatenates the result.
-  	 * @param  {Any} fnA
-  	 * @param  {Any} fnB
-  	 * @return {Array}
-  	 * @example
-  	 * ```coffee
-  	 * kit.join([1, 2, 3, 4], 'sep')
-  	 * # output => [1, 'sep', 2, 'sep', 3, 'sep', 4]
-  	 *
-  	 * iter = ->
-  	 * 	i = 0
-  	 * 	-> i++
-  	 * kit.join([1, 2, 3, 4], new iter)
-  	 * # output => [1, 'sep', 2, 'sep', 3, 'sep', 4]
-  	 * ```
-   */
-  join: function(fnA, fnB) {
-    var arr, iterA, iterB, nextVal, val;
-    arr = [];
-    iterA = kit.iter(fnA);
-    iterB = kit.iter(fnB);
-    val = iterA().value;
-    while (val !== void 0) {
-      arr.push(val);
-      nextVal = iterA().value;
-      if (nextVal !== void 0) {
-        arr.push(iterB().value);
-      }
-      val = nextVal;
-    }
-    return arr;
-  },
 
   /**
   	 * A better log for debugging, it uses the `kit.xinspect` to log.
