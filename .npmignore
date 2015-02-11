@@ -1,4 +1,0 @@
-appveyor.yml
-.*
-*.sublime-*
-test/*
