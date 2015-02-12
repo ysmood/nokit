@@ -272,7 +272,7 @@ Goto [changelog](doc/changelog.md)
 
 - ## **[depsCache](lib/kit.coffee?source#L209)**
 
-    A file cache helper. It use hard link to cache files.
+    A fast file cache helper. It uses hard link to cache files.
 
     - **<u>param</u>**: `info` { _Object_ }
 

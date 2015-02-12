@@ -286,14 +286,15 @@ describe 'Kit:', ->
 				cache.contents = kit.readFileSync cache.dests[dest1], 'utf8'
 
 				delete cache.deps
-				shouldDeepEqual cache,
+				out =
 					contents: 'out1'
-					dests:
-						'test/fixtures/depsCacheFileNewer.txt.dest':
-							'test/fixtures/cacheDir/3779283019-depsCacheFileNewer.txt.dest'
-						'test/fixtures/depsCacheFileNewer.txt.dest1':
-							'test/fixtures/cacheDir/3263598758-depsCacheFileNewer.txt.dest1'
+					dests: {}
 					isNewer: false
+
+				out.dests[dest] = 'test/fixtures/cacheDir/3779283019-depsCacheFileNewer.txt.dest'
+				out.dests[dest1] = 'test/fixtures/cacheDir/3263598758-depsCacheFileNewer.txt.dest1'
+				shouldDeepEqual cache, out
+
 
 	it 'warp map', ->
 		tmp = 'test/fixtures/warp'
