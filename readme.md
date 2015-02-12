@@ -1,6 +1,6 @@
 # Overview
 
-A light weight set of handy functions.
+A light weight set of handy tools for real world functional programming.
 
 Reduce the gap between working on different systems. Such as watch directory changes on a network file system, operate `spawn` on Windows and Linux, handle async IO api with promise, etc.
 
@@ -38,7 +38,9 @@ or write your own.
 kit = require 'nokit'
 drives = kit.require 'drives'
 
-kit.warp 'src/**/*.@(coffee|ls)', { isCache: false }
+kit.warp 'src/**/*.@(coffee|ls)'
+    # # To disable cache.
+    # .load drives.reader isCache: false
     .load drives.auto 'lint'
     .load drives.auto 'compile', '.coffee': { bare: false }
     .load drives.auto 'compress'
@@ -122,40 +124,36 @@ or any of its parents directory. The syntax of `nofile` is almost the same as th
 Assume your file content is:
 
 ```coffee
-# There are some global variables you can call directly:
-#   option: commander.option
-#   task: kit.task
+kit = require 'nokit'
 
-# It will expose some handy helpers to global.
-#   kit: kit
-#   _: lodash
-#   Promise: Bluebird
-#   warp: kit.warp
-#   drives: kit.drives
-require 'nokit/global'
+module.exports = (task, option) ->
 
-option '-w, --hello [world]', 'Just a test option', ''
+    option '-w, --hello [world]', 'Just a test option', ''
 
-# Define a default task, and it depends on the "clean" task.
-task 'default', ['clean'], 'This is a comment info', (opts) ->
-    kit.log opts.hello
+    # Define a default task, and it depends on the "clean" task.
+    task 'default', ['clean'], 'This is a comment info', (opts) ->
+        kit.log opts.hello
 
-    # "colors" is enabled by default.
-    kit.log 'print red words'.red
+        # Use colors.
+        kit.require 'colors'
+        kit.log 'print red words'.red
 
-task 'clean', ->
-    kit.remove 'dist'
+    task 'clean', ->
+        kit.remove 'dist'
 
-# To add alias to a task, just use space to separate names.
-# Here 'build' and 'b' are the same task.
-task 'build b', ->
-    warp 'src/**/*.js'
-    .load (file) ->
-        file.set '/* Nothing */' + file.contents
-    .run 'dist'
+    # To add alias to a task, just use space to separate names.
+    # Here 'build' and 'b' are the same task.
+    task 'build b', ->
+        kit.require 'drives'
+        kit.warp 'src/**/*.js'
+        .load kit.drives.auto 'compile'
+        .run 'dist'
 
-task 'sequential', ['clean', 'build'], true, ->
-    kit.log 'Run clean and build non-concurrently.'
+    task 'sequential', ['clean', 'build'], true, ->
+        kit.log 'Run clean and build non-concurrently.'
+
+    # You can return a promise for an async init.
+    kit.sleep 1000
 ```
 
 Then you can run it in command line: `no`. Just that simple, without task
@@ -281,13 +279,13 @@ Goto [changelog](doc/changelog.md)
         Not optional.
         ```coffee
         {
-        	# The path of the output file.
-        	# If it's undefined, depsCache will try to get cache.
-        	dest: String
-
         	# The first item is the key path, others are
         	# its dependencies.
         	deps: Array
+
+        	# The path of the output file.
+        	# If it's undefined, depsCache will try to get cache.
+        	dests: Array
 
         	cacheDir: '.nokit'
         }
@@ -300,12 +298,11 @@ Goto [changelog](doc/changelog.md)
         {
         	isNewer: Boolean
 
-        	deps: Array
+        	# { path: mtime }
+        	deps: Object
 
-        	dest: String
-
-        	# The path of the cache.
-        	path: String
+        	# { destPath: cachePath }
+        	dests: Object
 
         	cacheError: undefined | Error
         }
@@ -316,19 +313,20 @@ Goto [changelog](doc/changelog.md)
         ```coffee
         # Set cache
         kit.depsCache {
-        	dest: 'index.css'
+        	dests: ['index.css']
         	deps: ['index.less', 'b.less', 'c.less']
         }
 
         # Get cache
         # You don't have to sepecify 'b.less', 'c.less'.
         kit.depsCache { deps: ['index.less'] }
-        .then (info) ->
-        	if info.isNewer
+        .then (cache) ->
+        	if cache.isNewer
         		kit.log 'cache is newer'.
+        		kit.log cache.dests
         ```
 
-- ## **[colors](lib/kit.coffee?source#L274)**
+- ## **[colors](lib/kit.coffee?source#L284)**
 
     The [colors](https://github.com/Marak/colors.js) lib
     makes it easier to print colorful info in CLI.
@@ -337,7 +335,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>type</u>**: { _Object_ }
 
-- ## **[daemonize](lib/kit.coffee?source#L290)**
+- ## **[daemonize](lib/kit.coffee?source#L300)**
 
     Daemonize a program. Just a shortcut usage of `kit.spawn`.
 
@@ -357,7 +355,7 @@ Goto [changelog](doc/changelog.md)
 
         The daemonized process.
 
-- ## **[decrypt](lib/kit.coffee?source#L317)**
+- ## **[decrypt](lib/kit.coffee?source#L327)**
 
     A simple decrypt helper. Cross-version of node.
 
@@ -371,14 +369,14 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Buffer_ }
 
-- ## **[drives](lib/kit.coffee?source#L338)**
+- ## **[drives](lib/kit.coffee?source#L348)**
 
     The warp drives.
     You must `kit.require 'drives'` before using it.
 
     - **<u>type</u>**: { _Object_ }
 
-- ## **[encrypt](lib/kit.coffee?source#L347)**
+- ## **[encrypt](lib/kit.coffee?source#L357)**
 
     A simple encrypt helper. Cross-version of node.
 
@@ -392,7 +390,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Buffer_ }
 
-- ## **[err](lib/kit.coffee?source#L368)**
+- ## **[err](lib/kit.coffee?source#L378)**
 
     A error log shortcut for `kit.log(msg, 'error', opts)`
 
@@ -400,7 +398,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>param</u>**: `opts` { _Object_ }
 
-- ## **[exec](lib/kit.coffee?source#L402)**
+- ## **[exec](lib/kit.coffee?source#L412)**
 
     A better `child_process.exec`. Supports multi-line shell script.
     For supporting old node version, it will create 3 temp files,
@@ -443,7 +441,7 @@ Goto [changelog](doc/changelog.md)
         """, 'zsh'
         ```
 
-- ## **[flow](lib/kit.coffee?source#L495)**
+- ## **[flow](lib/kit.coffee?source#L505)**
 
     Creates a function that is the composition of the provided functions.
     Besides, it can also accept async function that returns promise.
@@ -501,7 +499,7 @@ Goto [changelog](doc/changelog.md)
         walker 'test.com'
         ```
 
-- ## **[formatComment](lib/kit.coffee?source#L550)**
+- ## **[formatComment](lib/kit.coffee?source#L563)**
 
     Format the parsed comments array to a markdown string.
 
@@ -525,13 +523,13 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _String_ }
 
-- ## **[fs](lib/kit.coffee?source#L592)**
+- ## **[fs](lib/kit.coffee?source#L605)**
 
     See my project [nofs](https://github.com/ysmood/nofs).
 
     [Offline Documentation](?gotoDoc=nofs/readme.md)
 
-- ## **[fuzzySearch](lib/kit.coffee?source#L621)**
+- ## **[fuzzySearch](lib/kit.coffee?source#L634)**
 
     Fuzzy search a string list by a key word.
 
@@ -573,7 +571,7 @@ Goto [changelog](doc/changelog.md)
         # output => 'hey world'
         ```
 
-- ## **[genModulePaths](lib/kit.coffee?source#L667)**
+- ## **[genModulePaths](lib/kit.coffee?source#L680)**
 
     Generate a list of module paths from a name and a directory.
 
@@ -593,7 +591,7 @@ Goto [changelog](doc/changelog.md)
 
         Paths
 
-- ## **[indent](lib/kit.coffee?source#L697)**
+- ## **[indent](lib/kit.coffee?source#L710)**
 
     Indent a text block.
 
@@ -623,7 +621,7 @@ Goto [changelog](doc/changelog.md)
         # => "one\ntwo"
         ```
 
-- ## **[isDevelopment](lib/kit.coffee?source#L707)**
+- ## **[isDevelopment](lib/kit.coffee?source#L720)**
 
     Nobone use it to check the running mode of the app.
     Overwrite it if you want to control the check logic.
@@ -631,7 +629,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Boolean_ }
 
-- ## **[isProduction](lib/kit.coffee?source#L716)**
+- ## **[isProduction](lib/kit.coffee?source#L729)**
 
     Nobone use it to check the running mode of the app.
     Overwrite it if you want to control the check logic.
@@ -639,7 +637,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Boolean_ }
 
-- ## **[jhash](lib/kit.coffee?source#L741)**
+- ## **[jhash](lib/kit.coffee?source#L754)**
 
     A fast helper to hash string or binary file.
     See my [jhash](https://github.com/ysmood/jhash) project.
@@ -664,7 +662,7 @@ Goto [changelog](doc/changelog.md)
         jhash.hash 'test' # output => 'ede'
         ```
 
-- ## **[log](lib/kit.coffee?source#L777)**
+- ## **[log](lib/kit.coffee?source#L790)**
 
     A better log for debugging, it uses the `kit.xinspect` to log.
 
@@ -710,7 +708,7 @@ Goto [changelog](doc/changelog.md)
         # => '[2015-02-07 08:31:49] a b 10'
         ```
 
-- ## **[logs](lib/kit.coffee?source#L864)**
+- ## **[logs](lib/kit.coffee?source#L877)**
 
     Shortcut for logging multiple strings.
 
@@ -725,7 +723,7 @@ Goto [changelog](doc/changelog.md)
         # => [2015-02-07 08:31:49] test1 test2 test3
         ```
 
-- ## **[monitorApp](lib/kit.coffee?source#L930)**
+- ## **[monitorApp](lib/kit.coffee?source#L943)**
 
     Monitor an application and automatically restart it when file changed.
     Even when the monitored app exit with error, the monitor will still wait
@@ -797,13 +795,13 @@ Goto [changelog](doc/changelog.md)
         }
         ```
 
-- ## **[nodeVersion](lib/kit.coffee?source#L1016)**
+- ## **[nodeVersion](lib/kit.coffee?source#L1029)**
 
     Node version. Such as `v0.10.23` is `0.1023`, `v0.10.1` is `0.1001`.
 
     - **<u>type</u>**: { _Float_ }
 
-- ## **[defaultArgs](lib/kit.coffee?source#L1045)**
+- ## **[defaultArgs](lib/kit.coffee?source#L1058)**
 
     A helper for arguments type based function override.
 
@@ -837,7 +835,7 @@ Goto [changelog](doc/changelog.md)
         { name: 'test', colors: ['red'], family: null, fn: -> 'nothing' }
         ```
 
-- ## **[parseComment](lib/kit.coffee?source#L1095)**
+- ## **[parseComment](lib/kit.coffee?source#L1108)**
 
     A comments parser for javascript and coffee-script.
     Used to generate documentation from source code automatically.
@@ -882,7 +880,7 @@ Goto [changelog](doc/changelog.md)
         }
         ```
 
-- ## **[parseDependency](lib/kit.coffee?source#L1198)**
+- ## **[parseDependency](lib/kit.coffee?source#L1211)**
 
     Parse dependency tree by regex. The dependency relationships
     is not a tree, but a graph. To avoid dependency cycle, this
@@ -925,11 +923,11 @@ Goto [changelog](doc/changelog.md)
         	kit.log markdownStr
         ```
 
-- ## **[path](lib/kit.coffee?source#L1261)**
+- ## **[path](lib/kit.coffee?source#L1274)**
 
     io.js native module `path`. See `nofs` for more information.
 
-- ## **[Promise](lib/kit.coffee?source#L1269)**
+- ## **[Promise](lib/kit.coffee?source#L1282)**
 
     The promise lib. Now, it uses Bluebird as ES5 polyfill.
     In the future, the Bluebird will be replaced with native
@@ -937,7 +935,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>type</u>**: { _Object_ }
 
-- ## **[promisify](lib/kit.coffee?source#L1282)**
+- ## **[promisify](lib/kit.coffee?source#L1295)**
 
     Convert a callback style function to a promise function.
 
@@ -958,7 +956,42 @@ Goto [changelog](doc/changelog.md)
         readFile('a.txt').then kit.log
         ```
 
-- ## **[require](lib/kit.coffee?source#L1310)**
+- ## **[prop](lib/kit.coffee?source#L1324)**
+
+    Create a getter & setter for an object's property.
+
+    - **<u>param</u>**: `self` { _Object_ }
+
+    - **<u>param</u>**: `prop` { _String_ }
+
+        The property name.
+
+    - **<u>return</u>**: { _Function_ }
+
+        `(v) -> Any`
+        ```coffee
+        # Two arguments
+        data = { path: 'a.txt' }
+        txt = kit.prop data, 'txt'
+        txt kit.readFile data.path
+        .then ->
+        	kit.log data
+        	kit.log txt()
+
+        # Two arguments another form.
+        kit.readFile data.path
+        .then txt
+        .then ->
+        	kit.log data
+
+        # One argument.
+        txt = kit.prop 'default value'
+        kit.log txt() # => "default value"
+        txt 20
+        kit.log txt() # => 20
+        ```
+
+- ## **[require](lib/kit.coffee?source#L1368)**
 
     Much faster than the native require of node, but you should
     follow some rules to use it safely.
@@ -999,7 +1032,7 @@ Goto [changelog](doc/changelog.md)
         jhash = kit.require 'jhash', __dirname
         ```
 
-- ## **[requireOptional](lib/kit.coffee?source#L1382)**
+- ## **[requireOptional](lib/kit.coffee?source#L1440)**
 
     Require an optional package. If not found, it will
     warn the user to npm install it, and exit the process.
@@ -1022,7 +1055,7 @@ Goto [changelog](doc/changelog.md)
 
         The required package.
 
-- ## **[request](lib/kit.coffee?source#L1499)**
+- ## **[request](lib/kit.coffee?source#L1557)**
 
     A handy extended combination of `http.request` and `https.request`.
 
@@ -1119,14 +1152,14 @@ Goto [changelog](doc/changelog.md)
         	kit.log body
         ```
 
-- ## **[semver](lib/kit.coffee?source#L1696)**
+- ## **[semver](lib/kit.coffee?source#L1754)**
 
     The semantic versioner for npm, known as [semver](https://github.com/npm/node-semver).
     You must `kit.require 'semver'` before using it.
 
     - **<u>type</u>**: { _Object_ }
 
-- ## **[sleep](lib/kit.coffee?source#L1703)**
+- ## **[sleep](lib/kit.coffee?source#L1761)**
 
     Sleep for awhile.
 
@@ -1136,7 +1169,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Promise_ }
 
-- ## **[spawn](lib/kit.coffee?source#L1737)**
+- ## **[spawn](lib/kit.coffee?source#L1795)**
 
     A safer version of `child_process.spawn` to cross-platform run
     a process. In some conditions, it may be more convenient
@@ -1179,7 +1212,7 @@ Goto [changelog](doc/changelog.md)
         .then ({code}) -> kit.log code
         ```
 
-- ## **[task](lib/kit.coffee?source#L1844)**
+- ## **[task](lib/kit.coffee?source#L1902)**
 
     Sequencing and executing tasks and dependencies concurrently.
 
@@ -1259,12 +1292,12 @@ Goto [changelog](doc/changelog.md)
         	kit.log 'All Done!'
         ```
 
-- ## **[url](lib/kit.coffee?source#L1916)**
+- ## **[url](lib/kit.coffee?source#L1974)**
 
     The `url` module of [io.js](iojs.org).
     You must `kit.require 'url'` before using it.
 
-- ## **[warp](lib/kit.coffee?source#L2030)**
+- ## **[warp](lib/kit.coffee?source#L2088)**
 
     Works much like `gulp.src`, but with Promise instead.
     The warp control and error handling is more pleasant.
@@ -1281,9 +1314,6 @@ Goto [changelog](doc/changelog.md)
         {
         	# The base directory of the pattern.
         	baseDir: String
-
-        	isCache: true
-        	cacheDir: '.nokit/warp'
         }
         ```
 
@@ -1292,11 +1322,13 @@ Goto [changelog](doc/changelog.md)
         The returned warp object has these members:
         ```coffee
         {
-        	pipe: (handler) -> fileInfo | null
-        	to: (path) -> Promise
+        	# The drive can also be a promise that will resolve a drive.
+        	load: (drive) -> fileInfo | null
+
+        	run: (path) -> Promise
         }
         ```
-        Each piped handler will recieve a
+        Each piped drive will recieve a
         object that extends `nofs`'s fileInfo object:
         ```coffee
         {
@@ -1325,21 +1357,22 @@ Goto [changelog](doc/changelog.md)
         	stats: fs.Stats
 
         	# Alter it to control the left drives dynamically.
-        	tasks: [Function]
+        	drives: [Function]
 
         	# All the globbed files.
         	list: Array
 
+        	driveList: Array
+
         	# The opts you passed to "kit.warp", it will be extended.
-        	# Extra properties: { driveList, taskList }
         	opts: Object
         }
         ```
 
-        The handler can have a `isReader` property, which will make the handler
+        The drive can have a `isReader` property, which will make the drive
         override the default file reader.
 
-        The handler can have a `isWriter` property, which will make the handler
+        The drive can have a `isWriter` property, which will make the drive
         override the default file writer.
         The writer can have a `onEnd` function, which will be called after the
         whole warp ended.
@@ -1378,7 +1411,7 @@ Goto [changelog](doc/changelog.md)
         	kit.log @list
 
         kit.warp 'src/**/*.js'
-        .load myReader
+        .load myWriter
         .run 'dist'
 
         # Use nokit's built-in warp drives.
@@ -1388,7 +1421,7 @@ Goto [changelog](doc/changelog.md)
         .run 'dist'
         ```
 
-- ## **[which](lib/kit.coffee?source#L2101)**
+- ## **[which](lib/kit.coffee?source#L2159)**
 
     Same as the unix `which` command.
     You must `kit.require 'which'` before using it.
@@ -1399,14 +1432,14 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Promise_ }
 
-- ## **[whichSync](lib/kit.coffee?source#L2108)**
+- ## **[whichSync](lib/kit.coffee?source#L2166)**
 
     Sync version of `which`.
     You must `kit.require 'whichSync'` before using it.
 
     - **<u>type</u>**: { _Function_ }
 
-- ## **[xinspect](lib/kit.coffee?source#L2119)**
+- ## **[xinspect](lib/kit.coffee?source#L2177)**
 
     For debugging. Dump a colorful object.
 
@@ -1423,7 +1456,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _String_ }
 
-- ## **[xopen](lib/kit.coffee?source#L2142)**
+- ## **[xopen](lib/kit.coffee?source#L2200)**
 
     Open a thing that your system can recognize.
     Now only support Windows, OSX or system that installed 'xdg-open'.
@@ -1574,7 +1607,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[jshint](lib/drives.coffee?source#L241)**
+- ## **[jshint](lib/drives.coffee?source#L240)**
 
     Lint js via `jshint`.
 
@@ -1590,7 +1623,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[less](lib/drives.coffee?source#L272)**
+- ## **[less](lib/drives.coffee?source#L273)**
 
     Compile less.
 
@@ -1598,7 +1631,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[livescript](lib/drives.coffee?source#L299)**
+- ## **[livescript](lib/drives.coffee?source#L300)**
 
     LiveScript compiler.
 
@@ -1608,7 +1641,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[mocha](lib/drives.coffee?source#L328)**
+- ## **[mocha](lib/drives.coffee?source#L329)**
 
     mocha test
 
@@ -1622,7 +1655,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[reader](lib/drives.coffee?source#L357)**
+- ## **[reader](lib/drives.coffee?source#L359)**
 
     read file and set `contents`
 
@@ -1632,13 +1665,14 @@ Goto [changelog](doc/changelog.md)
         ```coffee
         {
         	isCache: true
-        	endcoding: 'utf8'
+        	encoding: 'utf8'
+        	cacheDir: '.nokit/warp'
         }
         ```
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[stylus](lib/drives.coffee?source#L426)**
+- ## **[stylus](lib/drives.coffee?source#L428)**
 
     Compile stylus.
 
@@ -1665,7 +1699,7 @@ Goto [changelog](doc/changelog.md)
         }
         ```
 
-- ## **[uglifyjs](lib/drives.coffee?source#L466)**
+- ## **[uglifyjs](lib/drives.coffee?source#L468)**
 
     uglify-js processor
 
@@ -1685,20 +1719,11 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[writer](lib/drives.coffee?source#L494)**
+- ## **[writer](lib/drives.coffee?source#L490)**
 
     Output file by `contents` and `dest`.
     If the 'ext' or 'name' is not null,
     the 'base' will be override by the 'ext' and 'name'.
-
-    - **<u>param</u>**: `opts` { _Object_ }
-
-        Defaults:
-        ```coffee
-        {
-        	isCache: true
-        }
-        ```
 
     - **<u>return</u>**: { _Function_ }
 

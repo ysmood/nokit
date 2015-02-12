@@ -1,6 +1,6 @@
 # Overview
 
-A light weight set of handy functions.
+A light weight set of handy tools for real world functional programming.
 
 Reduce the gap between working on different systems. Such as watch directory changes on a network file system, operate `spawn` on Windows and Linux, handle async IO api with promise, etc.
 
@@ -38,7 +38,9 @@ or write your own.
 kit = require 'nokit'
 drives = kit.require 'drives'
 
-kit.warp 'src/**/*.@(coffee|ls)', { isCache: false }
+kit.warp 'src/**/*.@(coffee|ls)'
+    # # To disable cache.
+    # .load drives.reader isCache: false
     .load drives.auto 'lint'
     .load drives.auto 'compile', '.coffee': { bare: false }
     .load drives.auto 'compress'
@@ -122,40 +124,36 @@ or any of its parents directory. The syntax of `nofile` is almost the same as th
 Assume your file content is:
 
 ```coffee
-# There are some global variables you can call directly:
-#   option: commander.option
-#   task: kit.task
+kit = require 'nokit'
 
-# It will expose some handy helpers to global.
-#   kit: kit
-#   _: lodash
-#   Promise: Bluebird
-#   warp: kit.warp
-#   drives: kit.drives
-require 'nokit/global'
+module.exports = (task, option) ->
 
-option '-w, --hello [world]', 'Just a test option', ''
+    option '-w, --hello [world]', 'Just a test option', ''
 
-# Define a default task, and it depends on the "clean" task.
-task 'default', ['clean'], 'This is a comment info', (opts) ->
-    kit.log opts.hello
+    # Define a default task, and it depends on the "clean" task.
+    task 'default', ['clean'], 'This is a comment info', (opts) ->
+        kit.log opts.hello
 
-    # "colors" is enabled by default.
-    kit.log 'print red words'.red
+        # Use colors.
+        kit.require 'colors'
+        kit.log 'print red words'.red
 
-task 'clean', ->
-    kit.remove 'dist'
+    task 'clean', ->
+        kit.remove 'dist'
 
-# To add alias to a task, just use space to separate names.
-# Here 'build' and 'b' are the same task.
-task 'build b', ->
-    warp 'src/**/*.js'
-    .load (file) ->
-        file.set '/* Nothing */' + file.contents
-    .run 'dist'
+    # To add alias to a task, just use space to separate names.
+    # Here 'build' and 'b' are the same task.
+    task 'build b', ->
+        kit.require 'drives'
+        kit.warp 'src/**/*.js'
+        .load kit.drives.auto 'compile'
+        .run 'dist'
 
-task 'sequential', ['clean', 'build'], true, ->
-    kit.log 'Run clean and build non-concurrently.'
+    task 'sequential', ['clean', 'build'], true, ->
+        kit.log 'Run clean and build non-concurrently.'
+
+    # You can return a promise for an async init.
+    kit.sleep 1000
 ```
 
 Then you can run it in command line: `no`. Just that simple, without task

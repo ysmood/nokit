@@ -191,13 +191,13 @@ _.extend(kit, fs, {
   	 * @param  {Object} info Not optional.
   	 * ```coffee
   	 * {
-  	 * 	# The path of the output file.
-  	 * 	# If it's undefined, depsCache will try to get cache.
-  	 * 	dest: String
-  	 *
   	 * 	# The first item is the key path, others are
   	 * 	# its dependencies.
   	 * 	deps: Array
+  	 *
+  	 * 	# The path of the output file.
+  	 * 	# If it's undefined, depsCache will try to get cache.
+  	 * 	dests: Array
   	 *
   	 * 	cacheDir: '.nokit'
   	 * }
@@ -207,12 +207,11 @@ _.extend(kit, fs, {
   	 * {
   	 * 	isNewer: Boolean
   	 *
-  	 * 	deps: Array
+  	 * 	# { path: mtime }
+  	 * 	deps: Object
   	 *
-  	 * 	dest: String
-  	 *
-  	 * 	# The path of the cache.
-  	 * 	path: String
+  	 * 	# { destPath: cachePath }
+  	 * 	dests: Object
   	 *
   	 * 	cacheError: undefined | Error
   	 * }
@@ -221,49 +220,56 @@ _.extend(kit, fs, {
   	 * ```coffee
   	 * # Set cache
   	 * kit.depsCache {
-  	 * 	dest: 'index.css'
+  	 * 	dests: ['index.css']
   	 * 	deps: ['index.less', 'b.less', 'c.less']
   	 * }
   	 *
   	 * # Get cache
   	 * # You don't have to sepecify 'b.less', 'c.less'.
   	 * kit.depsCache { deps: ['index.less'] }
-  	 * .then (info) ->
-  	 * 	if info.isNewer
+  	 * .then (cache) ->
+  	 * 	if cache.isNewer
   	 * 		kit.log 'cache is newer'.
+  	 * 		kit.log cache.dests
   	 * ```
    */
   depsCache: function(opts) {
-    var cacheInfoPath, cachePath, info, keyPath, saveCache, _base;
+    var hashPath, info, key, saveContents, saveInfo, saveLink, _base;
     _.defaults(opts, {
       cacheDir: '.nokit'
     });
     if ((_base = kit.depsCache).jhash == null) {
       _base.jhash = new (kit.require('jhash').constructor);
     }
-    keyPath = opts.deps[0];
-    cachePath = kit.path.join(opts.cacheDir, kit.depsCache.jhash.hash(keyPath, true) + '-' + kit.path.basename(keyPath));
-    cacheInfoPath = cachePath + '.json';
-    info = {};
-    if (opts.dest) {
-      saveCache = function() {
+    hashPath = function(path) {
+      var hash;
+      hash = kit.depsCache.jhash.hash(path, true) + '-' + kit.path.basename(path);
+      path = kit.path.join(opts.cacheDir, hash);
+      return {
+        cache: path,
+        info: path + '.json'
+      };
+    };
+    key = hashPath(opts.deps[0]);
+    if (opts.dests) {
+      info = {
+        dests: {},
+        deps: {}
+      };
+      saveLink = function(from, to) {
         return kit.mkdirs(opts.cacheDir).then(function() {
-          return kit.link(opts.dest, cachePath);
+          return kit.link(from, to);
         })["catch"](function(err) {
           if (err.code !== 'EEXIST') {
             return Promise.reject(err);
           }
-          return kit.unlink(cachePath).then(function() {
-            return kit.link(opts.dest, cachePath);
+          return kit.unlink(from).then(function() {
+            return kit.link(from, to);
           });
         });
       };
-      info = {
-        dest: opts.dest,
-        deps: {}
-      };
-      return Promise.all([
-        saveCache(), Promise.all(opts.deps.map(function(path, i) {
+      saveInfo = function(infoPath) {
+        return Promise.all(opts.deps.map(function(path, i) {
           if (i === 0) {
             return info.deps[path] = Date.now();
           }
@@ -271,13 +277,26 @@ _.extend(kit, fs, {
             return info.deps[path] = stats.mtime.getTime();
           });
         })).then(function() {
-          return kit.outputJson(cacheInfoPath, info);
-        })
-      ]);
+          return kit.outputJson(infoPath, info);
+        }).then(function() {
+          return Promise.all(opts.deps.slice(1).map(function(dep) {
+            return saveLink(infoPath, hashPath(dep).info);
+          }));
+        });
+      };
+      saveContents = function() {
+        return Promise.all(opts.dests.map(function(dest) {
+          var hashed;
+          hashed = hashPath(dest);
+          info.dests[dest] = hashed.cache;
+          return saveLink(dest, hashed.cache);
+        }));
+      };
+      return Promise.all([saveContents(), saveInfo(key.info)]);
     } else {
-      return kit.readJson(cacheInfoPath).then(function(data) {
+      info = {};
+      return kit.readJson(key.info).then(function(data) {
         info = data;
-        info.path = cachePath;
         return Promise.all(_(info.deps).keys().map(function(path) {
           return kit.stat(path).then(function(stats) {
             return info.deps[path] >= stats.mtime.getTime();
@@ -581,7 +600,7 @@ _.extend(kit, fs, {
           if (fn === kit.flow.end) {
             return val;
           }
-          return run(fn && _.isFunction(fn.then) ? fn : Promise.resolve(fn));
+          return run(fn && _.isFunction(fn.then) ? fn : _.isFunction(fn) ? Promise.resolve(fn(val)) : Promise.resolve(fn));
         });
       };
       return run(Promise.resolve(val));
@@ -1414,6 +1433,64 @@ _.extend(kit, fs, {
   promisify: fs.promisify,
 
   /**
+  	 * Create a getter & setter for an object's property.
+  	 * @param  {Object} self
+  	 * @param  {String} prop The property name.
+  	 * @return {Function} `(v) -> Any`
+  	 * ```coffee
+  	 * # Two arguments
+  	 * data = { path: 'a.txt' }
+  	 * txt = kit.prop data, 'txt'
+  	 * txt kit.readFile data.path
+  	 * .then ->
+  	 * 	kit.log data
+  	 * 	kit.log txt()
+  	 *
+  	 * # Two arguments another form.
+  	 * kit.readFile data.path
+  	 * .then txt
+  	 * .then ->
+  	 * 	kit.log data
+  	 *
+  	 * # One argument.
+  	 * txt = kit.prop 'default value'
+  	 * kit.log txt() # => "default value"
+  	 * txt 20
+  	 * kit.log txt() # => 20
+  	 * ```
+   */
+  prop: function(self, prop) {
+    var get, set, val;
+    if (arguments.length < 2) {
+      val = self;
+      set = function(v) {
+        return val = v;
+      };
+      get = function() {
+        return val;
+      };
+    } else {
+      set = function(v) {
+        return self[prop] = v;
+      };
+      get = function() {
+        return self[prop];
+      };
+    }
+    return function(v) {
+      if (v != null) {
+        if (_.isFunction(v.then)) {
+          return v.then(set);
+        } else {
+          return set(v);
+        }
+      } else {
+        return get();
+      }
+    };
+  },
+
+  /**
   	 * Much faster than the native require of node, but you should
   	 * follow some rules to use it safely.
   	 * Use it to load nokit's internal module.
@@ -2138,19 +2215,18 @@ _.extend(kit, fs, {
   	 * {
   	 * 	# The base directory of the pattern.
   	 * 	baseDir: String
-  	 *
-  	 * 	isCache: true
-  	 * 	cacheDir: '.nokit/warp'
   	 * }
   	 * ```
   	 * @return {Object} The returned warp object has these members:
   	 * ```coffee
   	 * {
-  	 * 	pipe: (handler) -> fileInfo | null
-  	 * 	to: (path) -> Promise
+  	 * 	# The drive can also be a promise that will resolve a drive.
+  	 * 	load: (drive) -> fileInfo | null
+  	 *
+  	 * 	run: (path) -> Promise
   	 * }
   	 * ```
-  	 * Each piped handler will recieve a
+  	 * Each piped drive will recieve a
   	 * object that extends `nofs`'s fileInfo object:
   	 * ```coffee
   	 * {
@@ -2179,21 +2255,22 @@ _.extend(kit, fs, {
   	 * 	stats: fs.Stats
   	 *
   	 * 	# Alter it to control the left drives dynamically.
-  	 * 	tasks: [Function]
+  	 * 	drives: [Function]
   	 *
   	 * 	# All the globbed files.
   	 * 	list: Array
   	 *
+  	 * 	driveList: Array
+  	 *
   	 * 	# The opts you passed to "kit.warp", it will be extended.
-  	 * 	# Extra properties: { driveList, taskList }
   	 * 	opts: Object
   	 * }
   	 * ```
   	 *
-  	 * The handler can have a `isReader` property, which will make the handler
+  	 * The drive can have a `isReader` property, which will make the drive
   	 * override the default file reader.
   	 *
-  	 * The handler can have a `isWriter` property, which will make the handler
+  	 * The drive can have a `isWriter` property, which will make the drive
   	 * override the default file writer.
   	 * The writer can have a `onEnd` function, which will be called after the
   	 * whole warp ended.
@@ -2230,7 +2307,7 @@ _.extend(kit, fs, {
   	 * 	kit.log @list
   	 *
   	 * kit.warp 'src/**\/*.js'
-  	 * .load myReader
+  	 * .load myWriter
   	 * .run 'dist'
   	 *
   	 * # Use nokit's built-in warp drives.
@@ -2241,31 +2318,39 @@ _.extend(kit, fs, {
   	 * ```
    */
   warp: function(from, opts) {
-    var drives, initInfo, reader, runDrive, warpper, writer;
+    var driveList, drives, initInfo, reader, runDrive, warpper, writer;
     if (opts == null) {
       opts = {};
     }
     drives = kit.require('drives');
-    _.defaults(opts, {
-      cacheDir: '.nokit/warp'
-    });
+    driveList = [];
+    reader = drives.reader();
+    writer = drives.writer();
     runDrive = function(drive) {
       return function(info) {
-        if (_.isString(info.dest)) {
-          info.dest = _.extend(kit.path.parse(info.dest), {
-            valueOf: function() {
-              return kit.path.join(this.dir, this.name + this.ext);
-            }
+        var run;
+        run = function(drive) {
+          if (_.isString(info.dest)) {
+            info.dest = _.extend(kit.path.parse(info.dest), {
+              valueOf: function() {
+                return kit.path.join(this.dir, this.name + this.ext);
+              }
+            });
+          }
+          if (drive["super"]) {
+            info["super"] = function() {
+              return runDrive(drive["super"])(info);
+            };
+          }
+          return Promise.resolve(drive.call(info, info)).then(function(val) {
+            return info;
           });
+        };
+        if (_.isFunction(drive.then)) {
+          return drive.then(run);
+        } else {
+          return run(drive);
         }
-        if (drive["super"]) {
-          info["super"] = function() {
-            return drive["super"].call(info, info);
-          };
-        }
-        return Promise.resolve(drive.call(info, info)).then(function(val) {
-          return info;
-        });
       };
     };
     initInfo = function(info) {
@@ -2276,16 +2361,13 @@ _.extend(kit, fs, {
         info.dest = kit.path.join(info.to, kit.path.relative(info.baseDir, info.path));
       }
       return _.extend(info, {
+        driveList: driveList,
         opts: opts,
         set: function(contents) {
           return info.contents = contents;
         }
       });
     };
-    opts.driveList = [];
-    opts.taskList = [];
-    reader = drives.reader(opts);
-    writer = drives.writer(opts);
     return warpper = {
       load: function(drive) {
         if (drive.isReader || drive.isWriter) {
@@ -2293,12 +2375,13 @@ _.extend(kit, fs, {
             drive["super"] = writer;
             drive.onEnd["super"] = writer.onEnd;
             writer = drive;
-          } else {
+          }
+          if (drive.isReader) {
             drive["super"] = reader;
             reader = drive;
           }
         } else {
-          opts.driveList.push(drive);
+          driveList.push(drive);
         }
         return warpper;
       },
@@ -2307,11 +2390,8 @@ _.extend(kit, fs, {
         if (to == null) {
           to = '.';
         }
-        opts.driveList.unshift(reader);
-        opts.driveList.push(writer);
-        _.each(opts.driveList, function(drive) {
-          return opts.taskList.push(runDrive(drive));
-        });
+        driveList.unshift(reader);
+        driveList.push(writer);
         globOpts = _.extend({}, opts, {
           iter: function(info, list) {
             list.push(info);
@@ -2319,11 +2399,19 @@ _.extend(kit, fs, {
               info.baseDir = opts.baseDir;
             }
             _.extend(info, {
-              tasks: _.clone(opts.taskList),
+              drives: _.clone(driveList),
               to: to,
               list: list
             });
-            return kit.flow(info.tasks)(initInfo(info));
+            return kit.flow(function() {
+              var drive;
+              drive = info.drives.shift();
+              if (drive) {
+                return runDrive(drive);
+              } else {
+                return kit.flow.end;
+              }
+            })(initInfo(info));
           }
         });
         return kit.glob(from, globOpts).then(function(list) {

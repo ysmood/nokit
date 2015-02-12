@@ -240,7 +240,7 @@ module.exports = {
           return opts.onNotFound.call(this, this);
         }
       }
-      return compilers[ext].call(this, this);
+      return this.drives.unshift(compilers[ext]);
     };
     _str = auto.toString;
     auto.toString = function() {
@@ -292,16 +292,13 @@ module.exports = {
   	 * @return {Function}
    */
   jshint: _.extend(function(opts) {
-    var JSHINT;
+    var JSHINT, jshint;
     if (opts == null) {
       opts = {};
     }
     _.defaults(opts, {});
     JSHINT = kit.requireOptional('jshint', __dirname).JSHINT;
-    if (_.isString(opts.config)) {
-      opts.config = kit.readJsonSync(opts.config);
-    }
-    return function(file) {
+    jshint = function(file) {
       var errs;
       this.deps = [this.path];
       if (JSHINT(this.contents, opts.config, opts.global)) {
@@ -316,6 +313,9 @@ module.exports = {
       });
       return Promise.reject(errs);
     };
+    return Promise.resolve(_.isString(opts.config) ? kit.prop(opts, 'config', kit.readJson(opts.config)) : void 0).then(function() {
+      return jshint;
+    });
   }, {
     lint: ['.js']
   }),
@@ -405,7 +405,7 @@ module.exports = {
     mocha = new Mocha(opts);
     return _.extend(function() {
       mocha.addFile(this.path);
-      return this.tasks.length = 0;
+      return this.drives.length = 0;
     }, {
       isReader: true,
       isWriter: true,
@@ -431,19 +431,21 @@ module.exports = {
   	 * ```coffee
   	 * {
   	 * 	isCache: true
-  	 * 	endcoding: 'utf8'
+  	 * 	encoding: 'utf8'
+  	 * 	cacheDir: '.nokit/warp'
   	 * }
   	 * ```
   	 * @return {Function}
    */
   reader: function(opts) {
-    var cacheDir, hashDrives, read;
+    var hashDrives, read;
     if (opts == null) {
       opts = {};
     }
     _.defaults(opts, {
       isCache: true,
-      encoding: 'utf8'
+      encoding: 'utf8',
+      cacheDir: '.nokit/warp'
     });
     if (jhash == null) {
       jhash = new (kit.require('jhash').constructor);
@@ -458,11 +460,10 @@ module.exports = {
     read = function() {
       return kit.readFile(this.path, opts.encoding).then(this.set);
     };
-    cacheDir = null;
     return _.extend(function(file) {
-      if (cacheDir === null) {
-        cacheDir = kit.path.join(this.opts.cacheDir, hashDrives(this.opts.driveList));
-        this.opts.cacheDir = cacheDir;
+      if (!this.list.cacheDir) {
+        this.list.isCache = opts.isCache;
+        this.list.cacheDir = kit.path.join(opts.cacheDir, hashDrives(this.driveList));
       }
       if (this.isDir) {
         return;
@@ -470,19 +471,21 @@ module.exports = {
       if (opts.isCache) {
         return kit.depsCache({
           deps: [this.path],
-          cacheDir: cacheDir
+          cacheDir: this.list.cacheDir
         }).then(function(cache) {
           file.deps = cache.deps;
           if (cache.isNewer) {
             kit.log(cls.green('reader cache: ') + file.deps.join(cls.grey(', ')));
-            file.tasks.length = 0;
-            return kit.mkdirs(kit.path.dirname(cache.dest)).then(function() {
-              return kit.link(cache.path, cache.dest)["catch"](function(err) {
-                if (err.code !== 'EEXIST') {
-                  return Promise.reject(err);
-                }
+            file.drives.length = 0;
+            return Promise.all(_.map(cache.dests, function(cachePath, dest) {
+              return kit.mkdirs(kit.path.dirname(dest)).then(function() {
+                return kit.link(cachePath, dest)["catch"](function(err) {
+                  if (err.code !== 'EEXIST') {
+                    return Promise.reject(err);
+                  }
+                });
               });
-            });
+            }));
           } else {
             return read.call(file);
           }
@@ -593,40 +596,28 @@ module.exports = {
   	 * Output file by `contents` and `dest`.
   	 * If the 'ext' or 'name' is not null,
   	 * the 'base' will be override by the 'ext' and 'name'.
-  	 * @param  {Object} opts Defaults:
-  	 * ```coffee
-  	 * {
-  	 * 	isCache: true
-  	 * }
-  	 * ```
   	 * @return {Function}
    */
-  writer: function(opts) {
+  writer: function() {
     var write;
-    if (opts == null) {
-      opts = {};
-    }
-    _.defaults(opts, {
-      isCache: true
-    });
-    write = function() {
-      var contents, dest, p, pCache;
+    write = function(file) {
+      var contents, dest;
       dest = this.dest, contents = this.contents;
       if ((dest == null) || (contents == null)) {
         return;
       }
       kit.log(cls.cyan('writer: ') + this.dest);
-      p = kit.outputFile(dest + '', contents, this.opts);
-      if (!opts.isCache) {
-        return p;
-      }
-      kit.log(cls.cyan('writer cache: ') + this.dest);
-      pCache = kit.depsCache({
-        dest: this.dest + '',
-        deps: this.deps || [this.path],
-        cacheDir: this.opts.cacheDir
+      return kit.outputFile(dest + '', contents, this.opts).then(function() {
+        if (!file.list.isCache) {
+          return;
+        }
+        kit.log(cls.cyan('writer cache: ') + file.dest);
+        return kit.depsCache({
+          dests: file.dests || [file.dest + ''],
+          deps: file.deps || [file.path],
+          cacheDir: file.list.cacheDir
+        });
       });
-      return Promise.all([p, pCache]);
     };
     return _.extend(write, {
       isWriter: true,
