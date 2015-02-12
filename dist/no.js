@@ -2,7 +2,7 @@
 /*
 	A simplified version of Make.
  */
-var cmder, error, kit, launch, loadNofile, searchTasks, setGlobals, task, _;
+var cls, cmder, error, kit, launch, loadNofile, searchTasks, task, _;
 
 if (process.env.NODE_ENV == null) {
   process.env.NODE_ENV = 'development';
@@ -10,7 +10,7 @@ if (process.env.NODE_ENV == null) {
 
 kit = require('./kit');
 
-kit.require('colors');
+cls = kit.require('colors/safe');
 
 _ = kit._;
 
@@ -21,6 +21,51 @@ error = function(msg) {
   err = new Error(msg);
   err.source = 'nokit';
   throw err;
+};
+
+
+/**
+ * A simplified task wrapper for `kit.task`
+ * @param  {String}   name
+ * @param  {Array}    deps
+ * @param  {String}   description
+ * @param  {Boolean}  isSequential
+ * @param  {Function} fn
+ * @return {Promise}
+ */
+
+task = function() {
+  var alias, aliasSym, args, depsInfo, helpInfo, sep;
+  args = kit.defaultArgs(arguments, {
+    name: {
+      String: 'default'
+    },
+    deps: {
+      Array: null
+    },
+    description: {
+      String: ''
+    },
+    isSequential: {
+      Boolean: null
+    },
+    fn: {
+      Function: function() {}
+    }
+  });
+  depsInfo = args.deps ? (sep = args.isSequential ? ' -> ' : ', ', cls.grey("deps: [" + (args.deps.join(sep)) + "]")) : '';
+  sep = args.description ? ' ' : '';
+  helpInfo = args.description + sep + depsInfo;
+  alias = args.name.split(' ');
+  aliasSym = '';
+  return alias.forEach(function(name) {
+    cmder.command(name).description(helpInfo);
+    kit.task(name + aliasSym, args, function() {
+      return args.fn(cmder);
+    });
+    aliasSym = '@'.magenta;
+    return helpInfo = cls.cyan('-> ') + alias[0];
+  });
 };
 
 
@@ -62,68 +107,14 @@ loadNofile = function() {
       dir = kit.path.dirname(path);
       rdir = kit.path.relative('.', dir);
       if (rdir) {
-        kit.log('Change Working Direcoty: '.cyan + rdir.green);
+        kit.log(cls.cyan('Change Working Direcoty: ') + cls.green(rdir));
       }
       process.chdir(dir);
-      require(path);
+      require(path)(task, cmder.option.bind(cmder));
       return path;
     }
   }
   return error('Cannot find nofile');
-};
-
-
-/**
- * A simplified task wrapper for `kit.task`
- * @param  {String}   name
- * @param  {Array}    deps
- * @param  {String}   description
- * @param  {Boolean}  isSequential
- * @param  {Function} fn
- * @return {Promise}
- */
-
-task = function() {
-  var alias, aliasSym, args, depsInfo, helpInfo, sep;
-  args = kit.defaultArgs(arguments, {
-    name: {
-      String: 'default'
-    },
-    deps: {
-      Array: null
-    },
-    description: {
-      String: ''
-    },
-    isSequential: {
-      Boolean: null
-    },
-    fn: {
-      Function: function() {}
-    }
-  });
-  depsInfo = args.deps ? (sep = args.isSequential ? ' -> ' : ', ', ("deps: [" + (args.deps.join(sep)) + "]").grey) : '';
-  sep = args.description ? ' ' : '';
-  helpInfo = args.description + sep + depsInfo;
-  alias = args.name.split(' ');
-  aliasSym = '';
-  return alias.forEach(function(name) {
-    cmder.command(name).description(helpInfo);
-    kit.task(name + aliasSym, args, function() {
-      return args.fn(cmder);
-    });
-    aliasSym = '@'.magenta;
-    return helpInfo = '-> '.cyan + alias[0];
-  });
-};
-
-setGlobals = function() {
-  var option;
-  option = cmder.option.bind(cmder);
-  return kit._.extend(global, {
-    task: task,
-    option: option
-  });
 };
 
 searchTasks = function() {
@@ -140,12 +131,11 @@ module.exports = launch = function() {
   cmder.option('-v, --version', 'output version of nokit', function() {
     var info;
     info = kit.readJsonSync(__dirname + '/../package.json');
-    console.log(("nokit@" + info.version).green, ("(" + (require.resolve('./kit')) + ")").grey);
+    console.log(cls.green("nokit@" + info.version), cls.grey("(" + (require.resolve('./kit')) + ")"));
     return process.exit();
   });
-  setGlobals();
   nofilePath = loadNofile();
-  cmder.usage('[options] [fuzzy_task_name]...' + ("  # " + (kit.path.relative(cwd, nofilePath))).grey);
+  cmder.usage('[options] [fuzzy_task_name]...' + cls.grey("  # " + (kit.path.relative(cwd, nofilePath))));
   if (!kit.task.list) {
     return;
   }

@@ -3,82 +3,83 @@
 ###
 
 kit = require './lib/kit'
-{ _, Promise } = kit
 
-task 'default', ['build', 'test'], true
+module.exports = (task, option) ->
 
-option '-d, --debug', 'enable node debug mode'
-option '-p, --port [8283]', 'node debug mode', 8283
-task 'lab l', 'run and monitor "test/lab.coffee"', (opts) ->
-	args = ['test/lab.coffee']
+	task 'default', ['build', 'test'], true
 
-	if opts.debug
-		args.splice 0, 0, '--nodejs', '--debug-brk=' + opts.port
+	option '-d, --debug', 'enable node debug mode'
+	option '-p, --port [8283]', 'node debug mode', 8283
+	task 'lab l', 'run and monitor "test/lab.coffee"', (opts) ->
+		args = ['test/lab.coffee']
 
-	kit.monitorApp { bin: 'coffee', args }
+		if opts.debug
+			args.splice 0, 0, '--nodejs', '--debug-brk=' + opts.port
 
-task 'clean', 'clean dist & cache', (opts) ->
-	if opts.all
-		kit.async [
-			kit.remove 'dist'
-			kit.remove '.nokit'
-		]
+		kit.monitorApp { bin: 'coffee', args }
 
-option '-a, --all', 'rebuild with dependencies, such as rebuild lodash.'
-task 'build b', ['clean'], 'build project', (opts) ->
-	kit.require 'drives'
-
-	buildLodash = ->
+	task 'clean', 'clean dist & cache', (opts) ->
 		if opts.all
-			kit.spawn 'lodash', [
-				'modern', 'strict', '-d'
-				'-o', 'lib/lodash.js'
+			kit.async [
+				kit.remove 'dist'
+				kit.remove '.nokit'
 			]
 
-	buildJs = ->
-		kit.warp 'lib/**/*.js'
-		.load kit.drives.auto 'compress'
-		.run 'dist'
+	option '-a, --all', 'rebuild with dependencies, such as rebuild lodash.'
+	task 'build b', ['clean'], 'build project', (opts) ->
+		kit.require 'drives'
 
-	buildCoffee = ->
-		kit.warp 'lib/**/*.coffee'
-		.load kit.drives.coffeelint()
-		.load kit.drives.coffee()
-		.run 'dist'
+		buildLodash = ->
+			if opts.all
+				kit.spawn 'lodash', [
+					'modern', 'strict', '-d'
+					'-o', 'lib/lodash.js'
+				]
 
-	buildDoc = ->
-		kit.warp 'lib/{drives,kit}.coffee'
-		.load kit.drives.comment2md
-			h: 2, tpl: 'doc/readme.jst.md'
-		.run()
+		buildJs = ->
+			kit.warp 'lib/**/*.js'
+			.load kit.drives.auto 'compress'
+			.run 'dist'
 
-	start = kit.flow [
-		buildLodash
-		buildJs
-		buildCoffee
-		buildDoc
-	]
+		buildCoffee = ->
+			kit.warp 'lib/**/*.coffee'
+			.load kit.drives.coffeelint()
+			.load kit.drives.coffee()
+			.run 'dist'
 
-	start().catch (err) ->
-		kit.err err.stack
-		process.exit 1
+		buildDoc = ->
+			kit.warp 'lib/{drives,kit}.coffee'
+			.load kit.drives.comment2md
+				h: 2, tpl: 'doc/readme.jst.md'
+			.run()
 
-option '-g, --grep [.]', 'test pattern', /./
-option '-t, --timeout [3000]', 'test timeout', 3000
-task 'test t', 'unit tests', (opts) ->
-	clean = ->
-		kit.spawn 'git', ['clean', '-fd', 'test/fixtures']
+		start = kit.flow [
+			buildLodash
+			buildJs
+			buildCoffee
+			buildDoc
+		]
 
-	clean().then ->
-		kit.warp 'test/basic.coffee'
-		.load kit.drives.mocha {
-			timeout: opts.timeout
-			grep: opts.grep
-		}
-		.run()
-	.then -> clean()
-	.catch (err) ->
-		if err.code
-			process.exit err.code
-		else
-			Promise.reject err
+		start().catch (err) ->
+			kit.err err.stack
+			process.exit 1
+
+	option '-g, --grep [.]', 'test pattern', /./
+	option '-t, --timeout [3000]', 'test timeout', 3000
+	task 'test t', 'unit tests', (opts) ->
+		clean = ->
+			kit.spawn 'git', ['clean', '-fd', 'test/fixtures']
+
+		clean().then ->
+			kit.warp 'test/basic.coffee'
+			.load kit.drives.mocha {
+				timeout: opts.timeout
+				grep: opts.grep
+			}
+			.run()
+		.then -> clean()
+		.catch (err) ->
+			if err.code
+				process.exit err.code
+			else
+				kit.Promise.reject err

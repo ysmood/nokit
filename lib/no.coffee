@@ -16,42 +16,6 @@ error = (msg) ->
 	throw err
 
 ###*
- * Load nofile.
- * @return {String} The path of found nofile.
-###
-loadNofile = ->
-	if process.env.nokitPreload
-		for lang in process.env.nokitPreload.split ' '
-			try require lang
-	else
-		try
-			require 'coffee-cache'
-		catch
-			try require 'coffee-script/register'
-
-	exts = _(require.extensions).keys().filter (ext) ->
-		['.json', '.node', '.litcoffee', '.coffee.md'].indexOf(ext) == -1
-
-	paths = kit.genModulePaths 'nofile', process.cwd(), ''
-		.reduce (s, p) ->
-			s.concat exts.map((ext) -> p + ext).value()
-		, []
-
-	for path in paths
-		if kit.existsSync path
-			dir = kit.path.dirname path
-
-			rdir = kit.path.relative '.', dir
-			if rdir
-				kit.log cls.cyan('Change Working Direcoty: ') + cls.green rdir
-
-			process.chdir dir
-			require path
-			return path
-
-	error 'Cannot find nofile'
-
-###*
  * A simplified task wrapper for `kit.task`
  * @param  {String}   name
  * @param  {Array}    deps
@@ -89,14 +53,41 @@ task = ->
 		aliasSym = '@'.magenta
 		helpInfo = cls.cyan('-> ') + alias[0]
 
-setGlobals = ->
-	option = cmder.option.bind cmder
+###*
+ * Load nofile.
+ * @return {String} The path of found nofile.
+###
+loadNofile = ->
+	if process.env.nokitPreload
+		for lang in process.env.nokitPreload.split ' '
+			try require lang
+	else
+		try
+			require 'coffee-cache'
+		catch
+			try require 'coffee-script/register'
 
-	# Expose global helpers.
-	kit._.extend global, {
-		task
-		option
-	}
+	exts = _(require.extensions).keys().filter (ext) ->
+		['.json', '.node', '.litcoffee', '.coffee.md'].indexOf(ext) == -1
+
+	paths = kit.genModulePaths 'nofile', process.cwd(), ''
+		.reduce (s, p) ->
+			s.concat exts.map((ext) -> p + ext).value()
+		, []
+
+	for path in paths
+		if kit.existsSync path
+			dir = kit.path.dirname path
+
+			rdir = kit.path.relative '.', dir
+			if rdir
+				kit.log cls.cyan('Change Working Direcoty: ') + cls.green rdir
+
+			process.chdir dir
+			require(path) task, cmder.option.bind cmder
+			return path
+
+	error 'Cannot find nofile'
 
 searchTasks = ->
 	list = _.keys kit.task.list
@@ -118,7 +109,6 @@ module.exports = launch = ->
 				cls.grey "(#{require.resolve('./kit')})"
 			process.exit()
 
-	setGlobals()
 	nofilePath = loadNofile()
 
 	cmder.usage '[options] [fuzzy_task_name]...' +
