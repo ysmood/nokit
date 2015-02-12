@@ -302,7 +302,8 @@ describe 'Kit:', ->
 			info.dest.ext = '.coffee'
 			info.set info.contents.length
 
-		kit.warp 'test/fixtures/depDir/**/*.js', { cacheDir }
+		kit.warp 'test/fixtures/depDir/**/*.js'
+		.load kit.drives.reader { cacheDir }
 		.load counter
 		.run tmp
 		.then ->

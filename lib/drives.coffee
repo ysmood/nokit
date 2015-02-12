@@ -226,7 +226,6 @@ module.exports =
 			@set all.join '\n'
 			@super()
 
-
 	###*
 	 * Lint js via `jshint`.
 	 * @param  {Object} opts Properties:
@@ -349,7 +348,8 @@ module.exports =
 	 * ```coffee
 	 * {
 	 * 	isCache: true
-	 * 	endcoding: 'utf8'
+	 * 	encoding: 'utf8'
+	 * 	cacheDir: '.nokit/warp'
 	 * }
 	 * ```
 	 * @return {Function}
@@ -358,6 +358,7 @@ module.exports =
 		_.defaults opts, {
 			isCache: true
 			encoding: 'utf8'
+			cacheDir: '.nokit/warp'
 		}
 
 		jhash ?= new (kit.require('jhash').constructor)
@@ -371,19 +372,17 @@ module.exports =
 			kit.readFile @path, opts.encoding
 			.then @set
 
-		cacheDir = null
-
 		_.extend (file) ->
-			if cacheDir == null
-				cacheDir = kit.path.join @opts.cacheDir,
-					hashDrives @opts.driveList
-				@opts.cacheDir = cacheDir
+			if not @list.cacheDir
+				@list.isCache = opts.isCache
+				@list.cacheDir = kit.path.join opts.cacheDir,
+					hashDrives @driveList
 
 			return if @isDir
 			if opts.isCache
 				kit.depsCache
 					deps: [@path]
-					cacheDir: cacheDir
+					cacheDir: @list.cacheDir
 				.then (cache) ->
 					file.deps = cache.deps
 					if cache.isNewer
@@ -391,12 +390,13 @@ module.exports =
 							file.deps.join cls.grey ', '
 						file.tasks.length = 0
 
-						kit.mkdirs kit.path.dirname cache.dest
-						.then ->
-							kit.link cache.path, cache.dest
-							.catch (err) ->
-								if err.code != 'EEXIST'
-									Promise.reject err
+						Promise.all _.map cache.dests, (cachePath, dest) ->
+							kit.mkdirs kit.path.dirname dest
+							.then ->
+								kit.link cachePath, dest
+								.catch (err) ->
+									if err.code != 'EEXIST'
+										Promise.reject err
 					else
 						read.call file
 			else
@@ -483,35 +483,22 @@ module.exports =
 	 * Output file by `contents` and `dest`.
 	 * If the 'ext' or 'name' is not null,
 	 * the 'base' will be override by the 'ext' and 'name'.
-	 * @param  {Object} opts Defaults:
-	 * ```coffee
-	 * {
-	 * 	isCache: true
-	 * }
-	 * ```
 	 * @return {Function}
 	###
-	writer: (opts = {}) ->
-		_.defaults opts, {
-			isCache: true
-		}
-
-		write = ->
+	writer: ->
+		write = (file) ->
 			{ dest, contents } = @
 			return if not dest? or not contents?
 
 			kit.log cls.cyan('writer: ') + @dest
-			p = kit.outputFile dest + '', contents, @opts
+			kit.outputFile dest + '', contents, @opts
+			.then ->
+				return if not file.list.isCache
 
-			if not opts.isCache
-				return p
-
-			kit.log cls.cyan('writer cache: ') + @dest
-			pCache = kit.depsCache
-				dest: @dest + ''
-				deps: @deps or [@path]
-				cacheDir: @opts.cacheDir
-
-			Promise.all [p, pCache]
+				kit.log cls.cyan('writer cache: ') + file.dest
+				kit.depsCache
+					dests: file.dests or [file.dest + '']
+					deps: file.deps or [file.path]
+					cacheDir: file.list.cacheDir
 
 		_.extend write , { isWriter: true, onEnd: write }

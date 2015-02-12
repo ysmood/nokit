@@ -6,7 +6,7 @@ if not process.env.NODE_ENV?
 	process.env.NODE_ENV = 'development'
 
 kit = require './kit'
-kit.require 'colors'
+cls = kit.require 'colors/safe'
 { _ } = kit
 cmder = kit.requireOptional 'commander', __dirname
 
@@ -43,7 +43,7 @@ loadNofile = ->
 
 			rdir = kit.path.relative '.', dir
 			if rdir
-				kit.log 'Change Working Direcoty: '.cyan + rdir.green
+				kit.log cls.cyan('Change Working Direcoty: ') + cls.green rdir
 
 			process.chdir dir
 			require path
@@ -71,7 +71,7 @@ task = ->
 
 	depsInfo = if args.deps
 		sep = if args.isSequential then ' -> ' else ', '
-		"deps: [#{args.deps.join sep}]".grey
+		cls.grey "deps: [#{args.deps.join sep}]"
 	else
 		''
 
@@ -87,7 +87,7 @@ task = ->
 		kit.task name + aliasSym, args, -> args.fn cmder
 
 		aliasSym = '@'.magenta
-		helpInfo = '-> '.cyan + alias[0]
+		helpInfo = cls.cyan('-> ') + alias[0]
 
 setGlobals = ->
 	option = cmder.option.bind cmder
@@ -114,15 +114,15 @@ module.exports = launch = ->
 		'output version of nokit',
 		->
 			info = kit.readJsonSync(__dirname + '/../package.json')
-			console.log "nokit@#{info.version}".green,
-				"(#{require.resolve('./kit')})".grey
+			console.log cls.green("nokit@#{info.version}"),
+				cls.grey "(#{require.resolve('./kit')})"
 			process.exit()
 
 	setGlobals()
 	nofilePath = loadNofile()
 
 	cmder.usage '[options] [fuzzy_task_name]...' +
-		"  # #{kit.path.relative cwd, nofilePath}".grey
+		cls.grey "  # #{kit.path.relative cwd, nofilePath}"
 
 	if not kit.task.list
 		return

@@ -259,17 +259,20 @@ _.extend kit, fs,
 				saveInfo key.info
 			]
 		else
+			info = {}
 			kit.readJson key.info
-			.then (info) ->
+			.then (data) ->
+				info = data
 				Promise.all _(info.deps).keys().map((path) ->
 					kit.stat(path).then (stats) ->
 						# cache mtime             file mtime
 						info.deps[path] >= stats.mtime.getTime()
 				).value()
-				.then (latestList) ->
-					info.isNewer = _.all latestList
-				.catch (err) -> info.cacheError = err
-				.then -> info
+			.then (latestList) ->
+				info.deps = _.keys info.deps
+				info.isNewer = _.all latestList
+			.catch (err) -> info.cacheError = err
+			.then -> info
 
 	###*
 	 * The [colors](https://github.com/Marak/colors.js) lib
@@ -1932,9 +1935,6 @@ _.extend kit, fs,
 	 * {
 	 * 	# The base directory of the pattern.
 	 * 	baseDir: String
-	 *
-	 * 	isCache: true
-	 * 	cacheDir: '.nokit/warp'
 	 * }
 	 * ```
 	 * @return {Object} The returned warp object has these members:
@@ -1978,8 +1978,9 @@ _.extend kit, fs,
 	 * 	# All the globbed files.
 	 * 	list: Array
 	 *
+	 * 	driveList: Array
+	 *
 	 * 	# The opts you passed to "kit.warp", it will be extended.
-	 * 	# Extra properties: { driveList, taskList }
 	 * 	opts: Object
 	 * }
 	 * ```
@@ -2036,10 +2037,10 @@ _.extend kit, fs,
 	###
 	warp: (from, opts = {}) ->
 		drives = kit.require 'drives'
-
-		_.defaults opts, {
-			cacheDir: '.nokit/warp'
-		}
+		driveList = []
+		taskList  = [] # safe drives
+		reader = drives.reader()
+		writer = drives.writer()
 
 		runDrive = (drive) -> (info) ->
 			if _.isString info.dest
@@ -2058,14 +2059,9 @@ _.extend kit, fs,
 					kit.path.relative info.baseDir, info.path
 
 			_.extend info, {
-				opts
+				driveList, opts
 				set: (contents) -> info.contents = contents
 			}
-
-		opts.driveList = []
-		opts.taskList  = [] # safe drives
-		reader = drives.reader opts
-		writer = drives.writer opts
 
 		warpper =
 			load: (drive) ->
@@ -2078,24 +2074,24 @@ _.extend kit, fs,
 						drive.super = reader
 						reader = drive
 				else
-					opts.driveList.push drive
+					driveList.push drive
 				warpper
 
 			run: (to = '.') ->
-				opts.driveList.unshift reader
-				opts.driveList.push writer
+				driveList.unshift reader
+				driveList.push writer
 
-				_.each opts.driveList, (drive) ->
-					opts.taskList.push runDrive drive
+				_.each driveList, (drive) ->
+					taskList.push runDrive drive
 
 				globOpts = _.extend {}, opts, iter: (info, list) ->
 					list.push info
 					info.baseDir = opts.baseDir if opts.baseDir
-					_.extend info, { tasks: _.clone(opts.taskList), to, list }
+					_.extend info, { tasks: _.clone(taskList), to, list }
 
 					kit.flow(info.tasks) initInfo info
-
-				kit.glob(from, globOpts).then (list) ->
+				kit.glob(from, globOpts)
+				.then (list) ->
 					return if not writer.onEnd
 					runDrive(writer.onEnd) initInfo { to, list }
 
