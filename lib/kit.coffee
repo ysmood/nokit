@@ -2067,7 +2067,7 @@ _.extend kit, fs,
 						drive.super = writer
 						drive.onEnd.super = writer.onEnd
 						writer = drive
-					else
+					if drive.isReader
 						drive.super = reader
 						reader = drive
 				else
