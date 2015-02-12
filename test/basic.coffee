@@ -246,7 +246,7 @@ describe 'Kit:', ->
 		kit.outputFileSync dest, 'out'
 		kit.depsCache {
 			deps: [file]
-			dest
+			dests: [dest]
 			cacheDir
 		}
 		.then ->
@@ -262,14 +262,16 @@ describe 'Kit:', ->
 		file1 = 'test/fixtures/depsCacheFileNewer1.txt'
 		cacheDir = 'test/fixtures/cacheDir'
 		dest = file + '.dest'
+		dest1 = file + '.dest1'
 		cacheFile = 'test/fixtures/cacheDir/1862933060-depsCacheFileNewer.txt'
 
 		kit.outputFileSync file1, 'test'
 		kit.outputFileSync dest, 'out'
+		kit.outputFileSync dest1, 'out1'
 
 		kit.depsCache {
 			deps: [file, file1]
-			dest
+			dests: [dest, dest1]
 			cacheDir
 		}
 		.then -> kit.sleep(1000)
@@ -281,7 +283,14 @@ describe 'Kit:', ->
 				cacheDir
 			}
 			.then (cache) ->
-				shouldEqual cache.isNewer, false
+				delete cache.deps
+				shouldDeepEqual cache,
+					dests:
+						'test/fixtures/depsCacheFileNewer.txt.dest':
+							'test/fixtures/cacheDir/3779283019-depsCacheFileNewer.txt.dest'
+						'test/fixtures/depsCacheFileNewer.txt.dest1':
+							'test/fixtures/cacheDir/3263598758-depsCacheFileNewer.txt.dest1'
+					isNewer: false
 
 	it 'warp map', ->
 		tmp = 'test/fixtures/warp'

@@ -164,13 +164,13 @@ _.extend kit, fs,
 	 * @param  {Object} info Not optional.
 	 * ```coffee
 	 * {
-	 * 	# The path of the output file.
-	 * 	# If it's undefined, depsCache will try to get cache.
-	 * 	dest: String
-	 *
 	 * 	# The first item is the key path, others are
 	 * 	# its dependencies.
 	 * 	deps: Array
+	 *
+	 * 	# The path of the output file.
+	 * 	# If it's undefined, depsCache will try to get cache.
+	 * 	dests: Array
 	 *
 	 * 	cacheDir: '.nokit'
 	 * }
@@ -180,12 +180,11 @@ _.extend kit, fs,
 	 * {
 	 * 	isNewer: Boolean
 	 *
-	 * 	deps: Array
+	 * 	# { path: mtime }
+	 * 	deps: Object
 	 *
-	 * 	dest: String
-	 *
-	 * 	# The path of the cache.
-	 * 	path: String
+	 * 	# { destPath: cachePath }
+	 * 	dests: Object
 	 *
 	 * 	cacheError: undefined | Error
 	 * }
@@ -194,16 +193,17 @@ _.extend kit, fs,
 	 * ```coffee
 	 * # Set cache
 	 * kit.depsCache {
-	 * 	dest: 'index.css'
+	 * 	dests: ['index.css']
 	 * 	deps: ['index.less', 'b.less', 'c.less']
 	 * }
 	 *
 	 * # Get cache
 	 * # You don't have to sepecify 'b.less', 'c.less'.
 	 * kit.depsCache { deps: ['index.less'] }
-	 * .then (info) ->
-	 * 	if info.isNewer
+	 * .then (cache) ->
+	 * 	if cache.isNewer
 	 * 		kit.log 'cache is newer'.
+	 * 		kit.log cache.dests
 	 * ```
 	###
 	depsCache: (opts) ->
@@ -213,56 +213,63 @@ _.extend kit, fs,
 
 		kit.depsCache.jhash ?= new (kit.require('jhash').constructor)
 
-		keyPath = opts.deps[0]
+		hashPath = (path) ->
+			hash = kit.depsCache.jhash.hash(path, true) + '-' +
+				kit.path.basename path
+			path = kit.path.join opts.cacheDir, hash
+			cache: path, info: path + '.json'
 
-		cachePath = kit.path.join(
-			opts.cacheDir
-			kit.depsCache.jhash.hash(keyPath, true) + '-' +
-			kit.path.basename(keyPath)
-		)
-		cacheInfoPath = cachePath + '.json'
+		key = hashPath opts.deps[0]
 
-		info = {}
-		if opts.dest
-			saveCache = ->
+		if opts.dests
+			info = {
+				dests: {}
+				deps: {}
+			}
+
+			saveLink = (from, to) ->
 				kit.mkdirs(opts.cacheDir).then ->
-					kit.link opts.dest, cachePath
+					kit.link from, to
 				.catch (err) ->
 					if err.code != 'EEXIST'
 						return Promise.reject err
-					kit.unlink(cachePath).then ->
-						kit.link opts.dest, cachePath
+					kit.unlink(from).then ->
+						kit.link from, to
 
-			info = {
-				dest: opts.dest
-				deps: {}
-			}
-			Promise.all [
-				saveCache()
+			saveInfo = (infoPath) ->
 				Promise.all(opts.deps.map (path, i) ->
 					if i == 0
 						return info.deps[path] = Date.now()
 					kit.stat(path).then (stats) ->
 						info.deps[path] = stats.mtime.getTime()
 				).then ->
-					kit.outputJson cacheInfoPath, info
-			]
+					kit.outputJson infoPath, info
+				.then ->
+					Promise.all opts.deps.map (dep) ->
+						saveLink infoPath, hashPath(dep).cache
 
+			saveContents = ->
+				Promise.all opts.dests.map (dest) ->
+					hashed = hashPath dest
+					info.dests[dest] = hashed.cache
+					saveLink dest, hashed.cache
+
+			Promise.all [
+				saveContents()
+				saveInfo key.info
+			]
 		else
-			kit.readJson cacheInfoPath
-			.then (data) ->
-				info = data
-				info.path = cachePath
+			kit.readJson key.info
+			.then (info) ->
 				Promise.all _(info.deps).keys().map((path) ->
 					kit.stat(path).then (stats) ->
 						# cache mtime             file mtime
 						info.deps[path] >= stats.mtime.getTime()
 				).value()
-			.then (latestList) ->
-				info.deps = _.keys info.deps
-				info.isNewer = _.all latestList
-			.catch (err) -> info.cacheError = err
-			.then -> info
+				.then (latestList) ->
+					info.isNewer = _.all latestList
+				.catch (err) -> info.cacheError = err
+				.then -> info
 
 	###*
 	 * The [colors](https://github.com/Marak/colors.js) lib
