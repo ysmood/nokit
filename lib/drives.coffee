@@ -195,7 +195,7 @@ module.exports =
 				else
 					return opts.onNotFound.call @, @
 
-			compilers[ext].call @, @
+			@drives.unshift compilers[ext]
 
 		# For hash
 		_str = auto.toString
@@ -242,10 +242,7 @@ module.exports =
 
 		{ JSHINT } = kit.requireOptional 'jshint', __dirname
 
-		if _.isString opts.config
-			opts.config = kit.readJsonSync opts.config
-
-		(file) ->
+		jshint = (file) ->
 			@deps = [@path]
 			if JSHINT @contents, opts.config, opts.global
 				kit.log cls.cyan('jshint: ') + @path
@@ -261,6 +258,11 @@ module.exports =
 						------------------------------------
 					"""
 			Promise.reject errs
+
+		Promise.resolve(if _.isString opts.config
+			kit.prop opts, 'config', kit.readJson opts.config
+		).then -> jshint
+
 	, lint: ['.js']
 
 	###*
@@ -333,7 +335,7 @@ module.exports =
 
 		_.extend ->
 			mocha.addFile @path
-			@tasks.length = 0
+			@drives.length = 0
 		, isReader: true, isWriter: true, onEnd: ->
 			new Promise (resolve, reject) ->
 				mocha.run (code) ->
@@ -388,7 +390,7 @@ module.exports =
 					if cache.isNewer
 						kit.log cls.green('reader cache: ') +
 							file.deps.join cls.grey ', '
-						file.tasks.length = 0
+						file.drives.length = 0
 
 						Promise.all _.map cache.dests, (cachePath, dest) ->
 							kit.mkdirs kit.path.dirname dest

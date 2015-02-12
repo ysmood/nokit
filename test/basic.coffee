@@ -322,7 +322,7 @@ describe 'Kit:', ->
 			.then @set
 		, isReader: true
 
-		kit.warp 'test/fixtures/**/*.js', { cacheDir }
+		kit.warp 'test/fixtures/**/*.js'
 		.load myReader
 		.run tmp
 		.then ->
@@ -333,7 +333,8 @@ describe 'Kit:', ->
 	it 'warp concat', ->
 		tmp = 'test/fixtures/warp_all.coffee'
 
-		kit.warp 'test/fixtures/depDir/**/*.coffee', { cacheDir }
+		kit.warp 'test/fixtures/depDir/**/*.coffee'
+		.load kit.drives.reader { cacheDir }
 		.load kit.drives.concat 'warp_all.coffee'
 		.run 'test/fixtures'
 		.then ->
@@ -343,7 +344,8 @@ describe 'Kit:', ->
 
 	it 'warp auto', ->
 		path = 'test/fixtures/compiler.all'
-		kit.warp 'test/fixtures/compiler/*', { cacheDir }
+		kit.warp 'test/fixtures/compiler/*'
+			.load kit.drives.reader { cacheDir }
 			.load kit.drives.auto 'lint'
 			.load kit.drives.auto 'compile'
 			.load kit.drives.auto 'compress'
@@ -355,6 +357,7 @@ describe 'Kit:', ->
 				'.test .bar{color:red}'
 				'.test{color:red}'
 				'var a;a=function(){return console.log("OK")};'
+				'var a=function(n){return n};'
 				'var table1;table1=[{id:1,name:"george"},{id:2}];'
 			]
 

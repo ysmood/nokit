@@ -532,8 +532,11 @@ _.extend kit, fs,
 					Promise.reject err
 
 				return val if fn == kit.flow.end
+
 				run if fn and _.isFunction fn.then
 					fn
+				else if _.isFunction fn
+					Promise.resolve fn val
 				else
 					Promise.resolve fn
 
@@ -1292,6 +1295,51 @@ _.extend kit, fs,
 	promisify: fs.promisify
 
 	###*
+	 * Create a getter & setter for an object's property.
+	 * @param  {Object} self
+	 * @param  {String} prop The property name.
+	 * @return {Function} `(v) -> Any`
+	 * ```coffee
+	 * # Two arguments
+	 * data = { path: 'a.txt' }
+	 * txt = kit.prop data, 'txt'
+	 * txt kit.readFile data.path
+	 * .then ->
+	 * 	kit.log data
+	 * 	kit.log txt()
+	 *
+	 * # Two arguments another form.
+	 * kit.readFile data.path
+	 * .then txt
+	 * .then ->
+	 * 	kit.log data
+	 *
+	 * # One argument.
+	 * txt = kit.prop 'default value'
+	 * kit.log txt() # => "default value"
+	 * txt 20
+	 * kit.log txt() # => 20
+	 * ```
+	###
+	prop: (self, prop) ->
+		if arguments.length < 2
+			val = self
+			set = (v) -> val = v
+			get = -> val
+		else
+			set = (v) -> self[prop] = v
+			get = -> self[prop]
+
+		(v) ->
+			if v?
+				if _.isFunction v.then
+					v.then set
+				else
+					set v
+			else
+				get()
+
+	###*
 	 * Much faster than the native require of node, but you should
 	 * follow some rules to use it safely.
 	 * Use it to load nokit's internal module.
@@ -1940,11 +1988,13 @@ _.extend kit, fs,
 	 * @return {Object} The returned warp object has these members:
 	 * ```coffee
 	 * {
-	 * 	pipe: (handler) -> fileInfo | null
-	 * 	to: (path) -> Promise
+	 * 	# The drive can also be a promise that will resolve a drive.
+	 * 	load: (drive) -> fileInfo | null
+	 *
+	 * 	run: (path) -> Promise
 	 * }
 	 * ```
-	 * Each piped handler will recieve a
+	 * Each piped drive will recieve a
 	 * object that extends `nofs`'s fileInfo object:
 	 * ```coffee
 	 * {
@@ -1973,7 +2023,7 @@ _.extend kit, fs,
 	 * 	stats: fs.Stats
 	 *
 	 * 	# Alter it to control the left drives dynamically.
-	 * 	tasks: [Function]
+	 * 	drives: [Function]
 	 *
 	 * 	# All the globbed files.
 	 * 	list: Array
@@ -1985,10 +2035,10 @@ _.extend kit, fs,
 	 * }
 	 * ```
 	 *
-	 * The handler can have a `isReader` property, which will make the handler
+	 * The drive can have a `isReader` property, which will make the drive
 	 * override the default file reader.
 	 *
-	 * The handler can have a `isWriter` property, which will make the handler
+	 * The drive can have a `isWriter` property, which will make the drive
 	 * override the default file writer.
 	 * The writer can have a `onEnd` function, which will be called after the
 	 * whole warp ended.
@@ -2025,7 +2075,7 @@ _.extend kit, fs,
 	 * 	kit.log @list
 	 *
 	 * kit.warp 'src/**\/*.js'
-	 * .load myReader
+	 * .load myWriter
 	 * .run 'dist'
 	 *
 	 * # Use nokit's built-in warp drives.
@@ -2038,19 +2088,24 @@ _.extend kit, fs,
 	warp: (from, opts = {}) ->
 		drives = kit.require 'drives'
 		driveList = []
-		taskList  = [] # safe drives
 		reader = drives.reader()
 		writer = drives.writer()
 
 		runDrive = (drive) -> (info) ->
-			if _.isString info.dest
-				info.dest = _.extend kit.path.parse(info.dest),
-					valueOf: -> kit.path.join @dir, @name + @ext
-			if drive.super
-				info.super = -> drive.super.call info, info
+			run = (drive) ->
+				if _.isString info.dest
+					info.dest = _.extend kit.path.parse(info.dest),
+						valueOf: -> kit.path.join @dir, @name + @ext
+				if drive.super
+					info.super = -> runDrive(drive.super) info
 
-			Promise.resolve drive.call(info, info)
-			.then (val) -> info
+				Promise.resolve drive.call(info, info)
+				.then (val) -> info
+
+			if _.isFunction drive.then
+				drive.then run
+			else
+				run drive
 
 		initInfo = (info) ->
 			info.baseDir = opts.baseDir if opts.baseDir
@@ -2081,15 +2136,15 @@ _.extend kit, fs,
 				driveList.unshift reader
 				driveList.push writer
 
-				_.each driveList, (drive) ->
-					taskList.push runDrive drive
-
 				globOpts = _.extend {}, opts, iter: (info, list) ->
 					list.push info
 					info.baseDir = opts.baseDir if opts.baseDir
-					_.extend info, { tasks: _.clone(taskList), to, list }
+					_.extend info, { drives: _.clone(driveList), to, list }
 
-					kit.flow(info.tasks) initInfo info
+					kit.flow(->
+						drive = info.drives.shift()
+						if drive then runDrive drive else kit.flow.end
+					) initInfo info
 				kit.glob(from, globOpts)
 				.then (list) ->
 					return if not writer.onEnd
