@@ -245,8 +245,8 @@ _.extend kit, fs,
 				).then ->
 					kit.outputJson infoPath, info
 				.then ->
-					Promise.all opts.deps.map (dep) ->
-						saveLink infoPath, hashPath(dep).cache
+					Promise.all opts.deps[1..].map (dep) ->
+						saveLink infoPath, hashPath(dep).info
 
 			saveContents = ->
 				Promise.all opts.dests.map (dest) ->

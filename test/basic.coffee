@@ -279,12 +279,15 @@ describe 'Kit:', ->
 			kit.outputFileSync file1, 'txt'
 
 			kit.depsCache {
-				deps: [file]
+				deps: [file1]
 				cacheDir
 			}
 			.then (cache) ->
+				cache.contents = kit.readFileSync cache.dests[dest1], 'utf8'
+
 				delete cache.deps
 				shouldDeepEqual cache,
+					contents: 'out1'
 					dests:
 						'test/fixtures/depsCacheFileNewer.txt.dest':
 							'test/fixtures/cacheDir/3779283019-depsCacheFileNewer.txt.dest'
