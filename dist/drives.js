@@ -335,7 +335,7 @@ module.exports = {
       this.dest.ext = '.css';
       opts.filename = this.path;
       return less.render(this.contents + '', opts).then(function(output) {
-        file.deps = _.keys(output.imports);
+        file.deps = [file.path].concat(_.keys(output.imports));
         file.set(output.css);
         return kit.log(cls.cyan('less: ') + file.path);
       }, function(err) {
@@ -540,7 +540,7 @@ module.exports = {
       }
       opts.config.call(this, styl);
       return kit.promisify(styl.render, styl)().then(function(css) {
-        file.deps = styl.deps();
+        file.deps = [file.path].concat(styl.deps());
         file.set(css);
         return kit.log(cls.cyan('stylus: ') + file.path);
       });

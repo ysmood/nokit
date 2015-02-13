@@ -278,7 +278,7 @@ module.exports =
 			opts.filename = @path
 			less.render @contents + '', opts
 			.then (output) ->
-				file.deps = _.keys output.imports
+				file.deps = [file.path].concat _.keys(output.imports)
 				file.set output.css
 				kit.log cls.cyan('less: ') + file.path
 			, (err) ->
@@ -445,7 +445,7 @@ module.exports =
 
 			kit.promisify(styl.render, styl)()
 			.then (css) ->
-				file.deps = styl.deps()
+				file.deps = [file.path].concat styl.deps()
 				file.set css
 				kit.log cls.cyan('stylus: ') + file.path
 	, compile: ['.styl']
