@@ -229,12 +229,12 @@ _.extend kit, fs,
 
 			saveLink = (from, to) ->
 				kit.mkdirs(opts.cacheDir).then ->
-					kit.link from, to
-				.catch (err) ->
-					if err.code != 'EEXIST'
-						return Promise.reject err
-					kit.unlink(from).then ->
-						kit.link from, to
+					kit.link(from, to)
+					.catch (err) ->
+						if err.code != 'EEXIST'
+							return Promise.reject err
+						kit.unlink(to).then ->
+							kit.link from, to
 
 			saveInfo = (infoPath) ->
 				Promise.all(opts.deps.map (path, i) ->
