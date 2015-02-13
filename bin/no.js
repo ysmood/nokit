@@ -7,6 +7,7 @@ try {
 		kit = require('../dist/kit');
 		cs = kit.require('colors/safe');
 		kit.err(cs.red('[Error] ' + err.message), { isShowTime: false });
+		process.exit(1);
 	} else {
 		throw err;
 	}
