@@ -8,13 +8,13 @@ Rather than help you decide what to do, it is designed to create possibilities. 
 
 It's one of the core lib of [nobone](https://github.com/ysmood/nobone).
 
-[![NPM version](https://badge.fury.io/js/nokit.svg)](http://badge.fury.io/js/nokit) [![Build Status](https://travis-ci.org/ysmood/nokit.svg)](https://travis-ci.org/ysmood/nokit) [![Build status](https://ci.appveyor.com/api/projects/status/3pwhk4ua9c3ojm0q?svg=true)](https://ci.appveyor.com/project/ysmood/nokit) [![Deps Up to Date](https://david-dm.org/ysmood/nokit.svg?style=flat)](https://david-dm.org/ysmood/nokit)
+[![NPM version](https://badge.fury.io/js/nokit.svg)](http://badge.fury.io/js/nokit) [![Build Status](https://travis-ci.org/ysmood/nokit.svg)](https://travis-ci.org/ysmood/nokit) [![Build status](https://ci.appveyor.com/api/projects/status/github/ysmood/nokit?svg=true)](https://ci.appveyor.com/project/ysmood/nokit) [![Deps Up to Date](https://david-dm.org/ysmood/nokit.svg?style=flat)](https://david-dm.org/ysmood/nokit)
 
 ## Features
 
 - All async functions will return promise.
 - All functions are highly lazy designed, minimum boot time.
-- Test on Node 0.8 - 0.11 on Mac, Linux and Windows.
+- Test on Node 0.8 - 0.12 on Mac, Linux and Windows.
 - Light weight and self-reference.
 
 # Installation
@@ -78,13 +78,17 @@ concat = (outputFile) ->
     kit._.assign ->
         all += @contents
     , isWriter: true, onEnd: ->
-            # This will enable the auto-cache.
-            @deps = kit._.pluck @list, 'path'
+        # This will enable the auto-cache.
+        @deps = kit._.pluck @list, 'path'
 
-            @dest = @to + '/' + outputFile
-            @set all
+        @dest = @to + '/' + outputFile
+        @set all
 
-            # Call the overrided writer.
+        # Call the overrided writer.
+        # Call two times and create two output files.
+        @super().then =>
+            @dest = @dest + '.info'
+            @set = '/* info */\n' + all
             @super()
 
 kit.warp 'src/**/*.coffee'
@@ -151,9 +155,6 @@ module.exports = (task, option) ->
 
     task 'sequential', ['clean', 'build'], true, ->
         kit.log 'Run clean and build non-concurrently.'
-
-    # You can return a promise for an async init.
-    kit.sleep 1000
 ```
 
 Then you can run it in command line: `no`. Just that simple, without task

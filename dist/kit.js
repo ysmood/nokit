@@ -258,13 +258,13 @@ _.extend(kit, fs, {
       };
       saveLink = function(from, to) {
         return kit.mkdirs(opts.cacheDir).then(function() {
-          return kit.link(from, to);
-        })["catch"](function(err) {
-          if (err.code !== 'EEXIST') {
-            return Promise.reject(err);
-          }
-          return kit.unlink(from).then(function() {
-            return kit.link(from, to);
+          return kit.link(from, to)["catch"](function(err) {
+            if (err.code !== 'EEXIST') {
+              return Promise.reject(err);
+            }
+            return kit.unlink(to).then(function() {
+              return kit.link(from, to);
+            });
           });
         });
       };
