@@ -291,10 +291,12 @@ describe 'Kit:', ->
 					dests: {}
 					isNewer: false
 
-				out.dests[dest] = 'test/fixtures/cacheDir/3779283019-depsCacheFileNewer.txt.dest'
-				out.dests[dest1] = 'test/fixtures/cacheDir/3263598758-depsCacheFileNewer.txt.dest1'
-				shouldDeepEqual cache, out
+				cache.dests[dest] = unixSep cache.dests[dest]
+				cache.dests[dest1] = unixSep cache.dests[dest1]
 
+				out.dests[dest] ='test/fixtures/cacheDir/3779283019-depsCacheFileNewer.txt.dest'
+				out.dests[dest1] ='test/fixtures/cacheDir/3263598758-depsCacheFileNewer.txt.dest1'
+				shouldDeepEqual cache, out
 
 	it 'warp map', ->
 		tmp = 'test/fixtures/warp'
@@ -319,8 +321,9 @@ describe 'Kit:', ->
 		tmp = 'test/fixtures/warp-custom-reader'
 
 		myReader = _.extend (info) ->
-			kit.readFile @path, 'hex'
-			.then @set
+			kit.readFile @path, 'utf8'
+			.then (str) =>
+				@set str.replace /\r\n/g, '\n'
 		, isReader: true
 
 		kit.warp 'test/fixtures/**/*.js'
@@ -329,7 +332,7 @@ describe 'Kit:', ->
 		.then ->
 			kit.readFile tmp + '/comment.js', 'utf8'
 		.then (str) ->
-			shouldEqual str[0..10], '2f2a2a0a092'
+			shouldEqual str[0..10], "/**\n\t * An "
 
 	it 'warp concat', ->
 		tmp = 'test/fixtures/warp_all.coffee'
