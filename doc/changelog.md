@@ -1,6 +1,6 @@
 # Changelog
 
-- v0.5.2
+- v0.5.4
 
   - **API CHANGE** `warp`'s two function names was changed:
     `pipe` -> `load`, `to` -> `run`.
