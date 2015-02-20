@@ -1,7 +1,7 @@
 'use strict';
-var Promise, extend_nofs, fs, kit, _,
-  __slice = [].slice,
-  __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
+var Promise, _, extend_nofs, fs, kit,
+  slice = [].slice,
+  indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
 _ = require('./lodash');
 
@@ -96,7 +96,7 @@ _.extend(kit, fs, {
   	 * ```
    */
   async: function(limit, list, saveResutls, progress) {
-    var isIterDone, iter, resutls, running, _base;
+    var base, isIterDone, iter, resutls, running;
     resutls = [];
     running = 0;
     isIterDone = false;
@@ -126,11 +126,11 @@ _.extend(kit, fs, {
     } else {
       return Promise.reject(new Error('wrong argument type: ' + list));
     }
-    if ((_base = kit.async).end == null) {
-      _base.end = {};
+    if ((base = kit.async).end == null) {
+      base.end = {};
     }
     return new Promise(function(resolve, reject) {
-      var addTask, allDone, i, _i, _results;
+      var addTask, allDone, i, j, ref, results;
       addTask = function() {
         var err, p, task;
         try {
@@ -174,15 +174,15 @@ _.extend(kit, fs, {
           return resolve();
         }
       };
-      _results = [];
-      for (i = _i = 0; 0 <= limit ? _i < limit : _i > limit; i = 0 <= limit ? ++_i : --_i) {
+      results = [];
+      for (i = j = 0, ref = limit; 0 <= ref ? j < ref : j > ref; i = 0 <= ref ? ++j : --j) {
         if (!addTask()) {
           break;
         } else {
-          _results.push(void 0);
+          results.push(void 0);
         }
       }
-      return _results;
+      return results;
     });
   },
 
@@ -234,12 +234,12 @@ _.extend(kit, fs, {
   	 * ```
    */
   depsCache: function(opts) {
-    var hashPath, info, key, saveContents, saveInfo, saveLink, _base;
+    var base, hashPath, info, key, saveContents, saveInfo, saveLink;
     _.defaults(opts, {
       cacheDir: '.nokit'
     });
-    if ((_base = kit.depsCache).jhash == null) {
-      _base.jhash = new (kit.require('jhash').constructor);
+    if ((base = kit.depsCache).jhash == null) {
+      base.jhash = new (kit.require('jhash').constructor);
     }
     hashPath = function(path) {
       var hash;
@@ -560,9 +560,9 @@ _.extend(kit, fs, {
    */
   flow: function() {
     var fns;
-    fns = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+    fns = 1 <= arguments.length ? slice.call(arguments, 0) : [];
     return function(val) {
-      var genIter, iter, run, _base;
+      var base, genIter, iter, run;
       genIter = function(arr) {
         return function(val) {
           var fn;
@@ -585,8 +585,8 @@ _.extend(kit, fs, {
       } else {
         return Promise.reject(new Error('wrong argument type: ' + fn));
       }
-      if ((_base = kit.flow).end == null) {
-        _base.end = {};
+      if ((base = kit.flow).end == null) {
+        base.end = {};
       }
       run = function(preFn) {
         return preFn.then(function(val) {
@@ -626,29 +626,29 @@ _.extend(kit, fs, {
   	 * @return {String}
    */
   formatComment: function(comments, opts) {
-    var all, cmt, cmtStr, tag, _i, _j, _len, _len1, _ref;
+    var all, cmt, cmtStr, j, l, len, len1, ref, tag;
     if (opts == null) {
       opts = {};
     }
     _.defaults(opts, {
       indent: 0,
-      name: function(_arg) {
+      name: function(arg) {
         var name;
-        name = _arg.name;
+        name = arg.name;
         name = name.replace('self.', '');
         return "- #### " + name + "\n\n";
       },
-      tag: function(_arg) {
+      tag: function(arg) {
         var name, tagName, tname, ttype, type;
-        tagName = _arg.tagName, name = _arg.name, type = _arg.type;
+        tagName = arg.tagName, name = arg.name, type = arg.type;
         tname = name ? " `" + name + "`" : '';
         ttype = type ? " { _" + type + "_ }" : '';
         return "- **<u>" + tagName + "</u>**:" + tname + ttype;
       }
     });
     all = '';
-    for (_i = 0, _len = comments.length; _i < _len; _i++) {
-      cmt = comments[_i];
+    for (j = 0, len = comments.length; j < len; j++) {
+      cmt = comments[j];
       if (_.any(cmt.tags, {
         tagName: 'private'
       })) {
@@ -659,9 +659,9 @@ _.extend(kit, fs, {
         cmtStr += kit.indent(cmt.description, 4);
         cmtStr += '\n\n';
       }
-      _ref = cmt.tags;
-      for (_j = 0, _len1 = _ref.length; _j < _len1; _j++) {
-        tag = _ref[_j];
+      ref = cmt.tags;
+      for (l = 0, len1 = ref.length; l < len1; l++) {
+        tag = ref[l];
         cmtStr += kit.indent(opts.tag(tag), 4);
         cmtStr += '\n\n';
         if (tag.description) {
@@ -731,10 +731,10 @@ _.extend(kit, fs, {
       }
     });
     return _(list).map(function(words) {
-      var c, cIndex, cOffset, distance, keyLen, _i, _len;
+      var c, cIndex, cOffset, distance, j, keyLen, len;
       distance = 0;
       keyLen = key.length;
-      for (cIndex = _i = 0, _len = key.length; _i < _len; cIndex = ++_i) {
+      for (cIndex = j = 0, len = key.length; j < len; cIndex = ++j) {
         c = key[cIndex];
         cOffset = words.indexOf(c, cOffset + 1);
         distance = cOffset < 0 ? opts.notFound(cOffset, keyLen, cIndex) : distance + opts.found(cOffset, keyLen, cIndex);
@@ -898,8 +898,8 @@ _.extend(kit, fs, {
   	 * ```
    */
   log: function() {
-    var action, args, cs, formats, log, msg, opts, time, timeDelta, util, _ref;
-    args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+    var action, args, cs, formats, log, msg, opts, ref, time, timeDelta, util;
+    args = 1 <= arguments.length ? slice.call(arguments, 0) : [];
     cs = kit.require('colors/safe', function() {
       if (kit.isDevelopment()) {
         return cs.mode = 'none';
@@ -910,7 +910,7 @@ _.extend(kit, fs, {
       action = 'log';
     }
     msg = args[0];
-    _ref = kit.defaultArgs(args.slice(1), {
+    ref = kit.defaultArgs(args.slice(1), {
       action: {
         String: 'log'
       },
@@ -920,7 +920,7 @@ _.extend(kit, fs, {
       opts: {
         Object: {}
       }
-    }), action = _ref.action, formats = _ref.formats, opts = _ref.opts;
+    }), action = ref.action, formats = ref.formats, opts = ref.opts;
     _.defaults(opts, {
       isShowTime: true,
       logReg: process.env.logReg && new RegExp(process.env.logReg),
@@ -990,7 +990,7 @@ _.extend(kit, fs, {
    */
   logs: function() {
     var args;
-    args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+    args = 1 <= arguments.length ? slice.call(arguments, 0) : [];
     return kit.log(args.join(' '));
   },
 
@@ -1076,14 +1076,14 @@ _.extend(kit, fs, {
       onWatchFiles: function(paths) {
         return kit.log(cs.yellow('Watching: ') + paths.join(', '));
       },
-      onNormalExit: function(_arg) {
+      onNormalExit: function(arg) {
         var code, signal;
-        code = _arg.code, signal = _arg.signal;
+        code = arg.code, signal = arg.signal;
         return kit.log(cs.yellow('EXIT') + (" code: " + (cs.cyan(code)) + " signal: " + (cs.cyan(signal))));
       },
-      onErrorExit: function(_arg) {
+      onErrorExit: function(arg) {
         var code, signal;
-        code = _arg.code, signal = _arg.signal;
+        code = arg.code, signal = arg.signal;
         return kit.err(cs.yellow('EXIT') + (" code: " + (cs.cyan(code)) + " ") + ("signal: " + (cs.cyan(signal)) + "\n") + cs.red('Process closed. Edit and save the watched file to restart.'));
       },
       sepLine: function() {
@@ -1119,13 +1119,13 @@ _.extend(kit, fs, {
     };
     stop = function() {
       return childPromise.watchPromise.then(function(list) {
-        var w, _i, _len, _results;
-        _results = [];
-        for (_i = 0, _len = list.length; _i < _len; _i++) {
-          w = list[_i];
-          _results.push(kit.unwatchFile(w.path, w.handler));
+        var j, len, results, w;
+        results = [];
+        for (j = 0, len = list.length; j < len; j++) {
+          w = list[j];
+          results.push(kit.unwatchFile(w.path, w.handler));
         }
-        return _results;
+        return results;
       });
     };
     process.on('SIGINT', function() {
@@ -1184,7 +1184,7 @@ _.extend(kit, fs, {
   	 * ```
    */
   defaultArgs: function(args, defaults) {
-    var name, ret, set, type, v, val, _ref;
+    var name, ref, ret, set, type, v, val;
     set = _(args).toArray().groupBy(function(e) {
       return e.constructor.name;
     }).value();
@@ -1192,7 +1192,7 @@ _.extend(kit, fs, {
     for (name in defaults) {
       val = defaults[name];
       type = _.keys(val)[0];
-      ret[name] = set[type] ? ((_ref = set[type].splice(0, 1), v = _ref[0], _ref), v ? v : val[type]) : val[type];
+      ret[name] = set[type] ? ((ref = set[type].splice(0, 1), v = ref[0], ref), v ? v : val[type]) : val[type];
     }
     return ret;
   },
@@ -1255,7 +1255,7 @@ _.extend(kit, fs, {
       return {
         description: arr[0] || '',
         tags: arr.slice(1).map(function(el) {
-          var parseTag, tag, type, _ref;
+          var parseTag, ref, tag, type;
           parseTag = function(reg) {
             var m;
             m = el.match(reg);
@@ -1271,7 +1271,7 @@ _.extend(kit, fs, {
           type = parseTag(opts.typeReg);
           if (type) {
             tag.type = type;
-            if (_ref = tag.tagName, __indexOf.call(opts.nameTags, _ref) >= 0) {
+            if (ref = tag.tagName, indexOf.call(opts.nameTags, ref) >= 0) {
               tag.name = parseTag(opts.nameReg);
             }
             tag.description = parseTag(opts.descriptionReg) || '';
@@ -1517,7 +1517,7 @@ _.extend(kit, fs, {
   	 * ```
    */
   require: function(moduleName, dir, loaded) {
-    var e, err, key, modPath, name, names, p, _i, _len;
+    var e, err, j, key, len, modPath, name, names, p;
     if (_.isFunction(dir)) {
       loaded = dir;
       dir = null;
@@ -1546,21 +1546,21 @@ _.extend(kit, fs, {
       return kit[moduleName] = kit.requireCache[key] = require(moduleName);
     }
     names = moduleName[0] === '.' ? [kit.path.join(dir, moduleName)] : kit.genModulePaths(moduleName, dir).concat((function() {
-      var _i, _len, _ref, _results;
+      var j, len, ref, results;
       if (process.env.NODE_PATH) {
-        _ref = process.env.NODE_PATH.split(kit.path.delimiter);
-        _results = [];
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          p = _ref[_i];
-          _results.push(kit.path.join(p, moduleName));
+        ref = process.env.NODE_PATH.split(kit.path.delimiter);
+        results = [];
+        for (j = 0, len = ref.length; j < len; j++) {
+          p = ref[j];
+          results.push(kit.path.join(p, moduleName));
         }
-        return _results;
+        return results;
       } else {
         return [];
       }
     })());
-    for (_i = 0, _len = names.length; _i < _len; _i++) {
-      name = names[_i];
+    for (j = 0, len = names.length; j < len; j++) {
+      name = names[j];
       try {
         modPath = require.resolve(name);
       } catch (_error) {
@@ -1717,7 +1717,7 @@ _.extend(kit, fs, {
   	 * ```
    */
   request: function(opts) {
-    var promise, req, reqBuf, request, url, _base, _base1, _base2;
+    var base, base1, base2, promise, req, reqBuf, request, url;
     kit.require('url');
     if (_.isString(opts)) {
       opts = {
@@ -1725,8 +1725,8 @@ _.extend(kit, fs, {
       };
     }
     if (_.isObject(opts.url)) {
-      if ((_base = opts.url).protocol == null) {
-        _base.protocol = 'http:';
+      if ((base = opts.url).protocol == null) {
+        base.protocol = 'http:';
       }
     } else {
       if (opts.url.indexOf('http') !== 0) {
@@ -1767,8 +1767,8 @@ _.extend(kit, fs, {
     } else if (_.isString(opts.reqData)) {
       reqBuf = new Buffer(opts.reqData);
     } else if (_.isObject(opts.reqData)) {
-      if ((_base1 = opts.headers)['content-type'] == null) {
-        _base1['content-type'] = 'application/x-www-form-urlencoded; charset=utf-8';
+      if ((base1 = opts.headers)['content-type'] == null) {
+        base1['content-type'] = 'application/x-www-form-urlencoded; charset=utf-8';
       }
       reqBuf = new Buffer(_.map(opts.reqData, function(v, k) {
         return [encodeURIComponent(k), encodeURIComponent(v)].join('=');
@@ -1777,8 +1777,8 @@ _.extend(kit, fs, {
       reqBuf = void 0;
     }
     if (reqBuf !== void 0) {
-      if ((_base2 = opts.headers)['content-length'] == null) {
-        _base2['content-length'] = reqBuf.length;
+      if ((base2 = opts.headers)['content-length'] == null) {
+        base2['content-length'] = reqBuf.length;
       }
     }
     if (opts.setTE) {
@@ -1913,9 +1913,9 @@ _.extend(kit, fs, {
         }
       });
       req.on('error', function(err) {
-        var _ref;
-        if ((_ref = opts.resPipe) != null) {
-          _ref.end();
+        var ref;
+        if ((ref = opts.resPipe) != null) {
+          ref.end();
         }
         return reject(err);
       });
@@ -2122,7 +2122,7 @@ _.extend(kit, fs, {
   	 * ```
    */
   task: function(name, opts, fn) {
-    var cs, runTask, _base, _base1;
+    var base, base1, cs, runTask;
     cs = require('colors/safe');
     if (_.isFunction(opts)) {
       fn = opts;
@@ -2141,8 +2141,8 @@ _.extend(kit, fs, {
     if (_.isString(opts.deps)) {
       opts.deps = [opts.deps];
     }
-    if ((_base = kit.task).list == null) {
-      _base.list = {};
+    if ((base = kit.task).list == null) {
+      base.list = {};
     }
     runTask = function(warp) {
       return function(name) {
@@ -2170,7 +2170,7 @@ _.extend(kit, fs, {
       };
     };
     kit.task.list[name].opts = opts;
-    return (_base1 = kit.task).run != null ? _base1.run : _base1.run = function(names, opts) {
+    return (base1 = kit.task).run != null ? base1.run : base1.run = function(names, opts) {
       var task;
       if (names == null) {
         names = 'default';

@@ -2,7 +2,7 @@
 /*
 	A simplified version of Make.
  */
-var cls, cmder, error, kit, launch, loadNofile, searchTasks, task, _;
+var _, cls, cmder, error, kit, launch, loadNofile, searchTasks, task;
 
 if (process.env.NODE_ENV == null) {
   process.env.NODE_ENV = 'development';
@@ -75,11 +75,11 @@ task = function() {
  */
 
 loadNofile = function() {
-  var dir, exts, lang, path, paths, rdir, _i, _j, _len, _len1, _ref;
+  var dir, exts, i, j, lang, len, len1, path, paths, rdir, ref;
   if (process.env.nokitPreload) {
-    _ref = process.env.nokitPreload.split(' ');
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      lang = _ref[_i];
+    ref = process.env.nokitPreload.split(' ');
+    for (i = 0, len = ref.length; i < len; i++) {
+      lang = ref[i];
       try {
         require(lang);
       } catch (_error) {}
@@ -101,8 +101,8 @@ loadNofile = function() {
       return p + ext;
     }).value());
   }, []);
-  for (_j = 0, _len1 = paths.length; _j < _len1; _j++) {
-    path = paths[_j];
+  for (j = 0, len1 = paths.length; j < len1; j++) {
+    path = paths[j];
     if (kit.existsSync(path)) {
       dir = kit.path.dirname(path);
       rdir = kit.path.relative('.', dir);

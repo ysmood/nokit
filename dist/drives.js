@@ -1,4 +1,4 @@
-var Overview, Promise, cls, jhash, kit, _;
+var Overview, Promise, _, cls, jhash, kit;
 
 kit = require('./kit');
 
@@ -36,13 +36,13 @@ module.exports = {
     };
   }, {
     compress: ['.css']
-  }),
 
-  /**
-  	 * coffee-script compiler
-  	 * @param  {Object} opts Default is `{ bare: true }`.
-  	 * @return {Function}
-   */
+    /**
+    	 * coffee-script compiler
+    	 * @param  {Object} opts Default is `{ bare: true }`.
+    	 * @return {Function}
+     */
+  }),
   coffee: _.extend(function(opts) {
     var coffee;
     if (opts == null) {
@@ -68,25 +68,25 @@ module.exports = {
     };
   }, {
     compile: ['.coffee']
-  }),
 
-  /**
-  	 * coffeelint processor
-  	 * @param  {Object} opts It extends the default config
-  	 * of coffeelint, properties:
-  	 * ```coffee
-  	 * {
-  	 * 	colorize: true
-  	 * 	reporter: 'default'
-  	 *
-  	 * 	# The json of the "coffeelint.json".
-  	 * 	# If it's null, coffeelint will try to find
-  	 * 	# "coffeelint.json" as its content.
-  	 * 	config: null | JSON | JsonFilePath
-  	 * }
-  	 * ```
-  	 * @return {Function}
-   */
+    /**
+    	 * coffeelint processor
+    	 * @param  {Object} opts It extends the default config
+    	 * of coffeelint, properties:
+    	 * ```coffee
+    	 * {
+    	 * 	colorize: true
+    	 * 	reporter: 'default'
+    	 *
+    	 * 	# The json of the "coffeelint.json".
+    	 * 	# If it's null, coffeelint will try to find
+    	 * 	# "coffeelint.json" as its content.
+    	 * 	config: null | JSON | JsonFilePath
+    	 * }
+    	 * ```
+    	 * @return {Function}
+     */
+  }),
   coffeelint: _.extend(function(opts) {
     var Reporter, coffeelint, configfinder;
     if (opts == null) {
@@ -106,14 +106,14 @@ module.exports = {
     }
     Reporter = require('coffeelint/lib/reporters/' + opts.reporter);
     return function() {
-      var errorReport, errors, path, reporter, _ref;
+      var errorReport, errors, path, ref, reporter;
       this.deps = [this.path];
       errorReport = new coffeelint.getErrorReport();
       errorReport.lint(this.path, this.contents, opts.config);
       reporter = new Reporter(errorReport, opts);
-      _ref = errorReport.paths;
-      for (path in _ref) {
-        errors = _ref[path];
+      ref = errorReport.paths;
+      for (path in ref) {
+        errors = ref[path];
         kit.log(cls.cyan('coffeelint: ') + _.trim(reporter.reportPath(path, errors)));
         if (errors.length > 0) {
           return Promise.reject(errors[0]);
@@ -122,35 +122,35 @@ module.exports = {
     };
   }, {
     lint: ['.coffee']
-  }),
 
-  /**
-  	 * Parse commment from a js, coffee, or livescript file,
-  	 * and output a markdown string.
-  	 * @param  {String} path
-  	 * @param  {Object} opts Defaults:
-  	 * ```coffee
-  	 * {
-  	 * 	# Output doc path.
-  	 * 	out: 'readme.md'
-  	 *
-  	 * 	# jst template path.
-  	 * 	tpl: 'readme.jst.md'
-  	 *
-  	 * 	# Init doc info.
-  	 * 	doc: {}
-  	 *
-  	 * 	# Header size.
-  	 * 	h: 3
-  	 *
-  	 * 	parseComment: -> ...
-  	 * 	formatComment: -> ...
-  	 * }
-  	 * ```
-  	 * @return {Function}
-  	 * @example
-  	 * The nofile of nokit shows how to use it.
-   */
+    /**
+    	 * Parse commment from a js, coffee, or livescript file,
+    	 * and output a markdown string.
+    	 * @param  {String} path
+    	 * @param  {Object} opts Defaults:
+    	 * ```coffee
+    	 * {
+    	 * 	# Output doc path.
+    	 * 	out: 'readme.md'
+    	 *
+    	 * 	# jst template path.
+    	 * 	tpl: 'readme.jst.md'
+    	 *
+    	 * 	# Init doc info.
+    	 * 	doc: {}
+    	 *
+    	 * 	# Header size.
+    	 * 	h: 3
+    	 *
+    	 * 	parseComment: -> ...
+    	 * 	formatComment: -> ...
+    	 * }
+    	 * ```
+    	 * @return {Function}
+    	 * @example
+    	 * The nofile of nokit shows how to use it.
+     */
+  }),
   comment2md: function(opts) {
     if (opts == null) {
       opts = {};
@@ -165,9 +165,9 @@ module.exports = {
     });
     return _.extend(function(file) {
       var comments;
-      opts.formatComment.name = function(_arg) {
+      opts.formatComment.name = function(arg) {
         var line, link, name;
-        name = _arg.name, line = _arg.line;
+        name = arg.name, line = arg.line;
         name = name.replace('self.', '');
         link = file.path + "?source#L" + line;
         return "- " + (_.repeat('#', opts.h)) + " **[" + name + "](" + link + ")**\n\n";
@@ -217,7 +217,7 @@ module.exports = {
   	 * @return {Function}
    */
   auto: function(action, opts) {
-    var auto, compilers, list, _str;
+    var _str, auto, compilers, list;
     if (opts == null) {
       opts = {};
     }
@@ -318,13 +318,13 @@ module.exports = {
     });
   }, {
     lint: ['.js']
-  }),
 
-  /**
-  	 * Compile less.
-  	 * @param  {Object}
-  	 * @return {Function}
-   */
+    /**
+    	 * Compile less.
+    	 * @param  {Object}
+    	 * @return {Function}
+     */
+  }),
   less: _.extend(function(opts) {
     var less;
     if (opts == null) {
@@ -339,23 +339,23 @@ module.exports = {
         file.set(output.css);
         return kit.log(cls.cyan('less: ') + file.path);
       }, function(err) {
-        var _ref;
+        var ref;
         if (err.line == null) {
           return Promise.reject(err);
         }
-        err.message = err.filename + (":" + err.line + ":" + err.column + "\n") + ((_ref = err.extract) != null ? _ref.join('\n') : void 0) + '\n--------\n' + err.message;
+        err.message = err.filename + (":" + err.line + ":" + err.column + "\n") + ((ref = err.extract) != null ? ref.join('\n') : void 0) + '\n--------\n' + err.message;
         return Promise.reject(err);
       });
     };
   }, {
     compile: ['.less']
-  }),
 
-  /**
-  	 * LiveScript compiler.
-  	 * @param  {Object} opts Default is `{ bare: true }`.
-  	 * @return {Function}
-   */
+    /**
+    	 * LiveScript compiler.
+    	 * @param  {Object} opts Default is `{ bare: true }`.
+    	 * @return {Function}
+     */
+  }),
   livescript: _.extend(function(opts) {
     var LiveScript;
     if (opts == null) {
@@ -381,18 +381,18 @@ module.exports = {
     };
   }, {
     compile: ['.ls']
-  }),
 
-  /**
-  	 * mocha test
-  	 * @param  {Object} opts
-  	 * ```
-  	 * {
-  	 * 	timeout: 5000
-  	 * }
-  	 * ```
-  	 * @return {Function}
-   */
+    /**
+    	 * mocha test
+    	 * @param  {Object} opts
+    	 * ```
+    	 * {
+    	 * 	timeout: 5000
+    	 * }
+    	 * ```
+    	 * @return {Function}
+     */
+  }),
   mocha: function(opts) {
     var Mocha, mocha;
     if (opts == null) {
@@ -547,23 +547,23 @@ module.exports = {
     };
   }, {
     compile: ['.styl']
-  }),
 
-  /**
-  	 * uglify-js processor
-  	 * @param  {Object} opts Defaults:
-  	 * ```coffee
-  	 * {
-  	 * 	output:
-  	 * 		comments: (node, comment) ->
-  	 * 			text = comment.value
-  	 * 			type = comment.type
-  	 * 			if type == "comment2"
-  	 * 				return /@preserve|@license|@cc_on/i.test text
-  	 * }
-  	 * ```
-  	 * @return {Function}
-   */
+    /**
+    	 * uglify-js processor
+    	 * @param  {Object} opts Defaults:
+    	 * ```coffee
+    	 * {
+    	 * 	output:
+    	 * 		comments: (node, comment) ->
+    	 * 			text = comment.value
+    	 * 			type = comment.type
+    	 * 			if type == "comment2"
+    	 * 				return /@preserve|@license|@cc_on/i.test text
+    	 * }
+    	 * ```
+    	 * @return {Function}
+     */
+  }),
   uglifyjs: _.extend(function(opts) {
     var uglify;
     if (opts == null) {
@@ -590,14 +590,14 @@ module.exports = {
     };
   }, {
     compress: ['.js']
-  }),
 
-  /**
-  	 * Output file by `contents` and `dest`.
-  	 * If the 'ext' or 'name' is not null,
-  	 * the 'base' will be override by the 'ext' and 'name'.
-  	 * @return {Function}
-   */
+    /**
+    	 * Output file by `contents` and `dest`.
+    	 * If the 'ext' or 'name' is not null,
+    	 * the 'base' will be override by the 'ext' and 'name'.
+    	 * @return {Function}
+     */
+  }),
   writer: function() {
     var write;
     write = function(file) {
