@@ -2174,7 +2174,7 @@ _.extend kit, fs,
 	 * ```
 	 * @return {String}
 	###
-	xinspect: (obj, opts) ->
+	xinspect: (obj, opts = {}) ->
 		util = kit.require 'util', __dirname
 
 		_.defaults opts, {

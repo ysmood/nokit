@@ -2453,6 +2453,9 @@ _.extend(kit, fs, {
    */
   xinspect: function(obj, opts) {
     var str, util;
+    if (opts == null) {
+      opts = {};
+    }
     util = kit.require('util', __dirname);
     _.defaults(opts, {
       colors: kit.isDevelopment(),
