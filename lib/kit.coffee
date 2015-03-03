@@ -1376,7 +1376,7 @@ _.extend kit, fs,
 
 		if not dir?
 			if moduleName[0] == '.' or kit[moduleName] != null
-				err = new Error "argument 'dir' is not defined"
+				err = new Error "[kit.require] argument 'dir' is not defined"
 				err.source = 'nokit'
 				throw err
 
