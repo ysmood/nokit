@@ -1528,7 +1528,7 @@ _.extend(kit, fs, {
     }
     if (dir == null) {
       if (moduleName[0] === '.' || kit[moduleName] !== null) {
-        err = new Error("argument 'dir' is not defined");
+        err = new Error("[kit.require] argument 'dir' is not defined");
         err.source = 'nokit';
         throw err;
       }
