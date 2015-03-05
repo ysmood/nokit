@@ -473,8 +473,9 @@ _.extend kit, fs,
 	 * 	return "http://test.com/" + name
 	 *
 	 * curl = (url) ->
-	 * 	kit.request(url).then ->
+	 * 	kit.request(url).then (body) ->
 	 * 		kit.log 'get'
+	 * 		body
 	 *
 	 * save = (str) ->
 	 * 	kit.outputFile('a.txt', str).then ->
