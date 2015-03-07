@@ -1,5 +1,9 @@
 # Changelog
 
+- v0.5.5
+
+  - Some minor changes.
+
 - v0.5.4
 
   - **API CHANGE** `warp`'s two function names was changed:
