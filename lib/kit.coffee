@@ -1037,12 +1037,13 @@ _.extend kit, fs,
 
 	###*
 	 * Node version. Such as `v0.10.23` is `0.1023`, `v0.10.1` is `0.1001`.
-	 * @type {Float}
+	 * @return {Float}
 	###
 	nodeVersion: ->
+		return kit.nodeVersion.ver if kit.nodeVersion.ver
 		ms = process.versions.node.match /(\d+)\.(\d+)\.(\d+)/
 		str = ms[1] + '.' + _.padLeft(ms[2], 2, '0') + _.padLeft(ms[3], 2, '0')
-		+str
+		kit.nodeVersion.ver = +str
 
 	###*
 	 * A helper for arguments type based function override.
