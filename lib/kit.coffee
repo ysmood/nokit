@@ -160,6 +160,21 @@ _.extend kit, fs,
 				break if not addTask()
 
 	###*
+	 * The [colors](https://github.com/Marak/colors.js) lib
+	 * makes it easier to print colorful info in CLI.
+	 * You must `kit.require 'colors'` before using it.
+	 * Sometimes use `kit.require 'colors/safe'` will be better.
+	 * @type {Object}
+	 * @example
+	 * ```coffee
+	 * cs = kit.require 'colors/safe'
+	 * kit.log cs.red 'error info'
+	 * ```
+	###
+	colors: null
+	'colors/safe': null
+
+	###*
 	 * A fast file cache helper. It uses hard link to cache files.
 	 * @param  {Object} info Not optional.
 	 * ```coffee
@@ -275,16 +290,6 @@ _.extend kit, fs,
 			.then -> info
 
 	###*
-	 * The [colors](https://github.com/Marak/colors.js) lib
-	 * makes it easier to print colorful info in CLI.
-	 * You must `kit.require 'colors'` before using it.
-	 * Sometimes use `kit.require 'colors/safe'` will be better.
-	 * @type {Object}
-	###
-	colors: null
-	'colors/safe': null
-
-	###*
 	 * Daemonize a program. Just a shortcut usage of `kit.spawn`.
 	 * @param  {Object} opts Defaults:
 	 * ```coffee
@@ -343,6 +348,7 @@ _.extend kit, fs,
 	###*
 	 * The warp drives.
 	 * You must `kit.require 'drives'` before using it.
+	 * For more information goto the `Drives` section.
 	 * @type {Object}
 	###
 	drives: null
@@ -677,6 +683,12 @@ _.extend kit, fs,
 	 * @param  {String} dir        The root path. Default is current working dir.
 	 * @param  {String} modDir     Default is 'node_modules'.
 	 * @return {Array} Paths
+	 * @example
+	 * ```coffee
+	 * # Suppose current working directory is '/home/a'
+	 * kit.genModulePaths 'test'
+	 * # output => ['/home/a/node_modules/test', '/home/node_modules/test', '/node_modules/test']
+	 * ```
 	###
 	genModulePaths: (moduleName, dir = process.cwd(), modDir) ->
 		modDir ?= 'node_modules'
@@ -1755,9 +1767,15 @@ _.extend kit, fs,
 	semver: null
 
 	###*
-	 * Sleep for awhile.
+	 * Sleep for awhile. Works same as the `setTimeout`
 	 * @param  {Integer} time Time to sleep, millisecond.
 	 * @return {Promise}
+	 * @example
+	 * ```coffee
+	 * kit.sleep 1000
+	 * .then ->
+	 * 	kit.log 'wake'
+	 * ```
 	###
 	sleep: (time = 0) ->
 		new Promise (resolve) ->
