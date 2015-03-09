@@ -174,7 +174,7 @@ Goto [changelog](doc/changelog.md)
 
 # API
 
-- ## **[extend_nofs](lib/kit.coffee?source#L29)**
+- ## **[Overview](lib/kit.coffee?source#L29)**
 
     Nokit extends all the functions of [nofs](https://github.com/ysmood/nofs).
     You can use it as same as nofs. For more info, see the doc:

@@ -1,8 +1,9 @@
 # Changelog
 
-- v0.5.5
+- v0.5.6
 
   - Some minor changes.
+  - Update deps.
 
 - v0.5.4
 

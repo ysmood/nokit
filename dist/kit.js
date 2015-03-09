@@ -1,5 +1,5 @@
 'use strict';
-var Promise, _, extend_nofs, fs, kit,
+var Overview, Promise, _, fs, kit,
   slice = [].slice,
   indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
@@ -33,7 +33,7 @@ kit = {};
  * ```
  */
 
-extend_nofs = 'nofs';
+Overview = 'overview';
 
 _.extend(kit, fs, {
 

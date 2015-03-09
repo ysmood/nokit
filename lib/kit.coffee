@@ -26,7 +26,7 @@ kit = {}
  * .then -> kit.log 'done'
  * ```
 ###
-extend_nofs = 'nofs'
+Overview = 'overview'
 
 
 _.extend kit, fs,
