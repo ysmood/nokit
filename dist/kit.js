@@ -1650,7 +1650,8 @@ _.extend(kit, fs, {
   	 * but with some extra options:
   	 * ```coffee
   	 * {
-  	 * 	url: 'It is not optional, String or Url Object.'
+  	 * 	# It is not optional, String or Url Object.
+  	 * 	url: String | Object
   	 *
   	 * 	# Other than return `res` with `res.body`,return `body` directly.
   	 * 	body: true
@@ -1709,7 +1710,10 @@ _.extend(kit, fs, {
   	 * 	kit.log body # html or buffer
   	 *
   	 * kit.request {
-  	 * 	url: 'https://test.com/a.mp3'
+  	 * 	url: {
+  	 * 		protocol: 'https', hostname: 'test.com'
+  	 * 		port: 8123, path: '/a.mp3?s=1'
+  	 * 	}
   	 * 	body: false
   	 * 	resProgress: (complete, total) ->
   	 * 		kit.log "Progress: #{complete} / #{total}"
@@ -1733,27 +1737,28 @@ _.extend(kit, fs, {
   	 * ```
    */
   request: function(opts) {
-    var base, base1, base2, promise, req, reqBuf, request, url;
+    var base, base1, promise, req, reqBuf, request, url;
     kit.require('url');
     if (_.isString(opts)) {
       opts = {
         url: opts
       };
     }
-    if (_.isObject(opts.url)) {
-      if ((base = opts.url).protocol == null) {
-        base.protocol = 'http:';
-      }
-    } else {
-      if (opts.url.indexOf('http') !== 0) {
-        opts.url = 'http://' + opts.url;
-      }
-      url = kit.url.parse(opts.url);
+    url = opts.url;
+    if (_.isObject(url)) {
       if (url.protocol == null) {
         url.protocol = 'http:';
       }
+    } else {
+      if (url.indexOf('http') !== 0) {
+        url = 'http://' + url;
+      }
+      url = kit.url.parse(url);
+      if (url.protocol == null) {
+        url.protocol = 'http:';
+      }
+      delete url.host;
     }
-    delete url.host;
     request = null;
     switch (url.protocol) {
       case 'http:':
@@ -1783,8 +1788,8 @@ _.extend(kit, fs, {
     } else if (_.isString(opts.reqData)) {
       reqBuf = new Buffer(opts.reqData);
     } else if (_.isObject(opts.reqData)) {
-      if ((base1 = opts.headers)['content-type'] == null) {
-        base1['content-type'] = 'application/x-www-form-urlencoded; charset=utf-8';
+      if ((base = opts.headers)['content-type'] == null) {
+        base['content-type'] = 'application/x-www-form-urlencoded; charset=utf-8';
       }
       reqBuf = new Buffer(_.map(opts.reqData, function(v, k) {
         return [encodeURIComponent(k), encodeURIComponent(v)].join('=');
@@ -1793,8 +1798,8 @@ _.extend(kit, fs, {
       reqBuf = void 0;
     }
     if (reqBuf !== void 0) {
-      if ((base2 = opts.headers)['content-length'] == null) {
-        base2['content-length'] = reqBuf.length;
+      if ((base1 = opts.headers)['content-length'] == null) {
+        base1['content-length'] = reqBuf.length;
       }
     }
     if (opts.setTE) {

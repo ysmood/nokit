@@ -1073,7 +1073,7 @@ Goto [changelog](doc/changelog.md)
 
         The required package.
 
-- ## **[request](lib/kit.coffee?source#L1571)**
+- ## **[request](lib/kit.coffee?source#L1575)**
 
     A handy extended combination of `http.request` and `https.request`.
 
@@ -1083,7 +1083,8 @@ Goto [changelog](doc/changelog.md)
         but with some extra options:
         ```coffee
         {
-        	url: 'It is not optional, String or Url Object.'
+        	# It is not optional, String or Url Object.
+        	url: String | Object
 
         	# Other than return `res` with `res.body`,return `body` directly.
         	body: true
@@ -1147,7 +1148,10 @@ Goto [changelog](doc/changelog.md)
         	kit.log body # html or buffer
 
         kit.request {
-        	url: 'https://test.com/a.mp3'
+        	url: {
+        		protocol: 'https', hostname: 'test.com'
+        		port: 8123, path: '/a.mp3?s=1'
+        	}
         	body: false
         	resProgress: (complete, total) ->
         		kit.log "Progress: #{complete} / #{total}"
@@ -1170,14 +1174,14 @@ Goto [changelog](doc/changelog.md)
         	kit.log body
         ```
 
-- ## **[semver](lib/kit.coffee?source#L1768)**
+- ## **[semver](lib/kit.coffee?source#L1773)**
 
     The semantic versioner for npm, known as [semver](https://github.com/npm/node-semver).
     You must `kit.require 'semver'` before using it.
 
     - **<u>type</u>**: { _Object_ }
 
-- ## **[sleep](lib/kit.coffee?source#L1781)**
+- ## **[sleep](lib/kit.coffee?source#L1786)**
 
     Sleep for awhile. Works same as the `setTimeout`
 
@@ -1195,7 +1199,7 @@ Goto [changelog](doc/changelog.md)
         	kit.log 'wake'
         ```
 
-- ## **[spawn](lib/kit.coffee?source#L1815)**
+- ## **[spawn](lib/kit.coffee?source#L1820)**
 
     A safer version of `child_process.spawn` to cross-platform run
     a process. In some conditions, it may be more convenient
@@ -1238,7 +1242,7 @@ Goto [changelog](doc/changelog.md)
         .then ({code}) -> kit.log code
         ```
 
-- ## **[task](lib/kit.coffee?source#L1922)**
+- ## **[task](lib/kit.coffee?source#L1927)**
 
     Sequencing and executing tasks and dependencies concurrently.
 
@@ -1318,12 +1322,12 @@ Goto [changelog](doc/changelog.md)
         	kit.log 'All Done!'
         ```
 
-- ## **[url](lib/kit.coffee?source#L1994)**
+- ## **[url](lib/kit.coffee?source#L1999)**
 
     The `url` module of [io.js](iojs.org).
     You must `kit.require 'url'` before using it.
 
-- ## **[warp](lib/kit.coffee?source#L2108)**
+- ## **[warp](lib/kit.coffee?source#L2113)**
 
     Works much like `gulp.src`, but with Promise instead.
     The warp control and error handling is more pleasant.
@@ -1447,7 +1451,7 @@ Goto [changelog](doc/changelog.md)
         .run 'dist'
         ```
 
-- ## **[which](lib/kit.coffee?source#L2179)**
+- ## **[which](lib/kit.coffee?source#L2184)**
 
     Same as the unix `which` command.
     You must `kit.require 'which'` before using it.
@@ -1458,14 +1462,14 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Promise_ }
 
-- ## **[whichSync](lib/kit.coffee?source#L2186)**
+- ## **[whichSync](lib/kit.coffee?source#L2191)**
 
     Sync version of `which`.
     You must `kit.require 'whichSync'` before using it.
 
     - **<u>type</u>**: { _Function_ }
 
-- ## **[xinspect](lib/kit.coffee?source#L2197)**
+- ## **[xinspect](lib/kit.coffee?source#L2202)**
 
     For debugging. Dump a colorful object.
 
@@ -1482,7 +1486,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _String_ }
 
-- ## **[xopen](lib/kit.coffee?source#L2220)**
+- ## **[xopen](lib/kit.coffee?source#L2225)**
 
     Open a thing that your system can recognize.
     Now only support Windows, OSX or system that installed 'xdg-open'.
