@@ -14,7 +14,7 @@ cls = kit.require('colors/safe');
 
 _ = kit._;
 
-cmder = kit.requireOptional('commander', __dirname);
+cmder = require('commander');
 
 error = function(msg) {
   var err;

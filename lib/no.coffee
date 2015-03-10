@@ -8,7 +8,7 @@ if not process.env.NODE_ENV?
 kit = require './kit'
 cls = kit.require 'colors/safe'
 { _ } = kit
-cmder = kit.requireOptional 'commander', __dirname
+cmder = require 'commander'
 
 error = (msg) ->
 	err = new Error msg
