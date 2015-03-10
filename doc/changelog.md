@@ -1,5 +1,9 @@
 # Changelog
 
+- v0.5.7
+
+  - fix: a request url bug
+
 - v0.5.6
 
   - Some minor changes.

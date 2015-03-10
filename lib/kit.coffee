@@ -1486,7 +1486,8 @@ _.extend kit, fs,
 	 * but with some extra options:
 	 * ```coffee
 	 * {
-	 * 	url: 'It is not optional, String or Url Object.'
+	 * 	# It is not optional, String or Url Object.
+	 * 	url: String | Object
 	 *
 	 * 	# Other than return `res` with `res.body`,return `body` directly.
 	 * 	body: true
@@ -1545,7 +1546,10 @@ _.extend kit, fs,
 	 * 	kit.log body # html or buffer
 	 *
 	 * kit.request {
-	 * 	url: 'https://test.com/a.mp3'
+	 * 	url: {
+	 * 		protocol: 'https', hostname: 'test.com'
+	 * 		port: 8123, path: '/a.mp3?s=1'
+	 * 	}
 	 * 	body: false
 	 * 	resProgress: (complete, total) ->
 	 * 		kit.log "Progress: #{complete} / #{total}"
@@ -1574,14 +1578,15 @@ _.extend kit, fs,
 		if _.isString opts
 			opts = { url: opts }
 
-		if _.isObject opts.url
-			opts.url.protocol ?= 'http:'
-		else
-			if opts.url.indexOf('http') != 0
-				opts.url = 'http://' + opts.url
-			url = kit.url.parse opts.url
+		url = opts.url
+		if _.isObject url
 			url.protocol ?= 'http:'
-		delete url.host
+		else
+			if url.indexOf('http') != 0
+				url = 'http://' + url
+			url = kit.url.parse url
+			url.protocol ?= 'http:'
+			delete url.host
 
 		request = null
 		switch url.protocol

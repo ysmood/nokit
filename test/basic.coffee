@@ -132,7 +132,12 @@ describe 'Kit:', ->
 		createRandomServer (req, res) ->
 			res.end info
 		.then (port) ->
-			kit.request '127.0.0.1:' + port
+			kit.request {
+				url:
+					protocol: 'http:'
+					hostname: '127.0.0.1'
+					port: port
+			}
 			.then (body) ->
 				shouldEqual body, info
 
