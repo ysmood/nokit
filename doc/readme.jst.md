@@ -23,7 +23,7 @@ As a lib dependency, install it locally: `npm i nokit`.
 
 Nokit has provided a cli tool like GNU Make. If you install it globally like this:
 
-`npm -g i nokit commander`
+`npm -g i nokit`
 
 , then have fun with your `nofile`, it can be js, coffee or livescript. For more information goto the `CLI` section.
 
@@ -104,16 +104,16 @@ kit.warp 'src/**/*.coffee'
 
 If you want nokit support coffee, you should install it like this:
 
-`npm i -g nokit commander coffee-cache coffee-script`
+`npm i -g nokit coffee-cache coffee-script`
 
 > It's recommended to use coffee-cache, since large build project may
 > consume a large portion of your nofile's startup time. Of course, it's
-> optional, you may run `npm i -g nokit commander coffee-script` without
+> optional, you may run `npm i -g nokit coffee-script` without
 > any problem.
 
 Same works with livescript:
 
-`npm i -g nokit commander LiveScript`
+`npm i -g nokit LiveScript`
 
 > Remarks: for the sake of boot performance, nokit will only load
 > `coffee-cache coffee-script/register`
