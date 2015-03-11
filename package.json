@@ -7,7 +7,7 @@
     "no": "bin/no.js"
   },
   "scripts": {
-    "no": "no",
+    "no": "bin/no.js",
     "test": "node bin/no test -t 10000",
     "prepublish": "node bin/no build -a"
   },
