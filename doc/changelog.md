@@ -1,6 +1,6 @@
 # Changelog
 
-- v0.5.8
+- v0.5.9
 
   - fix: a request url bug
   - optimize dependency
