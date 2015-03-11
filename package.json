@@ -35,7 +35,7 @@
   "homepage": "https://github.com/ysmood/nokit",
   "dependencies": {
     "colors": "1.0.3",
-    "commander": "2.6.0",
+    "commander": "2.7.1",
     "jhash": "0.1.6",
     "nofs": "0.5.7",
     "semver": "4.3.1"
@@ -50,9 +50,9 @@
     "iconv-lite": "0.4.7",
     "jshint": "2.6.3",
     "less": "2.4.0",
-    "lodash-cli": "3.4.0",
-    "mocha": "2.2.0",
+    "lodash-cli": "3.5.0",
+    "mocha": "2.2.1",
     "stylus": "0.50.0",
-    "uglify-js": "2.4.16"
+    "uglify-js": "2.4.17"
   }
 }
