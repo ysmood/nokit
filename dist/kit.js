@@ -633,7 +633,7 @@ _.extend(kit, fs, {
   	 * @return {String}
    */
   formatComment: function(comments, opts) {
-    var all, cmt, cmtStr, j, l, len, len1, ref, tag;
+    var all, cmt, cmtStr, j, l, len, len1, paramList, ref, tag;
     if (opts == null) {
       opts = {};
     }
@@ -660,6 +660,16 @@ _.extend(kit, fs, {
         tagName: 'private'
       })) {
         continue;
+      }
+      paramList = _(cmt.tags).filter(function(tag) {
+        return tag.tagName === 'param';
+      }).map('name').value();
+      if (paramList.length > 0) {
+        cmt.name += "(" + (paramList.join(', ')) + ")";
+      } else if (_.find(cmt.tags, {
+        tagName: 'return'
+      })) {
+        cmt.name += "()";
       }
       cmtStr = opts.name(cmt);
       if (cmt.description) {
@@ -1724,12 +1734,19 @@ _.extend(kit, fs, {
   	 *
   	 * # Send form-data.
   	 * form = new (require 'form-data')
-  	 * form.append 'a.jpg', new Buffer(0)
-  	 * form.append 'b.txt', 'hello world!'
+  	 * form.append 'image', new Buffer(0), {
+  	 * 	filename: 'a.jpg', contentType: 'image/jpg'
+  	 * }
+  	 * form.append 'key', 'value'
   	 * kit.request {
   	 * 	url: 'a.com'
+  	 * 	method: 'POST'
   	 * 	headers: form.getHeaders()
+  	 *
+  	 * 	# Use chunked encoding, so that we don't have to calculate
+  	 * 	# the 'Content-Length'.
   	 * 	setTE: true
+  	 *
   	 * 	reqPipe: form
   	 * }
   	 * .then (body) ->

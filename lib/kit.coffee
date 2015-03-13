@@ -584,6 +584,17 @@ _.extend kit, fs,
 			if _.any(cmt.tags, { tagName: 'private' })
 				continue
 
+			paramList = _(cmt.tags)
+				.filter (tag) ->
+					tag.tagName == 'param'
+				.map 'name'
+				.value()
+
+			if paramList.length > 0
+				cmt.name += "(#{paramList.join ', '})"
+			else if _.find(cmt.tags, { tagName: 'return' })
+				cmt.name += "()"
+
 			cmtStr = opts.name cmt
 
 			if cmt.description
@@ -1560,12 +1571,19 @@ _.extend kit, fs,
 	 *
 	 * # Send form-data.
 	 * form = new (require 'form-data')
-	 * form.append 'a.jpg', new Buffer(0)
-	 * form.append 'b.txt', 'hello world!'
+	 * form.append 'image', new Buffer(0), {
+	 * 	filename: 'a.jpg', contentType: 'image/jpg'
+	 * }
+	 * form.append 'key', 'value'
 	 * kit.request {
 	 * 	url: 'a.com'
+	 * 	method: 'POST'
 	 * 	headers: form.getHeaders()
+	 *
+	 * 	# Use chunked encoding, so that we don't have to calculate
+	 * 	# the 'Content-Length'.
 	 * 	setTE: true
+	 *
 	 * 	reqPipe: form
 	 * }
 	 * .then (body) ->
