@@ -629,6 +629,8 @@ _.extend kit, fs,
 	 * @param {Object} opts Defaults:
 	 * ```coffee
 	 * {
+	 * 	result: (wrappedList) ->
+	 * 		wrappedList.min('distance').words
 	 * 	threshold: (cOffset, keyLen, cIndex) ->
 	 * 		Infinity
 	 * 	notFound: (cOffset, keyLen, cIndex) ->
@@ -647,10 +649,22 @@ _.extend kit, fs,
 	 * ```coffee
 	 * kit.fuzzySearch 'hw', ['test', 'hello world', 'hey world']
 	 * # output => 'hey world'
+	 *
+	 * # To get a sortable weighted list.
+	 * kit.fuzzySearch 'hw', ['test', 'hello world', 'hey world'], {
+	 * 	result: (wrappedList) -> wrappedList.value()
+	 * }
+	 * # output => [
+	 * #  { distance: Infinity }
+	 * #  { words: 'hello world', distance: 1110.069 }
+	 * #  { words: 'hey world', distance: 159.849 }
+	 * # ]
 	 * ```
 	###
 	fuzzySearch: (key, list, opts = {}) ->
 		_.defaults opts,
+			result: (list) ->
+				list.min('distance').words
 			threshold: (cOffset, keyLen, cIndex) ->
 				Infinity
 			notFound: (cOffset, keyLen, cIndex) ->
@@ -662,7 +676,7 @@ _.extend kit, fs,
 			tail: (cOffset, keyLen, cIndex, tailLen) ->
 				tailLen
 
-		_ list
+		wrappedList = _ list
 		.map (words) ->
 			distance = 0
 			keyLen = key.length
@@ -685,8 +699,8 @@ _.extend kit, fs,
 				return { distance: Infinity }
 
 			{ words, distance }
-		.min 'distance'
-		.words
+
+		opts.result wrappedList
 
 	###*
 	 * Generate a list of module paths from a name and a directory.

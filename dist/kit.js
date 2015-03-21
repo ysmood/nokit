@@ -706,6 +706,8 @@ _.extend(kit, fs, {
   	 * @param {Object} opts Defaults:
   	 * ```coffee
   	 * {
+  	 * 	result: (wrappedList) ->
+  	 * 		wrappedList.min('distance').words
   	 * 	threshold: (cOffset, keyLen, cIndex) ->
   	 * 		Infinity
   	 * 	notFound: (cOffset, keyLen, cIndex) ->
@@ -724,13 +726,27 @@ _.extend(kit, fs, {
   	 * ```coffee
   	 * kit.fuzzySearch 'hw', ['test', 'hello world', 'hey world']
   	 * # output => 'hey world'
+  	 *
+  	 * # To get a sortable weighted list.
+  	 * kit.fuzzySearch 'hw', ['test', 'hello world', 'hey world'], {
+  	 * 	result: (wrappedList) -> wrappedList.value()
+  	 * }
+  	 * # output => [
+  	 * #  { distance: Infinity }
+  	 * #  { words: 'hello world', distance: 1110.069 }
+  	 * #  { words: 'hey world', distance: 159.849 }
+  	 * # ]
   	 * ```
    */
   fuzzySearch: function(key, list, opts) {
+    var wrappedList;
     if (opts == null) {
       opts = {};
     }
     _.defaults(opts, {
+      result: function(list) {
+        return list.min('distance').words;
+      },
       threshold: function(cOffset, keyLen, cIndex) {
         return Infinity;
       },
@@ -747,7 +763,7 @@ _.extend(kit, fs, {
         return tailLen;
       }
     });
-    return _(list).map(function(words) {
+    wrappedList = _(list).map(function(words) {
       var c, cIndex, cOffset, distance, j, keyLen, len;
       distance = 0;
       keyLen = key.length;
@@ -772,7 +788,8 @@ _.extend(kit, fs, {
         words: words,
         distance: distance
       };
-    }).min('distance').words;
+    });
+    return opts.result(wrappedList);
   },
 
   /**

@@ -38,7 +38,7 @@ or write your own.
 kit = require 'nokit'
 drives = kit.require 'drives'
 
-kit.warp 'src/**/*.@(coffee|ls)'
+kit.warp 'src/**/*.@(jade|less|coffee|ls)'
     # # To disable cache.
     # .load drives.reader isCache: false
     .load drives.auto 'lint'
@@ -179,6 +179,22 @@ Goto [changelog](doc/changelog.md)
 # Drives
 
 <%= doc['lib/drives.coffee'] %>
+
+# Contribution
+
+## Unit Test
+
+`npm test`
+or `npm run no -- test`
+
+## Others
+
+Run `npm run no -- -h` for all command you can use.
+Such as run `npm run no -- build` to build this project.
+
+## Docs
+
+Edit the templete of the readme at `doc/readme.jst.md`.
 
 # Lisence
 
