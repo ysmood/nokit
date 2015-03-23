@@ -386,7 +386,7 @@ _.extend kit, fs,
 
 	###*
 	 * A better `child_process.exec`. Supports multi-line shell script.
-	 * For supporting old node version, it will create 3 temp files,
+	 * For supporting old version of node, it will create 3 temp files,
 	 * the temp files will be removed after the execution.
 	 * @param  {String} cmd   Shell commands.
 	 * @param  {String} shell Shell name. Such as `bash`, `zsh`. Optinal.
