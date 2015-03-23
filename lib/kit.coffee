@@ -410,9 +410,13 @@ _.extend kit, fs,
 	 * 	kit.log stdout # output => "hello world"
 	 *
 	 * # Bash doesn't support "**" recusive match pattern.
-	 * kit.exec """
+	 * p = kit.exec """
 	 * 	echo **\/*.css
 	 * """, 'zsh'
+	 *
+	 * # Get the child process object.
+	 * p.process.then (proc) ->
+	 * 	kit.log proc.pid
 	 * ```
 	###
 	exec: (cmd, shell) ->
@@ -437,7 +441,8 @@ _.extend kit, fs,
 			.then ->
 				Promise.all paths.map (p) -> kit.remove p
 
-		promise = kit.outputFile stdinPath, cmd + '\n'
+		proc = null
+		processPromise = kit.outputFile stdinPath, cmd + '\n'
 		.then ->
 			Promise.all [
 				kit.fs.open stdinPath, 'r'
@@ -446,8 +451,11 @@ _.extend kit, fs,
 			]
 		.then (stdio) ->
 			fileHandlers = fileHandlers.concat stdio
-			kit.spawn shell, [], { stdio }
-		.then (msg) ->
+			p = kit.spawn shell, [], { stdio }
+			{ process: proc } = p
+			p
+
+		promise = processPromise.then (msg) ->
 			kit.readFile stdoutPath, 'utf8'
 			.then (stdout) ->
 				_.extend msg, { stdout }
@@ -456,6 +464,8 @@ _.extend kit, fs,
 			.then (stderr) ->
 				_.extend msg, { stderr }
 				Promise.reject msg
+
+		promise.process = processPromise.then -> proc
 
 		promise.then(clean).catch(clean)
 

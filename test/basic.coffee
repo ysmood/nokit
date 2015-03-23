@@ -221,9 +221,13 @@ describe 'Kit:', ->
 		, 500
 
 	it 'exec', ->
-		kit.exec 'echo exec_ok'
-		.then ({ stdout }) ->
-			shouldEqual stdout.indexOf('exec_ok\n') > -1, true
+		p = kit.exec 'echo exec_ok'
+		p.then ({ stdout }) ->
+			p.process.then (proc) ->
+				Promise.all [
+					shouldEqual proc.pid > 0, true
+					shouldEqual stdout.indexOf('exec_ok\n') > -1, true
+				]
 
 	it 'parseDependency', ->
 		kit.parseDependency 'test/fixtures/depMain.coffee', {

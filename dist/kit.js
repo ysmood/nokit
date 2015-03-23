@@ -442,7 +442,7 @@ _.extend(kit, fs, {
 
   /**
   	 * A better `child_process.exec`. Supports multi-line shell script.
-  	 * For supporting old node version, it will create 3 temp files,
+  	 * For supporting old version of node, it will create 3 temp files,
   	 * the temp files will be removed after the execution.
   	 * @param  {String} cmd   Shell commands.
   	 * @param  {String} shell Shell name. Such as `bash`, `zsh`. Optinal.
@@ -466,13 +466,17 @@ _.extend(kit, fs, {
   	 * 	kit.log stdout # output => "hello world"
   	 *
   	 * # Bash doesn't support "**" recusive match pattern.
-  	 * kit.exec """
+  	 * p = kit.exec """
   	 * 	echo **\/*.css
   	 * """, 'zsh'
+  	 *
+  	 * # Get the child process object.
+  	 * p.process.then (proc) ->
+  	 * 	kit.log proc.pid
   	 * ```
    */
   exec: function(cmd, shell) {
-    var clean, fileHandlers, os, paths, promise, randName, stderrPath, stdinPath, stdoutPath;
+    var clean, fileHandlers, os, paths, proc, processPromise, promise, randName, stderrPath, stdinPath, stdoutPath;
     os = kit.require('os', __dirname);
     if (shell == null) {
       shell = process.env.SHELL || process.env.ComSpec || process.env.COMSPEC;
@@ -492,14 +496,19 @@ _.extend(kit, fs, {
         }));
       });
     };
-    promise = kit.outputFile(stdinPath, cmd + '\n').then(function() {
+    proc = null;
+    processPromise = kit.outputFile(stdinPath, cmd + '\n').then(function() {
       return Promise.all([kit.fs.open(stdinPath, 'r'), kit.fs.open(stdoutPath, 'w'), kit.fs.open(stderrPath, 'w')]);
     }).then(function(stdio) {
+      var p;
       fileHandlers = fileHandlers.concat(stdio);
-      return kit.spawn(shell, [], {
+      p = kit.spawn(shell, [], {
         stdio: stdio
       });
-    }).then(function(msg) {
+      proc = p.process;
+      return p;
+    });
+    promise = processPromise.then(function(msg) {
       return kit.readFile(stdoutPath, 'utf8').then(function(stdout) {
         return _.extend(msg, {
           stdout: stdout
@@ -512,6 +521,9 @@ _.extend(kit, fs, {
         });
         return Promise.reject(msg);
       });
+    });
+    promise.process = processPromise.then(function() {
+      return proc;
     });
     promise.then(clean)["catch"](clean);
     return promise;
