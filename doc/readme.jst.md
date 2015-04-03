@@ -1,6 +1,6 @@
 # Overview
 
-A light weight set of handy tools for real world functional programming.
+A light weight set of handy tools for real world program.
 
 Reduce the gap between different systems. Such as watch directory changes on a network file system, operate `spawn` on Windows and Linux, handle async IO api with promise, etc.
 
