@@ -6,27 +6,8 @@ kit = require './lib/kit'
 
 module.exports = (task, option) ->
 
-	task 'default', ['build', 'test'], true
-
-	option '-d, --debug', 'enable node debug mode'
-	option '-p, --port [8283]', 'node debug mode', 8283
-	task 'lab l', 'run and monitor "test/lab.coffee"', (opts) ->
-		args = ['test/lab.coffee']
-
-		if opts.debug
-			args.splice 0, 0, '--nodejs', '--debug-brk=' + opts.port
-
-		kit.monitorApp { bin: 'coffee', args }
-
-	task 'clean', 'clean dist & cache', (opts) ->
-		if opts.all
-			kit.async [
-				kit.remove 'dist'
-				kit.remove '.nokit'
-			]
-
 	option '-a, --all', 'rebuild with dependencies, such as rebuild lodash.'
-	task 'build b', ['clean'], 'build project', (opts) ->
+	task 'default build b', ['clean'], 'build project', (opts) ->
 		kit.require 'drives'
 
 		buildLodash = ->
@@ -63,6 +44,23 @@ module.exports = (task, option) ->
 		start().catch (err) ->
 			kit.err err.stack
 			process.exit 1
+
+	option '-d, --debug', 'enable node debug mode'
+	option '-p, --port [8283]', 'node debug mode', 8283
+	task 'lab l', 'run and monitor "test/lab.coffee"', (opts) ->
+		args = ['test/lab.coffee']
+
+		if opts.debug
+			args.splice 0, 0, '--nodejs', '--debug-brk=' + opts.port
+
+		kit.monitorApp { bin: 'coffee', args }
+
+	task 'clean', 'clean dist & cache', (opts) ->
+		if opts.all
+			kit.async [
+				kit.remove 'dist'
+				kit.remove '.nokit'
+			]
 
 	option '-g, --grep [.]', 'test pattern', /./
 	option '-t, --timeout [3000]', 'test timeout', 3000
