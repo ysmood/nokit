@@ -1689,7 +1689,7 @@ _.extend(kit, fs, {
   	 * but with some extra options:
   	 * ```coffee
   	 * {
-  	 * 	# It is not optional, String or Url Object.
+  	 * 	# String or Url Object.
   	 * 	url: String | Object
   	 *
   	 * 	# Other than return `res` with `res.body`,return `body` directly.
@@ -1705,6 +1705,8 @@ _.extend(kit, fs, {
   	 *
   	 * 	# The key of headers should be lowercased.
   	 * 	headers: {}
+  	 *
+  	 * 	protocol: 'http:' or 'https:'
   	 *
   	 * 	agent: null
   	 *
@@ -1790,7 +1792,7 @@ _.extend(kit, fs, {
         url: opts
       };
     }
-    url = opts.url;
+    url = opts.url || {};
     if (_.isObject(url)) {
       if (url.protocol == null) {
         url.protocol = 'http:';
@@ -1805,8 +1807,9 @@ _.extend(kit, fs, {
       }
       delete url.host;
     }
+    _.defaults(opts, url);
     request = null;
-    switch (url.protocol) {
+    switch (opts.protocol) {
       case 'http:':
         request = kit.require('http', __dirname).request;
         break;
@@ -1814,9 +1817,8 @@ _.extend(kit, fs, {
         request = kit.require('https', __dirname).request;
         break;
       default:
-        Promise.reject(new Error('Protocol not supported: ' + url.protocol));
+        Promise.reject(new Error('Protocol not supported: ' + opts.protocol));
     }
-    _.defaults(opts, url);
     _.defaults(opts, {
       body: true,
       resEncoding: 'auto',
