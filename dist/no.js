@@ -35,7 +35,7 @@ error = function(msg) {
  */
 
 task = function() {
-  var alias, aliasSym, args, depsInfo, helpInfo, sep;
+  var alias, args, depsInfo, helpInfo, sep;
   args = kit.defaultArgs(arguments, {
     name: {
       String: 'default'
@@ -57,13 +57,11 @@ task = function() {
   sep = args.description ? ' ' : '';
   helpInfo = args.description + sep + depsInfo;
   alias = args.name.split(' ');
-  aliasSym = '';
   return alias.forEach(function(name) {
     cmder.command(name).description(helpInfo);
-    kit.task(name + aliasSym, args, function() {
+    kit.task(name, args, function() {
       return args.fn(cmder);
     });
-    aliasSym = '@'.magenta;
     return helpInfo = cls.cyan('-> ') + alias[0];
   });
 };
