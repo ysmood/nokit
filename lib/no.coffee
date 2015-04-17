@@ -50,7 +50,7 @@ task = ->
 		.description helpInfo
 		kit.task name + aliasSym, args, -> args.fn cmder
 
-		aliasSym = '@'.magenta
+		aliasSym = cls.magenta '@'
 		helpInfo = cls.cyan('-> ') + alias[0]
 
 ###*
