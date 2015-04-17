@@ -44,13 +44,11 @@ task = ->
 	helpInfo = args.description + sep + depsInfo
 
 	alias = args.name.split ' '
-	aliasSym = ''
 	alias.forEach (name) ->
 		cmder.command name
 		.description helpInfo
-		kit.task name + aliasSym, args, -> args.fn cmder
+		kit.task name, args, -> args.fn cmder
 
-		aliasSym = cls.magenta '@'
 		helpInfo = cls.cyan('-> ') + alias[0]
 
 ###*
