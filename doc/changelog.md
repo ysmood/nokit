@@ -1,10 +1,11 @@
 # Changelog
 
-- v0.5.9
+- v0.6.0
 
   - fix: a request url bug
   - optimize dependency
   - add: `kit.exec` now will expose the child process.
+  - fix: alias bug
 
 - v0.5.6
 
