@@ -1389,6 +1389,12 @@ _.extend kit, fs,
 				get()
 
 	###*
+	 * The `proxy` module.
+	 * You must `kit.require 'proxy'` before using it.
+	###
+	proxy: null
+
+	###*
 	 * Much faster than the native require of node, but you should
 	 * follow some rules to use it safely.
 	 * Use it to load nokit's internal module.
