@@ -62,7 +62,7 @@ module.exports = (task, option) ->
 				kit.remove '.nokit'
 			]
 
-	option '-g, --grep [.]', 'test pattern', /./
+	option '-g, --grep [.]', 'test pattern', '.'
 	option '-t, --timeout [3000]', 'test timeout', 3000
 	task 'test t', 'unit tests', (opts) ->
 		clean = ->
