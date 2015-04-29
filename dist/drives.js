@@ -408,7 +408,6 @@ module.exports = {
       return this.drives.length = 0;
     }, {
       isReader: true,
-      isWriter: true,
       onEnd: function() {
         return new Promise(function(resolve, reject) {
           return mocha.run(function(code) {

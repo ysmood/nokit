@@ -2342,13 +2342,14 @@ _.extend(kit, fs, {
   	 * }
   	 * ```
   	 *
+  	 * Each drive can have a `onEnd: (fileInfo) -> Any | Promise` function,
+  	 * which will be called after a file's whole warp is ended.
+  	 *
   	 * The drive can have a `isReader` property, which will make the drive
   	 * override the default file reader.
   	 *
   	 * The drive can have a `isWriter` property, which will make the drive
   	 * override the default file writer.
-  	 * The writer can have a `onEnd` function, which will be called after the
-  	 * whole warp ended.
   	 *
   	 * If a drive overrides another, it can call `fileInfo.super()` to use it again.
   	 * @example
@@ -2490,12 +2491,14 @@ _.extend(kit, fs, {
           }
         });
         return kit.glob(from, globOpts).then(function(list) {
-          if (!writer.onEnd) {
-            return;
-          }
-          return runDrive(writer.onEnd)(initInfo({
-            to: to,
-            list: list
+          return Promise.all(driveList.map(function(drive) {
+            if (!drive.onEnd) {
+              return;
+            }
+            return runDrive(drive.onEnd)(initInfo({
+              to: to,
+              list: list
+            }));
           }));
         });
       }

@@ -1,5 +1,10 @@
 # Changelog
 
+- v0.6.1
+
+  - add: now warp `onEnd` event works on all drives.
+  - upd deps.
+
 - v0.6.0
 
   - fix: a request url bug
