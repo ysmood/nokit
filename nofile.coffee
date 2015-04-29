@@ -29,7 +29,7 @@ module.exports = (task, option) ->
 			.run 'dist'
 
 		buildDoc = ->
-			kit.warp 'lib/{drives,kit}.coffee'
+			kit.warp 'lib/{drives,proxy,kit}.coffee'
 			.load kit.drives.comment2md
 				h: 2, tpl: 'doc/readme.jst.md'
 			.run()

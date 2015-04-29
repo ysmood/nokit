@@ -180,6 +180,10 @@ Goto [changelog](doc/changelog.md)
 
 <%= doc['lib/drives.coffee'] %>
 
+# Proxy
+
+<%= doc['lib/proxy.coffee'] %>
+
 # Contribution
 
 ## Unit Test

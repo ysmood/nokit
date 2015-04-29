@@ -1391,6 +1391,7 @@ _.extend kit, fs,
 	###*
 	 * The `proxy` module.
 	 * You must `kit.require 'proxy'` before using it.
+	 * For more information goto the `Proxy` section.
 	###
 	proxy: null
 

@@ -1,9 +1,10 @@
 # Changelog
 
-- v0.6.1
+- v0.6.2
 
-  - add: now warp `onEnd` event works on all drives.
-  - upd deps.
+  - add: now warp `onEnd` event works on all drives
+  - upd deps
+  - add: proxy helpers
 
 - v0.6.0
 

@@ -1025,7 +1025,13 @@ Goto [changelog](doc/changelog.md)
         kit.log txt() # => 20
         ```
 
-- ## **[require(moduleName, dir, loaded)](lib/kit.coffee?source#L1417)**
+- ## **[proxy](lib/kit.coffee?source#L1396)**
+
+    The `proxy` module.
+    You must `kit.require 'proxy'` before using it.
+    For more information goto the `Proxy` section.
+
+- ## **[require(moduleName, dir, loaded)](lib/kit.coffee?source#L1424)**
 
     Much faster than the native require of node, but you should
     follow some rules to use it safely.
@@ -1066,7 +1072,7 @@ Goto [changelog](doc/changelog.md)
         jhash = kit.require 'jhash', __dirname
         ```
 
-- ## **[requireOptional(name, dir, semver)](lib/kit.coffee?source#L1489)**
+- ## **[requireOptional(name, dir, semver)](lib/kit.coffee?source#L1496)**
 
     Require an optional package. If not found, it will
     warn the user to npm install it, and exit the process.
@@ -1089,7 +1095,7 @@ Goto [changelog](doc/changelog.md)
 
         The required package.
 
-- ## **[request(opts)](lib/kit.coffee?source#L1619)**
+- ## **[request(opts)](lib/kit.coffee?source#L1626)**
 
     A handy extended combination of `http.request` and `https.request`.
 
@@ -1199,14 +1205,14 @@ Goto [changelog](doc/changelog.md)
         	kit.log body
         ```
 
-- ## **[semver](lib/kit.coffee?source#L1817)**
+- ## **[semver](lib/kit.coffee?source#L1824)**
 
     The semantic versioner for npm, known as [semver](https://github.com/npm/node-semver).
     You must `kit.require 'semver'` before using it.
 
     - **<u>type</u>**: { _Object_ }
 
-- ## **[sleep(time)](lib/kit.coffee?source#L1830)**
+- ## **[sleep(time)](lib/kit.coffee?source#L1837)**
 
     Sleep for awhile. Works same as the `setTimeout`
 
@@ -1224,7 +1230,7 @@ Goto [changelog](doc/changelog.md)
         	kit.log 'wake'
         ```
 
-- ## **[spawn(cmd, args, opts)](lib/kit.coffee?source#L1864)**
+- ## **[spawn(cmd, args, opts)](lib/kit.coffee?source#L1871)**
 
     A safer version of `child_process.spawn` to cross-platform run
     a process. In some conditions, it may be more convenient
@@ -1267,7 +1273,7 @@ Goto [changelog](doc/changelog.md)
         .then ({code}) -> kit.log code
         ```
 
-- ## **[task(name, opts, fn)](lib/kit.coffee?source#L1971)**
+- ## **[task(name, opts, fn)](lib/kit.coffee?source#L1978)**
 
     Sequencing and executing tasks and dependencies concurrently.
 
@@ -1347,12 +1353,12 @@ Goto [changelog](doc/changelog.md)
         	kit.log 'All Done!'
         ```
 
-- ## **[url](lib/kit.coffee?source#L2043)**
+- ## **[url](lib/kit.coffee?source#L2050)**
 
     The `url` module of [io.js](iojs.org).
     You must `kit.require 'url'` before using it.
 
-- ## **[warp(from, opts)](lib/kit.coffee?source#L2158)**
+- ## **[warp(from, opts)](lib/kit.coffee?source#L2165)**
 
     Works much like `gulp.src`, but with Promise instead.
     The warp control and error handling is more pleasant.
@@ -1477,7 +1483,7 @@ Goto [changelog](doc/changelog.md)
         .run 'dist'
         ```
 
-- ## **[which(name)](lib/kit.coffee?source#L2231)**
+- ## **[which(name)](lib/kit.coffee?source#L2238)**
 
     Same as the unix `which` command.
     You must `kit.require 'which'` before using it.
@@ -1488,14 +1494,14 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Promise_ }
 
-- ## **[whichSync](lib/kit.coffee?source#L2238)**
+- ## **[whichSync](lib/kit.coffee?source#L2245)**
 
     Sync version of `which`.
     You must `kit.require 'whichSync'` before using it.
 
     - **<u>type</u>**: { _Function_ }
 
-- ## **[xinspect(obj, opts)](lib/kit.coffee?source#L2249)**
+- ## **[xinspect(obj, opts)](lib/kit.coffee?source#L2256)**
 
     For debugging. Dump a colorful object.
 
@@ -1512,7 +1518,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _String_ }
 
-- ## **[xopen(cmds, opts)](lib/kit.coffee?source#L2272)**
+- ## **[xopen(cmds, opts)](lib/kit.coffee?source#L2279)**
 
     Open a thing that your system can recognize.
     Now only support Windows, OSX or system that installed 'xdg-open'.
@@ -1782,6 +1788,124 @@ Goto [changelog](doc/changelog.md)
     the 'base' will be override by the 'ext' and 'name'.
 
     - **<u>return</u>**: { _Function_ }
+
+
+
+# Proxy
+
+- ## **[Overview](lib/proxy.coffee?source#L5)**
+
+    For test, page injection development.
+    A cross-platform programmable Fiddler alternative.
+
+- ## **[url(req, res, url, opts, err)](lib/proxy.coffee?source#L67)**
+
+    Use it to proxy one url to another.
+
+    - **<u>param</u>**: `req` { _http.IncomingMessage_ }
+
+        Also supports Express.js.
+
+    - **<u>param</u>**: `res` { _http.ServerResponse_ }
+
+        Also supports Express.js.
+
+    - **<u>param</u>**: `url` { _String | Object_ }
+
+        The target url forced to. Optional.
+        Such as force 'http://test.com/a' to 'http://test.com/b',
+        force 'http://test.com/a' to 'http://other.com/a',
+        force 'http://test.com' to 'other.com'.
+        It can also be an url object. Such as
+        `{ protocol: 'http:', host: 'test.com:8123', pathname: '/a/b', query: 's=1' }`.
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+        Other options. Default:
+        ```coffee
+        {
+        	# Limit the bandwidth byte per second.
+        	bps: null
+
+        	# if the bps is the global bps.
+        	globalBps: false
+
+        	agent: customHttpAgent
+
+        	# You can hack the headers before the proxy send it.
+        	handleReqHeaders: (headers) -> headers
+        	handleResHeaders: (headers) -> headers
+        }
+        ```
+
+    - **<u>param</u>**: `err` { _Function_ }
+
+        Custom error handler.
+
+    - **<u>return</u>**: { _Promise_ }
+
+    - **<u>example</u>**:
+
+        ```coffee
+        kit = require 'nokit'
+        kit.require 'proxy'
+        kit.require 'url'
+        http = require 'http'
+
+        server = http.createServer (req, res) ->
+        	url = kit.url.parse req.url
+        	switch url.path
+        		when '/a'
+        			kit.proxy.url req, res, 'a.com', (err) ->
+        				kit.log err
+        		when '/b'
+        			kit.proxy.url req, res, '/c'
+        		when '/c'
+        			kit.proxy.url req, res, 'http://b.com/c.js'
+        		else
+        			# Transparent proxy.
+        			service.use kit.proxy.url
+
+        server.listen 8123
+        ```
+
+- ## **[connect(req, sock, head, host, port, err)](lib/proxy.coffee?source#L162)**
+
+    Http CONNECT method tunneling proxy helper.
+    Most times used with https proxing.
+
+    - **<u>param</u>**: `req` { _http.IncomingMessage_ }
+
+    - **<u>param</u>**: `sock` { _net.Socket_ }
+
+    - **<u>param</u>**: `head` { _Buffer_ }
+
+    - **<u>param</u>**: `host` { _String_ }
+
+        The host force to. It's optional.
+
+    - **<u>param</u>**: `port` { _Int_ }
+
+        The port force to. It's optional.
+
+    - **<u>param</u>**: `err` { _Function_ }
+
+        Custom error handler.
+
+    - **<u>example</u>**:
+
+        ```coffee
+        kit = require 'nokit'
+        kit.require 'proxy'
+        http = require 'http'
+
+        server = http.createServer()
+
+        # Directly connect to the original site.
+        server.on 'connect', kit.proxy.connect
+
+        server.listen 8123
+        ```
 
 
 
