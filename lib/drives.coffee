@@ -336,7 +336,7 @@ module.exports =
 		_.extend ->
 			mocha.addFile @path
 			@drives.length = 0
-		, isReader: true, isWriter: true, onEnd: ->
+		, isReader: true, onEnd: ->
 			new Promise (resolve, reject) ->
 				mocha.run (code) ->
 					if code == 0
