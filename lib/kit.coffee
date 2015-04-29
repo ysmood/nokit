@@ -2104,13 +2104,14 @@ _.extend kit, fs,
 	 * }
 	 * ```
 	 *
+	 * Each drive can have a `onEnd: (fileInfo) -> Any | Promise` function,
+	 * which will be called after a file's whole warp is ended.
+	 *
 	 * The drive can have a `isReader` property, which will make the drive
 	 * override the default file reader.
 	 *
 	 * The drive can have a `isWriter` property, which will make the drive
 	 * override the default file writer.
-	 * The writer can have a `onEnd` function, which will be called after the
-	 * whole warp ended.
 	 *
 	 * If a drive overrides another, it can call `fileInfo.super()` to use it again.
 	 * @example
@@ -2214,10 +2215,12 @@ _.extend kit, fs,
 						drive = info.drives.shift()
 						if drive then runDrive drive else kit.flow.end
 					) initInfo info
+
 				kit.glob(from, globOpts)
 				.then (list) ->
-					return if not writer.onEnd
-					runDrive(writer.onEnd) initInfo { to, list }
+					Promise.all driveList.map (drive) ->
+						return if not drive.onEnd
+						runDrive(drive.onEnd) initInfo { to, list }
 
 	###*
 	 * Same as the unix `which` command.
