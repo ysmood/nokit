@@ -2296,8 +2296,4 @@ _.extend kit, fs,
 
 			kit.spawn starter, cmds
 
-# Some debug options.
-if kit.isDevelopment()
-	Promise.longStackTraces()
-
 module.exports = kit

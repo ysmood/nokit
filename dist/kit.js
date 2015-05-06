@@ -2592,8 +2592,4 @@ _.extend(kit, fs, {
   }
 });
 
-if (kit.isDevelopment()) {
-  Promise.longStackTraces();
-}
-
 module.exports = kit;
