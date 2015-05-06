@@ -1164,7 +1164,7 @@ _.extend kit, fs,
 				# "var" and space
 				\s+(?:var\s+)?
 				# variable name
-				([\w\.-]+)
+				([$@\w\.-]+)
 			///g
 			splitReg: /^\s+\* @/m
 			tagNameReg: /^([\w\.]+)\s*/
