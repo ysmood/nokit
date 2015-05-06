@@ -963,8 +963,8 @@ Goto [changelog](doc/changelog.md)
 
 - ## **[Promise](lib/kit.coffee?source#L1331)**
 
-    The promise lib. Now, it uses Bluebird as ES5 polyfill.
-    In the future, the Bluebird will be replaced with native
+    The promise lib. Now, it uses Yaku as ES5 polyfill.
+    In the future, the Yaku will be replaced with native
     ES6 Promise. Please don't use any API other than the ES6 spec.
 
     - **<u>type</u>**: { _Object_ }
