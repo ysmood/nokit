@@ -1293,7 +1293,7 @@ _.extend(kit, fs, {
       opts = {};
     }
     _.defaults(opts, {
-      commentReg: /(?:\#\#\#|\/\*)\*([\s\S]+?)(?:\#\#\#|\*\/)\s+(?:var\s+)?([\w\.-]+)/g,
+      commentReg: /(?:\#\#\#|\/\*)\*([\s\S]+?)(?:\#\#\#|\*\/)\s+(?:var\s+)?([$@\w\.-]+)/g,
       splitReg: /^\s+\* @/m,
       tagNameReg: /^([\w\.]+)\s*/,
       typeReg: /^\{(.+?)\}\s*/,
@@ -2591,9 +2591,5 @@ _.extend(kit, fs, {
     });
   }
 });
-
-if (kit.isDevelopment()) {
-  Promise.longStackTraces();
-}
 
 module.exports = kit;
