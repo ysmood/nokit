@@ -1,8 +1,9 @@
 # Changelog
 
-- v0.6.5
+- v0.6.6
 
   - **BIG CHANGE** Now use `Yaku` instead of Bluebird.
+  - upd: semver to 4.3.4
 
 - v0.6.3
 
