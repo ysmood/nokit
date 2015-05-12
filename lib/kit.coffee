@@ -1,6 +1,6 @@
 'use strict'
 
-_ = require './lodash'
+_ = require './utils'
 fs = require 'nofs'
 { Promise } = fs
 
@@ -30,16 +30,6 @@ Overview = 'overview'
 
 
 _.extend kit, fs,
-
-	###*
-	 * The [lodash](https://lodash.com) lib.
-	 * @type {Object}
-	 * @example
-	 * ```coffee
-	 * kit._.map [1, 2, 3]
-	 * ```
-	###
-	_: _
 
 	requireCache: {}
 
@@ -95,7 +85,7 @@ _.extend kit, fs,
 		running = 0
 		isIterDone = false
 
-		if not _.isNumber limit
+		if not typeof limit == 'number'
 			progress = saveResutls
 			saveResutls = list
 			list = limit
@@ -103,7 +93,7 @@ _.extend kit, fs,
 
 		saveResutls ?= true
 
-		if _.isArray list
+		if Array.isArray list
 			iter = ->
 				[el] = list.splice 0, 1
 				if el == undefined
@@ -278,13 +268,13 @@ _.extend kit, fs,
 			kit.readJson key.info
 			.then (data) ->
 				info = data
-				Promise.all _(info.deps).keys().map((path) ->
+				Promise.all Object.keys(info.deps).map((path) ->
 					kit.stat(path).then (stats) ->
 						# cache mtime             file mtime
 						info.deps[path] >= stats.mtime.getTime()
-				).value()
+				)
 			.then (latestList) ->
-				info.deps = _.keys info.deps
+				info.deps = Object.keys info.deps
 				info.isNewer = _.all latestList
 			.catch (err) -> info.cacheError = err
 			.then -> info
@@ -530,7 +520,7 @@ _.extend kit, fs,
 				else
 					fn
 
-		if _.isArray fns[0]
+		if Array.isArray fns[0]
 			iter = genIter fns[0]
 		else if fns.length == 1 and _.isFunction fns[0]
 			iter = fns[0]
@@ -594,11 +584,10 @@ _.extend kit, fs,
 			if _.any(cmt.tags, { tagName: 'private' })
 				continue
 
-			paramList = _(cmt.tags)
+			paramList = cmt.tags
 				.filter (tag) ->
 					tag.tagName == 'param'
 				.map 'name'
-				.value()
 
 			if paramList.length > 0
 				cmt.name += "(#{paramList.join ', '})"
