@@ -102,7 +102,7 @@ kit.warp 'src/**/*.coffee'
 
 ## CLI
 
-If you want nokit support coffee, you should install it like this:
+By default nokit only supports js, if you want nokit to support coffee, you should install nokit like this:
 
 `npm i -g nokit coffee-cache coffee-script`
 
@@ -209,7 +209,7 @@ Goto [changelog](doc/changelog.md)
         kit._.map [1, 2, 3]
         ```
 
-- ## **[async(limit, list, saveResutls, progress)](lib/kit.coffee?source#L93)**
+- ## **[async(limit, list, saveResults, progress)](lib/kit.coffee?source#L93)**
 
     An throttled version of `Promise.all`, it runs all the tasks under
     a concurrent limitation.
@@ -227,7 +227,7 @@ Goto [changelog](doc/changelog.md)
         If the list is a function, it should be a iterator that returns
         a promise, when it returns `kit.async.end`, the iteration ends.
 
-    - **<u>param</u>**: `saveResutls` { _Boolean_ }
+    - **<u>param</u>**: `saveResults` { _Boolean_ }
 
         Whether to save each promise's result or
         not. Default is true.

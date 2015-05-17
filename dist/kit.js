@@ -59,7 +59,7 @@ _.extend(kit, fs, {
   	 * and each function will return a promise.
   	 * If the list is a function, it should be a iterator that returns
   	 * a promise, when it returns `kit.async.end`, the iteration ends.
-  	 * @param {Boolean} saveResutls Whether to save each promise's result or
+  	 * @param {Boolean} saveResults Whether to save each promise's result or
   	 * not. Default is true.
   	 * @param {Function} progress If a task ends, the resolve value will be
   	 * passed to this function.
@@ -95,19 +95,19 @@ _.extend(kit, fs, {
   	 * 	kit.log 'all done!'
   	 * ```
    */
-  async: function(limit, list, saveResutls, progress) {
+  async: function(limit, list, saveResults, progress) {
     var base, isIterDone, iter, resutls, running;
     resutls = [];
     running = 0;
     isIterDone = false;
     if (!_.isNumber(limit)) {
-      progress = saveResutls;
-      saveResutls = list;
+      progress = saveResults;
+      saveResults = list;
       list = limit;
       limit = Infinity;
     }
-    if (saveResutls == null) {
-      saveResutls = true;
+    if (saveResults == null) {
+      saveResults = true;
     }
     if (_.isArray(list)) {
       iter = function() {
@@ -154,7 +154,7 @@ _.extend(kit, fs, {
         running++;
         p.then(function(ret) {
           running--;
-          if (saveResutls) {
+          if (saveResults) {
             resutls.push(ret);
           }
           if (typeof progress === "function") {
@@ -168,7 +168,7 @@ _.extend(kit, fs, {
         return true;
       };
       allDone = function() {
-        if (saveResutls) {
+        if (saveResults) {
           return resolve(resutls);
         } else {
           return resolve();

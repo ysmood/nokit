@@ -54,7 +54,7 @@ _.extend kit, fs,
 	 * and each function will return a promise.
 	 * If the list is a function, it should be a iterator that returns
 	 * a promise, when it returns `kit.async.end`, the iteration ends.
-	 * @param {Boolean} saveResutls Whether to save each promise's result or
+	 * @param {Boolean} saveResults Whether to save each promise's result or
 	 * not. Default is true.
 	 * @param {Function} progress If a task ends, the resolve value will be
 	 * passed to this function.
@@ -90,18 +90,18 @@ _.extend kit, fs,
 	 * 	kit.log 'all done!'
 	 * ```
 	###
-	async: (limit, list, saveResutls, progress) ->
+	async: (limit, list, saveResults, progress) ->
 		resutls = []
 		running = 0
 		isIterDone = false
 
 		if not _.isNumber limit
-			progress = saveResutls
-			saveResutls = list
+			progress = saveResults
+			saveResults = list
 			list = limit
 			limit = Infinity
 
-		saveResutls ?= true
+		saveResults ?= true
 
 		if _.isArray list
 			iter = ->
@@ -140,7 +140,7 @@ _.extend kit, fs,
 				running++
 				p.then (ret) ->
 					running--
-					if saveResutls
+					if saveResults
 						resutls.push ret
 					progress? ret
 					addTask()
@@ -151,7 +151,7 @@ _.extend kit, fs,
 				return true
 
 			allDone = ->
-				if saveResutls
+				if saveResults
 					resolve resutls
 				else
 					resolve()

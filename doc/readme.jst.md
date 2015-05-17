@@ -102,7 +102,7 @@ kit.warp 'src/**/*.coffee'
 
 ## CLI
 
-If you want nokit support coffee, you should install it like this:
+By default nokit only supports js, if you want nokit to support coffee, you should install nokit like this:
 
 `npm i -g nokit coffee-cache coffee-script`
 
