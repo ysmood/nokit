@@ -108,7 +108,7 @@ loadNofile = function() {
         kit.log(cls.cyan('Change Working Direcoty: ') + cls.green(rdir));
       }
       process.chdir(dir);
-      require(path)(task, cmder.option.bind(cmder));
+      require(path)(task, cmder.option.bind(cmder), kit);
       return path;
     }
   }

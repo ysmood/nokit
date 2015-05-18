@@ -1,5 +1,9 @@
 # Changelog
 
+- v0.7.1
+
+  - add: nokit argument to the nofile entry
+
 - v0.7.0
 
   - **BIG CHANGE** Now use `Yaku` instead of Bluebird.

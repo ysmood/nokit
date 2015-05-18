@@ -128,9 +128,7 @@ or any of its parents directory. The syntax of `nofile` is almost the same as th
 Assume your file content is:
 
 ```coffee
-kit = require 'nokit'
-
-module.exports = (task, option) ->
+module.exports = (task, option, kit) ->
 
     option '-w, --hello [world]', 'Just a test option', ''
 
