@@ -2247,7 +2247,7 @@ _.extend(kit, fs, {
         p = (!opts.deps || opts.deps.length < 1 ? Promise.resolve(val) : (depTasks = opts.deps.map(runTask(warp)), opts.isSequential ? kit.flow(depTasks)(val) : Promise.all(depTasks.map(function(task) {
           return task(val);
         })))).then(fn);
-        p.then(opts.logEnd.bind(opts));
+        p.then(opts.logEnd.bind(opts))["catch"](function() {});
         return p;
       };
     };

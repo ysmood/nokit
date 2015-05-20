@@ -1,6 +1,6 @@
 # Changelog
 
-- v0.7.2
+- v0.7.3
 
   - revert: nokit argument to the nofile entry
   - opt: better error report for nofile
