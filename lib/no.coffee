@@ -82,7 +82,10 @@ loadNofile = ->
 				kit.log cls.cyan('Change Working Direcoty: ') + cls.green rdir
 
 			process.chdir dir
-			require(path) task, cmder.option.bind(cmder), kit
+
+			kit.Promise.enableLongStackTrace()
+
+			require(path) task, cmder.option.bind(cmder)
 			return path
 
 	error 'Cannot find nofile'
