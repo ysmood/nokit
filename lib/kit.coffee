@@ -2020,7 +2020,7 @@ _.extend kit, fs,
 				else
 					Promise.all depTasks.map (task) -> task val
 			).then fn
-			p.then opts.logEnd.bind opts
+			p.then(opts.logEnd.bind opts).catch(->)
 			p
 
 		kit.task.list[name].opts = opts
