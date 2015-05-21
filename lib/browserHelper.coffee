@@ -37,16 +37,16 @@ module.exports = (opts) ->
 
             reloadElem = (el, key) ->
                 if el[key].indexOf('?') == -1
-                    el[key] += '?nbAutoReload=0'
+                    el[key] += '?nokitAutoReload=0'
                 else
-                    if el[key].indexOf('nbAutoReload') > -1
+                    if el[key].indexOf('nokitAutoReload') > -1
                         el[key] = el[key].replace(
-                            /nbAutoReload=(\d+)/
+                            /nokitAutoReload=(\d+)/
                             (m, p) ->
-                                'nbAutoReload=' + (+p + 1)
+                                'nokitAutoReload=' + (+p + 1)
                         )
                     else
-                        el[key] += '&nbAutoReload=0'
+                        el[key] += '&nokitAutoReload=0'
 
                 # Fix the Chrome renderer bug.
                 body = document.body
