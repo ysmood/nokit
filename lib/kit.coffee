@@ -1917,6 +1917,13 @@ _.extend kit, fs,
 		promise
 
 	###*
+	 * The `sse` module.
+	 * You must `kit.require 'sse'` before using it.
+	 * For more information goto the `sse` section.
+	###
+	sse: null
+
+	###*
 	 * Sequencing and executing tasks and dependencies concurrently.
 	 * @param  {String}   name The task name.
 	 * @param  {Object}   opts Optional. Defaults:

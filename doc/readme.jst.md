@@ -183,6 +183,10 @@ Goto [changelog](doc/changelog.md)
 
 <%= doc['lib/proxy.coffee'] %>
 
+# SSE
+
+<%= doc['lib/sse.coffee'] %>
+
 # Contribution
 
 ## Unit Test
