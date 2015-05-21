@@ -31,9 +31,9 @@ module.exports = (opts) ->
                 isConnected = true
 
         es.addEventListener 'fileModified', (e) ->
-            msg = JSON.parse(e.data)
+            path = e.data
 
-            console.log(">> fileModified: " + msg.reqPath)
+            console.log(">> fileModified: " + path)
 
             reloadElem = (el, key) ->
                 if el[key].indexOf('?') == -1
@@ -61,26 +61,27 @@ module.exports = (opts) ->
                 elems = document.querySelectorAll(qs)
                 [].slice.apply(elems).forEach(handler)
 
-            if not msg.reqPath
+            if not path
                 location.reload()
                 return
 
-            switch msg.extBin
+            m = path.match /\.[^.]+$/
+            switch m and m[0]
                 when '.js'
                     each 'script', (el) ->
                         # Only reload the page if the page has included
                         # the href.
-                        if el.src.indexOf(msg.reqPath) > -1
+                        if el.src.indexOf(path) > -1
                             location.reload()
 
                 when '.css'
                     each 'link', (el) ->
-                        if el.href.indexOf(msg.reqPath) > -1
+                        if el.href.indexOf(path) > -1
                             reloadElem el, 'href'
 
                 when '.jpg', '.gif', '.png'
                     each 'img', (el) ->
-                        if el.src.indexOf(msg.reqPath) > -1
+                        if el.src.indexOf(path) > -1
                             reloadElem el, 'src'
 
                 else

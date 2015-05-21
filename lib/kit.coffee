@@ -1887,16 +1887,40 @@ _.extend kit, fs,
 	 * 	kit.log 'listen ' + 8123
 	 *
 	 * 	setInterval ->
-	 * 		handler.sse.emit('fileModified', 'ok')
+	 * 		handler.sse.emit 'fileModified', 'changed-file-path.js'
 	 * 	, 3000
+	 * ```
+	 * You can also use the `nokit.log` on the browser to log to the remote server.
+	 * ```coffee
+	 * nokit.log { any: 'thing' }
 	 * ```
 	###
 	serverHelper: (opts) ->
 		handler = (req, res, next) ->
-			if req.url == '/nokit-sse'
-				handler.sse req, res
-			else
-				next?()
+			switch req.url
+				when '/nokit-sse'
+					handler.sse req, res
+				when '/nokit-log'
+					cs = kit.require 'colors/safe'
+					data = ''
+
+					req.on 'data', (chunk) ->
+						data += chunk
+
+					req.on 'end', ->
+						try
+							kit.log cs.cyan('client') + cs.grey(' | ') +
+							if data
+								kit.xinspect JSON.parse(data)
+							else
+								data
+							res.end()
+						catch e
+							res.statusCode = 500
+							res.end(e.stack)
+
+				else
+					next?()
 
 		handler.sse = kit.require('sse')(opts)
 
