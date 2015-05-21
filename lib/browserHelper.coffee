@@ -31,7 +31,7 @@ module.exports = (opts) ->
                 isConnected = true
 
         es.addEventListener 'fileModified', (e) ->
-            path = e.data
+            path = JSON.parse e.data
 
             console.log(">> fileModified: " + path)
 
