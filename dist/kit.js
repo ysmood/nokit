@@ -187,6 +187,50 @@ _.extend(kit, fs, {
   },
 
   /**
+  	 * The browser helper.
+  	 * @static
+  	 * @param {Object} opts The options of the client, defaults:
+  	 * ```coffee
+  	 * {
+  	 * 	autoReload: kit.isDevelopment()
+  	 * 	host: '' # The host of the event source.
+  	 * }
+  	 * ```
+  	 * @param {Boolean} useJs By default use html. Default is false.
+  	 * @return {String} The code of client helper.
+  	 * @example
+  	 * When the client code is loaded on the browser, you can use
+  	 * the `nb.log` to log anything to server's terminal.
+  	 * The server will auto-format and log the information to the terminal.
+  	 * It's convinient for mobile development when remote debug is not possible.
+  	 * ```coffee
+  	 * # The nb is assigned to the "window" object.
+  	 * nb.log { a: 10 }
+  	 * nb.log 10
+  	 * ```
+   */
+  browserHelper: function(opts, useJs) {
+    var helper, js, optsStr;
+    if (opts == null) {
+      opts = {};
+    }
+    if (useJs == null) {
+      useJs = false;
+    }
+    helper = kit.browserHelper.cache || kit.require('./browserHelper', __dirname).toString();
+    optsStr = JSON.stringify(_.defaults(opts, {
+      autoReload: kit.isDevelopment(),
+      host: ''
+    }));
+    js = "window.nokit = (" + helper + ")(" + optsStr + ");\n";
+    if (useJs) {
+      return js;
+    } else {
+      return "\n\n<!-- Nokit Browser Helper -->\n<script type=\"text/javascript\">\n" + js + "\n</script>\n\n";
+    }
+  },
+
+  /**
   	 * The [colors](https://github.com/Marak/colors.js) lib
   	 * makes it easier to print colorful info in CLI.
   	 * You must `kit.require 'colors'` before using it.
@@ -483,7 +527,7 @@ _.extend(kit, fs, {
     }
     randName = Date.now() + Math.random();
     paths = ['.in', '.out', '.err'].map(function(type) {
-      return kit.path.join(os.tmpDir(), 'nobone-' + randName + type);
+      return kit.path.join(os.tmpDir(), 'nokit-' + randName + type);
     });
     stdinPath = paths[0], stdoutPath = paths[1], stderrPath = paths[2];
     fileHandlers = [];
@@ -872,7 +916,7 @@ _.extend(kit, fs, {
   },
 
   /**
-  	 * Nobone use it to check the running mode of the app.
+  	 * Nokit use it to check the running mode of the app.
   	 * Overwrite it if you want to control the check logic.
   	 * By default it returns the `rocess.env.NODE_ENV == 'development'`.
   	 * @return {Boolean}
@@ -882,7 +926,7 @@ _.extend(kit, fs, {
   },
 
   /**
-  	 * Nobone use it to check the running mode of the app.
+  	 * Nokit use it to check the running mode of the app.
   	 * Overwrite it if you want to control the check logic.
   	 * By default it returns the `rocess.env.NODE_ENV == 'production'`.
   	 * @return {Boolean}
@@ -2031,6 +2075,64 @@ _.extend(kit, fs, {
   semver: null,
 
   /**
+  	 * Create a http request handler middleware.
+  	 * @param  {Object} opts Same as the sse.
+  	 * @return {Function} `(req, res, next) ->`
+  	 * @example
+  	 * Visit 'http://127.0.0.1:80123', every 3 sec, the page will be reloaded.
+  	 * ```coffee
+  	 * http = require 'http'
+  	 * handler = kit.serverHelper()
+  	 *
+  	 * http.createServer (req, res) ->
+  	 * 	handler req, res, ->
+  	 * 		res.end kit.browserHelper()
+  	 *
+  	 * .listen 8123, ->
+  	 * 	kit.log 'listen ' + 8123
+  	 *
+  	 * 	setInterval ->
+  	 * 		handler.sse.emit 'fileModified', 'changed-file-path.js'
+  	 * 	, 3000
+  	 * ```
+  	 * You can also use the `nokit.log` on the browser to log to the remote server.
+  	 * ```coffee
+  	 * nokit.log { any: 'thing' }
+  	 * ```
+   */
+  serverHelper: function(opts) {
+    var handler;
+    handler = function(req, res, next) {
+      var cs, data;
+      switch (req.url) {
+        case '/nokit-sse':
+          return handler.sse(req, res);
+        case '/nokit-log':
+          cs = kit.require('colors/safe');
+          data = '';
+          req.on('data', function(chunk) {
+            return data += chunk;
+          });
+          return req.on('end', function() {
+            var e;
+            try {
+              kit.log(cs.cyan('client') + cs.grey(' | ') + (data ? kit.xinspect(JSON.parse(data)) : data));
+              return res.end();
+            } catch (_error) {
+              e = _error;
+              res.statusCode = 500;
+              return res.end(e.stack);
+            }
+          });
+        default:
+          return typeof next === "function" ? next() : void 0;
+      }
+    };
+    handler.sse = kit.require('sse')(opts);
+    return handler;
+  },
+
+  /**
   	 * Sleep for awhile. Works same as the `setTimeout`
   	 * @param  {Integer} time Time to sleep, millisecond.
   	 * @return {Promise}
@@ -2143,6 +2245,13 @@ _.extend(kit, fs, {
     promise.process = ps;
     return promise;
   },
+
+  /**
+  	 * The `sse` module.
+  	 * You must `kit.require 'sse'` before using it.
+  	 * For more information goto the `sse` section.
+   */
+  sse: null,
 
   /**
   	 * Sequencing and executing tasks and dependencies concurrently.

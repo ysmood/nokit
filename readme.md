@@ -270,7 +270,43 @@ Goto [changelog](doc/changelog.md)
         	kit.log 'all done!'
         ```
 
-- ## **[colors](lib/kit.coffee?source#L174)**
+- ## **[browserHelper(opts, useJs)](lib/kit.coffee?source#L185)**
+
+    The browser helper.
+
+    - **<u>static</u>**:
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+        The options of the client, defaults:
+        ```coffee
+        {
+        	autoReload: kit.isDevelopment()
+        	host: '' # The host of the event source.
+        }
+        ```
+
+    - **<u>param</u>**: `useJs` { _Boolean_ }
+
+        By default use html. Default is false.
+
+    - **<u>return</u>**: { _String_ }
+
+        The code of client helper.
+
+    - **<u>example</u>**:
+
+        When the client code is loaded on the browser, you can use
+        the `nb.log` to log anything to server's terminal.
+        The server will auto-format and log the information to the terminal.
+        It's convinient for mobile development when remote debug is not possible.
+        ```coffee
+        # The nb is assigned to the "window" object.
+        nb.log { a: 10 }
+        nb.log 10
+        ```
+
+- ## **[colors](lib/kit.coffee?source#L220)**
 
     The [colors](https://github.com/Marak/colors.js) lib
     makes it easier to print colorful info in CLI.
@@ -286,7 +322,7 @@ Goto [changelog](doc/changelog.md)
         kit.log cs.red 'error info'
         ```
 
-- ## **[depsCache(info)](lib/kit.coffee?source#L224)**
+- ## **[depsCache(info)](lib/kit.coffee?source#L270)**
 
     A fast file cache helper. It uses hard link to cache files.
 
@@ -342,7 +378,7 @@ Goto [changelog](doc/changelog.md)
         		kit.log cache.dests
         ```
 
-- ## **[daemonize(opts)](lib/kit.coffee?source#L305)**
+- ## **[daemonize(opts)](lib/kit.coffee?source#L351)**
 
     Daemonize a program. Just a shortcut usage of `kit.spawn`.
 
@@ -362,7 +398,7 @@ Goto [changelog](doc/changelog.md)
 
         The daemonized process.
 
-- ## **[decrypt(data, password, algorithm)](lib/kit.coffee?source#L332)**
+- ## **[decrypt(data, password, algorithm)](lib/kit.coffee?source#L378)**
 
     A simple decrypt helper. Cross-version of node.
 
@@ -376,7 +412,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Buffer_ }
 
-- ## **[drives](lib/kit.coffee?source#L354)**
+- ## **[drives](lib/kit.coffee?source#L400)**
 
     The warp drives.
     You must `kit.require 'drives'` before using it.
@@ -384,7 +420,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>type</u>**: { _Object_ }
 
-- ## **[encrypt(data, password, algorithm)](lib/kit.coffee?source#L363)**
+- ## **[encrypt(data, password, algorithm)](lib/kit.coffee?source#L409)**
 
     A simple encrypt helper. Cross-version of node.
 
@@ -398,7 +434,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Buffer_ }
 
-- ## **[err(msg, opts)](lib/kit.coffee?source#L384)**
+- ## **[err(msg, opts)](lib/kit.coffee?source#L430)**
 
     A error log shortcut for `kit.log(msg, 'error', opts)`
 
@@ -406,7 +442,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>param</u>**: `opts` { _Object_ }
 
-- ## **[exec(cmd, shell)](lib/kit.coffee?source#L422)**
+- ## **[exec(cmd, shell)](lib/kit.coffee?source#L468)**
 
     A better `child_process.exec`. Supports multi-line shell script.
     For supporting old version of node, it will create 3 temp files,
@@ -453,7 +489,7 @@ Goto [changelog](doc/changelog.md)
         	kit.log proc.pid
         ```
 
-- ## **[flow(fns)](lib/kit.coffee?source#L522)**
+- ## **[flow(fns)](lib/kit.coffee?source#L568)**
 
     Creates a function that is the composition of the provided functions.
     Besides, it can also accept async function that returns promise.
@@ -512,7 +548,7 @@ Goto [changelog](doc/changelog.md)
         walker 'test.com'
         ```
 
-- ## **[formatComment(comments, opts)](lib/kit.coffee?source#L580)**
+- ## **[formatComment(comments, opts)](lib/kit.coffee?source#L626)**
 
     Format the parsed comments array to a markdown string.
 
@@ -536,13 +572,13 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _String_ }
 
-- ## **[fs](lib/kit.coffee?source#L633)**
+- ## **[fs](lib/kit.coffee?source#L679)**
 
     See my project [nofs](https://github.com/ysmood/nofs).
 
     [Offline Documentation](?gotoDoc=nofs/readme.md)
 
-- ## **[fuzzySearch(keys, list, opts)](lib/kit.coffee?source#L674)**
+- ## **[fuzzySearch(keys, list, opts)](lib/kit.coffee?source#L720)**
 
     Fuzzy search a string list by a key word.
 
@@ -596,7 +632,7 @@ Goto [changelog](doc/changelog.md)
         # ]
         ```
 
-- ## **[genModulePaths(moduleName, dir, modDir)](lib/kit.coffee?source#L728)**
+- ## **[genModulePaths(moduleName, dir, modDir)](lib/kit.coffee?source#L774)**
 
     Generate a list of module paths from a name and a directory.
 
@@ -624,7 +660,7 @@ Goto [changelog](doc/changelog.md)
         # output => ['/home/a/node_modules/test', '/home/node_modules/test', '/node_modules/test']
         ```
 
-- ## **[indent(text, num, char, reg)](lib/kit.coffee?source#L758)**
+- ## **[indent(text, num, char, reg)](lib/kit.coffee?source#L804)**
 
     Indent a text block.
 
@@ -654,23 +690,23 @@ Goto [changelog](doc/changelog.md)
         # => "one\ntwo"
         ```
 
-- ## **[isDevelopment()](lib/kit.coffee?source#L768)**
+- ## **[isDevelopment()](lib/kit.coffee?source#L814)**
 
-    Nobone use it to check the running mode of the app.
+    Nokit use it to check the running mode of the app.
     Overwrite it if you want to control the check logic.
     By default it returns the `rocess.env.NODE_ENV == 'development'`.
 
     - **<u>return</u>**: { _Boolean_ }
 
-- ## **[isProduction()](lib/kit.coffee?source#L777)**
+- ## **[isProduction()](lib/kit.coffee?source#L823)**
 
-    Nobone use it to check the running mode of the app.
+    Nokit use it to check the running mode of the app.
     Overwrite it if you want to control the check logic.
     By default it returns the `rocess.env.NODE_ENV == 'production'`.
 
     - **<u>return</u>**: { _Boolean_ }
 
-- ## **[jhash](lib/kit.coffee?source#L802)**
+- ## **[jhash](lib/kit.coffee?source#L848)**
 
     A fast helper to hash string or binary file.
     See my [jhash](https://github.com/ysmood/jhash) project.
@@ -695,7 +731,7 @@ Goto [changelog](doc/changelog.md)
         jhash.hash 'test' # output => 'ede'
         ```
 
-- ## **[log(msg, action, opts)](lib/kit.coffee?source#L838)**
+- ## **[log(msg, action, opts)](lib/kit.coffee?source#L884)**
 
     A better log for debugging, it uses the `kit.xinspect` to log.
 
@@ -741,7 +777,7 @@ Goto [changelog](doc/changelog.md)
         # => '[2015-02-07 08:31:49] a b 10'
         ```
 
-- ## **[logs(args)](lib/kit.coffee?source#L925)**
+- ## **[logs(args)](lib/kit.coffee?source#L971)**
 
     Shortcut for logging multiple strings.
 
@@ -756,7 +792,7 @@ Goto [changelog](doc/changelog.md)
         # => [2015-02-07 08:31:49] test1 test2 test3
         ```
 
-- ## **[monitorApp(opts)](lib/kit.coffee?source#L991)**
+- ## **[monitorApp(opts)](lib/kit.coffee?source#L1037)**
 
     Monitor an application and automatically restart it when file changed.
     Even when the monitored app exit with error, the monitor will still wait
@@ -828,13 +864,13 @@ Goto [changelog](doc/changelog.md)
         }
         ```
 
-- ## **[nodeVersion()](lib/kit.coffee?source#L1077)**
+- ## **[nodeVersion()](lib/kit.coffee?source#L1123)**
 
     Node version. Such as `v0.10.23` is `0.1023`, `v0.10.1` is `0.1001`.
 
     - **<u>return</u>**: { _Float_ }
 
-- ## **[defaultArgs(args, defaults)](lib/kit.coffee?source#L1107)**
+- ## **[defaultArgs(args, defaults)](lib/kit.coffee?source#L1153)**
 
     A helper for arguments type based function override.
 
@@ -868,7 +904,7 @@ Goto [changelog](doc/changelog.md)
         { name: 'test', colors: ['red'], family: null, fn: -> 'nothing' }
         ```
 
-- ## **[parseComment(code, opts)](lib/kit.coffee?source#L1157)**
+- ## **[parseComment(code, opts)](lib/kit.coffee?source#L1203)**
 
     A comments parser for javascript and coffee-script.
     Used to generate documentation from source code automatically.
@@ -913,7 +949,7 @@ Goto [changelog](doc/changelog.md)
         }
         ```
 
-- ## **[parseDependency(entryPaths, opts)](lib/kit.coffee?source#L1260)**
+- ## **[parseDependency(entryPaths, opts)](lib/kit.coffee?source#L1306)**
 
     Parse dependency tree by regex. The dependency relationships
     is not a tree, but a graph. To avoid dependency cycle, this
@@ -956,11 +992,11 @@ Goto [changelog](doc/changelog.md)
         	kit.log markdownStr
         ```
 
-- ## **[path](lib/kit.coffee?source#L1323)**
+- ## **[path](lib/kit.coffee?source#L1369)**
 
     io.js native module `path`. See `nofs` for more information.
 
-- ## **[Promise](lib/kit.coffee?source#L1331)**
+- ## **[Promise](lib/kit.coffee?source#L1377)**
 
     The promise lib. Now, it uses Yaku as ES5 polyfill.
     In the future, the Yaku will be replaced with native
@@ -968,7 +1004,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>type</u>**: { _Object_ }
 
-- ## **[promisify(fn, this)](lib/kit.coffee?source#L1344)**
+- ## **[promisify(fn, this)](lib/kit.coffee?source#L1390)**
 
     Convert a callback style function to a promise function.
 
@@ -989,7 +1025,7 @@ Goto [changelog](doc/changelog.md)
         readFile('a.txt').then kit.log
         ```
 
-- ## **[prop(self, prop)](lib/kit.coffee?source#L1373)**
+- ## **[prop(self, prop)](lib/kit.coffee?source#L1419)**
 
     Create a getter & setter for an object's property.
 
@@ -1024,13 +1060,13 @@ Goto [changelog](doc/changelog.md)
         kit.log txt() # => 20
         ```
 
-- ## **[proxy](lib/kit.coffee?source#L1396)**
+- ## **[proxy](lib/kit.coffee?source#L1442)**
 
     The `proxy` module.
     You must `kit.require 'proxy'` before using it.
     For more information goto the `Proxy` section.
 
-- ## **[require(moduleName, dir, loaded)](lib/kit.coffee?source#L1424)**
+- ## **[require(moduleName, dir, loaded)](lib/kit.coffee?source#L1470)**
 
     Much faster than the native require of node, but you should
     follow some rules to use it safely.
@@ -1071,7 +1107,7 @@ Goto [changelog](doc/changelog.md)
         jhash = kit.require 'jhash', __dirname
         ```
 
-- ## **[requireOptional(name, dir, semver)](lib/kit.coffee?source#L1496)**
+- ## **[requireOptional(name, dir, semver)](lib/kit.coffee?source#L1542)**
 
     Require an optional package. If not found, it will
     warn the user to npm install it, and exit the process.
@@ -1094,7 +1130,7 @@ Goto [changelog](doc/changelog.md)
 
         The required package.
 
-- ## **[request(opts)](lib/kit.coffee?source#L1626)**
+- ## **[request(opts)](lib/kit.coffee?source#L1672)**
 
     A handy extended combination of `http.request` and `https.request`.
 
@@ -1204,14 +1240,49 @@ Goto [changelog](doc/changelog.md)
         	kit.log body
         ```
 
-- ## **[semver](lib/kit.coffee?source#L1824)**
+- ## **[semver](lib/kit.coffee?source#L1870)**
 
     The semantic versioner for npm, known as [semver](https://github.com/npm/node-semver).
     You must `kit.require 'semver'` before using it.
 
     - **<u>type</u>**: { _Object_ }
 
-- ## **[sleep(time)](lib/kit.coffee?source#L1837)**
+- ## **[serverHelper(opts)](lib/kit.coffee?source#L1898)**
+
+    Create a http request handler middleware.
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+        Same as the sse.
+
+    - **<u>return</u>**: { _Function_ }
+
+        `(req, res, next) ->`
+
+    - **<u>example</u>**:
+
+        Visit 'http://127.0.0.1:80123', every 3 sec, the page will be reloaded.
+        ```coffee
+        http = require 'http'
+        handler = kit.serverHelper()
+
+        http.createServer (req, res) ->
+        	handler req, res, ->
+        		res.end kit.browserHelper()
+
+        .listen 8123, ->
+        	kit.log 'listen ' + 8123
+
+        	setInterval ->
+        		handler.sse.emit 'fileModified', 'changed-file-path.js'
+        	, 3000
+        ```
+        You can also use the `nokit.log` on the browser to log to the remote server.
+        ```coffee
+        nokit.log { any: 'thing' }
+        ```
+
+- ## **[sleep(time)](lib/kit.coffee?source#L1940)**
 
     Sleep for awhile. Works same as the `setTimeout`
 
@@ -1229,7 +1300,7 @@ Goto [changelog](doc/changelog.md)
         	kit.log 'wake'
         ```
 
-- ## **[spawn(cmd, args, opts)](lib/kit.coffee?source#L1871)**
+- ## **[spawn(cmd, args, opts)](lib/kit.coffee?source#L1974)**
 
     A safer version of `child_process.spawn` to cross-platform run
     a process. In some conditions, it may be more convenient
@@ -1272,7 +1343,13 @@ Goto [changelog](doc/changelog.md)
         .then ({code}) -> kit.log code
         ```
 
-- ## **[task(name, opts, fn)](lib/kit.coffee?source#L1978)**
+- ## **[sse](lib/kit.coffee?source#L2027)**
+
+    The `sse` module.
+    You must `kit.require 'sse'` before using it.
+    For more information goto the `sse` section.
+
+- ## **[task(name, opts, fn)](lib/kit.coffee?source#L2088)**
 
     Sequencing and executing tasks and dependencies concurrently.
 
@@ -1352,12 +1429,12 @@ Goto [changelog](doc/changelog.md)
         	kit.log 'All Done!'
         ```
 
-- ## **[url](lib/kit.coffee?source#L2050)**
+- ## **[url](lib/kit.coffee?source#L2160)**
 
     The `url` module of [io.js](iojs.org).
     You must `kit.require 'url'` before using it.
 
-- ## **[warp(from, opts)](lib/kit.coffee?source#L2165)**
+- ## **[warp(from, opts)](lib/kit.coffee?source#L2275)**
 
     Works much like `gulp.src`, but with Promise instead.
     The warp control and error handling is more pleasant.
@@ -1482,7 +1559,7 @@ Goto [changelog](doc/changelog.md)
         .run 'dist'
         ```
 
-- ## **[which(name)](lib/kit.coffee?source#L2238)**
+- ## **[which(name)](lib/kit.coffee?source#L2348)**
 
     Same as the unix `which` command.
     You must `kit.require 'which'` before using it.
@@ -1493,14 +1570,14 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Promise_ }
 
-- ## **[whichSync](lib/kit.coffee?source#L2245)**
+- ## **[whichSync](lib/kit.coffee?source#L2355)**
 
     Sync version of `which`.
     You must `kit.require 'whichSync'` before using it.
 
     - **<u>type</u>**: { _Function_ }
 
-- ## **[xinspect(obj, opts)](lib/kit.coffee?source#L2256)**
+- ## **[xinspect(obj, opts)](lib/kit.coffee?source#L2366)**
 
     For debugging. Dump a colorful object.
 
@@ -1517,7 +1594,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _String_ }
 
-- ## **[xopen(cmds, opts)](lib/kit.coffee?source#L2279)**
+- ## **[xopen(cmds, opts)](lib/kit.coffee?source#L2389)**
 
     Open a thing that your system can recognize.
     Now only support Windows, OSX or system that installed 'xdg-open'.
@@ -1905,6 +1982,123 @@ Goto [changelog](doc/changelog.md)
 
         server.listen 8123
         ```
+
+
+
+# SSE
+
+- ## **[sse(opts)](lib/sse.coffee?source#L37)**
+
+    A Server-Sent Event Manager.
+    For more info see [Using server-sent events](https://developer.mozilla.org/en-US/docs/Server-sentEvents/UsingServer-sentEvents).
+    It is used to implement the live-reload of web assets.
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+        Defaults:
+        ```coffee
+        {
+        	# The reconnection time to use when attempting to send the event, unit is ms.
+        	retry: 1000
+        }
+        ```
+
+    - **<u>example</u>**:
+
+        Your server side code may look like this:
+        ```coffee
+        http = require 'http'
+        kit = require 'nokit'
+        sse = kit.require 'sse'
+        sseHandler = sse()
+        http.createServer (req, res) ->
+        	if req.url == '/sse'
+         	sseHandler req, res
+         else
+         	res.end()
+        .listen 8080, ->
+        	setTimeout ->
+        		sseHandler.emit 'test', { test: 'ok' }
+        ```
+
+        You browser code should be something like this:
+        ```coffee
+        es = new EventSource('/sse')
+        es.addEventListener('test', (e) ->
+        	msg = JSON.parse(e.data)
+         console.log(msg) # => { test: 'ok' }
+        ```
+
+- ## **[self(req, res)](lib/sse.coffee?source#L44)**
+
+    The sse middleware for http handler.
+
+    - **<u>param</u>**: `req` { _http.IncomingMessage_ }
+
+        Also supports Express.js.
+
+    - **<u>param</u>**: `res` { _http.ServerResponse_ }
+
+        Also supports Express.js.
+
+- ## **[sessions](lib/sse.coffee?source#L54)**
+
+    The sessions of connected clients.
+
+    - **<u>type</u>**: { _Array_ }
+
+- ## **[emit(event, msg, )](lib/sse.coffee?source#L63)**
+
+    Broadcast a event to all clients.
+
+    - **<u>param</u>**: `event` { _String_ }
+
+        The event name.
+
+    - **<u>param</u>**: `msg` { _Object | String_ }
+
+        The data you want to emit to session.
+
+    - **<u>param</u>**: { _String_ }
+
+        [path] The namespace of target sessions. If not set,
+        broadcast to all clients.
+
+- ## **[create(req, res)](lib/sse.coffee?source#L76)**
+
+    Create a sse session.
+
+    - **<u>param</u>**: `req` { _http.IncomingMessage_ }
+
+        Also supports Express.js.
+
+    - **<u>param</u>**: `res` { _http.ServerResponse_ }
+
+        Also supports Express.js.
+
+    - **<u>return</u>**: { _SSESession_ }
+
+- ## **[session](lib/sse.coffee?source#L86)**
+
+    A session object is something like:
+    ```coffee
+    {
+    	req  # The http req object.
+     res  # The http res object.
+    }
+    ```
+
+- ## **[session.emit(event, msg)](lib/sse.coffee?source#L100)**
+
+    Emit message to client.
+
+    - **<u>param</u>**: `event` { _String_ }
+
+        The event name.
+
+    - **<u>param</u>**: `msg` { _Object | String_ }
+
+        The message to send to the client.
 
 
 

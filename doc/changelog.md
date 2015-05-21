@@ -1,5 +1,11 @@
 # Changelog
 
+- v0.7.4
+
+  - add: browser helper
+  - add: server helper
+  - add: sse support
+
 - v0.7.3
 
   - revert: nokit argument to the nofile entry
