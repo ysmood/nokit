@@ -160,6 +160,52 @@ _.extend kit, fs,
 				break if not addTask()
 
 	###*
+	 * The browser helper.
+	 * @static
+	 * @param {Object} opts The options of the client, defaults:
+	 * ```coffee
+	 * {
+	 * 	autoReload: kit.isDevelopment()
+	 * 	host: '' # The host of the event source.
+	 * }
+	 * ```
+	 * @param {Boolean} useJs By default use html. Default is false.
+	 * @return {String} The code of client helper.
+	 * @example
+	 * When the client code is loaded on the browser, you can use
+	 * the `nb.log` to log anything to server's terminal.
+	 * The server will auto-format and log the information to the terminal.
+	 * It's convinient for mobile development when remote debug is not possible.
+	 * ```coffee
+	 * # The nb is assigned to the "window" object.
+	 * nb.log { a: 10 }
+	 * nb.log 10
+	 * ```
+	###
+	browserHelper: (opts = {}, useJs = false) ->
+		helper = kit.browserHelper.cache or
+			kit.require('./browserHelper', __dirname).toString()
+
+		optsStr = JSON.stringify _.defaults(opts, {
+			autoReload: kit.isDevelopment()
+			host: ''
+		})
+
+		js = """
+			window.nokit = (#{helper})(#{optsStr});\n
+		"""
+
+		if useJs
+			js
+		else
+			"""
+				\n\n<!-- Nokit Browser Helper -->
+				<script type="text/javascript">
+				#{js}
+				</script>\n\n
+			"""
+
+	###*
 	 * The [colors](https://github.com/Marak/colors.js) lib
 	 * makes it easier to print colorful info in CLI.
 	 * You must `kit.require 'colors'` before using it.
@@ -430,7 +476,7 @@ _.extend kit, fs,
 
 		paths = ['.in', '.out', '.err']
 		.map (type) ->
-			kit.path.join os.tmpDir(), 'nobone-' + randName + type
+			kit.path.join os.tmpDir(), 'nokit-' + randName + type
 
 		[ stdinPath, stdoutPath, stderrPath ] = paths
 
@@ -760,7 +806,7 @@ _.extend kit, fs,
 		text.replace reg, prefix
 
 	###*
-	 * Nobone use it to check the running mode of the app.
+	 * Nokit use it to check the running mode of the app.
 	 * Overwrite it if you want to control the check logic.
 	 * By default it returns the `rocess.env.NODE_ENV == 'development'`.
 	 * @return {Boolean}
@@ -769,7 +815,7 @@ _.extend kit, fs,
 		process.env.NODE_ENV == 'development'
 
 	###*
-	 * Nobone use it to check the running mode of the app.
+	 * Nokit use it to check the running mode of the app.
 	 * Overwrite it if you want to control the check logic.
 	 * By default it returns the `rocess.env.NODE_ENV == 'production'`.
 	 * @return {Boolean}
@@ -1822,6 +1868,39 @@ _.extend kit, fs,
 	 * @type {Object}
 	###
 	semver: null
+
+	###*
+	 * Create a http request handler middleware.
+	 * @param  {Object} opts Same as the sse.
+	 * @return {Function} `(req, res, next) ->`
+	 * @example
+	 * Visit 'http://127.0.0.1:80123', every 3 sec, the page will be reloaded.
+	 * ```coffee
+	 * http = require 'http'
+	 * handler = kit.serverHelper()
+	 *
+	 * http.createServer (req, res) ->
+	 * 	handler req, res, ->
+	 * 		res.end kit.browserHelper()
+	 *
+	 * .listen 8123, ->
+	 * 	kit.log 'listen ' + 8123
+	 *
+	 * 	setInterval ->
+	 * 		handler.sse.emit('fileModified', 'ok')
+	 * 	, 3000
+	 * ```
+	###
+	serverHelper: (opts) ->
+		handler = (req, res, next) ->
+			if req.url == '/nokit-sse'
+				handler.sse req, res
+			else
+				next?()
+
+		handler.sse = kit.require('sse')(opts)
+
+		handler
 
 	###*
 	 * Sleep for awhile. Works same as the `setTimeout`

@@ -2,15 +2,11 @@
  * A Server-Sent Event Manager.
  * For more info see [Using server-sent events](https://developer.mozilla.org/en-US/docs/Server-sentEvents/UsingServer-sentEvents).
  * It is used to implement the live-reload of web assets.
- * @type {SSE}
- * @property {Array} sessions The sessions of connected clients.
- * @property {Integer} retry The reconnection time to use when attempting to send the event, unit is ms.
- * Default is 1000ms.
- * A session object is something like:
+ * @param {Object} opts Defaults:
  * ```coffee
  * {
- * 	req  # The http req object.
- *  res  # The http res object.
+ * 	# The reconnection time to use when attempting to send the event, unit is ms.
+ * 	retry: 1000
  * }
  * ```
  * @example
@@ -51,6 +47,10 @@ sse = (opts = {}) ->
 
 	opts.retry ?= 1000
 
+	###*
+	 * The sessions of connected clients.
+	 * @type {Array}
+	###
 	self.sessions = []
 
 	###*
@@ -74,6 +74,15 @@ sse = (opts = {}) ->
 	 * @return {SSESession}
 	###
 	self.create = (req, res) ->
+		###*
+		 * A session object is something like:
+		 * ```coffee
+		 * {
+		 * 	req  # The http req object.
+		 *  res  # The http res object.
+		 * }
+		 * ```
+		###
 		session = { req, res }
 
 		req.socket.setTimeout 0
