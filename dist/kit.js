@@ -332,7 +332,10 @@ _.extend(kit, fs, {
           if (i === 0) {
             return info.deps[path] = Date.now();
           }
-          return kit.stat(path).then(function(stats) {
+          return kit.stat(path)["catch"](function() {}).then(function(stats) {
+            if (!stats) {
+              return;
+            }
             return info.deps[path] = stats.mtime.getTime();
           });
         })).then(function() {

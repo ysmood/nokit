@@ -252,6 +252,23 @@ module.exports = {
   },
 
   /**
+  	 * Change dest path with a filter.
+  	 * @param  {String} dir
+  	 * @param  {Function} filter `(fileInfo, dir) -> Boolean`
+  	 * @return {Function}
+   */
+  changeDir: function(dir, filter) {
+    return function(f) {
+      if (filter != null) {
+        if (!filter(f, dir)) {
+          return;
+        }
+      }
+      return f.dest.dir = dir;
+    };
+  },
+
+  /**
   	 * a batch file concat helper
   	 * @param {String} name The output file path.
   	 * @param {String} dir Optional. Override the dest of warp's.
@@ -276,6 +293,28 @@ module.exports = {
         this.deps = _.pluck(this.list, 'path');
         this.set(all.join('\n'));
         return this["super"]();
+      }
+    });
+  },
+
+  /**
+  	 * Suffix file name with the hash value of file content.
+  	 * @param  {String} hashMapPath The output file name hash map.
+  	 * @return {Function}
+   */
+  hashSuffix: function(hashMapPath) {
+    var map;
+    jhash = kit.require('jhash');
+    jhash.setSymbols('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ');
+    map = {};
+    return _.assign(function(f) {
+      var src;
+      src = f.dest + '';
+      f.dest.name += '.' + jhash.hash(f.contents);
+      return map[src] = f.dest + '';
+    }, {
+      onEnd: function() {
+        return kit.outputJson(hashMapPath, map);
       }
     });
   },
@@ -330,12 +369,12 @@ module.exports = {
     if (opts == null) {
       opts = {};
     }
-    less = kit.requireOptional('less', __dirname, '>=2.0.0');
+    less = kit.requireOptional('less', __dirname, '>=2.5.1');
     return function(file) {
       this.dest.ext = '.css';
       opts.filename = this.path;
       return less.render(this.contents + '', opts).then(function(output) {
-        file.deps = [file.path].concat(_.keys(output.imports));
+        file.deps = [file.path].concat(output.imports);
         file.set(output.css);
         return kit.log(cls.cyan('less: ') + file.path);
       }, function(err) {
