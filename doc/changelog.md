@@ -1,5 +1,11 @@
 # Changelog
 
+- v0.7.5
+
+  - add: some handy drives
+  - fix: a deps cache bug
+  - upd: deps
+
 - v0.7.4
 
   - add: browser helper
