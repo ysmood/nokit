@@ -1743,7 +1743,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[concat(name, dir)](lib/drives.coffee?source#L227)**
+- ## **[concat(name, dir)](lib/drives.coffee?source#L229)**
 
     a batch file concat helper
 
@@ -1757,7 +1757,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[hashSuffix(hashMapPath)](lib/drives.coffee?source#L247)**
+- ## **[hashSuffix(hashMapPath)](lib/drives.coffee?source#L249)**
 
     Suffix file name with the hash value of file content.
 
@@ -1767,7 +1767,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[jshint(opts)](lib/drives.coffee?source#L272)**
+- ## **[jshint(opts)](lib/drives.coffee?source#L274)**
 
     Lint js via `jshint`.
 
@@ -1783,7 +1783,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[less()](lib/drives.coffee?source#L305)**
+- ## **[less()](lib/drives.coffee?source#L307)**
 
     Compile less.
 
@@ -1791,7 +1791,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[livescript(opts)](lib/drives.coffee?source#L332)**
+- ## **[livescript(opts)](lib/drives.coffee?source#L334)**
 
     LiveScript compiler.
 
@@ -1801,7 +1801,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[mocha(opts)](lib/drives.coffee?source#L361)**
+- ## **[mocha(opts)](lib/drives.coffee?source#L363)**
 
     mocha test
 
@@ -1815,7 +1815,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[reader(opts)](lib/drives.coffee?source#L391)**
+- ## **[reader(opts)](lib/drives.coffee?source#L393)**
 
     read file and set `contents`
 
@@ -1832,7 +1832,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[stylus(opts)](lib/drives.coffee?source#L460)**
+- ## **[stylus(opts)](lib/drives.coffee?source#L462)**
 
     Compile stylus.
 
@@ -1859,7 +1859,7 @@ Goto [changelog](doc/changelog.md)
         }
         ```
 
-- ## **[uglifyjs(opts)](lib/drives.coffee?source#L500)**
+- ## **[uglifyjs(opts)](lib/drives.coffee?source#L502)**
 
     uglify-js processor
 
@@ -1879,7 +1879,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[writer()](lib/drives.coffee?source#L522)**
+- ## **[writer()](lib/drives.coffee?source#L524)**
 
     Output file by `contents` and `dest`.
     If the 'ext' or 'name' is not null,

@@ -214,7 +214,9 @@ module.exports =
 	changeDir: (dir, filter) ->
 		(f) ->
 			if filter?
-				return if not filter f, dir
+				if filter f, dir
+					f.dest.dir = dir
+				return
 
 			f.dest.dir = dir
 

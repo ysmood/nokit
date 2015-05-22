@@ -1,6 +1,6 @@
 # Changelog
 
-- v0.7.5
+- v0.7.6
 
   - add: some handy drives
   - fix: a deps cache bug

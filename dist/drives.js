@@ -260,9 +260,10 @@ module.exports = {
   changeDir: function(dir, filter) {
     return function(f) {
       if (filter != null) {
-        if (!filter(f, dir)) {
-          return;
+        if (filter(f, dir)) {
+          f.dest.dir = dir;
         }
+        return;
       }
       return f.dest.dir = dir;
     };
