@@ -49,10 +49,10 @@
     "formidable": "1.0.17",
     "iconv-lite": "0.4.8",
     "jshint": "2.7.0",
-    "less": "2.5.0",
+    "less": "2.5.1",
     "mocha": "2.2.5",
-    "lodash-cli": "3.8.0",
+    "lodash-cli": "3.9.1",
     "stylus": "0.51.1",
-    "uglify-js": "2.4.22"
+    "uglify-js": "2.4.23"
   }
 }
