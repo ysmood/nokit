@@ -206,6 +206,19 @@ module.exports =
 		auto
 
 	###*
+	 * Change dest path with a filter.
+	 * @param  {String} dir
+	 * @param  {Function} filter `(fileInfo, dir) -> Boolean`
+	 * @return {Function}
+	###
+	changeDir: (dir, filter) ->
+		(f) ->
+			if filter?
+				return if not filter f, dir
+
+			f.dest.dir = dir
+
+	###*
 	 * a batch file concat helper
 	 * @param {String} name The output file path.
 	 * @param {String} dir Optional. Override the dest of warp's.
@@ -225,6 +238,25 @@ module.exports =
 			@deps = _.pluck @list, 'path'
 			@set all.join '\n'
 			@super()
+
+	###*
+	 * Suffix file name with the hash value of file content.
+	 * @param  {String} hashMapPath The output file name hash map.
+	 * @return {Function}
+	###
+	hashSuffix: (hashMapPath) ->
+		jhash = kit.require 'jhash'
+		jhash.setSymbols(
+			'0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
+		)
+		map = {}
+
+		_.assign (f) ->
+			src = f.dest + ''
+			f.dest.name += '.' + jhash.hash(f.contents)
+			map[src] = f.dest + ''
+		, onEnd: ->
+			kit.outputJson hashMapPath, map
 
 	###*
 	 * Lint js via `jshint`.
@@ -271,14 +303,14 @@ module.exports =
 	 * @return {Function}
 	###
 	less: _.extend (opts = {}) ->
-		less = kit.requireOptional 'less', __dirname, '>=2.0.0'
+		less = kit.requireOptional 'less', __dirname, '>=2.5.1'
 
 		(file) ->
 			@dest.ext = '.css'
 			opts.filename = @path
 			less.render @contents + '', opts
 			.then (output) ->
-				file.deps = [file.path].concat _.keys(output.imports)
+				file.deps = [file.path].concat output.imports
 				file.set output.css
 				kit.log cls.cyan('less: ') + file.path
 			, (err) ->
