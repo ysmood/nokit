@@ -301,7 +301,8 @@ _.extend kit, fs,
 				Promise.all(opts.deps.map (path, i) ->
 					if i == 0
 						return info.deps[path] = Date.now()
-					kit.stat(path).then (stats) ->
+					kit.stat(path).catch(->).then (stats) ->
+						return if not stats
 						info.deps[path] = stats.mtime.getTime()
 				).then ->
 					kit.outputJson infoPath, info
