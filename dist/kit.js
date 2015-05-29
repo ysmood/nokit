@@ -2001,7 +2001,7 @@ _.extend(kit, fs, {
                   if (encoding === 'utf8') {
                     return buf.toString();
                   } else {
-                    return kit.requireOptional('iconv-lite').decode(buf, encoding);
+                    return kit.requireOptional('iconv-lite', __dirname).decode(buf, encoding);
                   }
                 } catch (_error) {
                   err = _error;
