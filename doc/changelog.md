@@ -1,5 +1,10 @@
 # Changelog
 
+- v0.7.7
+
+  - fix: #6
+  - upd: deps
+
 - v0.7.6
 
   - add: some handy drives
