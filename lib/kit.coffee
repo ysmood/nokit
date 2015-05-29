@@ -1812,7 +1812,7 @@ _.extend kit, fs,
 									if encoding == 'utf8'
 										buf.toString()
 									else
-										kit.requireOptional 'iconv-lite'
+										kit.requireOptional 'iconv-lite', __dirname
 										.decode buf, encoding
 								catch err
 									reject err
