@@ -96,12 +96,12 @@ proxy =
 						self = { req, res }
 
 						if _.isFunction m
-							return m.call self
+							return m self
 
 						if match(self, req, 'method', m.method) and
 						match(self, req, 'url', m.url) and
 						matchObj(self, req, 'headers', m.headers)
-							m.handler.call self
+							m.handler self
 				, Promise.resolve()
 		}
 
