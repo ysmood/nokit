@@ -5,12 +5,105 @@
 Overview = 'proxy'
 
 kit = require './kit'
-{ _ } = kit
+{ _, Promise } = kit
 http = require 'http'
 
 proxy =
 
 	agent: new http.Agent
+
+	###*
+	 * Http CONNECT method tunneling proxy helper.
+	 * Most times used with https proxing.
+	 * @param {http.IncomingMessage} req
+	 * @param {net.Socket} sock
+	 * @param {Buffer} head
+	 * @param {String} host The host force to. It's optional.
+	 * @param {Int} port The port force to. It's optional.
+	 * @param {Function} err Custom error handler.
+	 * @example
+	 * ```coffee
+	 * kit = require 'nokit'
+	 * kit.require 'proxy'
+	 * http = require 'http'
+	 *
+	 * server = http.createServer()
+	 *
+	 * # Directly connect to the original site.
+	 * server.on 'connect', kit.proxy.connect
+	 *
+	 * server.listen 8123
+	 * ```
+	###
+	connect: (req, sock, head, host, port, err) ->
+		net = kit.require 'net', __dirname
+		h = host or req.headers.host
+		p = port or req.url.match(/:(\d+)$/)[1] or 443
+
+		psock = new net.Socket
+		psock.connect p, h, ->
+			psock.write head
+			sock.write "
+				HTTP/#{req.httpVersion} 200 Connection established\r\n\r\n
+			"
+
+		sock.pipe psock
+		psock.pipe sock
+
+		error = err or (err, socket) ->
+			cs = kit.require 'colors/safe'
+			kit.log err.toString() + ' -> ' + cs.red req.url
+			socket.end()
+
+		sock.on 'error', (err) ->
+			error err, sock
+		psock.on 'error', (err) ->
+			error err, psock
+
+	mid: (opts) ->
+		middlewares = []
+		url = kit.require 'url'
+
+		match = (self, obj, key, pattern) ->
+			return true if pattern == undefined
+
+			ret = if _.isString pattern
+				if obj[key] == pattern
+					pattern
+			else if _.isRegExp pattern
+				obj[key].match pattern
+			else if _.isFunction pattern
+				pattern obj[key]
+
+			if ret != undefined
+				self[key] = ret
+
+		matchObj = (self, obj, key, target) ->
+			return true if target == undefined
+
+			ret = {}
+
+			for k, v of target
+				return false if not match ret, obj[key], k, v
+
+			self[key] = ret
+			return true
+
+		_.extend middlewares, {
+			handler: (req, res) ->
+				middlewares.reduce (p, m) ->
+					p.then ->
+						self = { req, res }
+
+						if _.isFunction m
+							return m.call self
+
+						if match(self, req, 'method', m.method) and
+						match(self, req, 'url', m.url) and
+						matchObj(self, req, 'headers', m.headers)
+							m.handler.call self
+				, Promise.resolve()
+		}
 
 	###*
 	 * Use it to proxy one url to another.
@@ -135,53 +228,5 @@ proxy =
 			)
 
 		p.catch error
-
-	###*
-	 * Http CONNECT method tunneling proxy helper.
-	 * Most times used with https proxing.
-	 * @param {http.IncomingMessage} req
-	 * @param {net.Socket} sock
-	 * @param {Buffer} head
-	 * @param {String} host The host force to. It's optional.
-	 * @param {Int} port The port force to. It's optional.
-	 * @param {Function} err Custom error handler.
-	 * @example
-	 * ```coffee
-	 * kit = require 'nokit'
-	 * kit.require 'proxy'
-	 * http = require 'http'
-	 *
-	 * server = http.createServer()
-	 *
-	 * # Directly connect to the original site.
-	 * server.on 'connect', kit.proxy.connect
-	 *
-	 * server.listen 8123
-	 * ```
-	###
-	connect: (req, sock, head, host, port, err) ->
-		net = kit.require 'net', __dirname
-		h = host or req.headers.host
-		p = port or req.url.match(/:(\d+)$/)[1] or 443
-
-		psock = new net.Socket
-		psock.connect p, h, ->
-			psock.write head
-			sock.write "
-				HTTP/#{req.httpVersion} 200 Connection established\r\n\r\n
-			"
-
-		sock.pipe psock
-		psock.pipe sock
-
-		error = err or (err, socket) ->
-			cs = kit.require 'colors/safe'
-			kit.log err.toString() + ' -> ' + cs.red req.url
-			socket.end()
-
-		sock.on 'error', (err) ->
-			error err, sock
-		psock.on 'error', (err) ->
-			error err, psock
 
 module.exports = proxy
