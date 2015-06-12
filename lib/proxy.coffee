@@ -60,8 +60,7 @@ proxy =
 		psock.on 'error', (err) ->
 			error err, psock
 
-	mid: (opts) ->
-		middlewares = []
+	mid: (middlewares) ->
 		url = kit.require 'url'
 
 		match = (self, obj, key, pattern) ->
@@ -89,21 +88,19 @@ proxy =
 			self[key] = ret
 			return true
 
-		_.extend middlewares, {
-			handler: (req, res) ->
-				middlewares.reduce (p, m) ->
-					p.then ->
-						self = { req, res }
+		(req, res) ->
+			middlewares.reduce (p, m) ->
+				p.then ->
+					self = { req, res }
 
-						if _.isFunction m
-							return m self
+					if _.isFunction m
+						return m self
 
-						if match(self, req, 'method', m.method) and
-						match(self, req, 'url', m.url) and
-						matchObj(self, req, 'headers', m.headers)
-							m.handler self
-				, Promise.resolve()
-		}
+					if match(self, req, 'method', m.method) and
+					match(self, req, 'url', m.url) and
+					matchObj(self, req, 'headers', m.headers)
+						m.handler self
+			, Promise.resolve()
 
 	###*
 	 * Use it to proxy one url to another.
