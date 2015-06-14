@@ -67,8 +67,10 @@ proxy =
 			return true if pattern == undefined
 
 			ret = if _.isString pattern
-				if obj[key] == pattern
-					pattern
+				if _.startsWith(obj[key], pattern)
+					left = obj[key][pattern.length ...]
+					if left[0] != '/'
+						'/' + left
 			else if _.isRegExp pattern
 				obj[key].match pattern
 			else if _.isFunction pattern
