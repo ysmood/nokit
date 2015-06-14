@@ -6,10 +6,11 @@ http = require 'http'
 routes = [
 	({ req }) -> kit.log 'access: ' + req.url
 	{
-		url: '/test'
-		handler: ({ url, res }) ->
-			kit.log url
-			res.end 'ok'
+		url: /\/items\/(\d+)/
+		method: 'GET'
+		handler: ({ url, res, method }) ->
+			kit.log url[1]
+			res.end method
 	}
 	({ res }) -> res.end '404'
 ]
@@ -20,6 +21,6 @@ http.createServer proxy.mid(routes)
 	kit.log 'listen ' + 8123
 
 	kit.request {
-		url: '127.0.0.1:8123/test?a=10'
+		url: '127.0.0.1:8123/items/10?a=10'
 	}
 	.then kit.log

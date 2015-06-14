@@ -60,6 +60,41 @@ proxy =
 		psock.on 'error', (err) ->
 			error err, psock
 
+	###*
+	 * A promise based middlewares proxy.
+	 * @param  {Array} middlewares Each item is a function `({ req, res }) -> Promise`,
+	 * or an object:
+	 * ```coffee
+	 * {
+	 * 	url: String | Regex
+	 * 	headers: String | Regex
+	 * 	method: String | Regex
+	 * 	handler: ({ req, res, url, headers, method }) -> Promise
+	 * }
+	 * ```
+	 * The `url`, `headers` and `method` are act as selectors. If current
+	 * request matches the selectors, the `handler` will be called with the
+	 * matched result. If the handler has any async operation, it should
+	 * return a promise.
+	 * @return {Function} `(req, res) -> Promise` The http request listener.
+	 * ```coffee
+	 * proxy = kit.require 'proxy'
+	 * http = require 'http'
+	 *
+	 * routes = [
+	 * 	({ req }) -> kit.log 'access: ' + req.url
+	 * 	{
+	 * 		url: /\/items\/(\d+)/
+	 * 		handler: ({ res, url }) ->
+	 * 			res.end url[1]
+	 * 	}
+	 * 	({ res }) -> res.end '404'
+	 * ]
+	 *
+	 * http.createServer proxy.mid(routes)
+	 * .listen 8123
+	 * 	 * ```
+	###
 	mid: (middlewares) ->
 		url = kit.require 'url'
 
@@ -68,9 +103,7 @@ proxy =
 
 			ret = if _.isString pattern
 				if _.startsWith(obj[key], pattern)
-					left = obj[key][pattern.length ...]
-					if left[0] != '/'
-						'/' + left
+					obj[key]
 			else if _.isRegExp pattern
 				obj[key].match pattern
 			else if _.isFunction pattern

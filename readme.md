@@ -1896,7 +1896,87 @@ Goto [changelog](doc/changelog.md)
     For test, page injection development.
     A cross-platform programmable Fiddler alternative.
 
-- ## **[url(req, res, url, opts, err)](lib/proxy.coffee?source#L67)**
+- ## **[connect(req, sock, head, host, port, err)](lib/proxy.coffee?source#L38)**
+
+    Http CONNECT method tunneling proxy helper.
+    Most times used with https proxing.
+
+    - **<u>param</u>**: `req` { _http.IncomingMessage_ }
+
+    - **<u>param</u>**: `sock` { _net.Socket_ }
+
+    - **<u>param</u>**: `head` { _Buffer_ }
+
+    - **<u>param</u>**: `host` { _String_ }
+
+        The host force to. It's optional.
+
+    - **<u>param</u>**: `port` { _Int_ }
+
+        The port force to. It's optional.
+
+    - **<u>param</u>**: `err` { _Function_ }
+
+        Custom error handler.
+
+    - **<u>example</u>**:
+
+        ```coffee
+        kit = require 'nokit'
+        kit.require 'proxy'
+        http = require 'http'
+
+        server = http.createServer()
+
+        # Directly connect to the original site.
+        server.on 'connect', kit.proxy.connect
+
+        server.listen 8123
+        ```
+
+- ## **[mid(middlewares)](lib/proxy.coffee?source#L98)**
+
+    A promise based middlewares proxy.
+
+    - **<u>param</u>**: `middlewares` { _Array_ }
+
+        Each item is a function `({ req, res }) -> Promise`,
+        or an object:
+        ```coffee
+        {
+        	url: String | Regex
+        	headers: String | Regex
+        	method: String | Regex
+        	handler: ({ req, res, url, headers, method }) -> Promise
+        }
+        ```
+        The `url`, `headers` and `method` are act as selectors. If current
+        request matches the selectors, the `handler` will be called with the
+        matched result. If the handler has any async operation, it should
+        return a promise.
+
+    - **<u>return</u>**: { _Function_ }
+
+        `(req, res) -> Promise` The http request listener.
+        ```coffee
+        proxy = kit.require 'proxy'
+        http = require 'http'
+
+        routes = [
+        	({ req }) -> kit.log 'access: ' + req.url
+        	{
+        		url: //items/(\d+)/
+        		handler: ({ res, url }) ->
+        			res.end url[1]
+        	}
+        	({ res }) -> res.end '404'
+        ]
+
+        http.createServer proxy.mid(routes)
+        .listen 8123
+        	 * ```
+
+- ## **[url(req, res, url, opts, err)](lib/proxy.coffee?source#L192)**
 
     Use it to proxy one url to another.
 
@@ -1963,44 +2043,6 @@ Goto [changelog](doc/changelog.md)
         		else
         			# Transparent proxy.
         			service.use kit.proxy.url
-
-        server.listen 8123
-        ```
-
-- ## **[connect(req, sock, head, host, port, err)](lib/proxy.coffee?source#L162)**
-
-    Http CONNECT method tunneling proxy helper.
-    Most times used with https proxing.
-
-    - **<u>param</u>**: `req` { _http.IncomingMessage_ }
-
-    - **<u>param</u>**: `sock` { _net.Socket_ }
-
-    - **<u>param</u>**: `head` { _Buffer_ }
-
-    - **<u>param</u>**: `host` { _String_ }
-
-        The host force to. It's optional.
-
-    - **<u>param</u>**: `port` { _Int_ }
-
-        The port force to. It's optional.
-
-    - **<u>param</u>**: `err` { _Function_ }
-
-        Custom error handler.
-
-    - **<u>example</u>**:
-
-        ```coffee
-        kit = require 'nokit'
-        kit.require 'proxy'
-        http = require 'http'
-
-        server = http.createServer()
-
-        # Directly connect to the original site.
-        server.on 'connect', kit.proxy.connect
 
         server.listen 8123
         ```

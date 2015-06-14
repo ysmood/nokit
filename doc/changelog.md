@@ -1,5 +1,9 @@
 # Changelog
 
+- v0.7.8
+
+  - add: proxy.mid
+
 - v0.7.7
 
   - fix: #6
