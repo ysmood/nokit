@@ -124,17 +124,24 @@ proxy =
 			return true
 
 		(req, res) ->
+			isEnd = false
 			middlewares.reduce (p, m) ->
 				p.then ->
+					return if isEnd
 					self = { req, res }
 
 					if _.isFunction m
 						return m self
 
-					if match(self, req, 'method', m.method) and
+					ret = if match(self, req, 'method', m.method) and
 					match(self, req, 'url', m.url) and
 					matchObj(self, req, 'headers', m.headers)
 						m.handler self
+
+					if not ret or not _.isFunction(ret.then)
+						isEnd = true
+					ret
+
 			, Promise.resolve()
 
 	###*

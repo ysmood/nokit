@@ -1,6 +1,7 @@
 kit = require '../lib/kit'
 { _ } = kit
 proxy = kit.require 'proxy'
+# require '../lib/proxy'
 http = require 'http'
 
 routes = [
@@ -9,10 +10,12 @@ routes = [
 		url: /\/items\/(\d+)/
 		method: 'GET'
 		handler: ({ url, res, method }) ->
-			kit.log url[1]
+			console.log('wwwww')
 			res.end method
 	}
-	({ res }) -> res.end '404'
+	({ res }) ->
+		kit.log('last')
+		res.end '404'
 ]
 
 http.createServer proxy.mid(routes)
