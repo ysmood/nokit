@@ -19,17 +19,6 @@ module.exports = (opts) ->
 	initAutoReload = ->
 		es = new EventSource(opts.host + '/nokit-sse')
 
-		isConnected = false
-
-		es.addEventListener 'connect', (e) ->
-			# If already connected, reload the page.
-			if isConnected
-				location.reload()
-
-			data = JSON.parse e.data
-			if data == 'ok'
-				isConnected = true
-
 		es.addEventListener 'fileModified', (e) ->
 			path = JSON.parse e.data
 
