@@ -5,7 +5,9 @@ proxy = kit.require 'proxy'
 http = require 'http'
 
 routes = [
-	({ req }) -> kit.log 'access: ' + req.url
+	({ req }) ->
+		kit.log 'access: ' + req.url
+		kit.Promise.resolve()
 	{
 		url: /\/items\/(\d+)/
 		method: 'GET'

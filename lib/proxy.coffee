@@ -74,7 +74,7 @@ proxy =
 	 * ```
 	 * The `url`, `headers` and `method` are act as selectors. If current
 	 * request matches the selectors, the `handler` will be called with the
-	 * matched result. If the handler has any async operation, it should
+	 * matched result. If the handler will not end the response, it should
 	 * return a promise.
 	 * @return {Function} `(req, res) -> Promise` The http request listener.
 	 * ```coffee
@@ -82,7 +82,11 @@ proxy =
 	 * http = require 'http'
 	 *
 	 * routes = [
-	 * 	({ req }) -> kit.log 'access: ' + req.url
+	 * 	({ req }) ->
+	 * 		kit.log 'access: ' + req.url
+	 *
+	 * 		# We need the other handlers to handle the response.
+	 * 		kit.Promise.resolve()
 	 * 	{
 	 * 		url: /\/items\/(\d+)/
 	 * 		handler: ({ res, url }) ->
@@ -130,10 +134,9 @@ proxy =
 					return if isEnd
 					self = { req, res }
 
-					if _.isFunction m
-						return m self
-
-					ret = if match(self, req, 'method', m.method) and
+					ret = if _.isFunction m
+						m self
+					else if match(self, req, 'method', m.method) and
 					match(self, req, 'url', m.url) and
 					matchObj(self, req, 'headers', m.headers)
 						m.handler self
