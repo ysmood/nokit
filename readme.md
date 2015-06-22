@@ -1934,7 +1934,7 @@ Goto [changelog](doc/changelog.md)
         server.listen 8123
         ```
 
-- ## **[mid(middlewares)](lib/proxy.coffee?source#L98)**
+- ## **[mid(middlewares)](lib/proxy.coffee?source#L102)**
 
     A promise based middlewares proxy.
 
@@ -1952,7 +1952,7 @@ Goto [changelog](doc/changelog.md)
         ```
         The `url`, `headers` and `method` are act as selectors. If current
         request matches the selectors, the `handler` will be called with the
-        matched result. If the handler has any async operation, it should
+        matched result. If the handler will not end the response, it should
         return a promise.
 
     - **<u>return</u>**: { _Function_ }
@@ -1963,7 +1963,11 @@ Goto [changelog](doc/changelog.md)
         http = require 'http'
 
         routes = [
-        	({ req }) -> kit.log 'access: ' + req.url
+        	({ req }) ->
+        		kit.log 'access: ' + req.url
+
+        		# We need the other handlers to handle the response.
+        		kit.Promise.resolve()
         	{
         		url: //items/(\d+)/
         		handler: ({ res, url }) ->
@@ -1976,7 +1980,7 @@ Goto [changelog](doc/changelog.md)
         .listen 8123
         	 * ```
 
-- ## **[url(req, res, url, opts, err)](lib/proxy.coffee?source#L192)**
+- ## **[url(req, res, url, opts, err)](lib/proxy.coffee?source#L202)**
 
     Use it to proxy one url to another.
 

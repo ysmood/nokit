@@ -1,8 +1,9 @@
 # Changelog
 
-- v0.7.8
+- v0.7.9
 
   - add: proxy.mid
+  - upd: deps
 
 - v0.7.7
 

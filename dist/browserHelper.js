@@ -19,19 +19,8 @@ module.exports = function(opts) {
     return req.send(JSON.stringify(msg));
   };
   initAutoReload = function() {
-    var es, isConnected;
+    var es;
     es = new EventSource(opts.host + '/nokit-sse');
-    isConnected = false;
-    es.addEventListener('connect', function(e) {
-      var data;
-      if (isConnected) {
-        location.reload();
-      }
-      data = JSON.parse(e.data);
-      if (data === 'ok') {
-        return isConnected = true;
-      }
-    });
     return es.addEventListener('fileModified', function(e) {
       var each, m, path, reloadElem;
       path = JSON.parse(e.data);

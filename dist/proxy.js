@@ -79,7 +79,7 @@ proxy = {
   	 * ```
   	 * The `url`, `headers` and `method` are act as selectors. If current
   	 * request matches the selectors, the `handler` will be called with the
-  	 * matched result. If the handler has any async operation, it should
+  	 * matched result. If the handler will not end the response, it should
   	 * return a promise.
   	 * @return {Function} `(req, res) -> Promise` The http request listener.
   	 * ```coffee
@@ -87,7 +87,11 @@ proxy = {
   	 * http = require 'http'
   	 *
   	 * routes = [
-  	 * 	({ req }) -> kit.log 'access: ' + req.url
+  	 * 	({ req }) ->
+  	 * 		kit.log 'access: ' + req.url
+  	 *
+  	 * 		# We need the other handlers to handle the response.
+  	 * 		kit.Promise.resolve()
   	 * 	{
   	 * 		url: /\/items\/(\d+)/
   	 * 		handler: ({ res, url }) ->
@@ -129,19 +133,23 @@ proxy = {
       return true;
     };
     return function(req, res) {
+      var isEnd;
+      isEnd = false;
       return middlewares.reduce(function(p, m) {
         return p.then(function() {
-          var self;
+          var ret, self;
+          if (isEnd) {
+            return;
+          }
           self = {
             req: req,
             res: res
           };
-          if (_.isFunction(m)) {
-            return m(self);
+          ret = _.isFunction(m) ? m(self) : match(self, req, 'method', m.method) && match(self, req, 'url', m.url) && matchObj(self, req, 'headers', m.headers) ? m.handler(self) : void 0;
+          if (!ret || !_.isFunction(ret.then)) {
+            isEnd = true;
           }
-          if (match(self, req, 'method', m.method) && match(self, req, 'url', m.url) && matchObj(self, req, 'headers', m.headers)) {
-            return m.handler(self);
-          }
+          return ret;
         });
       }, Promise.resolve());
     };
