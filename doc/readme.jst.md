@@ -104,22 +104,17 @@ kit.warp 'src/**/*.coffee'
 
 By default nokit only supports js, if you want nokit to support coffee, you should install nokit like this:
 
-`npm i -g nokit coffee-cache coffee-script`
-
-> It's recommended to use coffee-cache, since large build project may
-> consume a large portion of your nofile's startup time. Of course, it's
-> optional, you may run `npm i -g nokit coffee-script` without
-> any problem.
+`npm i -g nokit coffee-script`
 
 Same works with babeljs:
 
 `npm i -g nokit babel`
 
-> Remarks: for the sake of boot performance, nokit will only load
-> `coffee-cache coffee-script/register`
-> by default. For babeljs or other precompiler, you have to
+> Remarks: for the sake of boot performance, nokit will only try to load
+> `coffee-script/register` and `babeljs/register`
+> by default. For livescript or other precompiler, you have to
 > set environment varialbe `nokitPreload` to what you want, such as on unix:
-> `export nokitPreload='babel coffee-script/register'`. Different module
+> `export nokitPreload='livescript coffee-script/register'`. Different module
 > names are separated by spaces.
 
 Create a `nofile.coffee` (or `.js`, `.ls`) at your current working directory

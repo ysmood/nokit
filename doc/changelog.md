@@ -2,6 +2,7 @@
 
 - v0.8.0
 
+  - opt: nofile preload
   - add: proxy.mid
   - upd: deps
 

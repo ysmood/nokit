@@ -58,15 +58,10 @@ task = ->
 loadNofile = ->
 	if process.env.nokitPreload
 		for lang in process.env.nokitPreload.split ' '
-			try
-				require lang + '/register'
-			catch
-				try require lang
+			try require lang
 	else
-		try
-			require 'coffee-cache'
-		catch
-			try require 'coffee-script/register'
+		try require 'babel/register'
+		try require 'coffee-script/register'
 
 	exts = _(require.extensions).keys().filter (ext) ->
 		['.json', '.node', '.litcoffee', '.coffee.md'].indexOf(ext) == -1
@@ -88,7 +83,11 @@ loadNofile = ->
 
 			kit.Promise.enableLongStackTrace()
 
-			require(path)? task, cmder.option.bind(cmder)
+			tasker = require path
+			if _.isFunction tasker
+				tasker task, cmder.option.bind(cmder)
+			else
+				kit.err 'No task found.'
 			return path
 
 	error 'Cannot find nofile'

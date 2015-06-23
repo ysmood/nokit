@@ -73,27 +73,22 @@ task = function() {
  */
 
 loadNofile = function() {
-  var base, dir, exts, i, j, lang, len, len1, path, paths, rdir, ref;
+  var dir, exts, i, j, lang, len, len1, path, paths, rdir, ref, tasker;
   if (process.env.nokitPreload) {
     ref = process.env.nokitPreload.split(' ');
     for (i = 0, len = ref.length; i < len; i++) {
       lang = ref[i];
       try {
-        require(lang + '/register');
-      } catch (_error) {
-        try {
-          require(lang);
-        } catch (_error) {}
-      }
+        require(lang);
+      } catch (_error) {}
     }
   } else {
     try {
-      require('coffee-cache');
-    } catch (_error) {
-      try {
-        require('coffee-script/register');
-      } catch (_error) {}
-    }
+      require('babel/register');
+    } catch (_error) {}
+    try {
+      require('coffee-script/register');
+    } catch (_error) {}
   }
   exts = _(require.extensions).keys().filter(function(ext) {
     return ['.json', '.node', '.litcoffee', '.coffee.md'].indexOf(ext) === -1;
@@ -113,8 +108,11 @@ loadNofile = function() {
       }
       process.chdir(dir);
       kit.Promise.enableLongStackTrace();
-      if (typeof (base = require(path)) === "function") {
-        base(task, cmder.option.bind(cmder));
+      tasker = require(path);
+      if (_.isFunction(tasker)) {
+        tasker(task, cmder.option.bind(cmder));
+      } else {
+        kit.err('No task found.');
       }
       return path;
     }
