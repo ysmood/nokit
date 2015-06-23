@@ -74,39 +74,44 @@ proxy = {
   	 * 	url: String | Regex
   	 * 	headers: String | Regex
   	 * 	method: String | Regex
-  	 * 	handler: ({ req, res, url, headers, method }) -> Promise
+  	 * 	handler: ({ body, req, res, next, url, headers, method }) -> Promise
   	 * }
   	 * ```
   	 * The `url`, `headers` and `method` are act as selectors. If current
   	 * request matches the selectors, the `handler` will be called with the
-  	 * matched result. If the handler will not end the response, it should
+  	 * matched result. If the handler has async operation inside, it should
   	 * return a promise.
+  	 * The `body` can be a `String`, `Buffer`, `Stream`, `Object` or `Promise`.
   	 * @return {Function} `(req, res) -> Promise` The http request listener.
   	 * ```coffee
   	 * proxy = kit.require 'proxy'
+  	 * Promise = kit.Promise
   	 * http = require 'http'
   	 *
-  	 * routes = [
-  	 * 	({ req }) ->
-  	 * 		kit.log 'access: ' + req.url
-  	 *
+  	 * middlewares = [
+  	 * 	->
+  	 * 		# Record the time of the whole request
+  	 * 		start = new Date
+  	 * 		this.next => kit.sleep(300).then =>
+  	 * 			this.res.setHeader 'x-response-time', new Date - start
+  	 * 	->
+  	 * 		kit.log 'access: ' + this.req.url
   	 * 		# We need the other handlers to handle the response.
-  	 * 		kit.Promise.resolve()
+  	 * 		kit.sleep(300).then => this.next
   	 * 	{
   	 * 		url: /\/items\/(\d+)/
-  	 * 		handler: ({ res, url }) ->
-  	 * 			res.end url[1]
+  	 * 		handler: -> kit.sleep(300).then =>
+  	 * 			this.body = { id: this.url[1] }
   	 * 	}
-  	 * 	({ res }) -> res.end '404'
   	 * ]
   	 *
-  	 * http.createServer proxy.mid(routes)
+  	 * http.createServer proxy.mid(middlewares)
   	 * .listen 8123
   	 * 	 * ```
    */
   mid: function(middlewares) {
-    var match, matchObj, url;
-    url = kit.require('url');
+    var Stream, endRes, match, matchObj, next;
+    Stream = require('stream');
     match = function(self, obj, key, pattern) {
       var ret;
       if (pattern === void 0) {
@@ -132,26 +137,85 @@ proxy = {
       self[key] = ret;
       return true;
     };
+    next = function(fn) {
+      if (!fn) {
+        return next;
+      }
+      if (this.nextFns == null) {
+        this.nextFns = [];
+      }
+      this.nextFns.push(fn);
+      return next;
+    };
+    endRes = function(res, body) {
+      switch (typeof body) {
+        case 'string':
+          res.end(body);
+          break;
+        case 'object':
+          if (body === null) {
+            res.end();
+          } else if (body instanceof Stream) {
+            body.pipe(res);
+          } else if (body instanceof Buffer) {
+            res.end(body);
+          } else if (_.isFunction(body.then)) {
+            body.then(function(body) {
+              return endRes(res, body);
+            });
+          } else {
+            res.setHeader('Content-type', 'application/json');
+            res.end(JSON.stringify(body));
+          }
+          break;
+        default:
+          res.end();
+      }
+    };
     return function(req, res) {
-      var isEnd;
-      isEnd = false;
-      return middlewares.reduce(function(p, m) {
-        return p.then(function() {
-          var ret, self;
-          if (isEnd) {
-            return;
+      var end, index, iter, self;
+      index = 0;
+      self = {
+        req: req,
+        res: res,
+        body: null,
+        next: next
+      };
+      end = function() {
+        var fn, i, len, p, ref;
+        if (self.nextFns) {
+          p = Promise.resolve();
+          ref = self.nextFns;
+          for (i = 0, len = ref.length; i < len; i++) {
+            fn = ref[i];
+            p = p.then(fn);
           }
-          self = {
-            req: req,
-            res: res
-          };
-          ret = _.isFunction(m) ? m(self) : match(self, req, 'method', m.method) && match(self, req, 'url', m.url) && matchObj(self, req, 'headers', m.headers) ? m.handler(self) : void 0;
-          if (!ret || !_.isFunction(ret.then)) {
-            isEnd = true;
-          }
-          return ret;
-        });
-      }, Promise.resolve());
+          p.then(function() {
+            return endRes(res, self.body);
+          });
+        } else {
+          endRes(res, self.body);
+        }
+      };
+      iter = function(flag) {
+        var m, ret;
+        if (flag !== next) {
+          return end();
+        }
+        m = middlewares[index++];
+        if (!m) {
+          res.statusCode = 404;
+          self.body = http.STATUS_CODES[404];
+          return end();
+        }
+        ret = _.isFunction(m) ? m.call(self) : match(self, req, 'method', m.method) && match(self, req, 'url', m.url) && matchObj(self, req, 'headers', m.headers) ? m.handler.call(self) : next;
+        if (ret && _.isFunction(ret.then)) {
+          ret.then(iter);
+        } else {
+          iter(ret);
+        }
+      };
+      iter(next);
     };
   },
 

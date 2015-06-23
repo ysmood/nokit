@@ -25,7 +25,7 @@ Nokit has provided a cli tool like GNU Make. If you install it globally like thi
 
 `npm -g i nokit`
 
-, then have fun with your `nofile`, it can be js, coffee or livescript. For more information goto the `CLI` section.
+, then have fun with your `nofile`, it can be js, coffee, babeljs or livescript. For more information goto the `CLI` section.
 
 # Quick Start
 
@@ -111,15 +111,15 @@ By default nokit only supports js, if you want nokit to support coffee, you shou
 > optional, you may run `npm i -g nokit coffee-script` without
 > any problem.
 
-Same works with livescript:
+Same works with babeljs:
 
-`npm i -g nokit LiveScript`
+`npm i -g nokit babel`
 
 > Remarks: for the sake of boot performance, nokit will only load
 > `coffee-cache coffee-script/register`
-> by default. For livescript or other precompiler, you have to
+> by default. For babeljs or other precompiler, you have to
 > set environment varialbe `nokitPreload` to what you want, such as on unix:
-> `export nokitPreload='LiveScript coffee-script/register'`. Different module
+> `export nokitPreload='babel coffee-script/register'`. Different module
 > names are separated by spaces.
 
 Create a `nofile.coffee` (or `.js`, `.ls`) at your current working directory
@@ -1934,7 +1934,7 @@ Goto [changelog](doc/changelog.md)
         server.listen 8123
         ```
 
-- ## **[mid(middlewares)](lib/proxy.coffee?source#L102)**
+- ## **[mid(middlewares)](lib/proxy.coffee?source#L107)**
 
     A promise based middlewares proxy.
 
@@ -1947,40 +1947,45 @@ Goto [changelog](doc/changelog.md)
         	url: String | Regex
         	headers: String | Regex
         	method: String | Regex
-        	handler: ({ req, res, url, headers, method }) -> Promise
+        	handler: ({ body, req, res, next, url, headers, method }) -> Promise
         }
         ```
         The `url`, `headers` and `method` are act as selectors. If current
         request matches the selectors, the `handler` will be called with the
-        matched result. If the handler will not end the response, it should
+        matched result. If the handler has async operation inside, it should
         return a promise.
+        The `body` can be a `String`, `Buffer`, `Stream`, `Object` or `Promise`.
 
     - **<u>return</u>**: { _Function_ }
 
         `(req, res) -> Promise` The http request listener.
         ```coffee
         proxy = kit.require 'proxy'
+        Promise = kit.Promise
         http = require 'http'
 
-        routes = [
-        	({ req }) ->
-        		kit.log 'access: ' + req.url
-
+        middlewares = [
+        	->
+        		# Record the time of the whole request
+        		start = new Date
+        		this.next => kit.sleep(300).then =>
+        			this.res.setHeader 'x-response-time', new Date - start
+        	->
+        		kit.log 'access: ' + this.req.url
         		# We need the other handlers to handle the response.
-        		kit.Promise.resolve()
+        		kit.sleep(300).then => this.next
         	{
         		url: //items/(\d+)/
-        		handler: ({ res, url }) ->
-        			res.end url[1]
+        		handler: -> kit.sleep(300).then =>
+        			this.body = { id: this.url[1] }
         	}
-        	({ res }) -> res.end '404'
         ]
 
-        http.createServer proxy.mid(routes)
+        http.createServer proxy.mid(middlewares)
         .listen 8123
         	 * ```
 
-- ## **[url(req, res, url, opts, err)](lib/proxy.coffee?source#L202)**
+- ## **[url(req, res, url, opts, err)](lib/proxy.coffee?source#L262)**
 
     Use it to proxy one url to another.
 

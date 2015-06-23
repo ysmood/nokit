@@ -73,14 +73,18 @@ task = function() {
  */
 
 loadNofile = function() {
-  var dir, exts, i, j, lang, len, len1, path, paths, rdir, ref;
+  var base, dir, exts, i, j, lang, len, len1, path, paths, rdir, ref;
   if (process.env.nokitPreload) {
     ref = process.env.nokitPreload.split(' ');
     for (i = 0, len = ref.length; i < len; i++) {
       lang = ref[i];
       try {
-        require(lang);
-      } catch (_error) {}
+        require(lang + '/register');
+      } catch (_error) {
+        try {
+          require(lang);
+        } catch (_error) {}
+      }
     }
   } else {
     try {
@@ -109,7 +113,9 @@ loadNofile = function() {
       }
       process.chdir(dir);
       kit.Promise.enableLongStackTrace();
-      require(path)(task, cmder.option.bind(cmder));
+      if (typeof (base = require(path)) === "function") {
+        base(task, cmder.option.bind(cmder));
+      }
       return path;
     }
   }
