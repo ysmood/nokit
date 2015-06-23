@@ -58,7 +58,10 @@ task = ->
 loadNofile = ->
 	if process.env.nokitPreload
 		for lang in process.env.nokitPreload.split ' '
-			try require lang
+			try
+				require lang + '/register'
+			catch
+				try require lang
 	else
 		try
 			require 'coffee-cache'
@@ -85,7 +88,7 @@ loadNofile = ->
 
 			kit.Promise.enableLongStackTrace()
 
-			require(path) task, cmder.option.bind(cmder)
+			require(path)? task, cmder.option.bind(cmder)
 			return path
 
 	error 'Cannot find nofile'

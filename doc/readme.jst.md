@@ -25,7 +25,7 @@ Nokit has provided a cli tool like GNU Make. If you install it globally like thi
 
 `npm -g i nokit`
 
-, then have fun with your `nofile`, it can be js, coffee or livescript. For more information goto the `CLI` section.
+, then have fun with your `nofile`, it can be js, coffee, babeljs or livescript. For more information goto the `CLI` section.
 
 # Quick Start
 
@@ -111,15 +111,15 @@ By default nokit only supports js, if you want nokit to support coffee, you shou
 > optional, you may run `npm i -g nokit coffee-script` without
 > any problem.
 
-Same works with livescript:
+Same works with babeljs:
 
-`npm i -g nokit LiveScript`
+`npm i -g nokit babel`
 
 > Remarks: for the sake of boot performance, nokit will only load
 > `coffee-cache coffee-script/register`
-> by default. For livescript or other precompiler, you have to
+> by default. For babeljs or other precompiler, you have to
 > set environment varialbe `nokitPreload` to what you want, such as on unix:
-> `export nokitPreload='LiveScript coffee-script/register'`. Different module
+> `export nokitPreload='babel coffee-script/register'`. Different module
 > names are separated by spaces.
 
 Create a `nofile.coffee` (or `.js`, `.ls`) at your current working directory
