@@ -69,38 +69,42 @@ proxy =
 	 * 	url: String | Regex
 	 * 	headers: String | Regex
 	 * 	method: String | Regex
-	 * 	handler: ({ req, res, url, headers, method }) -> Promise
+	 * 	handler: ({ body, req, res, next, url, headers, method }) -> Promise
 	 * }
 	 * ```
 	 * The `url`, `headers` and `method` are act as selectors. If current
 	 * request matches the selectors, the `handler` will be called with the
-	 * matched result. If the handler will not end the response, it should
+	 * matched result. If the handler has async operation inside, it should
 	 * return a promise.
 	 * @return {Function} `(req, res) -> Promise` The http request listener.
 	 * ```coffee
 	 * proxy = kit.require 'proxy'
+	 * Promise = kit.Promise
 	 * http = require 'http'
 	 *
 	 * routes = [
-	 * 	({ req }) ->
-	 * 		kit.log 'access: ' + req.url
-	 *
+	 * 	->
+	 * 		# Record the time of the whole request
+	 * 		start = new Date
+	 * 		this.next => kit.sleep(300).then =>
+	 * 			this.res.setHeader 'x-response-time', new Date - start
+	 * 	->
+	 * 		kit.log 'access: ' + this.req.url
 	 * 		# We need the other handlers to handle the response.
-	 * 		kit.Promise.resolve()
+	 * 		kit.sleep(300).then => this.next
 	 * 	{
 	 * 		url: /\/items\/(\d+)/
-	 * 		handler: ({ res, url }) ->
-	 * 			res.end url[1]
+	 * 		handler: -> kit.sleep(300).then =>
+	 * 			this.body = { id: this.url[1] }
 	 * 	}
-	 * 	({ res }) -> res.end '404'
-	 * ]
+	 * 	]
 	 *
 	 * http.createServer proxy.mid(routes)
 	 * .listen 8123
 	 * 	 * ```
 	###
 	mid: (middlewares) ->
-		url = kit.require 'url'
+		Stream = require 'stream'
 
 		match = (self, obj, key, pattern) ->
 			return true if pattern == undefined
@@ -127,30 +131,78 @@ proxy =
 			self[key] = ret
 			return true
 
+		next = (fn) ->
+			return next if not fn
+			@nextFns ?= []
+			@nextFns.push fn
+			return next
+
+		endRes = (res, body) ->
+			switch typeof body
+				when 'string'
+					res.end body
+				when 'object'
+					if body == null
+						res.end()
+					else if body instanceof Stream
+						body.pipe res
+					else if body instanceof Buffer
+						res.end body
+					else
+						res.setHeader 'Content-type', 'application/json'
+						res.end JSON.stringify body
+				else
+					res.end()
+
+			return
+
 		(req, res) ->
-			isEnd = false
-			self = { req, res, body: null, remains: _.clone middlewares }
+			index = 0
 
-			p = Promise.resolve()
+			self = { req, res, body: null, next }
 
-			iter = ->
-				p = p.then ->
-					m = self.remains.shift()
+			end = ->
+				if self.nextFns
+					p = Promise.resolve()
+					for fn in self.nextFns
+						p = p.then fn
+					p.then ->
+						endRes res, self.body
+				else
+					endRes res, self.body
 
-					if not m
-						res.end self.body
-						return
+				return
 
-					if _.isFunction m
-						m.call self
-					else if match(self, req, 'method', m.method) and
-					match(self, req, 'url', m.url) and
-					matchObj(self, req, 'headers', m.headers)
-						m.handler.call self
+			iter = (flag) ->
+				if flag != next
+					return end()
 
-					iter()
+				m = middlewares[index++]
 
-			iter()
+				if not m
+					res.statusCode = 404
+					self.body = http.STATUS_CODES[404]
+					return end()
+
+				ret = if _.isFunction m
+					m.call self
+				else if match(self, req, 'method', m.method) and
+				match(self, req, 'url', m.url) and
+				matchObj(self, req, 'headers', m.headers)
+					m.handler.call self
+				else
+					next
+
+				if ret and _.isFunction(ret.then)
+					ret.then iter
+				else
+					iter ret
+
+				return
+
+			iter next
+
+			return
 
 	###*
 	 * Use it to proxy one url to another.
