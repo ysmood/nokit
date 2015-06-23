@@ -129,23 +129,28 @@ proxy =
 
 		(req, res) ->
 			isEnd = false
-			middlewares.reduce (p, m) ->
-				p.then ->
-					return if isEnd
-					self = { req, res }
+			self = { req, res, body: null, remains: _.clone middlewares }
 
-					ret = if _.isFunction m
-						m self
+			p = Promise.resolve()
+
+			iter = ->
+				p = p.then ->
+					m = self.remains.shift()
+
+					if not m
+						res.end self.body
+						return
+
+					if _.isFunction m
+						m.call self
 					else if match(self, req, 'method', m.method) and
 					match(self, req, 'url', m.url) and
 					matchObj(self, req, 'headers', m.headers)
-						m.handler self
+						m.handler.call self
 
-					if not ret or not _.isFunction(ret.then)
-						isEnd = true
-					ret
+					iter()
 
-			, Promise.resolve()
+			iter()
 
 	###*
 	 * Use it to proxy one url to another.

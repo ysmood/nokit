@@ -1,23 +1,27 @@
 kit = require '../lib/kit'
-{ _ } = kit
+{ _, Promise } = kit
 proxy = kit.require 'proxy'
 # require '../lib/proxy'
 http = require 'http'
 
 routes = [
-	({ req }) ->
-		kit.log 'access: ' + req.url
-		kit.Promise.resolve()
+	->
+		kit.log 'access: ' + this.req.url
+
+		start = new Date
+		this.remains.push =>
+			this.res.setHeader 'x-response-time', new Date - start
+
 	{
 		url: /\/items\/(\d+)/
 		method: 'GET'
-		handler: ({ url, res, method }) ->
-			console.log('wwwww')
-			res.end method
+		handler: ->
+			console.log 'method'
+			this.body = this.method
 	}
-	({ res }) ->
-		kit.log('last')
-		res.end '404'
+
+	->
+		this.body = '404'
 ]
 
 http.createServer proxy.mid(routes)
@@ -25,7 +29,4 @@ http.createServer proxy.mid(routes)
 .listen 8123, ->
 	kit.log 'listen ' + 8123
 
-	kit.request {
-		url: '127.0.0.1:8123/items/10?a=10'
-	}
-	.then kit.log
+	kit.spawn 'http', ['127.0.0.1:8123/items/10?a=10']
