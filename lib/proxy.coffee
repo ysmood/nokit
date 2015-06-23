@@ -83,7 +83,7 @@ proxy =
 	 * Promise = kit.Promise
 	 * http = require 'http'
 	 *
-	 * routes = [
+	 * middlewares = [
 	 * 	->
 	 * 		# Record the time of the whole request
 	 * 		start = new Date
@@ -98,9 +98,9 @@ proxy =
 	 * 		handler: -> kit.sleep(300).then =>
 	 * 			this.body = { id: this.url[1] }
 	 * 	}
-	 * 	]
+	 * ]
 	 *
-	 * http.createServer proxy.mid(routes)
+	 * http.createServer proxy.mid(middlewares)
 	 * .listen 8123
 	 * 	 * ```
 	###
