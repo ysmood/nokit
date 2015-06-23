@@ -18,7 +18,7 @@ routes = [
 	{
 		url: /\/items\/(\d+)/
 		handler: -> kit.sleep(300).then =>
-			this.body = { id: this.url[1] }
+			this.body = kit.readJSON 'package.json'
 	}
 ]
 

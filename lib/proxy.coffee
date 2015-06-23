@@ -76,6 +76,7 @@ proxy =
 	 * request matches the selectors, the `handler` will be called with the
 	 * matched result. If the handler has async operation inside, it should
 	 * return a promise.
+	 * The `body` can be a `String`, `Buffer`, `Stream`, `Object` or `Promise`.
 	 * @return {Function} `(req, res) -> Promise` The http request listener.
 	 * ```coffee
 	 * proxy = kit.require 'proxy'
@@ -148,6 +149,8 @@ proxy =
 						body.pipe res
 					else if body instanceof Buffer
 						res.end body
+					else if _.isFunction body.then
+						body.then (body) -> endRes res, body
 					else
 						res.setHeader 'Content-type', 'application/json'
 						res.end JSON.stringify body
