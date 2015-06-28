@@ -78,6 +78,7 @@ proxy =
 	 * return a promise.
 	 * The `body` can be a `String`, `Buffer`, `Stream`, `Object` or `Promise`.
 	 * @return {Function} `(req, res) -> Promise` The http request listener.
+	 * @example
 	 * ```coffee
 	 * proxy = kit.require 'proxy'
 	 * Promise = kit.Promise

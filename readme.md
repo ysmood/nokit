@@ -1929,7 +1929,7 @@ Goto [changelog](doc/changelog.md)
         server.listen 8123
         ```
 
-- ## **[mid(middlewares)](lib/proxy.coffee?source#L107)**
+- ## **[mid(middlewares)](lib/proxy.coffee?source#L108)**
 
     A promise based middlewares proxy.
 
@@ -1954,6 +1954,9 @@ Goto [changelog](doc/changelog.md)
     - **<u>return</u>**: { _Function_ }
 
         `(req, res) -> Promise` The http request listener.
+
+    - **<u>example</u>**:
+
         ```coffee
         proxy = kit.require 'proxy'
         Promise = kit.Promise
@@ -1980,7 +1983,7 @@ Goto [changelog](doc/changelog.md)
         .listen 8123
         	 * ```
 
-- ## **[url(req, res, url, opts, err)](lib/proxy.coffee?source#L262)**
+- ## **[url(req, res, url, opts, err)](lib/proxy.coffee?source#L263)**
 
     Use it to proxy one url to another.
 
