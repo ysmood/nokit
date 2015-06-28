@@ -73,7 +73,7 @@ task = function() {
  */
 
 loadNofile = function() {
-  var dir, exts, i, j, lang, len, len1, path, paths, rdir, ref, tasker;
+  var dir, exts, i, j, lang, len, len1, load, path, paths, rdir, ref;
   if (process.env.nokitPreload) {
     ref = process.env.nokitPreload.split(' ');
     for (i = 0, len = ref.length; i < len; i++) {
@@ -93,6 +93,20 @@ loadNofile = function() {
   exts = _(require.extensions).keys().filter(function(ext) {
     return ['.json', '.node', '.litcoffee', '.coffee.md'].indexOf(ext) === -1;
   });
+  load = function(path) {
+    var tasker;
+    kit.Promise.enableLongStackTrace();
+    tasker = require(path);
+    if (_.isFunction(tasker)) {
+      tasker(task, cmder.option.bind(cmder));
+    } else {
+      kit.err('No task found.');
+    }
+    return path;
+  };
+  if (process.env.nofile) {
+    return load(process.env.nofile);
+  }
   paths = kit.genModulePaths('nofile', process.cwd(), '').reduce(function(s, p) {
     return s.concat(exts.map(function(ext) {
       return p + ext;
@@ -107,14 +121,7 @@ loadNofile = function() {
         kit.log(cls.cyan('Change Working Direcoty: ') + cls.green(rdir));
       }
       process.chdir(dir);
-      kit.Promise.enableLongStackTrace();
-      tasker = require(path);
-      if (_.isFunction(tasker)) {
-        tasker(task, cmder.option.bind(cmder));
-      } else {
-        kit.err('No task found.');
-      }
-      return path;
+      return load(path);
     }
   }
   return error('Cannot find nofile');

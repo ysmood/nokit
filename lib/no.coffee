@@ -66,6 +66,19 @@ loadNofile = ->
 	exts = _(require.extensions).keys().filter (ext) ->
 		['.json', '.node', '.litcoffee', '.coffee.md'].indexOf(ext) == -1
 
+	load = (path) ->
+		kit.Promise.enableLongStackTrace()
+
+		tasker = require path
+		if _.isFunction tasker
+			tasker task, cmder.option.bind(cmder)
+		else
+			kit.err 'No task found.'
+		return path
+
+	if process.env.nofile
+		return load process.env.nofile
+
 	paths = kit.genModulePaths 'nofile', process.cwd(), ''
 		.reduce (s, p) ->
 			s.concat exts.map((ext) -> p + ext).value()
@@ -81,14 +94,7 @@ loadNofile = ->
 
 			process.chdir dir
 
-			kit.Promise.enableLongStackTrace()
-
-			tasker = require path
-			if _.isFunction tasker
-				tasker task, cmder.option.bind(cmder)
-			else
-				kit.err 'No task found.'
-			return path
+			return load path
 
 	error 'Cannot find nofile'
 
