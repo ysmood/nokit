@@ -62,57 +62,82 @@ proxy =
 
 	###*
 	 * A promise based middlewares proxy.
-	 * @param  {Array} middlewares Each item is a function `(self) -> Promise`,
+	 * @param  {Array} middlewares Each item is a function `(ctx) -> Promise`,
 	 * or an object:
 	 * ```coffee
 	 * {
-	 * 	url: String | Regex
-	 * 	headers: String | Regex
-	 * 	method: String | Regex
+	 * 	url: String | Regex | Function
+	 * 	headers: String | Regex | Function
+	 * 	method: String | Regex | Function
 	 * 	handler: ({ body, req, res, next, url, headers, method }) -> Promise
 	 * }
 	 * ```
 	 * The `url`, `headers` and `method` are act as selectors. If current
 	 * request matches the selectors, the `handler` will be called with the
-	 * matched result. If the handler has async operation inside, it should
+	 * matched regex result. If the handler has async operation inside, it should
 	 * return a promise.
+	 * <h4>body</h4>
 	 * The `body` can be a `String`, `Buffer`, `Stream`, `Object` or `Promise`.
+	 * If `body == next`, the proxy won't end the request automatically, which means
+	 * you can handle the `res.end()` yourself.
+	 * <h4>`next`</h4>
+	 * The `next = (fn) -> next` function is a function that returns itself. Any handler that
+	 * resolves the `next` will be treated as a middleware. The functions passed to
+	 * `next` will be executed before the whole http request ends.
 	 * @return {Function} `(req, res) -> Promise` The http request listener.
 	 * @example
 	 * ```coffee
 	 * proxy = kit.require 'proxy'
-	 * Promise = kit.Promise
 	 * http = require 'http'
 	 *
 	 * middlewares = [
-	 * 	(self) ->
+	 * 	(ctx) ->
 	 * 		# Record the time of the whole request
 	 * 		start = new Date
-	 * 		self.next => kit.sleep(300).then =>
-	 * 			self.res.setHeader 'x-response-time', new Date - start
-	 * 	(self) ->
-	 * 		kit.log 'access: ' + self.req.url
+	 * 		ctx.next => kit.sleep(300).then =>
+	 * 			ctx.res.setHeader 'x-response-time', new Date - start
+	 * 	(ctx) ->
+	 * 		kit.log 'access: ' + ctx.req.url
 	 * 		# We need the other handlers to handle the response.
-	 * 		kit.sleep(300).then -> self.next
+	 * 		kit.sleep(300).then -> ctx.next
 	 * 	{
 	 * 		url: /\/items\/(\d+)/
-	 * 		handler: (self) -> kit.sleep(300).then =>
-	 * 			self.body = { id: self.url[1] }
+	 * 		handler: (ctx) ->
+	 * 			ctx.body = kit.sleep(300).then -> { id: ctx.url[1] }
 	 * 	}
 	 * ]
 	 *
-	 * http.createServer proxy.mid(middlewares)
-	 * .listen 8123
-	 * 	 * ```
+	 * http.createServer proxy.mid(middlewares).listen 8123
+	 * ```
+	 * @example
+	 * Use with normal thrid middlewares. This example will map
+	 * `http://127.0.0.1:8123/st` to the `static` folder.
+	 * ```coffee
+	 * proxy = kit.require 'proxy'
+	 * http = require 'http'
+	 * send = require 'send'
+	 *
+	 * middlewares = [
+	 * 	{
+	 * 		url: '/st'
+	 * 		handler: (ctx) ->
+	 * 			ctx.body = send(ctx.req, ctx.url, { root: 'static' })
+	 * 	}
+	 * ]
+	 *
+	 * http.createServer proxy.mid(middlewares).listen 8123
+	 * ```
 	###
 	mid: (middlewares) ->
 		Stream = require 'stream'
 
-		match = (self, obj, key, pattern) ->
+		match = (ctx, obj, key, pattern) ->
 			return true if pattern == undefined
 
-			ret = if _.isString pattern
-				if _.startsWith(obj[key], pattern)
+			ret = if _.isString(pattern) and _.startsWith(obj[key], pattern)
+				if key == 'url'
+					obj[key].slice pattern.length
+				else
 					obj[key]
 			else if _.isRegExp pattern
 				obj[key].match pattern
@@ -120,9 +145,9 @@ proxy =
 				pattern obj[key]
 
 			if ret != undefined
-				self[key] = ret
+				ctx[key] = ret
 
-		matchObj = (self, obj, key, target) ->
+		matchObj = (ctx, obj, key, target) ->
 			return true if target == undefined
 
 			ret = {}
@@ -130,7 +155,7 @@ proxy =
 			for k, v of target
 				return false if not match ret, obj[key], k, v
 
-			self[key] = ret
+			ctx[key] = ret
 			return true
 
 		next = (fn) ->
@@ -146,6 +171,8 @@ proxy =
 				when 'object'
 					if body == null
 						res.end()
+					else if body == next
+						return
 					else if body instanceof Stream
 						body.pipe res
 					else if body instanceof Buffer
@@ -165,17 +192,17 @@ proxy =
 		(req, res) ->
 			index = 0
 
-			self = { req, res, body: null, next }
+			ctx = { req, res, body: null, next }
 
 			end = ->
-				if self.nextFns
+				if ctx.nextFns
 					p = Promise.resolve()
-					for fn in self.nextFns
+					for fn in ctx.nextFns
 						p = p.then fn
 					p.then ->
-						endRes res, self.body
+						endRes res, ctx.body
 				else
-					endRes res, self.body
+					endRes res, ctx.body
 
 				return
 
@@ -187,15 +214,15 @@ proxy =
 
 				if not m
 					res.statusCode = 404
-					self.body = http.STATUS_CODES[404]
+					ctx.body = http.STATUS_CODES[404]
 					return end()
 
 				ret = if _.isFunction m
-					m self
-				else if match(self, req, 'method', m.method) and
-				match(self, req, 'url', m.url) and
-				matchObj(self, req, 'headers', m.headers)
-					m.handler self
+					m ctx
+				else if match(ctx, req, 'method', m.method) and
+				match(ctx, req, 'url', m.url) and
+				matchObj(ctx, req, 'headers', m.headers)
+					m.handler ctx
 				else
 					next
 
