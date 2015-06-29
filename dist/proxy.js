@@ -172,6 +172,9 @@ proxy = {
       return next;
     };
     endRes = function(res, body) {
+      if (body === next) {
+        return;
+      }
       switch (typeof body) {
         case 'string':
           res.end(body);
@@ -179,8 +182,6 @@ proxy = {
         case 'object':
           if (body === null) {
             res.end();
-          } else if (body === next) {
-            return;
           } else if (body instanceof Stream) {
             body.pipe(res);
           } else if (body instanceof Buffer) {
