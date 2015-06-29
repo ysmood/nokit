@@ -67,63 +67,86 @@ proxy = {
 
   /**
   	 * A promise based middlewares proxy.
-  	 * @param  {Array} middlewares Each item is a function `({ req, res }) -> Promise`,
+  	 * @param  {Array} middlewares Each item is a function `(ctx) -> Promise`,
   	 * or an object:
   	 * ```coffee
   	 * {
-  	 * 	url: String | Regex
-  	 * 	headers: String | Regex
-  	 * 	method: String | Regex
+  	 * 	url: String | Regex | Function
+  	 * 	headers: String | Regex | Function
+  	 * 	method: String | Regex | Function
   	 * 	handler: ({ body, req, res, next, url, headers, method }) -> Promise
   	 * }
   	 * ```
   	 * The `url`, `headers` and `method` are act as selectors. If current
   	 * request matches the selectors, the `handler` will be called with the
-  	 * matched result. If the handler has async operation inside, it should
+  	 * matched regex result. If the handler has async operation inside, it should
   	 * return a promise.
+  	 * <h4>body</h4>
   	 * The `body` can be a `String`, `Buffer`, `Stream`, `Object` or `Promise`.
+  	 * If `body == next`, the proxy won't end the request automatically, which means
+  	 * you can handle the `res.end()` yourself.
+  	 * <h4>`next`</h4>
+  	 * The `next = (fn) -> next` function is a function that returns itself. Any handler that
+  	 * resolves the `next` will be treated as a middleware. The functions passed to
+  	 * `next` will be executed before the whole http request ends.
   	 * @return {Function} `(req, res) -> Promise` The http request listener.
   	 * @example
   	 * ```coffee
   	 * proxy = kit.require 'proxy'
-  	 * Promise = kit.Promise
   	 * http = require 'http'
   	 *
   	 * middlewares = [
-  	 * 	->
+  	 * 	(ctx) ->
   	 * 		# Record the time of the whole request
   	 * 		start = new Date
-  	 * 		this.next => kit.sleep(300).then =>
-  	 * 			this.res.setHeader 'x-response-time', new Date - start
-  	 * 	->
-  	 * 		kit.log 'access: ' + this.req.url
+  	 * 		ctx.next => kit.sleep(300).then =>
+  	 * 			ctx.res.setHeader 'x-response-time', new Date - start
+  	 * 	(ctx) ->
+  	 * 		kit.log 'access: ' + ctx.req.url
   	 * 		# We need the other handlers to handle the response.
-  	 * 		kit.sleep(300).then => this.next
+  	 * 		kit.sleep(300).then -> ctx.next
   	 * 	{
   	 * 		url: /\/items\/(\d+)/
-  	 * 		handler: -> kit.sleep(300).then =>
-  	 * 			this.body = { id: this.url[1] }
+  	 * 		handler: (ctx) ->
+  	 * 			ctx.body = kit.sleep(300).then -> { id: ctx.url[1] }
   	 * 	}
   	 * ]
   	 *
-  	 * http.createServer proxy.mid(middlewares)
-  	 * .listen 8123
-  	 * 	 * ```
+  	 * http.createServer proxy.mid(middlewares).listen 8123
+  	 * ```
+  	 * @example
+  	 * Use with normal thrid middlewares. This example will map
+  	 * `http://127.0.0.1:8123/st` to the `static` folder.
+  	 * ```coffee
+  	 * proxy = kit.require 'proxy'
+  	 * http = require 'http'
+  	 * send = require 'send'
+  	 *
+  	 * middlewares = [
+  	 * 	{
+  	 * 		url: '/st'
+  	 * 		handler: (ctx) ->
+  	 * 			ctx.body = send(ctx.req, ctx.url, { root: 'static' })
+  	 * 	}
+  	 * ]
+  	 *
+  	 * http.createServer proxy.mid(middlewares).listen 8123
+  	 * ```
    */
   mid: function(middlewares) {
     var Stream, endRes, match, matchObj, next;
     Stream = require('stream');
-    match = function(self, obj, key, pattern) {
+    match = function(ctx, obj, key, pattern) {
       var ret;
       if (pattern === void 0) {
         return true;
       }
-      ret = _.isString(pattern) ? _.startsWith(obj[key], pattern) ? obj[key] : void 0 : _.isRegExp(pattern) ? obj[key].match(pattern) : _.isFunction(pattern) ? pattern(obj[key]) : void 0;
+      ret = _.isString(pattern) && _.startsWith(obj[key], pattern) ? key === 'url' ? obj[key].slice(pattern.length) : obj[key] : _.isRegExp(pattern) ? obj[key].match(pattern) : _.isFunction(pattern) ? pattern(obj[key]) : void 0;
       if (ret !== void 0) {
-        return self[key] = ret;
+        return ctx[key] = ret;
       }
     };
-    matchObj = function(self, obj, key, target) {
+    matchObj = function(ctx, obj, key, target) {
       var k, ret, v;
       if (target === void 0) {
         return true;
@@ -135,7 +158,7 @@ proxy = {
           return false;
         }
       }
-      self[key] = ret;
+      ctx[key] = ret;
       return true;
     };
     next = function(fn) {
@@ -156,6 +179,8 @@ proxy = {
         case 'object':
           if (body === null) {
             res.end();
+          } else if (body === next) {
+            return;
           } else if (body instanceof Stream) {
             body.pipe(res);
           } else if (body instanceof Buffer) {
@@ -169,14 +194,17 @@ proxy = {
             res.end(JSON.stringify(body));
           }
           break;
-        default:
+        case 'undefined':
           res.end();
+          break;
+        default:
+          res.end(body.toString());
       }
     };
     return function(req, res) {
-      var end, index, iter, self;
+      var ctx, end, index, iter;
       index = 0;
-      self = {
+      ctx = {
         req: req,
         res: res,
         body: null,
@@ -184,18 +212,18 @@ proxy = {
       };
       end = function() {
         var fn, i, len, p, ref;
-        if (self.nextFns) {
+        if (ctx.nextFns) {
           p = Promise.resolve();
-          ref = self.nextFns;
+          ref = ctx.nextFns;
           for (i = 0, len = ref.length; i < len; i++) {
             fn = ref[i];
             p = p.then(fn);
           }
           p.then(function() {
-            return endRes(res, self.body);
+            return endRes(res, ctx.body);
           });
         } else {
-          endRes(res, self.body);
+          endRes(res, ctx.body);
         }
       };
       iter = function(flag) {
@@ -206,10 +234,10 @@ proxy = {
         m = middlewares[index++];
         if (!m) {
           res.statusCode = 404;
-          self.body = http.STATUS_CODES[404];
+          ctx.body = http.STATUS_CODES[404];
           return end();
         }
-        ret = _.isFunction(m) ? m.call(self) : match(self, req, 'method', m.method) && match(self, req, 'url', m.url) && matchObj(self, req, 'headers', m.headers) ? m.handler.call(self) : next;
+        ret = _.isFunction(m) ? m(ctx) : match(ctx, req, 'method', m.method) && match(ctx, req, 'url', m.url) && matchObj(ctx, req, 'headers', m.headers) ? m.handler(ctx) : next;
         if (ret && _.isFunction(ret.then)) {
           ret.then(iter);
         } else {

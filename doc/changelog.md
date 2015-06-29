@@ -1,5 +1,10 @@
 # Changelog
 
+- v0.8.2
+
+  - upd: deps
+  - opt: proxy.mid
+
 - v0.8.1
 
   - opt: nofile preload

@@ -13,7 +13,8 @@ kit = {};
 
 
 /**
- * Nokit extends all the functions of [nofs](https://github.com/ysmood/nofs).
+ * Nokit extends all the functions of [nofs](https://github.com/ysmood/nofs)
+ * and [`yaku/lib/utils`](https://github.com/ysmood/yaku#utils).
  * You can use it as same as nofs. For more info, see the doc:
  *
  * [Offline Documentation](?gotoDoc=nofs/readme.md)
@@ -35,7 +36,7 @@ kit = {};
 
 Overview = 'overview';
 
-_.extend(kit, fs, {
+_.extend(kit, fs, fs.PromiseUtils, {
 
   /**
   	 * The [lodash](https://lodash.com) lib.
@@ -47,144 +48,6 @@ _.extend(kit, fs, {
    */
   _: _,
   requireCache: {},
-
-  /**
-  	 * An throttled version of `Promise.all`, it runs all the tasks under
-  	 * a concurrent limitation.
-  	 * To run tasks sequentially, use `kit.flow`.
-  	 * @param  {Int} limit The max task to run at a time. It's optional.
-  	 * Default is Infinity.
-  	 * @param  {Array | Function} list
-  	 * If the list is an array, it should be a list of functions or promises,
-  	 * and each function will return a promise.
-  	 * If the list is a function, it should be a iterator that returns
-  	 * a promise, when it returns `kit.async.end`, the iteration ends.
-  	 * @param {Boolean} saveResults Whether to save each promise's result or
-  	 * not. Default is true.
-  	 * @param {Function} progress If a task ends, the resolve value will be
-  	 * passed to this function.
-  	 * @return {Promise}
-  	 * @example
-  	 * ```coffee
-  	 * urls = [
-  	 * 	'http://a.com'
-  	 * 	'http://b.com'
-  	 * 	'http://c.com'
-  	 * 	'http://d.com'
-  	 * ]
-  	 * tasks = [
-  	 * 	-> kit.request url[0]
-  	 * 	-> kit.request url[1]
-  	 * 	-> kit.request url[2]
-  	 * 	-> kit.request url[3]
-  	 * ]
-  	 *
-  	 * kit.async(tasks).then ->
-  	 * 	kit.log 'all done!'
-  	 *
-  	 * kit.async(2, tasks).then ->
-  	 * 	kit.log 'max concurrent limit is 2'
-  	 *
-  	 * kit.async 3, ->
-  	 * 	url = urls.pop()
-  	 * 	if url
-  	 * 		kit.request url
-  	 * 	else
-  	 * 		kit.async.end
-  	 * .then ->
-  	 * 	kit.log 'all done!'
-  	 * ```
-   */
-  async: function(limit, list, saveResults, progress) {
-    var base, isIterDone, iter, resutls, running;
-    resutls = [];
-    running = 0;
-    isIterDone = false;
-    if (!_.isNumber(limit)) {
-      progress = saveResults;
-      saveResults = list;
-      list = limit;
-      limit = Infinity;
-    }
-    if (saveResults == null) {
-      saveResults = true;
-    }
-    if (_.isArray(list)) {
-      iter = function() {
-        var el;
-        el = list.splice(0, 1)[0];
-        if (el === void 0) {
-          return kit.async.end;
-        } else if (_.isFunction(el)) {
-          return el();
-        } else {
-          return el;
-        }
-      };
-    } else if (_.isFunction(list)) {
-      iter = list;
-    } else {
-      return Promise.reject(new Error('wrong argument type: ' + list));
-    }
-    if ((base = kit.async).end == null) {
-      base.end = {};
-    }
-    return new Promise(function(resolve, reject) {
-      var addTask, allDone, i, j, ref, results;
-      addTask = function() {
-        var err, p, task;
-        try {
-          task = iter();
-        } catch (_error) {
-          err = _error;
-          return Promise.reject(err);
-        }
-        if (isIterDone || task === kit.async.end) {
-          isIterDone = true;
-          if (running === 0) {
-            allDone();
-          }
-          return false;
-        }
-        if (_.isFunction(task.then)) {
-          p = task;
-        } else {
-          p = Promise.resolve(task);
-        }
-        running++;
-        p.then(function(ret) {
-          running--;
-          if (saveResults) {
-            resutls.push(ret);
-          }
-          if (typeof progress === "function") {
-            progress(ret);
-          }
-          return addTask();
-        })["catch"](function(err) {
-          running--;
-          return reject(err);
-        });
-        return true;
-      };
-      allDone = function() {
-        if (saveResults) {
-          return resolve(resutls);
-        } else {
-          return resolve();
-        }
-      };
-      results = [];
-      for (i = j = 0, ref = limit; 0 <= ref ? j < ref : j > ref; i = 0 <= ref ? ++j : --j) {
-        if (!addTask()) {
-          break;
-        } else {
-          results.push(void 0);
-        }
-      }
-      return results;
-    });
-  },
 
   /**
   	 * The browser helper.
@@ -574,103 +437,6 @@ _.extend(kit, fs, {
     });
     promise.then(clean)["catch"](clean);
     return promise;
-  },
-
-  /**
-  	 * Creates a function that is the composition of the provided functions.
-  	 * Besides, it can also accept async function that returns promise.
-  	 * See `kit.async`, if you need concurrent support.
-  	 * @param  {Function | Array} fns Functions that return
-  	 * promise or any value.
-  	 * And the array can also contains promises or values other than function.
-  	 * If there's only one argument and it's a function, it will treat as an iterator,
-  	 * when it returns `kit.flow.end`, the iteration ends.
-  	 * @return {Function} `(val) -> Promise` A function that will return a promise.
-  	 * @example
-  	 * ```coffee
-  	 * # It helps to decouple sequential pipeline code logic.
-  	 *
-  	 * createUrl = (name) ->
-  	 * 	return "http://test.com/" + name
-  	 *
-  	 * curl = (url) ->
-  	 * 	kit.request(url).then (body) ->
-  	 * 		kit.log 'get'
-  	 * 		body
-  	 *
-  	 * save = (str) ->
-  	 * 	kit.outputFile('a.txt', str).then ->
-  	 * 		kit.log 'saved'
-  	 *
-  	 * download = kit.flow createUrl, curl, save
-  	 * # same as "download = kit.flow [createUrl, curl, save]"
-  	 *
-  	 * download 'home'
-  	 * ```
-  	 * @example
-  	 * Walk through first link of each page.
-  	 * ```coffee
-  	 * list = []
-  	 * iter = (url) ->
-  	 * 	return kit.flow.end if not url
-  	 *
-  	 * 	kit.request url
-  	 * 	.then (body) ->
-  	 * 		list.push body
-  	 * 		m = body.match /href="(.+?)"/
-  	 * 		m[0] if m
-  	 *
-  	 * walker = kit.flow iter
-  	 * walker 'test.com'
-  	 * ```
-   */
-  flow: function() {
-    var fns;
-    fns = 1 <= arguments.length ? slice.call(arguments, 0) : [];
-    return function(val) {
-      var base, genIter, iter, run;
-      genIter = function(arr) {
-        return function(val) {
-          var fn;
-          fn = arr.splice(0, 1)[0];
-          if (fn === void 0) {
-            return kit.flow.end;
-          } else if (_.isFunction(fn)) {
-            return fn(val);
-          } else {
-            return fn;
-          }
-        };
-      };
-      if (_.isArray(fns[0])) {
-        iter = genIter(fns[0]);
-      } else if (fns.length === 1 && _.isFunction(fns[0])) {
-        iter = fns[0];
-      } else if (fns.length > 1) {
-        iter = genIter(fns);
-      } else {
-        return Promise.reject(new Error('wrong argument type: ' + fn));
-      }
-      if ((base = kit.flow).end == null) {
-        base.end = {};
-      }
-      run = function(preFn) {
-        return preFn.then(function(val) {
-          var err, fn;
-          try {
-            fn = iter(val);
-          } catch (_error) {
-            err = _error;
-            Promise.reject(err);
-          }
-          if (fn === kit.flow.end) {
-            return val;
-          }
-          return run(fn && _.isFunction(fn.then) ? fn : _.isFunction(fn) ? Promise.resolve(fn(val)) : Promise.resolve(fn));
-        });
-      };
-      return run(Promise.resolve(val));
-    };
   },
 
   /**
@@ -1522,19 +1288,6 @@ _.extend(kit, fs, {
   Promise: Promise,
 
   /**
-  	 * Convert a callback style function to a promise function.
-  	 * @param  {Function} fn
-  	 * @param  {Any}      this `this` object of the function.
-  	 * @return {Function} The function will return a promise object.
-  	 * @example
-  	 * ```coffee
-  	 * readFile = kit.promisify fs.readFile, fs
-  	 * readFile('a.txt').then kit.log
-  	 * ```
-   */
-  promisify: fs.promisify,
-
-  /**
   	 * Create a getter & setter for an object's property.
   	 * @param  {Object} self
   	 * @param  {String} prop The property name.
@@ -2136,28 +1889,6 @@ _.extend(kit, fs, {
   },
 
   /**
-  	 * Sleep for awhile. Works same as the `setTimeout`
-  	 * @param  {Integer} time Time to sleep, millisecond.
-  	 * @return {Promise}
-  	 * @example
-  	 * ```coffee
-  	 * kit.sleep 1000
-  	 * .then ->
-  	 * 	kit.log 'wake'
-  	 * ```
-   */
-  sleep: function(time) {
-    if (time == null) {
-      time = 0;
-    }
-    return new Promise(function(resolve) {
-      return setTimeout(function() {
-        return resolve();
-      }, time);
-    });
-  },
-
-  /**
   	 * A safer version of `child_process.spawn` to cross-platform run
   	 * a process. In some conditions, it may be more convenient
   	 * to use the `kit.exec`.
@@ -2604,7 +2335,7 @@ _.extend(kit, fs, {
               if (drive) {
                 return runDrive(drive);
               } else {
-                return kit.flow.end;
+                return kit.end;
               }
             })(initInfo(info));
           }

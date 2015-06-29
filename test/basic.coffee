@@ -61,67 +61,6 @@ describe 'Kit:', ->
 				shouldEqual tag.name, 'limit'
 			]
 
-	it 'async array', ->
-		len = kit.fs.readFileSync(__filename).length
-		list = [
-			-> kit.fs.readFileSync(__filename)
-			-> kit.fs.readFileSync(__filename)
-			-> kit.fs.readFileSync(__filename)
-		]
-
-		kit.async 3, list, false, (ret) ->
-			shouldEqual ret.length, len
-		.then (rets) ->
-			shouldEqual rets, undefined
-
-	it 'async progress', ->
-		len = kit.fs.readFileSync(__filename).length
-		iter = ->
-			i = 0
-			->
-				if i++ == 10
-					return kit.async.end
-				kit.readFile __filename
-
-		kit.async 3, iter(), false, (ret) ->
-			shouldEqual ret.length, len
-		.then (rets) ->
-			shouldEqual rets, undefined
-
-	it 'async results', ->
-		len = kit.fs.readFileSync(__filename).length
-
-		kit.async(3, _.times 10, ->
-			->
-				kit.readFile __filename
-		, (ret) ->
-			shouldEqual ret.length, len
-		).then (rets) ->
-			shouldEqual rets.length, 10
-
-	it 'flow array', ->
-		(kit.flow [
-			'a'
-			Promise.resolve 'b'
-			(v) -> v + 'c'
-		])(0)
-		.then (v) ->
-			shouldEqual v, 'bc'
-
-	it 'flow iter', ->
-		list = []
-		(kit.flow (v) ->
-			return kit.flow.end if v == 3
-			kit.sleep 1
-			.then ->
-				list.push v
-				++v
-		)(0)
-		.then (v) ->
-			shouldEqual v, 3
-		.then ->
-			shouldDeepEqual list, [0, 1, 2]
-
 	it 'crypto', ->
 		en = kit.encrypt '123', 'test'
 		assert.equal kit.decrypt(en, 'test').toString(), '123'
