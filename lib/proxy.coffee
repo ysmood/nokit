@@ -155,8 +155,10 @@ proxy =
 					else
 						res.setHeader 'Content-type', 'application/json'
 						res.end JSON.stringify body
-				else
+				when 'undefined'
 					res.end()
+				else
+					res.end body.toString()
 
 			return
 
