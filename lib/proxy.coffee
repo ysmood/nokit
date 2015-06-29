@@ -165,14 +165,14 @@ proxy =
 			return next
 
 		endRes = (res, body) ->
+			return if body == next
+
 			switch typeof body
 				when 'string'
 					res.end body
 				when 'object'
 					if body == null
 						res.end()
-					else if body == next
-						return
 					else if body instanceof Stream
 						body.pipe res
 					else if body instanceof Buffer
