@@ -62,7 +62,7 @@ proxy =
 
 	###*
 	 * A promise based middlewares proxy.
-	 * @param  {Array} middlewares Each item is a function `({ req, res }) -> Promise`,
+	 * @param  {Array} middlewares Each item is a function `(self) -> Promise`,
 	 * or an object:
 	 * ```coffee
 	 * {
@@ -85,19 +85,19 @@ proxy =
 	 * http = require 'http'
 	 *
 	 * middlewares = [
-	 * 	->
+	 * 	(self) ->
 	 * 		# Record the time of the whole request
 	 * 		start = new Date
-	 * 		this.next => kit.sleep(300).then =>
-	 * 			this.res.setHeader 'x-response-time', new Date - start
-	 * 	->
-	 * 		kit.log 'access: ' + this.req.url
+	 * 		self.next => kit.sleep(300).then =>
+	 * 			self.res.setHeader 'x-response-time', new Date - start
+	 * 	(self) ->
+	 * 		kit.log 'access: ' + self.req.url
 	 * 		# We need the other handlers to handle the response.
-	 * 		kit.sleep(300).then => this.next
+	 * 		kit.sleep(300).then -> self.next
 	 * 	{
 	 * 		url: /\/items\/(\d+)/
-	 * 		handler: -> kit.sleep(300).then =>
-	 * 			this.body = { id: this.url[1] }
+	 * 		handler: (self) -> kit.sleep(300).then =>
+	 * 			self.body = { id: self.url[1] }
 	 * 	}
 	 * ]
 	 *
@@ -191,11 +191,11 @@ proxy =
 					return end()
 
 				ret = if _.isFunction m
-					m.call self
+					m self
 				else if match(self, req, 'method', m.method) and
 				match(self, req, 'url', m.url) and
 				matchObj(self, req, 'headers', m.headers)
-					m.handler.call self
+					m.handler self
 				else
 					next
 

@@ -6,19 +6,19 @@ kit.require 'url'
 http = require 'http'
 
 routes = [
-	->
+	(self) ->
 		# Record the time of the whole request
 		start = new Date
-		this.next => kit.sleep(300).then =>
-			this.res.setHeader 'x-response-time', new Date - start
-	->
-		kit.log 'access: ' + this.req.url
+		self.next -> kit.sleep(300).then ->
+			self.res.setHeader 'x-response-time', new Date - start
+	(self) ->
+		kit.log 'access: ' + self.req.url
 		# We need the other handlers to handle the response.
-		kit.sleep(300).then => this.next
+		kit.sleep(300).then => self.next
 	{
 		url: /\/items\/(\d+)/
-		handler: -> kit.sleep(300).then =>
-			this.body = kit.readJSON 'package.json'
+		handler: (self) -> kit.sleep(300).then ->
+			self.body = kit.readJSON 'package.json'
 	}
 ]
 
