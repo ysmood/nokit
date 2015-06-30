@@ -1324,7 +1324,7 @@ _.extend kit, fs, fs.PromiseUtils,
 	 * @return {Any} The required package.
 	###
 	requireOptional: (name, dir, semver) ->
-		key = name + if dir then '@' + dir else ''
+		key = if semver then name + '@' + semver else name
 		return kit.requireCache[key] if kit.requireCache[key]
 
 		try
@@ -1347,7 +1347,7 @@ _.extend kit, fs, fs.PromiseUtils,
 				cs.red "If current module is installed globally, run " +
 				cs.green "'npm install -g #{name}'" +
 				cs.red " first, else run " +
-				cs.green "'npm install #{name}'" + cs.red " first.\n") +
+				cs.green "'npm install -S #{name}'" + cs.red " first.\n") +
 				err.stack
 			, { isShowTime: false })
 			process.exit 1
