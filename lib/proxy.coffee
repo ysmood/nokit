@@ -89,6 +89,13 @@ proxy =
 	 * The `next = (fn) -> next` function is a function that returns itself. Any handler that
 	 * resolves the `next` will be treated as a middleware. The functions passed to
 	 * `next` will be executed before the whole http request ends.
+	 * @param {opts} opts Defaults:
+	 * ```coffee
+	 * {
+	 * 	# If it returns true, the http will end with 304.
+	 * 	etag: (ctx, data, isStr) -> Boolean
+	 * }
+	 * ```
 	 * @return {Function} `(req, res) -> Promise` The http request listener.
 	 * @example
 	 * ```coffee
@@ -149,8 +156,28 @@ proxy =
 	 * http.createServer proxy.mid(middlewares).listen 8123
 	 * ```
 	###
-	mid: (middlewares) ->
+	mid: (middlewares, opts = {}) ->
 		Stream = require 'stream'
+		jhash = new (kit.require('jhash').constructor)
+
+		_.defaults opts, {
+			etag: (ctx, data, isStr) ->
+				hash = if isStr
+					jhash.hashStr data
+				else
+					jhash.hashArr data
+
+				if +ctx.req.headers['if-none-match'] == hash
+					ctx.res.statusCode = 304
+					ctx.res.end()
+					return true
+
+				ctx.res.setHeader 'ETag', hash
+
+				return false
+		}
+
+		etag = opts.etag
 
 		match = (ctx, obj, key, pattern) ->
 			return true if pattern == undefined
@@ -174,33 +201,52 @@ proxy =
 			@nextFns.push fn
 			return next
 
-		endResStr = (res, str) ->
-			buf = new Buffer str
-			res.setHeader 'Content-Length', buf.length
-			res.end buf
+		endRes = (ctx, data, isStr) ->
+			return if etag ctx, data, isStr
 
-		endRes = (res, body) ->
+			buf = new Buffer data if isStr
+			ctx.res.setHeader 'Content-Length', buf.length
+			ctx.res.end buf
+
+			return
+
+		endBody = (ctx) ->
+			body = ctx.body
+			res = ctx.res
+
 			return if body == next
 
 			switch typeof body
 				when 'string'
-					endResStr res, body
+					endRes ctx, body, true
 				when 'object'
 					if body == null
 						res.end()
 					else if body instanceof Stream
 						body.pipe res
 					else if body instanceof Buffer
-						res.end body
+						endRes ctx, body
 					else if _.isFunction body.then
-						body.then (body) -> endRes res, body
+						body.then (body) -> endBody ctx
 					else
 						res.setHeader 'Content-type', 'application/json'
-						endResStr res, JSON.stringify body
+						endRes ctx, JSON.stringify(body), true
 				when 'undefined'
 					res.end()
 				else
-					endResStr res, body.toString()
+					endRes ctx, body.toString(), true
+
+			return
+
+		endCtx = (ctx) ->
+			if ctx.nextFns
+				p = Promise.resolve()
+				for fn in ctx.nextFns
+					p = p.then fn
+				p.then ->
+					endBody ctx
+			else
+				endBody ctx
 
 			return
 
@@ -209,28 +255,16 @@ proxy =
 
 			ctx = { req, res, body: null, next }
 
-			end = ->
-				if ctx.nextFns
-					p = Promise.resolve()
-					for fn in ctx.nextFns
-						p = p.then fn
-					p.then ->
-						endRes res, ctx.body
-				else
-					endRes res, ctx.body
-
-				return
-
 			iter = (flag) ->
 				if flag != next
-					return end()
+					return endCtx ctx
 
 				m = middlewares[index++]
 
 				if not m
 					res.statusCode = 404
 					ctx.body = http.STATUS_CODES[404]
-					return end()
+					return endCtx ctx
 
 				ret = if _.isFunction m
 					m ctx
