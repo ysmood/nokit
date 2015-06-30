@@ -250,10 +250,21 @@ proxy =
 
 			return
 
+		tryMid = (fn, ctx) ->
+			try
+				fn ctx
+			catch e
+				Promise.reject e
+
 		(req, res) ->
 			index = 0
 
 			ctx = { req, res, body: null, next }
+
+			err = (e) ->
+				ctx.res.statusCode = 500
+				ctx.body = "<pre>#{e.stack}</pre>"
+				endCtx ctx
 
 			iter = (flag) ->
 				if flag != next
@@ -267,15 +278,15 @@ proxy =
 					return endCtx ctx
 
 				ret = if _.isFunction m
-					m ctx
+					tryMid m, ctx
 				else if match(ctx, req, 'method', m.method) and
 				match(ctx, req, 'url', m.url)
-					m.handler ctx
+					tryMid m.handler, ctx
 				else
 					next
 
 				if ret and _.isFunction(ret.then)
-					ret.then iter
+					ret.then iter, err
 				else
 					iter ret
 
