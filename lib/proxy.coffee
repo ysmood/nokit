@@ -260,16 +260,22 @@ proxy =
 			return
 
 	###*
-	 * Generate an express like path selector. See the example of `proxy.mid`.
-	 * @param {String} path
+	 * Generate an express like unix path selector. See the example of `proxy.mid`.
+	 * @param {String} pattern
 	 * @param {Object} opts Same as the [path-to-regexp](https://github.com/pillarjs/path-to-regexp)'s
 	 * options.
 	 * @return {Function} `(String) -> Object`.
+	 * @example
+	 * ```coffee
+	 * proxy = kit.require 'proxy'
+	 * match = proxy.match '/items/:id'
+	 * kit.log match '/items/10' # output => { id: '10' }
+	 * ```
 	###
-	match: (path, opts) ->
+	match: (pattern, opts) ->
 		parse = kit.requireOptional 'path-to-regexp', __dirname, '^1.2.0'
 		keys = []
-		reg = parse path, keys, opts
+		reg = parse pattern, keys, opts
 
 		(url) ->
 			ms = url.match reg
@@ -279,6 +285,35 @@ proxy =
 				ret[keys[i - 1].name] = elem
 				ret
 			, null
+
+	###*
+	 * Create a static file middleware for `proxy.mid`.
+	 * @param  {String | Regex | Function} url Same as the url in `proxy.mid`.
+	 * @param  {String | Object} opts Same as the [send](https://github.com/pillarjs/send)'s.
+	 * @return {Object} The middleware of `porxy.mid`.
+	 * ```coffee
+	 * proxy = kit.require 'proxy'
+	 * http = require 'http'
+	 *
+	 * middlewares = [proxy.static('/st', 'static')]
+	 *
+	 * http.createServer proxy.mid(middlewares).listen 8123
+	 * ```
+	###
+	static: (url, opts) ->
+		send = kit.requireOptional 'send', __dirname, '^0.13.0'
+
+		if _.isString opts
+			opts = { root: opts }
+
+		{
+			url: url
+			method: 'GET'
+			handler: (ctx) ->
+				query = ctx.url.indexOf('?')
+				path = if query < 0 then ctx.url else ctx.url.slice 0, query
+				ctx.body = send ctx.req, (path), opts
+		}
 
 	###*
 	 * Use it to proxy one url to another.
