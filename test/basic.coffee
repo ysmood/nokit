@@ -423,6 +423,21 @@ describe 'Kit:', ->
 			.then (body) ->
 				shouldEqual '123', body
 
+	it 'proxy mid url match', ->
+		proxy = kit.require 'proxy'
+
+		routes = [{
+			url: proxy.match '/items/:id'
+			handler: (ctx) ->
+				ctx.body = ctx.url.id
+		}]
+
+		createRandomServer proxy.mid(routes)
+		.then (port) ->
+			kit.request "http://127.0.0.1:#{port}/items/123"
+			.then (body) ->
+				shouldEqual '123', body
+
 	it 'proxy mid post', ->
 		proxy = kit.require 'proxy'
 
