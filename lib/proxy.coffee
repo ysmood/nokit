@@ -186,12 +186,17 @@ proxy =
 			@nextFns.push fn
 			return next
 
+		endResStr = (res, str) ->
+			buf = new Buffer str
+			res.setHeader 'Content-Length', buf.length
+			res.end buf
+
 		endRes = (res, body) ->
 			return if body == next
 
 			switch typeof body
 				when 'string'
-					res.end body
+					endResStr res, body
 				when 'object'
 					if body == null
 						res.end()
@@ -203,11 +208,11 @@ proxy =
 						body.then (body) -> endRes res, body
 					else
 						res.setHeader 'Content-type', 'application/json'
-						res.end JSON.stringify body
+						endResStr res, JSON.stringify body
 				when 'undefined'
 					res.end()
 				else
-					res.end body.toString()
+					endResStr res, body.toString()
 
 			return
 
