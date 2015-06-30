@@ -37,7 +37,7 @@
     "colors": "1.1.2",
     "commander": "2.8.1",
     "jhash": "0.1.7",
-    "nofs": "0.8.0",
+    "nofs": "0.8.1",
     "semver": "4.3.6"
   },
   "devDependencies": {
