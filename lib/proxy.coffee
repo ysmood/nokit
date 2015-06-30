@@ -1,6 +1,7 @@
 ###*
  * For test, page injection development.
  * A cross-platform programmable Fiddler alternative.
+ * You can even replace express.js with it's `mid` function.
 ###
 Overview = 'proxy'
 
@@ -72,15 +73,20 @@ proxy =
 	 * 	handler: ({ body, req, res, next, url, headers, method }) -> Promise
 	 * }
 	 * ```
+	 * <h4>selector</h4>
 	 * The `url`, `headers` and `method` are act as selectors. If current
-	 * request matches the selectors, the `handler` will be called with the
-	 * matched regex result. If the handler has async operation inside, it should
-	 * return a promise.
+	 * request matches the selector, the `handler` will be called with the
+	 * captured result. If the selector is a function, it should return a
+	 * truthy value when matches, it will be assigned to the `ctx`.
+	 * When the `url` is a string, if `req.url` starts with the `url`, the rest
+	 * of the string will be captured.
+	 * <h4>handler</h4>
+	 * If the handler has async operation inside, it should return a promise.
 	 * <h4>body</h4>
 	 * The `body` can be a `String`, `Buffer`, `Stream`, `Object` or `Promise`.
 	 * If `body == next`, the proxy won't end the request automatically, which means
 	 * you can handle the `res.end()` yourself.
-	 * <h4>`next`</h4>
+	 * <h4>next</h4>
 	 * The `next = (fn) -> next` function is a function that returns itself. Any handler that
 	 * resolves the `next` will be treated as a middleware. The functions passed to
 	 * `next` will be executed before the whole http request ends.
@@ -127,6 +133,22 @@ proxy =
 	 *
 	 * http.createServer proxy.mid(middlewares).listen 8123
 	 * ```
+	 * @example
+	 * Express like path to named capture.
+	 * ```coffee
+	 * proxy = kit.require 'proxy'
+	 * http = require 'http'
+	 *
+	 * middlewares = [
+	 * 	{
+	 * 		url: proxy.matchPath '/items/:id'
+	 * 		handler: (ctx) ->
+	 * 			ctx.body = ctx.url.id
+	 * 	}
+	 * ]
+	 *
+	 * http.createServer proxy.mid(middlewares).listen 8123
+	 * ```
 	###
 	mid: (middlewares) ->
 		Stream = require 'stream'
@@ -134,10 +156,10 @@ proxy =
 		match = (ctx, obj, key, pattern) ->
 			return true if pattern == undefined
 
-			ret = if _.isString(pattern) and _.startsWith(obj[key], pattern)
-				if key == 'url'
+			ret = if _.isString(pattern)
+				if key == 'url' and _.startsWith(obj[key], pattern)
 					obj[key].slice pattern.length
-				else
+				else if obj[key] == pattern
 					obj[key]
 			else if _.isRegExp pattern
 				obj[key].match pattern
@@ -236,6 +258,27 @@ proxy =
 			iter next
 
 			return
+
+	###*
+	 * Generate an express like path selector. See the example of `proxy.mid`.
+	 * @param {String} path
+	 * @param {Object} opts Same as the [path-to-regexp](https://github.com/pillarjs/path-to-regexp)'s
+	 * options.
+	 * @return {Function} `(String) -> Object`.
+	###
+	match: (path, opts) ->
+		parse = kit.requireOptional 'path-to-regexp', __dirname, '^1.2.0'
+		keys = []
+		reg = parse path, keys, opts
+
+		(url) ->
+			ms = url.match reg
+			return if ms == null
+			ms.reduce (ret, elem, i) ->
+				return {} if i == 0
+				ret[keys[i - 1].name] = elem
+				ret
+			, null
 
 	###*
 	 * Use it to proxy one url to another.
