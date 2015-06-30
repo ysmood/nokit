@@ -2173,7 +2173,4 @@ _.extend kit, fs, fs.PromiseUtils,
 
 			kit.spawn starter, cmds
 
-if kit.isDevelopment()
-	Promise.enableLongStackTrace()
-
 module.exports = kit
