@@ -1727,12 +1727,13 @@ Goto [changelog](doc/changelog.md)
 
 # Proxy
 
-- ## **[Overview](lib/proxy.coffee?source#L5)**
+- ## **[Overview](lib/proxy.coffee?source#L6)**
 
     For test, page injection development.
     A cross-platform programmable Fiddler alternative.
+    You can even replace express.js with it's `mid` function.
 
-- ## **[connect(req, sock, head, host, port, err)](lib/proxy.coffee?source#L38)**
+- ## **[connect(req, sock, head, host, port, err)](lib/proxy.coffee?source#L39)**
 
     Http CONNECT method tunneling proxy helper.
     Most times used with https proxing.
@@ -1770,7 +1771,7 @@ Goto [changelog](doc/changelog.md)
         server.listen 8123
         ```
 
-- ## **[mid(middlewares)](lib/proxy.coffee?source#L131)**
+- ## **[mid(middlewares, opts)](lib/proxy.coffee?source#L159)**
 
     A promise based middlewares proxy.
 
@@ -1781,23 +1782,37 @@ Goto [changelog](doc/changelog.md)
         ```coffee
         {
         	url: String | Regex | Function
-        	headers: String | Regex | Function
         	method: String | Regex | Function
-        	handler: ({ body, req, res, next, url, headers, method }) -> Promise
+        	handler: ({ body, req, res, next, url, method }) -> Promise
         }
         ```
-        The `url`, `headers` and `method` are act as selectors. If current
-        request matches the selectors, the `handler` will be called with the
-        matched regex result. If the handler has async operation inside, it should
-        return a promise.
+        <h4>selector</h4>
+        The `url` and `method` are act as selectors. If current
+        request matches the selector, the `handler` will be called with the
+        captured result. If the selector is a function, it should return a
+        truthy value when matches, it will be assigned to the `ctx`.
+        When the `url` is a string, if `req.url` starts with the `url`, the rest
+        of the string will be captured.
+        <h4>handler</h4>
+        If the handler has async operation inside, it should return a promise.
         <h4>body</h4>
         The `body` can be a `String`, `Buffer`, `Stream`, `Object` or `Promise`.
         If `body == next`, the proxy won't end the request automatically, which means
         you can handle the `res.end()` yourself.
-        <h4>`next`</h4>
+        <h4>next</h4>
         The `next = (fn) -> next` function is a function that returns itself. Any handler that
         resolves the `next` will be treated as a middleware. The functions passed to
         `next` will be executed before the whole http request ends.
+
+    - **<u>param</u>**: `opts` { _opts_ }
+
+        Defaults:
+        ```coffee
+        {
+        	# If it returns true, the http will end with 304.
+        	etag: (ctx, data, isStr) -> Boolean
+        }
+        ```
 
     - **<u>return</u>**: { _Function_ }
 
@@ -1820,7 +1835,7 @@ Goto [changelog](doc/changelog.md)
         		# We need the other handlers to handle the response.
         		kit.sleep(300).then -> ctx.next
         	{
-        		url: //items/(\d+)/
+        		url: //items/(\d+)$/
         		handler: (ctx) ->
         			ctx.body = kit.sleep(300).then -> { id: ctx.url[1] }
         	}
@@ -1849,7 +1864,72 @@ Goto [changelog](doc/changelog.md)
         http.createServer proxy.mid(middlewares).listen 8123
         ```
 
-- ## **[url(req, res, url, opts, err)](lib/proxy.coffee?source#L292)**
+    - **<u>example</u>**:
+
+        Express like path to named capture.
+        ```coffee
+        proxy = kit.require 'proxy'
+        http = require 'http'
+
+        middlewares = [
+        	{
+        		url: proxy.match '/items/:id'
+        		handler: (ctx) ->
+        			ctx.body = ctx.url.id
+        	}
+        ]
+
+        http.createServer proxy.mid(middlewares).listen 8123
+        ```
+
+- ## **[match(pattern, opts)](lib/proxy.coffee?source#L312)**
+
+    Generate an express like unix path selector. See the example of `proxy.mid`.
+
+    - **<u>param</u>**: `pattern` { _String_ }
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+        Same as the [path-to-regexp](https://github.com/pillarjs/path-to-regexp)'s
+        options.
+
+    - **<u>return</u>**: { _Function_ }
+
+        `(String) -> Object`.
+
+    - **<u>example</u>**:
+
+        ```coffee
+        proxy = kit.require 'proxy'
+        match = proxy.match '/items/:id'
+        kit.log match '/items/10' # output => { id: '10' }
+        ```
+
+- ## **[static(url, opts)](lib/proxy.coffee?source#L340)**
+
+    Create a static file middleware for `proxy.mid`.
+
+    - **<u>param</u>**: `url` { _String | Regex | Function_ }
+
+        Same as the url in `proxy.mid`.
+
+    - **<u>param</u>**: `opts` { _String | Object_ }
+
+        Same as the [send](https://github.com/pillarjs/send)'s.
+
+    - **<u>return</u>**: { _Object_ }
+
+        The middleware of `porxy.mid`.
+        ```coffee
+        proxy = kit.require 'proxy'
+        http = require 'http'
+
+        middlewares = [proxy.static('/st', 'static')]
+
+        http.createServer proxy.mid(middlewares).listen 8123
+        ```
+
+- ## **[url(req, res, url, opts, err)](lib/proxy.coffee?source#L407)**
 
     Use it to proxy one url to another.
 

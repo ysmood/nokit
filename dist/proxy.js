@@ -2,6 +2,7 @@
 /**
  * For test, page injection development.
  * A cross-platform programmable Fiddler alternative.
+ * You can even replace express.js with it's `mid` function.
  */
 var Overview, Promise, _, http, kit, proxy;
 
@@ -72,23 +73,34 @@ proxy = {
   	 * ```coffee
   	 * {
   	 * 	url: String | Regex | Function
-  	 * 	headers: String | Regex | Function
   	 * 	method: String | Regex | Function
-  	 * 	handler: ({ body, req, res, next, url, headers, method }) -> Promise
+  	 * 	handler: ({ body, req, res, next, url, method }) -> Promise
   	 * }
   	 * ```
-  	 * The `url`, `headers` and `method` are act as selectors. If current
-  	 * request matches the selectors, the `handler` will be called with the
-  	 * matched regex result. If the handler has async operation inside, it should
-  	 * return a promise.
+  	 * <h4>selector</h4>
+  	 * The `url` and `method` are act as selectors. If current
+  	 * request matches the selector, the `handler` will be called with the
+  	 * captured result. If the selector is a function, it should return a
+  	 * truthy value when matches, it will be assigned to the `ctx`.
+  	 * When the `url` is a string, if `req.url` starts with the `url`, the rest
+  	 * of the string will be captured.
+  	 * <h4>handler</h4>
+  	 * If the handler has async operation inside, it should return a promise.
   	 * <h4>body</h4>
   	 * The `body` can be a `String`, `Buffer`, `Stream`, `Object` or `Promise`.
   	 * If `body == next`, the proxy won't end the request automatically, which means
   	 * you can handle the `res.end()` yourself.
-  	 * <h4>`next`</h4>
+  	 * <h4>next</h4>
   	 * The `next = (fn) -> next` function is a function that returns itself. Any handler that
   	 * resolves the `next` will be treated as a middleware. The functions passed to
   	 * `next` will be executed before the whole http request ends.
+  	 * @param {opts} opts Defaults:
+  	 * ```coffee
+  	 * {
+  	 * 	# If it returns true, the http will end with 304.
+  	 * 	etag: (ctx, data, isStr) -> Boolean
+  	 * }
+  	 * ```
   	 * @return {Function} `(req, res) -> Promise` The http request listener.
   	 * @example
   	 * ```coffee
@@ -106,7 +118,7 @@ proxy = {
   	 * 		# We need the other handlers to handle the response.
   	 * 		kit.sleep(300).then -> ctx.next
   	 * 	{
-  	 * 		url: /\/items\/(\d+)/
+  	 * 		url: /\/items\/(\d+)$/
   	 * 		handler: (ctx) ->
   	 * 			ctx.body = kit.sleep(300).then -> { id: ctx.url[1] }
   	 * 	}
@@ -132,34 +144,53 @@ proxy = {
   	 *
   	 * http.createServer proxy.mid(middlewares).listen 8123
   	 * ```
+  	 * @example
+  	 * Express like path to named capture.
+  	 * ```coffee
+  	 * proxy = kit.require 'proxy'
+  	 * http = require 'http'
+  	 *
+  	 * middlewares = [
+  	 * 	{
+  	 * 		url: proxy.match '/items/:id'
+  	 * 		handler: (ctx) ->
+  	 * 			ctx.body = ctx.url.id
+  	 * 	}
+  	 * ]
+  	 *
+  	 * http.createServer proxy.mid(middlewares).listen 8123
+  	 * ```
    */
-  mid: function(middlewares) {
-    var Stream, endRes, match, matchObj, next;
+  mid: function(middlewares, opts) {
+    var Stream, endBody, endCtx, endRes, etag, jhash, match, next, tryMid;
+    if (opts == null) {
+      opts = {};
+    }
     Stream = require('stream');
+    jhash = new (kit.require('jhash').constructor);
+    _.defaults(opts, {
+      etag: function(ctx, data, isStr) {
+        var hash;
+        hash = isStr ? jhash.hashStr(data) : jhash.hashArr(data);
+        if (+ctx.req.headers['if-none-match'] === hash) {
+          ctx.res.statusCode = 304;
+          ctx.res.end();
+          return true;
+        }
+        ctx.res.setHeader('ETag', hash);
+        return false;
+      }
+    });
+    etag = opts.etag;
     match = function(ctx, obj, key, pattern) {
       var ret;
       if (pattern === void 0) {
         return true;
       }
-      ret = _.isString(pattern) && _.startsWith(obj[key], pattern) ? key === 'url' ? obj[key].slice(pattern.length) : obj[key] : _.isRegExp(pattern) ? obj[key].match(pattern) : _.isFunction(pattern) ? pattern(obj[key]) : void 0;
+      ret = _.isString(pattern) ? key === 'url' && _.startsWith(obj[key], pattern) ? obj[key].slice(pattern.length) : obj[key] === pattern ? obj[key] : void 0 : _.isRegExp(pattern) ? obj[key].match(pattern) : _.isFunction(pattern) ? pattern(obj[key]) : void 0;
       if (ret !== void 0) {
         return ctx[key] = ret;
       }
-    };
-    matchObj = function(ctx, obj, key, target) {
-      var k, ret, v;
-      if (target === void 0) {
-        return true;
-      }
-      ret = {};
-      for (k in target) {
-        v = target[k];
-        if (!match(ret, obj[key], k, v)) {
-          return false;
-        }
-      }
-      ctx[key] = ret;
-      return true;
     };
     next = function(fn) {
       if (!fn) {
@@ -171,13 +202,27 @@ proxy = {
       this.nextFns.push(fn);
       return next;
     };
-    endRes = function(res, body) {
+    endRes = function(ctx, data, isStr) {
+      var buf;
+      if (etag(ctx, data, isStr)) {
+        return;
+      }
+      if (isStr) {
+        buf = new Buffer(data);
+      }
+      ctx.res.setHeader('Content-Length', buf.length);
+      ctx.res.end(buf);
+    };
+    endBody = function(ctx) {
+      var body, res;
+      body = ctx.body;
+      res = ctx.res;
       if (body === next) {
         return;
       }
       switch (typeof body) {
         case 'string':
-          res.end(body);
+          endRes(ctx, body, true);
           break;
         case 'object':
           if (body === null) {
@@ -185,25 +230,50 @@ proxy = {
           } else if (body instanceof Stream) {
             body.pipe(res);
           } else if (body instanceof Buffer) {
-            res.end(body);
+            endRes(ctx, body);
           } else if (_.isFunction(body.then)) {
             body.then(function(body) {
-              return endRes(res, body);
+              return endBody(ctx);
             });
           } else {
             res.setHeader('Content-type', 'application/json');
-            res.end(JSON.stringify(body));
+            endRes(ctx, JSON.stringify(body), true);
           }
           break;
         case 'undefined':
           res.end();
           break;
         default:
-          res.end(body.toString());
+          endRes(ctx, body.toString(), true);
+      }
+    };
+    endCtx = function(ctx) {
+      var fn, j, len, p, ref;
+      if (ctx.nextFns) {
+        p = Promise.resolve();
+        ref = ctx.nextFns;
+        for (j = 0, len = ref.length; j < len; j++) {
+          fn = ref[j];
+          p = p.then(fn);
+        }
+        p.then(function() {
+          return endBody(ctx);
+        });
+      } else {
+        endBody(ctx);
+      }
+    };
+    tryMid = function(fn, ctx) {
+      var e;
+      try {
+        return fn(ctx);
+      } catch (_error) {
+        e = _error;
+        return Promise.reject(e);
       }
     };
     return function(req, res) {
-      var ctx, end, index, iter;
+      var ctx, err, index, iter;
       index = 0;
       ctx = {
         req: req,
@@ -211,41 +281,98 @@ proxy = {
         body: null,
         next: next
       };
-      end = function() {
-        var fn, i, len, p, ref;
-        if (ctx.nextFns) {
-          p = Promise.resolve();
-          ref = ctx.nextFns;
-          for (i = 0, len = ref.length; i < len; i++) {
-            fn = ref[i];
-            p = p.then(fn);
-          }
-          p.then(function() {
-            return endRes(res, ctx.body);
-          });
-        } else {
-          endRes(res, ctx.body);
-        }
+      err = function(e) {
+        ctx.res.statusCode = 500;
+        ctx.body = "<pre>" + e.stack + "</pre>";
+        return endCtx(ctx);
       };
       iter = function(flag) {
         var m, ret;
         if (flag !== next) {
-          return end();
+          return endCtx(ctx);
         }
         m = middlewares[index++];
         if (!m) {
           res.statusCode = 404;
           ctx.body = http.STATUS_CODES[404];
-          return end();
+          return endCtx(ctx);
         }
-        ret = _.isFunction(m) ? m(ctx) : match(ctx, req, 'method', m.method) && match(ctx, req, 'url', m.url) && matchObj(ctx, req, 'headers', m.headers) ? m.handler(ctx) : next;
+        ret = _.isFunction(m) ? tryMid(m, ctx) : match(ctx, req, 'method', m.method) && match(ctx, req, 'url', m.url) ? tryMid(m.handler, ctx) : next;
         if (ret && _.isFunction(ret.then)) {
-          ret.then(iter);
+          ret.then(iter, err);
         } else {
           iter(ret);
         }
       };
       iter(next);
+    };
+  },
+
+  /**
+  	 * Generate an express like unix path selector. See the example of `proxy.mid`.
+  	 * @param {String} pattern
+  	 * @param {Object} opts Same as the [path-to-regexp](https://github.com/pillarjs/path-to-regexp)'s
+  	 * options.
+  	 * @return {Function} `(String) -> Object`.
+  	 * @example
+  	 * ```coffee
+  	 * proxy = kit.require 'proxy'
+  	 * match = proxy.match '/items/:id'
+  	 * kit.log match '/items/10' # output => { id: '10' }
+  	 * ```
+   */
+  match: function(pattern, opts) {
+    var keys, parse, reg;
+    parse = kit.requireOptional('path-to-regexp', __dirname, '^1.2.0');
+    keys = [];
+    reg = parse(pattern, keys, opts);
+    return function(url) {
+      var ms;
+      ms = url.match(reg);
+      if (ms === null) {
+        return;
+      }
+      return ms.reduce(function(ret, elem, i) {
+        if (i === 0) {
+          return {};
+        }
+        ret[keys[i - 1].name] = elem;
+        return ret;
+      }, null);
+    };
+  },
+
+  /**
+  	 * Create a static file middleware for `proxy.mid`.
+  	 * @param  {String | Regex | Function} url Same as the url in `proxy.mid`.
+  	 * @param  {String | Object} opts Same as the [send](https://github.com/pillarjs/send)'s.
+  	 * @return {Object} The middleware of `porxy.mid`.
+  	 * ```coffee
+  	 * proxy = kit.require 'proxy'
+  	 * http = require 'http'
+  	 *
+  	 * middlewares = [proxy.static('/st', 'static')]
+  	 *
+  	 * http.createServer proxy.mid(middlewares).listen 8123
+  	 * ```
+   */
+  "static": function(url, opts) {
+    var send;
+    send = kit.requireOptional('send', __dirname, '^0.13.0');
+    if (_.isString(opts)) {
+      opts = {
+        root: opts
+      };
+    }
+    return {
+      url: url,
+      method: 'GET',
+      handler: function(ctx) {
+        var path, query;
+        query = ctx.url.indexOf('?');
+        path = query < 0 ? ctx.url : ctx.url.slice(0, query);
+        return ctx.body = send(ctx.req, path, opts);
+      }
     };
   },
 

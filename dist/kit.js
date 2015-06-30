@@ -1462,7 +1462,7 @@ _.extend(kit, fs, fs.PromiseUtils, {
    */
   requireOptional: function(name, dir, semver) {
     var cs, err, info, key, version;
-    key = name + (dir ? '@' + dir : '');
+    key = semver ? name + '@' + semver : name;
     if (kit.requireCache[key]) {
       return kit.requireCache[key];
     }
@@ -1483,7 +1483,7 @@ _.extend(kit, fs, fs.PromiseUtils, {
         throw err;
       }
       cs = kit.require('colors/safe');
-      kit.err((cs.red("Optional module required.\n" + cs.red("If current module is installed globally, run " + cs.green(("'npm install -g " + name + "'") + cs.red(" first, else run " + cs.green(("'npm install " + name + "'") + cs.red(" first.\n"))))))) + err.stack, {
+      kit.err((cs.red("Optional module required.\n" + cs.red("If current module is installed globally, run " + cs.green(("'npm install -g " + name + "'") + cs.red(" first, else run " + cs.green(("'npm install -S " + name + "'") + cs.red(" first.\n"))))))) + err.stack, {
         isShowTime: false
       });
       return process.exit(1);
