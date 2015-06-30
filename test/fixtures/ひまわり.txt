@@ -1,1 +1,3 @@
-This file is intended to test encoding.
+This file intends to test encoding.
+
+待つほうが辛いのか、それとも待ったせるほうが辛いのか。何れにせよ、もう待つ必要がなくなってしまった。それは一番辛いことだ。

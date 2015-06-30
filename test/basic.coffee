@@ -388,3 +388,69 @@ describe 'Kit:', ->
 		shouldEqual kit.fuzzySearch('ys', [
 			'ss', 'ab'
 		]), undefined
+
+	it 'proxy mid handler', ->
+		proxy = kit.require 'proxy'
+
+		routes = [
+			(ctx) -> new Promise (r) ->
+				ctx.req.on 'data', (data) ->
+					ctx.body = 'echo: ' + data
+					r()
+		]
+
+		createRandomServer proxy.mid(routes)
+		.then (port) ->
+			kit.request {
+				url: "http://127.0.0.1:#{port}"
+				reqData: 'test'
+			}
+			.then (body) ->
+				shouldEqual 'echo: test', body
+
+	it 'proxy mid url', ->
+		proxy = kit.require 'proxy'
+
+		routes = [{
+			url: /\/items\/(\d+)/
+			handler: (ctx) ->
+				ctx.body = ctx.url[1]
+		}]
+
+		createRandomServer proxy.mid(routes)
+		.then (port) ->
+			kit.request "http://127.0.0.1:#{port}/items/123"
+			.then (body) ->
+				shouldEqual '123', body
+
+	it 'proxy mid post', ->
+		proxy = kit.require 'proxy'
+
+		routes = [{
+			method: 'POST'
+			handler: (ctx) ->
+				ctx.body = ctx.method
+		}]
+
+		createRandomServer proxy.mid(routes)
+		.then (port) ->
+			kit.request {
+				method: 'POST'
+				url: "http://127.0.0.1:#{port}"
+			}
+			.then (body) ->
+				shouldEqual 'POST', body
+
+	it 'proxy mid static', ->
+		proxy = kit.require 'proxy'
+
+		routes = [
+			proxy.static '/st', 'test/fixtures'
+		]
+
+		createRandomServer proxy.mid(routes)
+		.then (port) ->
+			kit.request encodeURI "http://127.0.0.1:#{port}/st/ひまわり.txt"
+			.then (body) ->
+				str = kit.readFileSync 'test/fixtures/ひまわり.txt', 'utf8'
+				shouldEqual str, body

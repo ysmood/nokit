@@ -68,13 +68,12 @@ proxy =
 	 * ```coffee
 	 * {
 	 * 	url: String | Regex | Function
-	 * 	headers: String | Regex | Function
 	 * 	method: String | Regex | Function
-	 * 	handler: ({ body, req, res, next, url, headers, method }) -> Promise
+	 * 	handler: ({ body, req, res, next, url, method }) -> Promise
 	 * }
 	 * ```
 	 * <h4>selector</h4>
-	 * The `url`, `headers` and `method` are act as selectors. If current
+	 * The `url` and `method` are act as selectors. If current
 	 * request matches the selector, the `handler` will be called with the
 	 * captured result. If the selector is a function, it should return a
 	 * truthy value when matches, it will be assigned to the `ctx`.
@@ -107,7 +106,7 @@ proxy =
 	 * 		# We need the other handlers to handle the response.
 	 * 		kit.sleep(300).then -> ctx.next
 	 * 	{
-	 * 		url: /\/items\/(\d+)/
+	 * 		url: /\/items\/(\d+)$/
 	 * 		handler: (ctx) ->
 	 * 			ctx.body = kit.sleep(300).then -> { id: ctx.url[1] }
 	 * 	}
@@ -141,7 +140,7 @@ proxy =
 	 *
 	 * middlewares = [
 	 * 	{
-	 * 		url: proxy.matchPath '/items/:id'
+	 * 		url: proxy.match '/items/:id'
 	 * 		handler: (ctx) ->
 	 * 			ctx.body = ctx.url.id
 	 * 	}
@@ -168,17 +167,6 @@ proxy =
 
 			if ret != undefined
 				ctx[key] = ret
-
-		matchObj = (ctx, obj, key, target) ->
-			return true if target == undefined
-
-			ret = {}
-
-			for k, v of target
-				return false if not match ret, obj[key], k, v
-
-			ctx[key] = ret
-			return true
 
 		next = (fn) ->
 			return next if not fn
@@ -247,8 +235,7 @@ proxy =
 				ret = if _.isFunction m
 					m ctx
 				else if match(ctx, req, 'method', m.method) and
-				match(ctx, req, 'url', m.url) and
-				matchObj(ctx, req, 'headers', m.headers)
+				match(ctx, req, 'url', m.url)
 					m.handler ctx
 				else
 					next
