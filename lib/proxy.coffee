@@ -204,6 +204,7 @@ proxy =
 
 			if ret != undefined
 				ctx[key] = ret
+				true
 
 		next = -> next
 

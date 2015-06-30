@@ -199,7 +199,8 @@ proxy = {
       }
       ret = _.isString(pattern) ? key === 'url' && _.startsWith(obj[key], pattern) ? obj[key].slice(pattern.length) : obj[key] === pattern ? obj[key] : void 0 : _.isRegExp(pattern) ? obj[key].match(pattern) : _.isFunction(pattern) ? pattern(obj[key]) : void 0;
       if (ret !== void 0) {
-        return ctx[key] = ret;
+        ctx[key] = ret;
+        return true;
       }
     };
     next = function() {

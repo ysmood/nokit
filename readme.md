@@ -1892,7 +1892,7 @@ Goto [changelog](doc/changelog.md)
         http.createServer proxy.mid(middlewares).listen 8123
         ```
 
-- ## **[match(pattern, opts)](lib/proxy.coffee?source#L331)**
+- ## **[match(pattern, opts)](lib/proxy.coffee?source#L332)**
 
     Generate an express like unix path selector. See the example of `proxy.mid`.
 
@@ -1915,7 +1915,7 @@ Goto [changelog](doc/changelog.md)
         kit.log match '/items/10' # output => { id: '10' }
         ```
 
-- ## **[static(url, opts)](lib/proxy.coffee?source#L359)**
+- ## **[static(url, opts)](lib/proxy.coffee?source#L360)**
 
     Create a static file middleware for `proxy.mid`.
 
@@ -1939,7 +1939,7 @@ Goto [changelog](doc/changelog.md)
         http.createServer proxy.mid(middlewares).listen 8123
         ```
 
-- ## **[url(req, res, url, opts, err)](lib/proxy.coffee?source#L426)**
+- ## **[url(req, res, url, opts, err)](lib/proxy.coffee?source#L427)**
 
     Use it to proxy one url to another.
 
