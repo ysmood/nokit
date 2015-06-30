@@ -75,6 +75,11 @@ proxy = {
   	 * 	url: String | Regex | Function
   	 * 	method: String | Regex | Function
   	 * 	handler: ({ body, req, res, next, url, method }) -> Promise
+  	 *
+  	 * 	# When this, it will be assigned to ctx.body
+  	 * 	handler: String | Object | Array
+  	 *
+  	 * 	error: (ctx, err) -> Promise
   	 * }
   	 * ```
   	 * <h4>selector</h4>
@@ -86,14 +91,15 @@ proxy = {
   	 * of the string will be captured.
   	 * <h4>handler</h4>
   	 * If the handler has async operation inside, it should return a promise.
+  	 * <h4>error</h4>
+  	 * If any previous middleware rejects, current error handler will be called.
   	 * <h4>body</h4>
   	 * The `body` can be a `String`, `Buffer`, `Stream`, `Object` or `Promise`.
   	 * If `body == next`, the proxy won't end the request automatically, which means
   	 * you can handle the `res.end()` yourself.
   	 * <h4>next</h4>
-  	 * The `next = (fn) -> next` function is a function that returns itself. Any handler that
-  	 * resolves the `next` will be treated as a middleware. The functions passed to
-  	 * `next` will be executed before the whole http request ends.
+  	 * The `next = -> next` function is a function that returns itself. If a handler
+  	 * resolves the value `next`, middleware next to it will be called.
   	 * @param {opts} opts Defaults:
   	 * ```coffee
   	 * {
@@ -109,11 +115,6 @@ proxy = {
   	 *
   	 * middlewares = [
   	 * 	(ctx) ->
-  	 * 		# Record the time of the whole request
-  	 * 		start = new Date
-  	 * 		ctx.next => kit.sleep(300).then =>
-  	 * 			ctx.res.setHeader 'x-response-time', new Date - start
-  	 * 	(ctx) ->
   	 * 		kit.log 'access: ' + ctx.req.url
   	 * 		# We need the other handlers to handle the response.
   	 * 		kit.sleep(300).then -> ctx.next
@@ -121,6 +122,15 @@ proxy = {
   	 * 		url: /\/items\/(\d+)$/
   	 * 		handler: (ctx) ->
   	 * 			ctx.body = kit.sleep(300).then -> { id: ctx.url[1] }
+  	 * 	}
+  	 * 	{
+  	 * 		url: '/api'
+  	 * 		handler: { fake: 'api' }
+  	 * 	}
+  	 * 	{
+  	 * 		error: (ctx, err) ->
+  	 			ctx.statusCode = 500
+  	 * 			ctx.body = err
   	 * 	}
   	 * ]
   	 *
@@ -162,7 +172,7 @@ proxy = {
   	 * ```
    */
   mid: function(middlewares, opts) {
-    var Stream, endBody, endCtx, endRes, etag, jhash, match, next, tryMid;
+    var Stream, endCtx, endRes, etag, jhash, match, next, tryMid;
     if (opts == null) {
       opts = {};
     }
@@ -192,14 +202,7 @@ proxy = {
         return ctx[key] = ret;
       }
     };
-    next = function(fn) {
-      if (!fn) {
-        return next;
-      }
-      if (this.nextFns == null) {
-        this.nextFns = [];
-      }
-      this.nextFns.push(fn);
+    next = function() {
       return next;
     };
     endRes = function(ctx, data, isStr) {
@@ -213,7 +216,7 @@ proxy = {
       ctx.res.setHeader('Content-Length', buf.length);
       ctx.res.end(buf);
     };
-    endBody = function(ctx) {
+    endCtx = function(ctx) {
       var body, res;
       body = ctx.body;
       res = ctx.res;
@@ -247,44 +250,23 @@ proxy = {
           endRes(ctx, body.toString(), true);
       }
     };
-    endCtx = function(ctx) {
-      var fn, j, len, p, ref;
-      if (ctx.nextFns) {
-        p = Promise.resolve();
-        ref = ctx.nextFns;
-        for (j = 0, len = ref.length; j < len; j++) {
-          fn = ref[j];
-          p = p.then(fn);
-        }
-        p.then(function() {
-          return endBody(ctx);
-        });
-      } else {
-        endBody(ctx);
-      }
-    };
-    tryMid = function(fn, ctx) {
+    tryMid = function(fn, ctx, err) {
       var e;
       try {
-        return fn(ctx);
+        return fn(ctx, err);
       } catch (_error) {
         e = _error;
         return Promise.reject(e);
       }
     };
     return function(req, res) {
-      var ctx, err, index, iter;
+      var ctx, errIter, index, iter;
       index = 0;
       ctx = {
         req: req,
         res: res,
         body: null,
         next: next
-      };
-      err = function(e) {
-        ctx.res.statusCode = 500;
-        ctx.body = "<pre>" + e.stack + "</pre>";
-        return endCtx(ctx);
       };
       iter = function(flag) {
         var m, ret;
@@ -297,9 +279,30 @@ proxy = {
           ctx.body = http.STATUS_CODES[404];
           return endCtx(ctx);
         }
-        ret = _.isFunction(m) ? tryMid(m, ctx) : match(ctx, req, 'method', m.method) && match(ctx, req, 'url', m.url) ? tryMid(m.handler, ctx) : next;
-        if (ret && _.isFunction(ret.then)) {
-          ret.then(iter, err);
+        ret = _.isFunction(m) ? tryMid(m, ctx) : match(ctx, req, 'method', m.method) && match(ctx, req, 'url', m.url) ? _.isFunction(m.handler) ? tryMid(m.handler, ctx) : m.handler ? ctx.body = m.handler : next : next;
+        if (kit.isPromise(ret)) {
+          ret.then(iter, errIter);
+        } else {
+          iter(ret);
+        }
+      };
+      errIter = function(err) {
+        var m, ret;
+        m = middlewares[index++];
+        if (!m) {
+          ctx.res.statusCode = 500;
+          ctx.body = kit.isDevelopment() ? "<pre>" + (err instanceof Error ? err.stack : err) + "</pre>" : void 0;
+          endCtx(ctx);
+          return;
+        }
+        if (m && m.error) {
+          ret = tryMid(m.error, ctx, err);
+        } else {
+          errIter(err);
+          return;
+        }
+        if (kit.isPromise(ret)) {
+          ret.then(iter, errIter);
         } else {
           iter(ret);
         }

@@ -1771,7 +1771,7 @@ Goto [changelog](doc/changelog.md)
         server.listen 8123
         ```
 
-- ## **[mid(middlewares, opts)](lib/proxy.coffee?source#L159)**
+- ## **[mid(middlewares, opts)](lib/proxy.coffee?source#L169)**
 
     A promise based middlewares proxy.
 
@@ -1784,6 +1784,11 @@ Goto [changelog](doc/changelog.md)
         	url: String | Regex | Function
         	method: String | Regex | Function
         	handler: ({ body, req, res, next, url, method }) -> Promise
+
+        	# When this, it will be assigned to ctx.body
+        	handler: String | Object | Array
+
+        	error: (ctx, err) -> Promise
         }
         ```
         <h4>selector</h4>
@@ -1795,14 +1800,15 @@ Goto [changelog](doc/changelog.md)
         of the string will be captured.
         <h4>handler</h4>
         If the handler has async operation inside, it should return a promise.
+        <h4>error</h4>
+        If any previous middleware rejects, current error handler will be called.
         <h4>body</h4>
         The `body` can be a `String`, `Buffer`, `Stream`, `Object` or `Promise`.
         If `body == next`, the proxy won't end the request automatically, which means
         you can handle the `res.end()` yourself.
         <h4>next</h4>
-        The `next = (fn) -> next` function is a function that returns itself. Any handler that
-        resolves the `next` will be treated as a middleware. The functions passed to
-        `next` will be executed before the whole http request ends.
+        The `next = -> next` function is a function that returns itself. If a handler
+        resolves the value `next`, middleware next to it will be called.
 
     - **<u>param</u>**: `opts` { _opts_ }
 
@@ -1826,11 +1832,6 @@ Goto [changelog](doc/changelog.md)
 
         middlewares = [
         	(ctx) ->
-        		# Record the time of the whole request
-        		start = new Date
-        		ctx.next => kit.sleep(300).then =>
-        			ctx.res.setHeader 'x-response-time', new Date - start
-        	(ctx) ->
         		kit.log 'access: ' + ctx.req.url
         		# We need the other handlers to handle the response.
         		kit.sleep(300).then -> ctx.next
@@ -1838,6 +1839,15 @@ Goto [changelog](doc/changelog.md)
         		url: //items/(\d+)$/
         		handler: (ctx) ->
         			ctx.body = kit.sleep(300).then -> { id: ctx.url[1] }
+        	}
+        	{
+        		url: '/api'
+        		handler: { fake: 'api' }
+        	}
+        	{
+        		error: (ctx, err) ->
+        	 			ctx.statusCode = 500
+        			ctx.body = err
         	}
         ]
 
@@ -1882,7 +1892,7 @@ Goto [changelog](doc/changelog.md)
         http.createServer proxy.mid(middlewares).listen 8123
         ```
 
-- ## **[match(pattern, opts)](lib/proxy.coffee?source#L312)**
+- ## **[match(pattern, opts)](lib/proxy.coffee?source#L331)**
 
     Generate an express like unix path selector. See the example of `proxy.mid`.
 
@@ -1905,7 +1915,7 @@ Goto [changelog](doc/changelog.md)
         kit.log match '/items/10' # output => { id: '10' }
         ```
 
-- ## **[static(url, opts)](lib/proxy.coffee?source#L340)**
+- ## **[static(url, opts)](lib/proxy.coffee?source#L359)**
 
     Create a static file middleware for `proxy.mid`.
 
@@ -1929,7 +1939,7 @@ Goto [changelog](doc/changelog.md)
         http.createServer proxy.mid(middlewares).listen 8123
         ```
 
-- ## **[url(req, res, url, opts, err)](lib/proxy.coffee?source#L407)**
+- ## **[url(req, res, url, opts, err)](lib/proxy.coffee?source#L426)**
 
     Use it to proxy one url to another.
 
