@@ -70,6 +70,11 @@ proxy =
 	 * 	url: String | Regex | Function
 	 * 	method: String | Regex | Function
 	 * 	handler: ({ body, req, res, next, url, method }) -> Promise
+	 *
+	 * 	# When this, it will be assigned to ctx.body
+	 * 	handler: String | Object | Array
+	 *
+	 * 	error: (ctx, err) -> Promise
 	 * }
 	 * ```
 	 * <h4>selector</h4>
@@ -81,14 +86,15 @@ proxy =
 	 * of the string will be captured.
 	 * <h4>handler</h4>
 	 * If the handler has async operation inside, it should return a promise.
+	 * <h4>error</h4>
+	 * If any previous middleware rejects, current error handler will be called.
 	 * <h4>body</h4>
 	 * The `body` can be a `String`, `Buffer`, `Stream`, `Object` or `Promise`.
 	 * If `body == next`, the proxy won't end the request automatically, which means
 	 * you can handle the `res.end()` yourself.
 	 * <h4>next</h4>
-	 * The `next = (fn) -> next` function is a function that returns itself. Any handler that
-	 * resolves the `next` will be treated as a middleware. The functions passed to
-	 * `next` will be executed before the whole http request ends.
+	 * The `next = -> next` function is a function that returns itself. If a handler
+	 * resolves the value `next`, middleware next to it will be called.
 	 * @param {opts} opts Defaults:
 	 * ```coffee
 	 * {
@@ -104,11 +110,6 @@ proxy =
 	 *
 	 * middlewares = [
 	 * 	(ctx) ->
-	 * 		# Record the time of the whole request
-	 * 		start = new Date
-	 * 		ctx.next => kit.sleep(300).then =>
-	 * 			ctx.res.setHeader 'x-response-time', new Date - start
-	 * 	(ctx) ->
 	 * 		kit.log 'access: ' + ctx.req.url
 	 * 		# We need the other handlers to handle the response.
 	 * 		kit.sleep(300).then -> ctx.next
@@ -116,6 +117,15 @@ proxy =
 	 * 		url: /\/items\/(\d+)$/
 	 * 		handler: (ctx) ->
 	 * 			ctx.body = kit.sleep(300).then -> { id: ctx.url[1] }
+	 * 	}
+	 * 	{
+	 * 		url: '/api'
+	 * 		handler: { fake: 'api' }
+	 * 	}
+	 * 	{
+	 * 		error: (ctx, err) ->
+	 			ctx.statusCode = 500
+	 * 			ctx.body = err
 	 * 	}
 	 * ]
 	 *
@@ -195,11 +205,7 @@ proxy =
 			if ret != undefined
 				ctx[key] = ret
 
-		next = (fn) ->
-			return next if not fn
-			@nextFns ?= []
-			@nextFns.push fn
-			return next
+		next = -> next
 
 		endRes = (ctx, data, isStr) ->
 			return if etag ctx, data, isStr
@@ -210,7 +216,7 @@ proxy =
 
 			return
 
-		endBody = (ctx) ->
+		endCtx = (ctx) ->
 			body = ctx.body
 			res = ctx.res
 
@@ -238,21 +244,9 @@ proxy =
 
 			return
 
-		endCtx = (ctx) ->
-			if ctx.nextFns
-				p = Promise.resolve()
-				for fn in ctx.nextFns
-					p = p.then fn
-				p.then ->
-					endBody ctx
-			else
-				endBody ctx
-
-			return
-
-		tryMid = (fn, ctx) ->
+		tryMid = (fn, ctx, err) ->
 			try
-				fn ctx
+				fn ctx, err
 			catch e
 				Promise.reject e
 
@@ -260,11 +254,6 @@ proxy =
 			index = 0
 
 			ctx = { req, res, body: null, next }
-
-			err = (e) ->
-				ctx.res.statusCode = 500
-				ctx.body = "<pre>#{e.stack}</pre>"
-				endCtx ctx
 
 			iter = (flag) ->
 				if flag != next
@@ -281,12 +270,42 @@ proxy =
 					tryMid m, ctx
 				else if match(ctx, req, 'method', m.method) and
 				match(ctx, req, 'url', m.url)
-					tryMid m.handler, ctx
+					if _.isFunction m.handler
+						tryMid m.handler, ctx
+					else if m.handler
+						ctx.body = m.handler
+					else
+						next
 				else
 					next
 
-				if ret and _.isFunction(ret.then)
-					ret.then iter, err
+				if kit.isPromise ret
+					ret.then iter, errIter
+				else
+					iter ret
+
+				return
+
+			errIter = (err) ->
+				m = middlewares[index++]
+
+				if not m
+					ctx.res.statusCode = 500
+					ctx.body = if kit.isDevelopment()
+						"<pre>" +
+							(if err instanceof Error then err.stack else err) +
+						"</pre>"
+					endCtx ctx
+					return
+
+				if m and m.error
+					ret = tryMid m.error, ctx, err
+				else
+					errIter err
+					return
+
+				if kit.isPromise ret
+					ret.then iter, errIter
 				else
 					iter ret
 
