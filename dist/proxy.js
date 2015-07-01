@@ -77,7 +77,7 @@ proxy = {
   	 * 	handler: ({ body, req, res, next, url, method }) -> Promise
   	 *
   	 * 	# When this, it will be assigned to ctx.body
-  	 * 	handler: String | Object | Array
+  	 * 	handler: String | Object | Promise | Stream
   	 *
   	 * 	error: (ctx, err) -> Promise
   	 * }
@@ -279,7 +279,7 @@ proxy = {
           ctx.body = http.STATUS_CODES[404];
           return endCtx(ctx);
         }
-        ret = _.isFunction(m) ? tryMid(m, ctx) : match(ctx, req, 'method', m.method) && match(ctx, req, 'url', m.url) ? _.isFunction(m.handler) ? tryMid(m.handler, ctx) : m.handler ? ctx.body = m.handler : next : next;
+        ret = _.isFunction(m) ? tryMid(m, ctx) : match(ctx, req, 'method', m.method) && match(ctx, req, 'url', m.url) ? _.isFunction(m.handler) ? tryMid(m.handler, ctx) : m.handler === void 0 ? next : ctx.body = m.handler : next;
         if (kit.isPromise(ret)) {
           ret.then(iter, errIter);
         } else {

@@ -72,7 +72,7 @@ proxy =
 	 * 	handler: ({ body, req, res, next, url, method }) -> Promise
 	 *
 	 * 	# When this, it will be assigned to ctx.body
-	 * 	handler: String | Object | Array
+	 * 	handler: String | Object | Promise | Stream
 	 *
 	 * 	error: (ctx, err) -> Promise
 	 * }
@@ -275,10 +275,10 @@ proxy =
 				match(ctx, req, 'url', m.url)
 					if _.isFunction m.handler
 						tryMid m.handler, ctx
-					else if m.handler
-						ctx.body = m.handler
-					else
+					else if m.handler == undefined
 						next
+					else
+						ctx.body = m.handler
 				else
 					next
 

@@ -1786,7 +1786,7 @@ Goto [changelog](doc/changelog.md)
         	handler: ({ body, req, res, next, url, method }) -> Promise
 
         	# When this, it will be assigned to ctx.body
-        	handler: String | Object | Array
+        	handler: String | Object | Promise | Stream
 
         	error: (ctx, err) -> Promise
         }
