@@ -198,7 +198,7 @@ proxy = {
         return true;
       }
       ret = _.isString(pattern) ? key === 'url' && _.startsWith(obj[key], pattern) ? obj[key].slice(pattern.length) : obj[key] === pattern ? obj[key] : void 0 : _.isRegExp(pattern) ? obj[key].match(pattern) : _.isFunction(pattern) ? pattern(obj[key]) : void 0;
-      if (ret !== void 0) {
+      if (ret !== void 0 && ret !== null) {
         ctx[key] = ret;
         return true;
       }
@@ -211,9 +211,7 @@ proxy = {
       if (etag(ctx, data, isStr)) {
         return;
       }
-      if (isStr) {
-        buf = new Buffer(data);
-      }
+      buf = isStr ? new Buffer(data) : data;
       ctx.res.setHeader('Content-Length', buf.length);
       ctx.res.end(buf);
     };
@@ -236,8 +234,9 @@ proxy = {
           } else if (body instanceof Buffer) {
             endRes(ctx, body);
           } else if (_.isFunction(body.then)) {
-            body.then(function(body) {
-              return endBody(ctx);
+            body.then(function(data) {
+              ctx.body = data;
+              return endCtx(ctx);
             });
           } else {
             res.setHeader('Content-type', 'application/json');

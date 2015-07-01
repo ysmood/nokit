@@ -19,8 +19,7 @@ routes = [
 
 	{
 		url: '/items'
-		handler: (ctx) ->
-			ctx.body = ctx.url + 's'
+		handler: kit.readFile('.gitignore')
 	}
 ]
 

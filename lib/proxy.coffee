@@ -202,7 +202,7 @@ proxy =
 			else if _.isFunction pattern
 				pattern obj[key]
 
-			if ret != undefined
+			if ret != undefined and ret != null
 				ctx[key] = ret
 				true
 
@@ -211,7 +211,7 @@ proxy =
 		endRes = (ctx, data, isStr) ->
 			return if etag ctx, data, isStr
 
-			buf = new Buffer data if isStr
+			buf = if isStr then new Buffer data else data
 			ctx.res.setHeader 'Content-Length', buf.length
 			ctx.res.end buf
 
@@ -234,7 +234,9 @@ proxy =
 					else if body instanceof Buffer
 						endRes ctx, body
 					else if _.isFunction body.then
-						body.then (body) -> endBody ctx
+						body.then (data) ->
+							ctx.body = data
+							endCtx ctx
 					else
 						res.setHeader 'Content-type', 'application/json'
 						endRes ctx, JSON.stringify(body), true

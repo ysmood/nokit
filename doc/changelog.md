@@ -1,6 +1,6 @@
 # Changelog
 
-- v0.8.6
+- v0.8.7
 
   - upd: deps
   - opt: proxy.mid

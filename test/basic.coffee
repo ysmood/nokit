@@ -423,6 +423,19 @@ describe 'Kit:', ->
 			.then (body) ->
 				shouldEqual '123', body
 
+	it 'proxy mid promise', ->
+		proxy = kit.require 'proxy'
+
+		routes = [(ctx) ->
+			ctx.body = kit.readFile '.gitignore'
+		]
+
+		createRandomServer proxy.mid(routes)
+		.then (port) ->
+			kit.request "http://127.0.0.1:#{port}"
+			.then (body) ->
+				shouldEqual kit.readFileSync('.gitignore', 'utf8'), body
+
 	it 'proxy mid url match', ->
 		proxy = kit.require 'proxy'
 
