@@ -1174,51 +1174,6 @@ _.extend kit, fs, fs.PromiseUtils,
 	Promise: Promise
 
 	###*
-	 * Create a getter & setter for an object's property.
-	 * @param  {Object} self
-	 * @param  {String} prop The property name.
-	 * @return {Function} `(v) -> Any`
-	 * ```coffee
-	 * # Two arguments
-	 * data = { path: 'a.txt' }
-	 * txt = kit.prop data, 'txt'
-	 * txt kit.readFile data.path
-	 * .then ->
-	 * 	kit.log data
-	 * 	kit.log txt()
-	 *
-	 * # Two arguments another form.
-	 * kit.readFile data.path
-	 * .then txt
-	 * .then ->
-	 * 	kit.log data
-	 *
-	 * # One argument.
-	 * txt = kit.prop 'default value'
-	 * kit.log txt() # => "default value"
-	 * txt 20
-	 * kit.log txt() # => 20
-	 * ```
-	###
-	prop: (self, prop) ->
-		if arguments.length < 2
-			val = self
-			set = (v) -> val = v
-			get = -> val
-		else
-			set = (v) -> self[prop] = v
-			get = -> self[prop]
-
-		(v) ->
-			if v?
-				if _.isFunction v.then
-					v.then set
-				else
-					set v
-			else
-				get()
-
-	###*
 	 * The `proxy` module.
 	 * You must `kit.require 'proxy'` before using it.
 	 * For more information goto the `Proxy` section.
