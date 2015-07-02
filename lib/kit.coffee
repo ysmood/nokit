@@ -661,6 +661,9 @@ _.extend kit, fs, fs.PromiseUtils,
 	 * 	isShowTime: true
 	 * 	logReg: process.env.logReg and new RegExp process.env.logReg
 	 * 	logTrace: process.env.logTrace == 'on'
+	 *
+	 * 	# Custom log method
+	 * 	log: (str, action) -> console[action] str
 	 * }
 	 * ```
 	 * @example
@@ -679,9 +682,7 @@ _.extend kit, fs, fs.PromiseUtils,
 	 * ```
 	###
 	log: (args...) ->
-		cs = kit.require 'colors/safe', ->
-			if kit.isDevelopment()
-				cs.mode = 'none'
+		cs = kit.require 'colors/safe'
 
 		if _.isObject action
 			opts = action
@@ -698,6 +699,7 @@ _.extend kit, fs, fs.PromiseUtils,
 			isShowTime: true
 			logReg: process.env.logReg and new RegExp process.env.logReg
 			logTrace: process.env.logTrace == 'on'
+			log: null
 		}
 
 		if not kit.lastLogTime
@@ -728,7 +730,10 @@ _.extend kit, fs, fs.PromiseUtils,
 			if kit.logReg and not kit.logReg.test(str)
 				return
 
-			console[action] str
+			if opts.log
+				opts.log str, action
+			else
+				console[action] str
 
 			if opts.logTrace
 				err = cs.grey (new Error).stack
@@ -739,7 +744,7 @@ _.extend kit, fs, fs.PromiseUtils,
 			if opts.isShowTime
 				log "[#{time}] ->\n" + kit.xinspect(msg, opts), timeDelta
 			else
-				log kit.xinspect(msg, opts), timeDelta
+				log kit.xinspect(msg, opts)
 		else
 			if formats
 				formats.unshift msg
@@ -766,7 +771,15 @@ _.extend kit, fs, fs.PromiseUtils,
 	 * ```
 	###
 	logs: (args...) ->
-		kit.log args.join ' '
+		out = ''
+		last = args.length - 1
+		for arg, i in args
+			kit.log arg, {
+				isShowTime: false
+				log: (str) ->
+					out += str + (if i == last then '' else ' ')
+			}
+		kit.log out
 
 	###*
 	 * Monitor an application and automatically restart it when file changed.
@@ -2081,7 +2094,7 @@ _.extend kit, fs, fs.PromiseUtils,
 	 * @param  {Object} obj Your target object.
 	 * @param  {Object} opts Options. Default:
 	 * ```coffee
-	 * { colors: true, depth: 5 }
+	 * { colors: true, depth: 7 }
 	 * ```
 	 * @return {String}
 	###
@@ -2090,7 +2103,7 @@ _.extend kit, fs, fs.PromiseUtils,
 
 		_.defaults opts, {
 			colors: kit.isDevelopment()
-			depth: 5
+			depth: 7
 		}
 
 		str = util.inspect obj, opts
