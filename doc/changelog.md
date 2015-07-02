@@ -1,9 +1,10 @@
 # Changelog
 
-- v0.8.8
+- v0.8.9
 
   - upd: deps
   - opt: proxy.mid
+  - opt: browser helper
 
 - v0.8.1
 

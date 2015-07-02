@@ -70,6 +70,8 @@ _.extend(kit, fs, fs.PromiseUtils, {
   	 * # The nb is assigned to the "window" object.
   	 * nb.log { a: 10 }
   	 * nb.log 10
+  	 * nb.es.addEventListener 'fileModified', ->
+  	 * 	console.log 'file changed'
   	 * ```
    */
   browserHelper: function(opts, useJs) {
@@ -464,15 +466,15 @@ _.extend(kit, fs, fs.PromiseUtils, {
     }
     _.defaults(opts, {
       indent: 0,
-      name: function(arg) {
+      name: function(arg1) {
         var name;
-        name = arg.name;
+        name = arg1.name;
         name = name.replace('self.', '');
         return "- #### " + name + "\n\n";
       },
-      tag: function(arg) {
+      tag: function(arg1) {
         var name, tagName, tname, ttype, type;
-        tagName = arg.tagName, name = arg.name, type = arg.type;
+        tagName = arg1.tagName, name = arg1.name, type = arg1.type;
         tname = name ? " `" + name + "`" : '';
         ttype = type ? " { _" + type + "_ }" : '';
         return "- **<u>" + tagName + "</u>**:" + tname + ttype;
@@ -745,6 +747,9 @@ _.extend(kit, fs, fs.PromiseUtils, {
   	 * 	isShowTime: true
   	 * 	logReg: process.env.logReg and new RegExp process.env.logReg
   	 * 	logTrace: process.env.logTrace == 'on'
+  	 *
+  	 * 	# Custom log method
+  	 * 	log: (str, action) -> console[action] str
   	 * }
   	 * ```
   	 * @example
@@ -765,11 +770,7 @@ _.extend(kit, fs, fs.PromiseUtils, {
   log: function() {
     var action, args, cs, formats, log, msg, opts, ref, time, timeDelta, util;
     args = 1 <= arguments.length ? slice.call(arguments, 0) : [];
-    cs = kit.require('colors/safe', function() {
-      if (kit.isDevelopment()) {
-        return cs.mode = 'none';
-      }
-    });
+    cs = kit.require('colors/safe');
     if (_.isObject(action)) {
       opts = action;
       action = 'log';
@@ -789,7 +790,8 @@ _.extend(kit, fs, fs.PromiseUtils, {
     _.defaults(opts, {
       isShowTime: true,
       logReg: process.env.logReg && new RegExp(process.env.logReg),
-      logTrace: process.env.logTrace === 'on'
+      logTrace: process.env.logTrace === 'on',
+      log: null
     });
     if (!kit.lastLogTime) {
       kit.lastLogTime = new Date;
@@ -815,7 +817,11 @@ _.extend(kit, fs, fs.PromiseUtils, {
       if (kit.logReg && !kit.logReg.test(str)) {
         return;
       }
-      console[action](str);
+      if (opts.log) {
+        opts.log(str, action);
+      } else {
+        console[action](str);
+      }
       if (opts.logTrace) {
         err = cs.grey((new Error).stack).replace(/.+\n.+\n.+/, '\nStack trace:');
         return console.log(err);
@@ -825,7 +831,7 @@ _.extend(kit, fs, fs.PromiseUtils, {
       if (opts.isShowTime) {
         log(("[" + time + "] ->\n") + kit.xinspect(msg, opts), timeDelta);
       } else {
-        log(kit.xinspect(msg, opts), timeDelta);
+        log(kit.xinspect(msg, opts));
       }
     } else {
       if (formats) {
@@ -854,9 +860,20 @@ _.extend(kit, fs, fs.PromiseUtils, {
   	 * ```
    */
   logs: function() {
-    var args;
+    var arg, args, i, j, last, len, out;
     args = 1 <= arguments.length ? slice.call(arguments, 0) : [];
-    return kit.log(args.join(' '));
+    out = '';
+    last = args.length - 1;
+    for (i = j = 0, len = args.length; j < len; i = ++j) {
+      arg = args[i];
+      kit.log(arg, {
+        isShowTime: false,
+        log: function(str) {
+          return out += str + (i === last ? '' : ' ');
+        }
+      });
+    }
+    return kit.log(out);
   },
 
   /**
@@ -941,14 +958,14 @@ _.extend(kit, fs, fs.PromiseUtils, {
       onWatchFiles: function(paths) {
         return kit.log(cs.yellow('Watching: ') + paths.join(', '));
       },
-      onNormalExit: function(arg) {
+      onNormalExit: function(arg1) {
         var code, signal;
-        code = arg.code, signal = arg.signal;
+        code = arg1.code, signal = arg1.signal;
         return kit.log(cs.yellow('EXIT') + (" code: " + (cs.cyan(code)) + " signal: " + (cs.cyan(signal))));
       },
-      onErrorExit: function(arg) {
+      onErrorExit: function(arg1) {
         var code, signal;
-        code = arg.code, signal = arg.signal;
+        code = arg1.code, signal = arg1.signal;
         return kit.err(cs.yellow('EXIT') + (" code: " + (cs.cyan(code)) + " ") + ("signal: " + (cs.cyan(signal)) + "\n") + cs.red('Process closed. Edit and save the watched file to restart.'));
       },
       sepLine: function() {
@@ -1286,64 +1303,6 @@ _.extend(kit, fs, fs.PromiseUtils, {
   	 * @type {Object}
    */
   Promise: Promise,
-
-  /**
-  	 * Create a getter & setter for an object's property.
-  	 * @param  {Object} self
-  	 * @param  {String} prop The property name.
-  	 * @return {Function} `(v) -> Any`
-  	 * ```coffee
-  	 * # Two arguments
-  	 * data = { path: 'a.txt' }
-  	 * txt = kit.prop data, 'txt'
-  	 * txt kit.readFile data.path
-  	 * .then ->
-  	 * 	kit.log data
-  	 * 	kit.log txt()
-  	 *
-  	 * # Two arguments another form.
-  	 * kit.readFile data.path
-  	 * .then txt
-  	 * .then ->
-  	 * 	kit.log data
-  	 *
-  	 * # One argument.
-  	 * txt = kit.prop 'default value'
-  	 * kit.log txt() # => "default value"
-  	 * txt 20
-  	 * kit.log txt() # => 20
-  	 * ```
-   */
-  prop: function(self, prop) {
-    var get, set, val;
-    if (arguments.length < 2) {
-      val = self;
-      set = function(v) {
-        return val = v;
-      };
-      get = function() {
-        return val;
-      };
-    } else {
-      set = function(v) {
-        return self[prop] = v;
-      };
-      get = function() {
-        return self[prop];
-      };
-    }
-    return function(v) {
-      if (v != null) {
-        if (_.isFunction(v.then)) {
-          return v.then(set);
-        } else {
-          return set(v);
-        }
-      } else {
-        return get();
-      }
-    };
-  },
 
   /**
   	 * The `proxy` module.
@@ -2375,7 +2334,7 @@ _.extend(kit, fs, fs.PromiseUtils, {
   	 * @param  {Object} obj Your target object.
   	 * @param  {Object} opts Options. Default:
   	 * ```coffee
-  	 * { colors: true, depth: 5 }
+  	 * { colors: true, depth: 7 }
   	 * ```
   	 * @return {String}
    */
@@ -2387,7 +2346,7 @@ _.extend(kit, fs, fs.PromiseUtils, {
     util = kit.require('util', __dirname);
     _.defaults(opts, {
       colors: kit.isDevelopment(),
-      depth: 5
+      depth: 7
     });
     return str = util.inspect(obj, opts);
   },

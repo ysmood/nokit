@@ -19,14 +19,13 @@ module.exports = function(opts) {
     return req.send(JSON.stringify(msg));
   };
   initAutoReload = function() {
-    var es;
-    es = new EventSource(opts.host + '/nokit-sse');
-    return es.addEventListener('fileModified', function(e) {
+    self.es = new EventSource(opts.host + '/nokit-sse');
+    return self.es.addEventListener('fileModified', function(e) {
       var each, m, path, reloadElem;
       path = JSON.parse(e.data);
       console.log(">> fileModified: " + path);
       reloadElem = function(el, key) {
-        var body;
+        var body, scrollTop;
         if (el[key].indexOf('?') === -1) {
           el[key] += '?nokitAutoReload=0';
         } else {
@@ -39,10 +38,12 @@ module.exports = function(opts) {
           }
         }
         body = document.body;
+        scrollTop = body.scrollTop;
         body.style.display = 'none';
         body.offsetHeight;
         return setTimeout(function() {
-          return body.style.display = 'block';
+          body.style.display = 'block';
+          return body.scrollTop = scrollTop;
         }, 50);
       };
       each = function(qs, handler) {

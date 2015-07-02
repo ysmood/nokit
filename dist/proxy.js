@@ -76,6 +76,9 @@ proxy = {
   	 * 	method: String | Regex | Function
   	 * 	handler: ({ body, req, res, next, url, method }) -> Promise
   	 *
+  	 *  # You can also use express-like middlewares.
+  	 * 	handler: (req, res, next) ->
+  	 *
   	 * 	# When this, it will be assigned to ctx.body
   	 * 	handler: String | Object | Promise | Stream
   	 *
@@ -137,24 +140,6 @@ proxy = {
   	 * http.createServer proxy.mid(middlewares).listen 8123
   	 * ```
   	 * @example
-  	 * Use with normal thrid middlewares. This example will map
-  	 * `http://127.0.0.1:8123/st` to the `static` folder.
-  	 * ```coffee
-  	 * proxy = kit.require 'proxy'
-  	 * http = require 'http'
-  	 * send = require 'send'
-  	 *
-  	 * middlewares = [
-  	 * 	{
-  	 * 		url: '/st'
-  	 * 		handler: (ctx) ->
-  	 * 			ctx.body = send(ctx.req, ctx.url, { root: 'static' })
-  	 * 	}
-  	 * ]
-  	 *
-  	 * http.createServer proxy.mid(middlewares).listen 8123
-  	 * ```
-  	 * @example
   	 * Express like path to named capture.
   	 * ```coffee
   	 * proxy = kit.require 'proxy'
@@ -170,9 +155,39 @@ proxy = {
   	 *
   	 * http.createServer proxy.mid(middlewares).listen 8123
   	 * ```
+  	 * @example
+  	 * Use with normal thrid middlewares. This example will map
+  	 * `http://127.0.0.1:8123/st` to the `static` folder.
+  	 * ```coffee
+  	 * proxy = kit.require 'proxy'
+  	 * http = require 'http'
+  	 * send = require 'send'
+  	 * bodyParser = require('body-parser')
+  	 *
+  	 * middlewares = [
+  	 * 	bodyParser.json()
+  	 * 	{
+  	 * 		url: '/st'
+  	 * 		handler: (ctx) ->
+  	 * 			ctx.body = send(ctx.req, ctx.url, { root: 'static' })
+  	 * 	}
+  	 *
+  	 * 	# sub-route
+  	 * 	{
+  	 * 		url: '/sub'
+  	 * 		handler: proxy.mid([{
+  	 * 			url: '/home'
+  	 * 			handler: (ctx) ->
+  	 * 				ctx.body = 'hello world'
+  	 * 		}])
+  	 * 	}
+  	 * ]
+  	 *
+  	 * http.createServer proxy.mid(middlewares).listen 8123
+  	 * ```
    */
   mid: function(middlewares, opts) {
-    var Stream, endCtx, endRes, etag, jhash, match, next, tryMid;
+    var Stream, endCtx, endRes, etag, jhash, match, next, normalizeHandler, tryMid;
     if (opts == null) {
       opts = {};
     }
@@ -197,7 +212,7 @@ proxy = {
       if (pattern === void 0) {
         return true;
       }
-      ret = _.isString(pattern) ? key === 'url' && _.startsWith(obj[key], pattern) ? obj[key].slice(pattern.length) : obj[key] === pattern ? obj[key] : void 0 : _.isRegExp(pattern) ? obj[key].match(pattern) : _.isFunction(pattern) ? pattern(obj[key]) : void 0;
+      ret = _.isString(pattern) ? key === 'url' && _.startsWith(obj[key], pattern) ? (ctx.req.originalUrl = ctx.req.url, ctx.req.url = obj[key].slice(pattern.length)) : obj[key] === pattern ? obj[key] : void 0 : _.isRegExp(pattern) ? obj[key].match(pattern) : _.isFunction(pattern) ? pattern(obj[key]) : void 0;
       if (ret !== void 0 && ret !== null) {
         ctx[key] = ret;
         return true;
@@ -259,7 +274,25 @@ proxy = {
         return Promise.reject(e);
       }
     };
-    return function(req, res) {
+    normalizeHandler = function(h) {
+      if (h.length < 2) {
+        return h;
+      }
+      return function(ctx) {
+        return new Promise(function(resolve, reject) {
+          ctx.body = ctx.next;
+          return h(ctx.req, ctx.res, function(err) {
+            ctx.body = null;
+            if (err) {
+              reject(err);
+            } else {
+              resolve(ctx.next);
+            }
+          });
+        });
+      };
+    };
+    return function(req, res, _next) {
       var ctx, errIter, index, iter;
       index = 0;
       ctx = {
@@ -275,11 +308,14 @@ proxy = {
         }
         m = middlewares[index++];
         if (!m) {
+          if (_.isFunction(_next)) {
+            return _next();
+          }
           res.statusCode = 404;
           ctx.body = http.STATUS_CODES[404];
           return endCtx(ctx);
         }
-        ret = _.isFunction(m) ? tryMid(m, ctx) : match(ctx, req, 'method', m.method) && match(ctx, req, 'url', m.url) ? _.isFunction(m.handler) ? tryMid(m.handler, ctx) : m.handler === void 0 ? next : ctx.body = m.handler : next;
+        ret = _.isFunction(m) ? tryMid(normalizeHandler(m), ctx) : match(ctx, req, 'method', m.method) && match(ctx, req, 'url', m.url) ? _.isFunction(m.handler) ? tryMid(normalizeHandler(m.handler), ctx) : m.handler === void 0 ? next : ctx.body = m.handler : next;
         if (kit.isPromise(ret)) {
           ret.then(iter, errIter);
         } else {
@@ -290,6 +326,9 @@ proxy = {
         var m, ret;
         m = middlewares[index++];
         if (!m) {
+          if (_.isFunction(_next)) {
+            return _next(err);
+          }
           ctx.res.statusCode = 500;
           ctx.body = kit.isDevelopment() ? "<pre>" + (err instanceof Error ? err.stack : err) + "</pre>" : void 0;
           endCtx(ctx);
