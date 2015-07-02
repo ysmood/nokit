@@ -71,6 +71,9 @@ proxy =
 	 * 	method: String | Regex | Function
 	 * 	handler: ({ body, req, res, next, url, method }) -> Promise
 	 *
+	 *  # You can also use express-like middlewares.
+	 * 	handler: (req, res, next) ->
+	 *
 	 * 	# When this, it will be assigned to ctx.body
 	 * 	handler: String | Object | Promise | Stream
 	 *
@@ -132,24 +135,6 @@ proxy =
 	 * http.createServer proxy.mid(middlewares).listen 8123
 	 * ```
 	 * @example
-	 * Use with normal thrid middlewares. This example will map
-	 * `http://127.0.0.1:8123/st` to the `static` folder.
-	 * ```coffee
-	 * proxy = kit.require 'proxy'
-	 * http = require 'http'
-	 * send = require 'send'
-	 *
-	 * middlewares = [
-	 * 	{
-	 * 		url: '/st'
-	 * 		handler: (ctx) ->
-	 * 			ctx.body = send(ctx.req, ctx.url, { root: 'static' })
-	 * 	}
-	 * ]
-	 *
-	 * http.createServer proxy.mid(middlewares).listen 8123
-	 * ```
-	 * @example
 	 * Express like path to named capture.
 	 * ```coffee
 	 * proxy = kit.require 'proxy'
@@ -160,6 +145,36 @@ proxy =
 	 * 		url: proxy.match '/items/:id'
 	 * 		handler: (ctx) ->
 	 * 			ctx.body = ctx.url.id
+	 * 	}
+	 * ]
+	 *
+	 * http.createServer proxy.mid(middlewares).listen 8123
+	 * ```
+	 * @example
+	 * Use with normal thrid middlewares. This example will map
+	 * `http://127.0.0.1:8123/st` to the `static` folder.
+	 * ```coffee
+	 * proxy = kit.require 'proxy'
+	 * http = require 'http'
+	 * send = require 'send'
+	 * bodyParser = require('body-parser')
+	 *
+	 * middlewares = [
+	 * 	bodyParser.json()
+	 * 	{
+	 * 		url: '/st'
+	 * 		handler: (ctx) ->
+	 * 			ctx.body = send(ctx.req, ctx.url, { root: 'static' })
+	 * 	}
+	 *
+	 * 	# sub-route
+	 * 	{
+	 * 		url: '/sub'
+	 * 		handler: proxy.mid([{
+	 * 			url: '/home'
+	 * 			handler: (ctx) ->
+	 * 				ctx.body = 'hello world'
+	 * 		}])
 	 * 	}
 	 * ]
 	 *
@@ -194,7 +209,8 @@ proxy =
 
 			ret = if _.isString(pattern)
 				if key == 'url' and _.startsWith(obj[key], pattern)
-					obj[key].slice pattern.length
+					ctx.req.originalUrl = ctx.req.url
+					ctx.req.url = obj[key].slice pattern.length
 				else if obj[key] == pattern
 					obj[key]
 			else if _.isRegExp pattern
@@ -253,7 +269,22 @@ proxy =
 			catch e
 				Promise.reject e
 
-		(req, res) ->
+		normalizeHandler = (h) ->
+			return h if h.length < 2
+
+			(ctx) ->
+				new Promise (resolve, reject) ->
+					ctx.body = ctx.next
+					h ctx.req, ctx.res, (err) ->
+						ctx.body = null
+						if err
+							reject err
+						else
+							resolve ctx.next
+
+						return
+
+		(req, res, _next) ->
 			index = 0
 
 			ctx = { req, res, body: null, next }
@@ -265,16 +296,17 @@ proxy =
 				m = middlewares[index++]
 
 				if not m
+					return _next() if _.isFunction _next
 					res.statusCode = 404
 					ctx.body = http.STATUS_CODES[404]
 					return endCtx ctx
 
 				ret = if _.isFunction m
-					tryMid m, ctx
+					tryMid normalizeHandler(m), ctx
 				else if match(ctx, req, 'method', m.method) and
 				match(ctx, req, 'url', m.url)
 					if _.isFunction m.handler
-						tryMid m.handler, ctx
+						tryMid normalizeHandler(m.handler), ctx
 					else if m.handler == undefined
 						next
 					else
@@ -293,6 +325,7 @@ proxy =
 				m = middlewares[index++]
 
 				if not m
+					return _next err if _.isFunction _next
 					ctx.res.statusCode = 500
 					ctx.body = if kit.isDevelopment()
 						"<pre>" +

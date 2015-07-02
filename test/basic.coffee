@@ -423,6 +423,64 @@ describe 'Kit:', ->
 			.then (body) ->
 				shouldEqual '123', body
 
+	it 'proxy mid 404', ->
+		proxy = kit.require 'proxy'
+
+		routes = [{
+			url: /\/items\/(\d+)/
+			handler: (ctx) ->
+				ctx.body = ctx.url[1]
+		}]
+
+		createRandomServer proxy.mid(routes)
+		.then (port) ->
+			kit.request "http://127.0.0.1:#{port}/itemx"
+			.then (body) ->
+				shouldEqual 'Not Found', body
+
+	it 'proxy mid sub route', ->
+		proxy = kit.require 'proxy'
+
+		routes = [{
+			url: '/sub'
+			handler: proxy.mid [{
+				url: '/home'
+				handler: (ctx) ->
+					ctx.body = ctx.url
+			}]
+		}]
+
+		createRandomServer proxy.mid(routes)
+		.then (port) ->
+			kit.request "http://127.0.0.1:#{port}/sub/home/test"
+			.then (body) ->
+				shouldEqual '/test', body
+
+	it 'proxy mid sub route error', ->
+		proxy = kit.require 'proxy'
+
+		routes = [{
+			url: '/sub'
+			handler: proxy.mid [{
+				url: '/home'
+				handler: (ctx) ->
+					a()
+			}]
+		}, {
+			error: (ctx, err) ->
+				ctx.res.statusCode = 501
+				ctx.body = err.message
+		}]
+
+		createRandomServer proxy.mid(routes)
+		.then (port) ->
+			kit.request {
+				url: "http://127.0.0.1:#{port}/sub/home/test"
+				body: false
+			}
+			.then (res) ->
+				shouldEqual '501 a is not defined', res.statusCode + ' ' + res.body
+
 	it 'proxy mid promise', ->
 		proxy = kit.require 'proxy'
 
