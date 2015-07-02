@@ -64,6 +64,8 @@ _.extend kit, fs, fs.PromiseUtils,
 	 * # The nb is assigned to the "window" object.
 	 * nb.log { a: 10 }
 	 * nb.log 10
+	 * nb.es.addEventListener 'fileModified', ->
+	 * 	console.log 'file changed'
 	 * ```
 	###
 	browserHelper: (opts = {}, useJs = false) ->

@@ -17,9 +17,9 @@ module.exports = (opts) ->
 		req.send JSON.stringify(msg)
 
 	initAutoReload = ->
-		es = new EventSource(opts.host + '/nokit-sse')
+		self.es = new EventSource(opts.host + '/nokit-sse')
 
-		es.addEventListener 'fileModified', (e) ->
+		self.es.addEventListener 'fileModified', (e) ->
 			path = JSON.parse e.data
 
 			console.log(">> fileModified: " + path)
@@ -39,11 +39,13 @@ module.exports = (opts) ->
 
 				# Fix the Chrome renderer bug.
 				body = document.body
+				scrollTop = body.scrollTop
 				body.style.display = 'none'
 				# no need to store this anywhere, the reference is enough.
 				body.offsetHeight
 				setTimeout ->
 					body.style.display = 'block'
+					body.scrollTop = scrollTop
 				, 50
 
 			each = (qs, handler) ->
