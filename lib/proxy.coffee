@@ -222,6 +222,17 @@ proxy =
 				ctx[key] = ret
 				true
 
+		matchObj = (ctx, obj, key, target) ->
+			return true if target == undefined
+
+			ret = {}
+
+			for k, v of target
+				return false if not match ret, obj[key], k, v
+
+			ctx[key] = ret
+			return true
+
 		next = -> next
 
 		endRes = (ctx, data, isStr) ->
@@ -304,6 +315,7 @@ proxy =
 				ret = if _.isFunction m
 					tryMid normalizeHandler(m), ctx
 				else if match(ctx, req, 'method', m.method) and
+				matchObj(ctx, req, 'headers', m.headers) and
 				match(ctx, req, 'url', m.url)
 					if _.isFunction m.handler
 						tryMid normalizeHandler(m.handler), ctx
