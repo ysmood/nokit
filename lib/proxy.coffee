@@ -416,7 +416,7 @@ proxy =
 			handler: (ctx) ->
 				query = ctx.url.indexOf('?')
 				path = if query < 0 then ctx.url else ctx.url.slice 0, query
-				ctx.body = send ctx.req, (path), opts
+				ctx.body = send ctx.req, path, opts
 		}
 
 	###*
