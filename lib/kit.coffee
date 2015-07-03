@@ -727,7 +727,7 @@ _.extend kit, fs, fs.PromiseUtils,
 			].join(' ')
 
 		log = ->
-			str = _.toArray(arguments).join ' '
+			str = _.toArray(_.pull(arguments, undefined)).join ' '
 
 			if kit.logReg and not kit.logReg.test(str)
 				return
