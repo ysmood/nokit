@@ -1687,7 +1687,8 @@ _.extend kit, fs, fs.PromiseUtils,
 	 * It will automatically add `node_modules/.bin` to the `PATH`
 	 * environment variable.
 	 * @param  {String} cmd Path or name of an executable program.
-	 * @param  {Array} args CLI arguments.
+	 * @param  {Array} args CLI arguments. If any of the item is an object,
+	 * it will be converted to string by `JSON.stringify`.
 	 * @param  {Object} opts Process options.
 	 * Same with the Node.js official documentation.
 	 * Except that it will inherit the parent's stdio.
@@ -1738,6 +1739,11 @@ _.extend kit, fs, fs.PromiseUtils,
 		{ spawn } = kit.require 'child_process', __dirname
 
 		ps = null
+
+		for k, v of args
+			if _.isObject v
+				args[k] = JSON.stringify v
+
 		promise = new Promise (resolve, reject) ->
 			try
 				ps = spawn cmd, args, opts
