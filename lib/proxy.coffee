@@ -470,6 +470,15 @@ proxy =
 	 * }, {
 	 * 	url: '/c'
 	 * 	handler proxy.url { url: 'c.com/s.js' } # Porxy to a file
+	 * }, {
+	 * 	headers: {
+	 * 		'content-type': /text\/html/
+	 * 	}
+	 * 	handler proxy.url {
+	 * 		url: 'd.com'
+	 * 		# Inject script to html page.
+	 * 		handleBody: (body) -> body + '<script>alert('test')</script>'
+	 * 	}
 	 * }]
 	 * .listen 8123
 	 * ```
