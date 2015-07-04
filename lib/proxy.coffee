@@ -421,126 +421,175 @@ proxy =
 
 	###*
 	 * Use it to proxy one url to another.
-	 * @param {http.IncomingMessage} req Also supports Express.js.
-	 * @param {http.ServerResponse} res Also supports Express.js.
-	 * @param {String | Object} url The target url forced to. Optional.
-	 * Such as force 'http://test.com/a' to 'http://test.com/b',
-	 * force 'http://test.com/a' to 'http://other.com/a',
-	 * force 'http://test.com' to 'other.com'.
-	 * It can also be an url object. Such as
-	 * `{ protocol: 'http:', host: 'test.com:8123', pathname: '/a/b', query: 's=1' }`.
 	 * @param {Object} opts Other options. Default:
 	 * ```coffee
 	 * {
+	 * 	# The target url forced to. Optional.
+	 * 	# Such as proxy 'http://test.com/a' to 'http://test.com/b',
+	 * 	# proxy 'http://test.com/a' to 'http://other.com/a',
+	 * 	# proxy 'http://test.com' to 'other.com'.
+	 * 	# It can also be an url object. Such as
+	 * 	# `{ protocol: 'http:', host: 'test.com:8123', pathname: '/a/b', query: 's=1' }`.
+	 * 	url: null
+	 *
 	 * 	# Limit the bandwidth byte per second.
-	 * 	bps: null
+	 * 	bps: Integer
 	 *
 	 * 	# if the bps is the global bps.
 	 * 	globalBps: false
 	 *
 	 * 	agent: customHttpAgent
 	 *
+	 * 	# Force the header's host same as the url's.
+	 * 	isForceHeaderHost: true
+	 *
 	 * 	# You can hack the headers before the proxy send it.
-	 * 	handleReqHeaders: (headers) -> headers
-	 * 	handleResHeaders: (headers) -> headers
+	 * 	handleReqHeaders: (headers, req) -> headers
+	 * 	handleResHeaders: (headers, req) -> headers
+	 *
+	 * 	# Manipulate the body content of the response here, such as inject script into it.
+	 * 	handleBody: (body, req) -> body
+	 *
+	 * 	# It will log some basic error info.
+	 * 	error: (e, req) ->
 	 * }
 	 * ```
-	 * @param {Function} err Custom error handler.
-	 * @return {Promise}
+	 * @return {Function} `(req, res) -> Promise` A middleware.
 	 * @example
 	 * ```coffee
 	 * kit = require 'nokit'
-	 * kit.require 'proxy'
-	 * kit.require 'url'
+	 * proxy = kit.require 'proxy'
 	 * http = require 'http'
 	 *
-	 * server = http.createServer (req, res) ->
-	 * 	url = kit.url.parse req.url
-	 * 	switch url.path
-	 * 		when '/a'
-	 * 			kit.proxy.url req, res, 'a.com', (err) ->
-	 * 				kit.log err
-	 * 		when '/b'
-	 * 			kit.proxy.url req, res, '/c'
-	 * 		when '/c'
-	 * 			kit.proxy.url req, res, 'http://b.com/c.js'
-	 * 		else
-	 * 			# Transparent proxy.
-	 * 			service.use kit.proxy.url
-	 *
-	 * server.listen 8123
+	 * http.createServer proxy.mid [{
+	 * 	url: '/a'
+	 * 	handler: proxy.url() # Transparent proxy
+	 * }, {
+	 * 	url: '/b'
+	 * 	handler proxy.url { url: 'a.com' } # Porxy to `a.com`
+	 * }, {
+	 * 	url: '/c'
+	 * 	handler proxy.url { url: 'c.com/s.js' } # Porxy to a file
+	 * }]
+	 * .listen 8123
 	 * ```
 	###
-	url: (req, res, url, opts = {}, err) ->
+	url: (opts = {}) ->
 		kit.require 'url'
+		cs = kit.require 'colors/safe'
 
 		_.defaults opts, {
-			bps: null
 			globalBps: false
 			agent: proxy.agent
+			isForceHeaderHost: true
 			handleReqHeaders: (headers) -> headers
 			handleResHeaders: (headers) -> headers
+			handleUrl: (url) -> url
+			error: (e, req) ->
+				kit.logs e.toString(), '->', cs.red(req.url)
 		}
 
-		if not url
-			url = req.url
+		uppperCase = (m, p1, p2) -> p1.toUpperCase() + p2
 
-		if _.isObject url
-			url = kit.url.format url
-		else
-			sepIndex = url.indexOf('/')
-			switch sepIndex
-				# such as url is '/get/page'
-				when 0
-					url = 'http://' + req.headers.host + url
-				# such as url is 'test.com'
-				when -1
-					{ path } = kit.url.parse(req.url)
+		headerUpReg = /(\w)(\w*)/g
+		normalizeHeaders = (headers, req) ->
+			nheaders = {}
+			for k, v of headers
+				nk = k.replace headerUpReg, uppperCase
+				nheaders[nk] = v
 
-					url = 'http://' + url + path
+			opts.handleReqHeaders nheaders, req
 
-		error = err or (e) ->
-			cs = kit.require 'colors/safe'
-			kit.log e.toString() + ' -> ' + cs.red req.url
+		normalizeUrl = (req, url) ->
+			if not url
+				url = req.url
 
-		# Normalize the headers
-		headers = {}
-		for k, v of req.headers
-			nk = k.replace(/(\w)(\w*)/g, (m, p1, p2) -> p1.toUpperCase() + p2)
-			headers[nk] = v
+			opts.handleUrl if _.isString url
+				sepIndex = url.indexOf('/')
 
-		headers = opts.handleReqHeaders headers
+				switch sepIndex
+					# such as url is '/get/page'
+					when 0
+						{
+							protocol: 'http:'
+							host: req.headers.host
+							path: url
+						}
 
-		stream = if opts.bps == null
-			res
-		else
-			if opts.globalBps
-				sockNum = _.keys(opts.agent.sockets).length
-				bps = opts.bps / (sockNum + 1)
+					# such as url is 'test.com'
+					when -1
+						{
+							protocol: 'http:'
+							host: url
+							path: kit.url.parse(req.url).path
+						}
+
+					# such as url is 'http://a.com/test'
+					else
+						kit.url.parse url
 			else
-				bps = opts.bps
+				url
 
-			throttle = new kit.requireOptional('throttle', __dirname)(bps)
+		normalizeStream = (res) ->
+			return if opts.handleBody
 
-			throttle.pipe res
-			throttle
+			if _.isNumber opts.bps
+				if opts.globalBps
+					sockNum = _.keys(opts.agent.sockets).length
+					bps = opts.bps / (sockNum + 1)
+				else
+					bps = opts.bps
 
-		p = kit.request {
-			method: req.method
-			url
-			headers
-			reqPipe: req
-			resPipe: stream
-			autoUnzip: false
-			agent: opts.agent
-		}
+				throttle = new kit.requireOptional('throttle', __dirname)(bps)
 
-		p.req.on 'response', (proxyRes) ->
-			res.writeHead(
-				proxyRes.statusCode
-				opts.handleResHeaders proxyRes.headers
-			)
+				throttle.pipe res
+				throttle
+			else
+				res
 
-		p.catch error
+		(req, res) ->
+			url = normalizeUrl req, opts.url
+			headers = normalizeHeaders req.headers, req
+			stream = normalizeStream res
+
+			if opts.isForceHeaderHost and opts.url
+				headers['Host'] = url.host
+
+			p = kit.request {
+				method: req.method
+				url
+				headers
+				reqPipe: req
+				resPipe: stream
+				autoUnzip: false
+				agent: opts.agent
+				body: not opts.handleBody
+				resPipeError: ->
+					res.statusCode = 502
+					res.end 'Proxy Error: ' + http.STATUS_CODES[502]
+			}
+
+			if opts.handleBody
+				p.then (proxyRes) ->
+					body = opts.handleBody proxyRes.body, req
+					if not body instanceof Buffer
+						body = new Buffer body
+					hs = opts.handleResHeaders proxyRes.headers, req
+					hs['Content-Length'] = body.length
+					res.writeHead(
+						proxyRes.statusCode
+						hs
+					)
+					res.end body
+			else
+				p.req.on 'response', (proxyRes) ->
+					res.writeHead(
+						proxyRes.statusCode
+						opts.handleResHeaders proxyRes.headers, req
+					)
+
+			p.catch (e) -> opts.error e, req
+
+			p
 
 module.exports = proxy

@@ -389,6 +389,36 @@ describe 'Kit:', ->
 			'ss', 'ab'
 		]), undefined
 
+	it 'proxy url', ->
+		proxy = kit.require 'proxy'
+
+		createRandomServer proxy.mid([{
+			url: /\/site$/
+			handler: (ctx) ->
+				ctx.body = 'site' + ctx.req.headers.proxy
+		}, {
+			url: /\/proxy$/
+			handler: proxy.url {
+				url: '/site'
+				bps: 1024 * 10
+				handleReqHeaders: (headers) ->
+					headers['proxy'] = '-proxy'
+					headers
+				handleResHeaders: (headers) ->
+					headers['x'] = '-ok'
+					headers
+				handleBody: (body) ->
+					body + '-body'
+			}
+		}])
+		.then (port) ->
+			kit.request {
+				url: "http://127.0.0.1:#{port}/proxy"
+				body: false
+			}
+		.then ({ headers, body }) ->
+			shouldEqual 'site-proxy-body-ok', body + headers.x
+
 	it 'proxy mid handler', ->
 		proxy = kit.require 'proxy'
 
