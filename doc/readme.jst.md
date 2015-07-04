@@ -27,79 +27,6 @@ Nokit has provided a cli tool like GNU Make. If you install it globally like thi
 
 , then have fun with your `nofile`, it can be js, coffee, babeljs or livescript. For more information goto the `CLI` section.
 
-# Quick Start
-
-## vs Gulp
-
-Here it will automatically lint, compile, compress and cache files by their extensions. You can goto Drives section to see what extensions are supported,
-or write your own.
-
-```coffee
-kit = require 'nokit'
-drives = kit.require 'drives'
-
-kit.warp 'src/**/*.@(jade|less|coffee|ls)'
-    # # To disable cache.
-    # .load drives.reader isCache: false
-    .load drives.auto 'lint'
-    .load drives.auto 'compile', '.coffee': { bare: false }
-    .load drives.auto 'compress'
-    .load concat 'main.js'
-.run 'dist/path'
-
-```
-
-### Write your own drives
-
-Nokit has already provided some handy example drives, you
-can check them in the Drives section. It's fairly easy to
-write your own.
-
-```coffee
-kit = require 'nokit'
-coffee = require 'coffee-script'
-
-# A drive for coffee, a simple curried function.
-compiler = (opts) -> ->
-    # Change extension from '.coffee' to '.js'.
-    @dest.ext = '.js'
-    @set coffee.compile(@contents, opts)
-
-# A drive to prepend lisence to each file.
-# Here "fileInfo.set" is the same with the "@set".
-lisencer = (lisence) -> (fileInfo) ->
-    @set lisence + '\n' + @contents
-
-# A drive to concat all files. It will override the default writer.
-concat = (outputFile) ->
-    all = ''
-
-    # Object.assign
-    kit._.assign ->
-        all += @contents
-    , isWriter: true, onEnd: ->
-        # This will enable the auto-cache.
-        @deps = kit._.pluck @list, 'path'
-
-        @dest = @to + '/' + outputFile
-        @set all
-
-        # Call the overrided writer.
-        # Call two times and create two output files.
-        @super().then =>
-            @dest = @dest + '.info'
-            @set = '/* info */\n' + all
-            @super()
-
-kit.warp 'src/**/*.coffee'
-    .load compiler bare: true
-    .load lisencer '/* MIT lisence */'
-    .load concat 'bundle.js'
-.run 'dist'
-.then ->
-    kit.log 'Build Done'
-```
-
 ## CLI
 
 By default nokit only supports js, if you want nokit to support coffee, you should install nokit like this:
@@ -171,6 +98,77 @@ Goto [changelog](doc/changelog.md)
 <%= doc['lib/kit.coffee'] %>
 
 # Drives
+
+## Quick Start
+
+Here it will automatically lint, compile, compress and cache files by their extensions. You can goto Drives section to see what extensions are supported,
+or write your own.
+
+```coffee
+kit = require 'nokit'
+drives = kit.require 'drives'
+
+kit.warp 'src/**/*.@(jade|less|coffee|ls)'
+    # # To disable cache.
+    # .load drives.reader isCache: false
+    .load drives.auto 'lint'
+    .load drives.auto 'compile', '.coffee': { bare: false }
+    .load drives.auto 'compress'
+    .load concat 'main.js'
+.run 'dist/path'
+
+```
+
+### Write your own drives
+
+Nokit has already provided some handy example drives, you
+can check them in the Drives section. It's fairly easy to
+write your own.
+
+```coffee
+kit = require 'nokit'
+coffee = require 'coffee-script'
+
+# A drive for coffee, a simple curried function.
+compiler = (opts) -> ->
+    # Change extension from '.coffee' to '.js'.
+    @dest.ext = '.js'
+    @set coffee.compile(@contents, opts)
+
+# A drive to prepend lisence to each file.
+# Here "fileInfo.set" is the same with the "@set".
+lisencer = (lisence) -> (fileInfo) ->
+    @set lisence + '\n' + @contents
+
+# A drive to concat all files. It will override the default writer.
+concat = (outputFile) ->
+    all = ''
+
+    # Object.assign
+    kit._.assign ->
+        all += @contents
+    , isWriter: true, onEnd: ->
+        # This will enable the auto-cache.
+        @deps = kit._.pluck @list, 'path'
+
+        @dest = @to + '/' + outputFile
+        @set all
+
+        # Call the overrided writer.
+        # Call two times and create two output files.
+        @super().then =>
+            @dest = @dest + '.info'
+            @set = '/* info */\n' + all
+            @super()
+
+kit.warp 'src/**/*.coffee'
+    .load compiler bare: true
+    .load lisencer '/* MIT lisence */'
+    .load concat 'bundle.js'
+.run 'dist'
+.then ->
+    kit.log 'Build Done'
+```
 
 <%= doc['lib/drives.coffee'] %>
 
