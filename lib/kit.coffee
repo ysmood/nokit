@@ -1434,7 +1434,7 @@ _.extend kit, fs, fs.PromiseUtils,
 		url = opts.url or {}
 		if _.isObject url
 			url.protocol ?= 'http:'
-			if (hostSepIndex = url.host.indexOf(':')) > -1
+			if url.host and (hostSepIndex = url.host.indexOf(':')) > -1
 				url.hostname = url.host[0 ... hostSepIndex]
 				url.port = url.host[hostSepIndex + 1 ..]
 		else
@@ -1599,7 +1599,9 @@ _.extend kit, fs, fs.PromiseUtils,
 						opts.resPipe.end()
 					reject err
 
-				req.on 'error', resPipeError
+			req.on 'error', (err) ->
+				resPipeError err if opts.resPipe
+				reject err
 
 			if opts.timeout > 0
 				req.setTimeout opts.timeout, ->
