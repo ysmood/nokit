@@ -76,8 +76,8 @@ loadNofile = ->
 			kit.err 'No task found.'
 		return path
 
-	if process.env.nofile
-		return load process.env.nofile
+	if (nofileIndex = process.argv.indexOf('--nofile')) > -1
+		return load kit.path.resolve process.argv[nofileIndex + 1]
 
 	paths = kit.genModulePaths 'nofile', process.cwd(), ''
 		.reduce (s, p) ->
@@ -109,18 +109,11 @@ searchTasks = ->
 module.exports = launch = ->
 	cwd = process.cwd()
 
-	cmder
-	.option '-v, --version',
-		'output version of nokit',
-		->
-			info = kit.readJsonSync(__dirname + '/../package.json')
-			console.log cls.green("nokit@#{info.version}"),
-				cls.grey "(#{require.resolve('./kit')})"
-			process.exit()
-
 	nofilePath = loadNofile()
 
-	cmder.usage '[options] [fuzzy_task_name]...' +
+	cmder
+	.option '--nofile <path>', 'force nofile path'
+	.usage '[options] [fuzzy_task_name]...' +
 		cls.grey "  # #{kit.path.relative cwd, nofilePath}"
 
 	if not kit.task.list
