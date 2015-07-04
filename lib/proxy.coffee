@@ -160,7 +160,7 @@ proxy =
 	 * bodyParser = require('body-parser')
 	 *
 	 * middlewares = [
-	 * 	bodyParser.json()
+	 * 	bodyParser.json() # Express middleware
 	 * 	{
 	 * 		url: '/st'
 	 * 		handler: (ctx) ->
@@ -239,7 +239,8 @@ proxy =
 			return if etag ctx, data, isStr
 
 			buf = if isStr then new Buffer data else data
-			ctx.res.setHeader 'Content-Length', buf.length
+			if not ctx.res.headersSent
+				ctx.res.setHeader 'Content-Length', buf.length
 			ctx.res.end buf
 
 			return
@@ -265,7 +266,8 @@ proxy =
 							ctx.body = data
 							endCtx ctx
 					else
-						res.setHeader 'Content-type', 'application/json'
+						if not ctx.res.headersSent
+							res.setHeader 'Content-type', 'application/json'
 						endRes ctx, JSON.stringify(body), true
 				when 'undefined'
 					res.end()
@@ -392,32 +394,30 @@ proxy =
 
 	###*
 	 * Create a static file middleware for `proxy.mid`.
-	 * @param  {String | Regex | Function} url Same as the url in `proxy.mid`.
 	 * @param  {String | Object} opts Same as the [send](https://github.com/pillarjs/send)'s.
-	 * @return {Object} The middleware of `porxy.mid`.
+	 * @return {Function} The middleware handler of `porxy.mid`.
 	 * ```coffee
 	 * proxy = kit.require 'proxy'
 	 * http = require 'http'
 	 *
-	 * middlewares = [proxy.static('/st', 'static')]
+	 * middlewares = [{
+	 * 	url: '/st'
+	 * 	handler: proxy.static('static')
+	 * }]
 	 *
 	 * http.createServer proxy.mid(middlewares).listen 8123
 	 * ```
 	###
-	static: (url, opts) ->
+	static: (opts) ->
 		send = kit.requireOptional 'send', __dirname, '^0.13.0'
 
 		if _.isString opts
 			opts = { root: opts }
 
-		{
-			url: url
-			method: 'GET'
-			handler: (ctx) ->
-				query = ctx.url.indexOf('?')
-				path = if query < 0 then ctx.url else ctx.url.slice 0, query
-				ctx.body = send ctx.req, path, opts
-		}
+		(ctx) ->
+			query = ctx.url.indexOf('?')
+			path = if query < 0 then ctx.url else ctx.url.slice 0, query
+			ctx.body = send ctx.req, path, opts
 
 	###*
 	 * Use it to proxy one url to another.

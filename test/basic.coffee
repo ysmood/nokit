@@ -530,9 +530,10 @@ describe 'Kit:', ->
 	it 'proxy mid static', ->
 		proxy = kit.require 'proxy'
 
-		routes = [
-			proxy.static '/st', 'test/fixtures'
-		]
+		routes = [{
+			url: '/st'
+			handler: proxy.static 'test/fixtures'
+		}]
 
 		createRandomServer proxy.mid(routes)
 		.then (port) ->
