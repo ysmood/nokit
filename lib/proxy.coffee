@@ -447,8 +447,9 @@ proxy =
 	 * 	handleReqHeaders: (headers, req) -> headers
 	 * 	handleResHeaders: (headers, req) -> headers
 	 *
-	 * 	# Manipulate the body content of the response here, such as inject script into it.
-	 * 	handleBody: (body, req) -> body
+	 * 	# Manipulate the response body content of the response here,
+	 * 	# such as inject script into it.
+	 * 	handleResBody: (body, req) -> body
 	 *
 	 * 	# It will log some basic error info.
 	 * 	error: (e, req) ->
@@ -477,7 +478,7 @@ proxy =
 	 * 	handler proxy.url {
 	 * 		url: 'd.com'
 	 * 		# Inject script to html page.
-	 * 		handleBody: (body) -> body + '<script>alert('test')</script>'
+	 * 		handleResBody: (body) -> body + '<script>alert('test')</script>'
 	 * 	}
 	 * }]
 	 * .listen 8123
@@ -540,7 +541,7 @@ proxy =
 				url
 
 		normalizeStream = (res) ->
-			return if opts.handleBody
+			return if opts.handleResBody
 
 			if _.isNumber opts.bps
 				if opts.globalBps
@@ -572,15 +573,15 @@ proxy =
 				resPipe: stream
 				autoUnzip: false
 				agent: opts.agent
-				body: not opts.handleBody
+				body: not opts.handleResBody
 				resPipeError: ->
 					res.statusCode = 502
 					res.end 'Proxy Error: ' + http.STATUS_CODES[502]
 			}
 
-			if opts.handleBody
+			if opts.handleResBody
 				p.then (proxyRes) ->
-					body = opts.handleBody proxyRes.body, req
+					body = opts.handleResBody proxyRes.body, req
 					if not body instanceof Buffer
 						body = new Buffer body
 					hs = opts.handleResHeaders proxyRes.headers, req

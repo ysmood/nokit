@@ -407,7 +407,7 @@ describe 'Kit:', ->
 				handleResHeaders: (headers) ->
 					headers['x'] = '-ok'
 					headers
-				handleBody: (body) ->
+				handleResBody: (body) ->
 					body + '-body'
 			}
 		}])
