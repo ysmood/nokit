@@ -1375,6 +1375,8 @@ _.extend kit, fs, fs.PromiseUtils,
 	 *
 	 * 	# The progress of the response.
 	 * 	resProgress: (complete, total) ->
+	 *
+	 * 	resPipeError: (res) -> res.end()
 	 * }
 	 * ```
 	 * And if set opts as string, it will be treated as the url.
@@ -1508,10 +1510,6 @@ _.extend kit, fs, fs.PromiseUtils,
 							opts.resProgress complete, total
 
 				if opts.resPipe
-					resPipeError = (err) ->
-						opts.resPipe.end()
-						reject err
-
 					if opts.autoUnzip
 						switch res.headers['content-encoding']
 							when 'gzip'
@@ -1593,10 +1591,15 @@ _.extend kit, fs, fs.PromiseUtils,
 						else
 							resolver buf
 
-			req.on 'error', (err) ->
-				# Release pipe
-				opts.resPipe?.end()
-				reject err
+			if opts.resPipe
+				resPipeError = (err) ->
+					if opts.resPipeError
+						opts.resPipeError opts.resPipe
+					else
+						opts.resPipe.end()
+					reject err
+
+				req.on 'error', resPipeError
 
 			if opts.timeout > 0
 				req.setTimeout opts.timeout, ->
