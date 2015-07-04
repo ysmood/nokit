@@ -1432,6 +1432,9 @@ _.extend kit, fs, fs.PromiseUtils,
 		url = opts.url or {}
 		if _.isObject url
 			url.protocol ?= 'http:'
+			if (hostSepIndex = url.host.indexOf(':')) > -1
+				url.hostname = url.host[0 ... hostSepIndex]
+				url.port = url.host[hostSepIndex + 1 ..]
 		else
 			if url.indexOf('http') != 0
 				url = 'http://' + url
