@@ -1196,6 +1196,44 @@ _.extend kit, fs, fs.PromiseUtils,
 	proxy: null
 
 	###*
+	 * Reduce a string via a regex.
+	 * @param  {RegExp} reg
+	 * @param  {String} str
+	 * @param  {Function} iter `(init, matchGroup) -> init`
+	 * @param  {Any} init
+	 * @return {Any}
+	###
+	regexReduce: (reg, str, iter, init) ->
+		iter ?= (m) -> m[1]
+		ms = null
+		if reg.global
+			while (ms = reg.exec str) != null
+				init = iter init, ms
+		else
+			return iter init, reg.exec(str)
+
+		init
+
+	###*
+	 * Map a string via a regex.
+	 * @param  {RegExp} reg
+	 * @param  {String} str
+	 * @param  {Function} iter `(matchGroup) ->`
+	 * @return {Array}
+	###
+	regexMap: (reg, str, iter) ->
+		iter ?= (m) -> m[1]
+		ms = null
+		init = []
+		if reg.global
+			while (ms = reg.exec str) != null
+				init.push iter ms
+		else
+			return iter.push reg.exec(str)
+
+		init
+
+	###*
 	 * Much faster than the native require of node, but you should
 	 * follow some rules to use it safely.
 	 * Use it to load nokit's internal module.
