@@ -268,7 +268,7 @@ proxy =
 							endCtx ctx
 					else
 						if not ctx.res.headersSent
-							res.setHeader 'Content-type', 'application/json'
+							res.setHeader 'Content-Type', 'application/json'
 						endRes ctx, JSON.stringify(body), true
 				when 'undefined'
 					res.end()
@@ -457,11 +457,11 @@ proxy =
 	 *
 	 * 	# You can hack the headers before the proxy send it.
 	 * 	handleReqHeaders: (headers, req) -> headers
-	 * 	handleResHeaders: (headers, req) -> headers
+	 * 	handleResHeaders: (headers, req, proxyRes) -> headers
 	 *
 	 * 	# Manipulate the response body content of the response here,
 	 * 	# such as inject script into it.
-	 * 	handleResBody: (body, req) -> body
+	 * 	handleResBody: (body, req, proxyRes) -> body
 	 *
 	 * 	# It will log some basic error info.
 	 * 	error: (e, req) ->
@@ -484,13 +484,16 @@ proxy =
 	 * 	url: '/c'
 	 * 	handler proxy.url { url: 'c.com/s.js' } # Porxy to a file
 	 * }, {
-	 * 	headers: {
-	 * 		'content-type': /text\/html/
-	 * 	}
+	 * 	url: /\/$/ # match path that ends with '/'
+	 * 	method: 'GET'
 	 * 	handler proxy.url {
 	 * 		url: 'd.com'
 	 * 		# Inject script to html page.
-	 * 		handleResBody: (body) -> body + '<script>alert('test')</script>'
+	 * 		handleResBody: (body, req, res) ->
+	 * 			if res.headers['content-type'].indexOf('text/html') > -1
+	 * 				body + '<script>alert("test")</script>'
+	 * 			else
+	 * 				body
 	 * 	}
 	 * }]
 	 * .listen 8123
@@ -593,10 +596,10 @@ proxy =
 
 			if opts.handleResBody
 				p.then (proxyRes) ->
-					body = opts.handleResBody proxyRes.body, req
+					body = opts.handleResBody proxyRes.body, req, proxyRes
 					if not body instanceof Buffer
 						body = new Buffer body
-					hs = opts.handleResHeaders proxyRes.headers, req
+					hs = opts.handleResHeaders proxyRes.headers, req, proxyRes
 					hs['Content-Length'] = body.length
 					res.writeHead(
 						proxyRes.statusCode
@@ -607,7 +610,7 @@ proxy =
 				p.req.on 'response', (proxyRes) ->
 					res.writeHead(
 						proxyRes.statusCode
-						opts.handleResHeaders proxyRes.headers, req
+						opts.handleResHeaders proxyRes.headers, req, proxyRes
 					)
 
 			p.catch (e) -> opts.error e, req
