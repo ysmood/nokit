@@ -88,7 +88,8 @@ proxy =
 	 * When the `url` is a string, if `req.url` starts with the `url`, the rest
 	 * of the string will be captured.
 	 * <h4>handler</h4>
-	 * If the handler has async operation inside, it should return a promise.
+	 * If the handler has async operation inside, it should return a promise,
+	 * the promise can reject with a http `statusCode` property.
 	 * <h4>error</h4>
 	 * If any previous middleware rejects, current error handler will be called.
 	 * <h4>body</h4>
@@ -340,11 +341,13 @@ proxy =
 
 				if not m
 					return _next err if _.isFunction _next
-					ctx.res.statusCode = 500
+					ctx.res.statusCode = err.statusCode or 500
 					ctx.body = if kit.isDevelopment()
 						"<pre>" +
-							(if err instanceof Error then err.stack else err) +
+						(if err instanceof Error then err.stack else err) +
 						"</pre>"
+					else
+						http.STATUS_CODES[ctx.res.statusCode]
 					endCtx ctx
 					return
 
@@ -414,10 +417,19 @@ proxy =
 		if _.isString opts
 			opts = { root: opts }
 
-		(ctx) ->
+		(ctx) -> new Promise (resolve, reject) ->
 			query = ctx.url.indexOf('?')
 			path = if query < 0 then ctx.url else ctx.url.slice 0, query
-			ctx.body = send ctx.req, path, opts
+
+			send ctx.req, path, opts
+			.on 'error', (err) ->
+				kit.log err.status
+				if err.status == 404
+					resolve ctx.next
+				else
+					err.statusCode = err.status
+					reject err
+			.pipe ctx.res
 
 	###*
 	 * Use it to proxy one url to another.
