@@ -398,6 +398,7 @@ proxy =
 	###*
 	 * Create a static file middleware for `proxy.mid`.
 	 * @param  {String | Object} opts Same as the [send](https://github.com/pillarjs/send)'s.
+	 * It has an extra option `{ onFile: (path, stats, ctx) -> }`.
 	 * @return {Function} The middleware handler of `porxy.mid`.
 	 * ```coffee
 	 * proxy = kit.require 'proxy'
@@ -418,11 +419,16 @@ proxy =
 			opts = { root: opts }
 
 		(ctx) -> new Promise (resolve, reject) ->
-			query = ctx.url.indexOf('?')
+			query = ctx.url.indexOf '?'
 			path = if query < 0 then ctx.url else ctx.url.slice 0, query
 
-			send ctx.req, path, opts
-			.on 'error', (err) ->
+			s = send ctx.req, path, opts
+
+			if opts.onFile
+				s.on 'file', (path, stats) ->
+					opts.onFile path, stats, ctx
+
+			s.on 'error', (err) ->
 				kit.log err.status
 				if err.status == 404
 					resolve ctx.next
