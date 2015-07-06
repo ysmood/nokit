@@ -73,7 +73,7 @@ task = function() {
  */
 
 loadNofile = function() {
-  var dir, exts, i, j, lang, len, len1, load, path, paths, rdir, ref;
+  var dir, exts, i, j, lang, len, len1, load, nofileIndex, path, paths, rdir, ref;
   if (process.env.nokitPreload) {
     ref = process.env.nokitPreload.split(' ');
     for (i = 0, len = ref.length; i < len; i++) {
@@ -104,8 +104,8 @@ loadNofile = function() {
     }
     return path;
   };
-  if (process.env.nofile) {
-    return load(process.env.nofile);
+  if ((nofileIndex = process.argv.indexOf('--nofile')) > -1) {
+    return load(kit.path.resolve(process.argv[nofileIndex + 1]));
   }
   paths = kit.genModulePaths('nofile', process.cwd(), '').reduce(function(s, p) {
     return s.concat(exts.map(function(ext) {
@@ -138,14 +138,8 @@ searchTasks = function() {
 module.exports = launch = function() {
   var cwd, nofilePath, tasks;
   cwd = process.cwd();
-  cmder.option('-v, --version', 'output version of nokit', function() {
-    var info;
-    info = kit.readJsonSync(__dirname + '/../package.json');
-    console.log(cls.green("nokit@" + info.version), cls.grey("(" + (require.resolve('./kit')) + ")"));
-    return process.exit();
-  });
   nofilePath = loadNofile();
-  cmder.usage('[options] [fuzzy_task_name]...' + cls.grey("  # " + (kit.path.relative(cwd, nofilePath))));
+  cmder.option('--nofile <path>', 'force nofile path').usage('[options] [fuzzy_task_name]...' + cls.grey("  # " + (kit.path.relative(cwd, nofilePath))));
   if (!kit.task.list) {
     return;
   }

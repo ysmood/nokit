@@ -3,9 +3,7 @@ module.exports = function(opts) {
   var init, initAutoReload, self;
   self = {};
   init = function() {
-    if (opts.autoReload) {
-      return initAutoReload();
-    }
+    return initAutoReload();
   };
   self.log = function(msg, action) {
     var req;
