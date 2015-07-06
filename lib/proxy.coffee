@@ -161,7 +161,9 @@ proxy =
 	 * bodyParser = require('body-parser')
 	 *
 	 * middlewares = [
-	 * 	bodyParser.json() # Express middleware
+	 * 	# Express middleware
+	 * 	bodyParser.json()
+	 *
 	 * 	{
 	 * 		url: '/st'
 	 * 		handler: (ctx) ->
@@ -283,20 +285,7 @@ proxy =
 			catch e
 				Promise.reject e
 
-		normalizeHandler = (h) ->
-			return h if h.length < 2
-
-			(ctx) ->
-				new Promise (resolve, reject) ->
-					ctx.body = ctx.next
-					h ctx.req, ctx.res, (err) ->
-						ctx.body = null
-						if err
-							reject err
-						else
-							resolve ctx.next
-
-						return
+		normalizeMid = proxy.normalizeMid
 
 		(req, res, _next) ->
 			index = 0
@@ -316,12 +305,12 @@ proxy =
 					return endCtx ctx
 
 				ret = if _.isFunction m
-					tryMid normalizeHandler(m), ctx
+					tryMid normalizeMid(m), ctx
 				else if match(ctx, req, 'method', m.method) and
 				matchObj(ctx, req, 'headers', m.headers) and
 				match(ctx, req, 'url', m.url)
 					if _.isFunction m.handler
-						tryMid normalizeHandler(m.handler), ctx
+						tryMid normalizeMid(m.handler), ctx
 					else if m.handler == undefined
 						next
 					else
@@ -396,6 +385,26 @@ proxy =
 			, null
 
 	###*
+	 * Convert a Express-like middleware to `proxy.mid` middleware.
+	 * @param  {Function} h `(req, res, next) ->`
+	 * @return {Function}   `(ctx) -> Promise`
+	###
+	normalizeMid: (h) ->
+		return h if h.length < 2
+
+		(ctx) ->
+			new Promise (resolve, reject) ->
+				ctx.body = ctx.next
+				h ctx.req, ctx.res, (err) ->
+					ctx.body = null
+					if err
+						reject err
+					else
+						resolve ctx.next
+
+					return
+
+	###*
 	 * Create a static file middleware for `proxy.mid`.
 	 * @param  {String | Object} opts Same as the [send](https://github.com/pillarjs/send)'s.
 	 * It has an extra option `{ onFile: (path, stats, ctx) -> }`.
@@ -466,7 +475,7 @@ proxy =
 	 * 	handleResHeaders: (headers, req, proxyRes) -> headers
 	 *
 	 * 	# Manipulate the response body content of the response here,
-	 * 	# such as inject script into it.
+	 * 	# such as inject script into it. Its return type is same as the `ctx.body`.
 	 * 	handleResBody: (body, req, proxyRes) -> body
 	 *
 	 * 	# It will log some basic error info.
@@ -522,15 +531,6 @@ proxy =
 
 		uppperCase = (m, p1, p2) -> p1.toUpperCase() + p2
 
-		headerUpReg = /(\w)(\w*)/g
-		normalizeHeaders = (headers, req) ->
-			nheaders = {}
-			for k, v of headers
-				nk = k.replace headerUpReg, uppperCase
-				nheaders[nk] = v
-
-			opts.handleReqHeaders nheaders, req
-
 		normalizeUrl = (req, url) ->
 			if not url
 				url = req.url
@@ -578,9 +578,10 @@ proxy =
 			else
 				res
 
-		(req, res) ->
+		(ctx) ->
+			{ req, res } = ctx
 			url = normalizeUrl req, opts.url
-			headers = normalizeHeaders req.headers, req
+			headers = opts.handleReqHeaders req.headers, req
 			stream = normalizeStream res
 
 			if opts.isForceHeaderHost and opts.url
@@ -602,16 +603,11 @@ proxy =
 
 			if opts.handleResBody
 				p.then (proxyRes) ->
-					body = opts.handleResBody proxyRes.body, req, proxyRes
-					if not body instanceof Buffer
-						body = new Buffer body
+					ctx.body = opts.handleResBody proxyRes.body, req, proxyRes
 					hs = opts.handleResHeaders proxyRes.headers, req, proxyRes
-					hs['Content-Length'] = body.length
-					res.writeHead(
-						proxyRes.statusCode
-						hs
-					)
-					res.end body
+					for k, v of hs
+						res.setHeader k, v
+					res.statusCode = proxyRes.statusCode
 			else
 				p.req.on 'response', (proxyRes) ->
 					res.writeHead(
