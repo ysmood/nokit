@@ -5,63 +5,27 @@ kit.require 'url'
 http = require 'http'
 # require '../lib/proxy'
 
-bodyParser = require('body-parser')
+sHelper = kit.serverHelper()
 
-
-sh = kit.serverHelper()
-
-setInterval ->
-	sh.sse.emit 'fileModified', '/st/a.css'
-, 5000
-
-routes = [
-	bodyParser.json()
-
-	sh
-
-	(ctx) ->
-		kit.log 'access: ' + ctx.req.url
-		ctx.next
-
-	proxy.static '/st', 'test/fixtures'
-
-	# {
-	# 	error: (ctx, err) ->
-	# 		kit.log 'error'
-	# 		ctx.body = 'asdf'
-	# }
-
-	{
-		url: '/sub'
-		handler: proxy.mid([{
-			url: '/home'
-			handler: (ctx) ->
-				kit.log ctx.req.body
-				ctx.body = 'hello world'
-		}])
+routes = [sHelper, {
+	url: proxy.match '/'
+	handler: (ctx) ->
+		sHelper.watch 'test/index.html'
+		ctx.body = kit.readFile 'test/index.html'
+			.then (buf) ->
+				buf + kit.browserHelper()
+}, {
+	url: '/st'
+	handler: proxy.static {
+		root: 'test'
+		onFile: (path, stats, ctx) ->
+			sHelper.watch path, ctx.req.url
 	}
-
-	{
-		url: '/'
-		handler: (ctx) ->
-			ctx.body = """
-			<html>
-				<head>
-					<link rel="stylesheet" href="/st/a.css">
-				</head>
-				<body>
-					<div style='height: 3000px'>
-					</div>
-					alsdkfj
-				</body>
-			</html>
-			""" + kit.browserHelper()
-	}
-]
+}]
 
 http.createServer proxy.mid(routes)
 
 .listen 8123, ->
 	kit.log 'listen ' + 8123
 
-	# kit.spawn 'http', ['POST', '127.0.0.1:8123/sub/home', 'a=[10]']
+	# kit.spawn 'http', ['-v', '127.0.0.1:8123/st/lab.coffee']
