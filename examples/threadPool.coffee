@@ -59,7 +59,7 @@ consumer = ->
 	return kit.sleep 200 if not page # Nothing to consume, wait.
 
 	# Find url in page.
-	urls = kit.regexMap regexUrl, page
+	urls = kit.regexMap regexUrl, page, 1
 
 	# Randomly get 3 urls.
 	broker.order kit._.sample(urls, 3)

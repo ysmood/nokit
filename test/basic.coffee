@@ -65,6 +65,18 @@ describe 'Kit:', ->
 		en = kit.encrypt '123', 'test'
 		assert.equal kit.decrypt(en, 'test').toString(), '123'
 
+	it 'regexReduce', ->
+		out = kit.regexReduce /\w(\d+)/g, 'a1, b10, c3', (ret, ms) ->
+			ret.push ms[1]
+			ret
+		, []
+
+		shouldDeepEqual [1, 10, 3], out
+
+	it 'regexMap', ->
+		out = kit.regexMap /\w(\d+)/g, 'a1, b10, c3', 1
+		shouldDeepEqual [1, 10, 3], out
+
 	it 'request', ->
 		info = 'ok'
 

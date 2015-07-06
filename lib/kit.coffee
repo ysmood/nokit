@@ -1197,12 +1197,21 @@ _.extend kit, fs, fs.PromiseUtils,
 	 * Reduce a string via a regex.
 	 * @param  {RegExp} reg
 	 * @param  {String} str
-	 * @param  {Function} iter `(init, matchGroup) -> init`
+	 * @param  {Function} iter `(init, matchGroup) -> init`, default is `_.iteratee`.
 	 * @param  {Any} init
 	 * @return {Any}
+	 * @example
+	 * ```coffee
+	 * out = kit.regexReduce /\w(\d+)/g, 'a1, b10, c3', (ret, ms) ->
+	 * 	ret.push ms[1]
+	 * 	ret
+	 * , []
+	 *
+	 * kit.log out # => [1, 10, 3]
+	 * ```
 	###
 	regexReduce: (reg, str, iter, init) ->
-		iter ?= (m) -> m[1]
+		iter = _.iteratee iter
 		ms = null
 		if reg.global
 			while (ms = reg.exec str) != null
@@ -1216,11 +1225,17 @@ _.extend kit, fs, fs.PromiseUtils,
 	 * Map a string via a regex.
 	 * @param  {RegExp} reg
 	 * @param  {String} str
-	 * @param  {Function} iter `(matchGroup) ->`
+	 * @param  {Function} iter `(matchGroup) ->`, default is `_.iteratee`.
 	 * @return {Array}
+	 * @example
+	 * ```coffee
+	 * out = kit.regexMap /\w(\d+)/g, 'a1, b10, c3', 1
+	 *
+	 * kit.log out # => [1, 10, 3]
+	 * ```
 	###
 	regexMap: (reg, str, iter) ->
-		iter ?= (m) -> m[1]
+		iter = _.iteratee iter
 		ms = null
 		init = []
 		if reg.global
