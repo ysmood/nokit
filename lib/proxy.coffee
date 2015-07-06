@@ -106,7 +106,7 @@ proxy =
 	 * 	etag: (ctx, data, isStr) -> Boolean
 	 * }
 	 * ```
-	 * @return {Function} `(req, res) -> Promise` The http request listener.
+	 * @return {Function} `(req, res) -> Promise | Any` The http request listener.
 	 * @example
 	 * ```coffee
 	 * proxy = kit.require 'proxy'
@@ -236,8 +236,6 @@ proxy =
 			ctx[key] = ret
 			return true
 
-		next = -> next
-
 		endRes = (ctx, data, isStr) ->
 			return if etag ctx, data, isStr
 
@@ -265,7 +263,7 @@ proxy =
 					else if body instanceof Buffer
 						endRes ctx, body
 					else if _.isFunction body.then
-						body.then (data) ->
+						return body.then (data) ->
 							ctx.body = data
 							endCtx ctx
 					else
@@ -279,22 +277,29 @@ proxy =
 
 			return
 
+		$err = {}
 		tryMid = (fn, ctx, err) ->
 			try
 				fn ctx, err
 			catch e
-				Promise.reject e
+				$err.e = e
 
 		(req, res) ->
 			if not res
 				parentCtx = req
 				{ req, res } = parentCtx
 
+			resolve = reject = null
+			next = new Promise (r, rj) ->
+				resolve = r
+				reject = rj
+
 			ctx = { req, res, body: null, next }
 
 			index = 0
-			iter = (flag) ->
-				if flag != next
+			iter = (ret) ->
+				if ret != next
+					resolve()
 					return endCtx ctx
 
 				m = middlewares[index++]
@@ -303,6 +308,7 @@ proxy =
 					return parentCtx.next if parentCtx
 					res.statusCode = 404
 					ctx.body = http.STATUS_CODES[404]
+					resolve()
 					return endCtx ctx
 
 				ret = if _.isFunction m
@@ -320,31 +326,9 @@ proxy =
 					next
 
 				if kit.isPromise ret
-					ret.then iter, errIter
-				else
-					iter ret
-
-			errIter = (err) ->
-				m = middlewares[index++]
-
-				if not m
-					return Promise.reject err if parentCtx
-					ctx.res.statusCode = err.statusCode or 500
-					ctx.body = if kit.isDevelopment()
-						"<pre>" +
-						(if err instanceof Error then err.stack else err) +
-						"</pre>"
-					else
-						http.STATUS_CODES[ctx.res.statusCode]
-					return endCtx ctx
-
-				if m and m.error
-					ret = tryMid m.error, ctx, err
-				else
-					return errIter err
-
-				if kit.isPromise ret
-					ret.then iter, errIter
+					ret.then iter, reject
+				else if ret == $err
+					reject $err.e
 				else
 					iter ret
 
