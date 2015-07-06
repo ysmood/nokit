@@ -4,6 +4,7 @@
 
   - **API CHANGE** `proxy.url` and `proxy.static` changed its api,
     please see the doc and example for details.
+  - add: `kit.regexReduce` and `kit.regexMap`
 
 - v0.8.9
 

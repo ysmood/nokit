@@ -50,12 +50,11 @@ _.extend(kit, fs, fs.PromiseUtils, {
   requireCache: {},
 
   /**
-  	 * The browser helper.
+  	 * The browser helper. It helps you to live reload the page and log remotely.
   	 * @static
   	 * @param {Object} opts The options of the client, defaults:
   	 * ```coffee
   	 * {
-  	 * 	autoReload: kit.isDevelopment()
   	 * 	host: '' # The host of the event source.
   	 * }
   	 * ```
@@ -84,7 +83,6 @@ _.extend(kit, fs, fs.PromiseUtils, {
     }
     helper = kit.browserHelper.cache || kit.require('./browserHelper', __dirname).toString();
     optsStr = JSON.stringify(_.defaults(opts, {
-      autoReload: kit.isDevelopment(),
       host: ''
     }));
     js = "window.nokit = (" + helper + ")(" + optsStr + ");\n";
@@ -813,7 +811,7 @@ _.extend(kit, fs, fs.PromiseUtils, {
     }
     log = function() {
       var err, str;
-      str = _.toArray(arguments).join(' ');
+      str = _.toArray(_.pull(arguments, void 0)).join(' ');
       if (kit.logReg && !kit.logReg.test(str)) {
         return;
       }
@@ -1312,6 +1310,65 @@ _.extend(kit, fs, fs.PromiseUtils, {
   proxy: null,
 
   /**
+  	 * Reduce a string via a regex.
+  	 * @param  {RegExp} reg
+  	 * @param  {String} str
+  	 * @param  {Function} iter `(init, matchGroup) -> init`, default is `_.iteratee`.
+  	 * @param  {Any} init
+  	 * @return {Any}
+  	 * @example
+  	 * ```coffee
+  	 * out = kit.regexReduce /\w(\d+)/g, 'a1, b10, c3', (ret, ms) ->
+  	 * 	ret.push ms[1]
+  	 * 	ret
+  	 * , []
+  	 *
+  	 * kit.log out # => [1, 10, 3]
+  	 * ```
+   */
+  regexReduce: function(reg, str, iter, init) {
+    var ms;
+    iter = _.iteratee(iter);
+    ms = null;
+    if (reg.global) {
+      while ((ms = reg.exec(str)) !== null) {
+        init = iter(init, ms);
+      }
+    } else {
+      return iter(init, reg.exec(str));
+    }
+    return init;
+  },
+
+  /**
+  	 * Map a string via a regex.
+  	 * @param  {RegExp} reg
+  	 * @param  {String} str
+  	 * @param  {Function} iter `(matchGroup) ->`, default is `_.iteratee`.
+  	 * @return {Array}
+  	 * @example
+  	 * ```coffee
+  	 * out = kit.regexMap /\w(\d+)/g, 'a1, b10, c3', 1
+  	 *
+  	 * kit.log out # => [1, 10, 3]
+  	 * ```
+   */
+  regexMap: function(reg, str, iter) {
+    var init, ms;
+    iter = _.iteratee(iter);
+    ms = null;
+    init = [];
+    if (reg.global) {
+      while ((ms = reg.exec(str)) !== null) {
+        init.push(iter(ms));
+      }
+    } else {
+      return iter.push(reg.exec(str));
+    }
+    return init;
+  },
+
+  /**
   	 * Much faster than the native require of node, but you should
   	 * follow some rules to use it safely.
   	 * Use it to load nokit's internal module.
@@ -1502,6 +1559,8 @@ _.extend(kit, fs, fs.PromiseUtils, {
   	 *
   	 * 	# The progress of the response.
   	 * 	resProgress: (complete, total) ->
+  	 *
+  	 * 	resPipeError: (res) -> res.end()
   	 * }
   	 * ```
   	 * And if set opts as string, it will be treated as the url.
@@ -1551,7 +1610,7 @@ _.extend(kit, fs, fs.PromiseUtils, {
   	 * ```
    */
   request: function(opts) {
-    var base, base1, promise, req, reqBuf, request, url;
+    var base, base1, hostSepIndex, promise, req, reqBuf, request, url;
     kit.require('url');
     if (_.isString(opts)) {
       opts = {
@@ -1562,6 +1621,10 @@ _.extend(kit, fs, fs.PromiseUtils, {
     if (_.isObject(url)) {
       if (url.protocol == null) {
         url.protocol = 'http:';
+      }
+      if (url.host && (hostSepIndex = url.host.indexOf(':')) > -1) {
+        url.hostname = url.host.slice(0, hostSepIndex);
+        url.port = url.host.slice(hostSepIndex + 1);
       }
     } else {
       if (url.indexOf('http') !== 0) {
@@ -1621,8 +1684,9 @@ _.extend(kit, fs, fs.PromiseUtils, {
     }
     req = null;
     promise = new Promise(function(resolve, reject) {
+      var resPipeError;
       req = request(opts, function(res) {
-        var buf, resPipeError, unzip;
+        var buf, unzip;
         if (opts.redirect > 0 && res.headers.location) {
           opts.redirect--;
           url = kit.url.resolve(kit.url.format(opts), res.headers.location);
@@ -1641,10 +1705,6 @@ _.extend(kit, fs, fs.PromiseUtils, {
           })();
         }
         if (opts.resPipe) {
-          resPipeError = function(err) {
-            opts.resPipe.end();
-            return reject(err);
-          };
           if (opts.autoUnzip) {
             switch (res.headers['content-encoding']) {
               case 'gzip':
@@ -1747,10 +1807,19 @@ _.extend(kit, fs, fs.PromiseUtils, {
           });
         }
       });
+      if (opts.resPipe) {
+        resPipeError = function(err) {
+          if (opts.resPipeError) {
+            opts.resPipeError(opts.resPipe);
+          } else {
+            opts.resPipe.end();
+          }
+          return reject(err);
+        };
+      }
       req.on('error', function(err) {
-        var ref;
-        if ((ref = opts.resPipe) != null) {
-          ref.end();
+        if (opts.resPipe) {
+          resPipeError(err);
         }
         return reject(err);
       });
@@ -1792,9 +1861,17 @@ _.extend(kit, fs, fs.PromiseUtils, {
   /**
   	 * Create a http request handler middleware.
   	 * @param  {Object} opts Same as the sse.
-  	 * @return {Function} `(req, res, next) ->`
+  	 * @return {Function} `(req, res, next) ->`.
+  	 * It has some extra properties:
+  	 * ```coffee
+  	 * {
+  	 * 	sse: kit.sse
+  	 * 	watch: (filePath, reqUrl) ->
+  	 * }
+  	 * ```
   	 * @example
   	 * Visit 'http://127.0.0.1:80123', every 3 sec, the page will be reloaded.
+  	 * If the `./static/default.css` is modified, the page will also be reloaded.
   	 * ```coffee
   	 * http = require 'http'
   	 * handler = kit.serverHelper()
@@ -1806,6 +1883,8 @@ _.extend(kit, fs, fs.PromiseUtils, {
   	 * .listen 8123, ->
   	 * 	kit.log 'listen ' + 8123
   	 *
+  	 * 	handler.watch './static/default.css', '/st/default.css'
+  	 *
   	 * 	setInterval ->
   	 * 		handler.sse.emit 'fileModified', 'changed-file-path.js'
   	 * 	, 3000
@@ -1816,14 +1895,14 @@ _.extend(kit, fs, fs.PromiseUtils, {
   	 * ```
    */
   serverHelper: function(opts) {
-    var handler;
+    var cs, handler, watchList;
+    cs = kit.require('colors/safe');
     handler = function(req, res, next) {
-      var cs, data;
+      var data;
       switch (req.url) {
         case '/nokit-sse':
           return handler.sse(req, res);
         case '/nokit-log':
-          cs = kit.require('colors/safe');
           data = '';
           req.on('data', function(chunk) {
             return data += chunk;
@@ -1844,6 +1923,25 @@ _.extend(kit, fs, fs.PromiseUtils, {
       }
     };
     handler.sse = kit.require('sse')(opts);
+    watchList = [];
+    handler.watch = function(path, url) {
+      if (_.contains(watchList, path)) {
+        return;
+      }
+      return kit.fileExists(path).then(function(exists) {
+        if (!exists) {
+          return;
+        }
+        kit.logs(cs.cyan('watch:'), path, cs.magenta('|'), url);
+        watchList.push(path);
+        return kit.watchPath(path, {
+          handler: function() {
+            kit.logs(cs.cyan('changed:'), url);
+            return handler.sse.emit('fileModified', url);
+          }
+        });
+      });
+    };
     return handler;
   },
 
@@ -1854,7 +1952,8 @@ _.extend(kit, fs, fs.PromiseUtils, {
   	 * It will automatically add `node_modules/.bin` to the `PATH`
   	 * environment variable.
   	 * @param  {String} cmd Path or name of an executable program.
-  	 * @param  {Array} args CLI arguments.
+  	 * @param  {Array} args CLI arguments. If any of the item is an object,
+  	 * it will be converted to string by `JSON.stringify`.
   	 * @param  {Object} opts Process options.
   	 * Same with the Node.js official documentation.
   	 * Except that it will inherit the parent's stdio.
@@ -1876,7 +1975,7 @@ _.extend(kit, fs, fs.PromiseUtils, {
   	 * ```
    */
   spawn: function(cmd, args, opts) {
-    var PATH, cmdSrc, m, promise, ps, spawn;
+    var PATH, cmdSrc, k, m, promise, ps, spawn, v;
     if (args == null) {
       args = [];
     }
@@ -1910,6 +2009,12 @@ _.extend(kit, fs, fs.PromiseUtils, {
     }
     spawn = kit.require('child_process', __dirname).spawn;
     ps = null;
+    for (k in args) {
+      v = args[k];
+      if (_.isObject(v)) {
+        args[k] = JSON.stringify(v);
+      }
+    }
     promise = new Promise(function(resolve, reject) {
       var err;
       try {
