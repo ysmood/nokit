@@ -724,8 +724,9 @@ _.extend kit, fs, fs.PromiseUtils,
 				].map((e) -> _.padLeft.apply 0, e).join(':')
 			].join(' ')
 
-		log = ->
-			str = _.toArray(_.pull(arguments, undefined)).join ' '
+		log = (str, time) ->
+			if opts.isShowTime
+				str = str + ' ' + time
 
 			if kit.logReg and not kit.logReg.test(str)
 				return
