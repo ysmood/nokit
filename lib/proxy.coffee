@@ -162,7 +162,7 @@ proxy =
 	 *
 	 * middlewares = [
 	 * 	# Express middleware
-	 * 	bodyParser.json()
+	 * 	proxy.normalizeMid bodyParser.json()
 	 *
 	 * 	{
 	 * 		url: '/st'
@@ -285,13 +285,14 @@ proxy =
 			catch e
 				Promise.reject e
 
-		normalizeMid = proxy.normalizeMid
-
-		(req, res, _next) ->
-			index = 0
+		(req, res) ->
+			if not res
+				parentCtx = req
+				{ req, res } = parentCtx
 
 			ctx = { req, res, body: null, next }
 
+			index = 0
 			iter = (flag) ->
 				if flag != next
 					return endCtx ctx
@@ -299,18 +300,18 @@ proxy =
 				m = middlewares[index++]
 
 				if not m
-					return _next() if _.isFunction _next
+					return parentCtx.next if parentCtx
 					res.statusCode = 404
 					ctx.body = http.STATUS_CODES[404]
 					return endCtx ctx
 
 				ret = if _.isFunction m
-					tryMid normalizeMid(m), ctx
+					tryMid m, ctx
 				else if match(ctx, req, 'method', m.method) and
 				matchObj(ctx, req, 'headers', m.headers) and
 				match(ctx, req, 'url', m.url)
 					if _.isFunction m.handler
-						tryMid normalizeMid(m.handler), ctx
+						tryMid m.handler, ctx
 					else if m.handler == undefined
 						next
 					else
@@ -323,13 +324,11 @@ proxy =
 				else
 					iter ret
 
-				return
-
 			errIter = (err) ->
 				m = middlewares[index++]
 
 				if not m
-					return _next err if _.isFunction _next
+					return Promise.reject err if parentCtx
 					ctx.res.statusCode = err.statusCode or 500
 					ctx.body = if kit.isDevelopment()
 						"<pre>" +
@@ -337,25 +336,19 @@ proxy =
 						"</pre>"
 					else
 						http.STATUS_CODES[ctx.res.statusCode]
-					endCtx ctx
-					return
+					return endCtx ctx
 
 				if m and m.error
 					ret = tryMid m.error, ctx, err
 				else
-					errIter err
-					return
+					return errIter err
 
 				if kit.isPromise ret
 					ret.then iter, errIter
 				else
 					iter ret
 
-				return
-
 			iter next
-
-			return
 
 	###*
 	 * Generate an express like unix path selector. See the example of `proxy.mid`.
