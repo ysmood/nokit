@@ -44,12 +44,11 @@ _.extend kit, fs, fs.PromiseUtils,
 	requireCache: {}
 
 	###*
-	 * The browser helper.
+	 * The browser helper. It helps you to live reload the page and log remotely.
 	 * @static
 	 * @param {Object} opts The options of the client, defaults:
 	 * ```coffee
 	 * {
-	 * 	autoReload: kit.isDevelopment()
 	 * 	host: '' # The host of the event source.
 	 * }
 	 * ```
@@ -73,7 +72,6 @@ _.extend kit, fs, fs.PromiseUtils,
 			kit.require('./browserHelper', __dirname).toString()
 
 		optsStr = JSON.stringify _.defaults(opts, {
-			autoReload: kit.isDevelopment()
 			host: ''
 		})
 

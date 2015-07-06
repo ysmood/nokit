@@ -2,8 +2,6 @@ kit = require '../lib/kit'
 proxy = kit.require 'proxy'
 http = require 'http'
 
-process.env.NODE_ENV = 'development'
-
 serverHelper = kit.serverHelper()
 
 root = 'test/fixtures/site'
@@ -15,9 +13,14 @@ routes = [
         url: proxy.match '/'
         handler: (ctx) ->
             path = root + '/index.html'
+
+            # Watch the `index.html`
             serverHelper.watch path
+
             ctx.body = kit.readFile path
-                .then (buf) -> buf + kit.browserHelper()
+                .then (buf) ->
+                    # Inject live reload browser helper to the page.
+                    buf + kit.browserHelper()
     }
 
     {
@@ -25,6 +28,7 @@ routes = [
         handler: proxy.static {
             root
             onFile: (path, stats, ctx) ->
+                # Watch any static file.
                 serverHelper.watch path, ctx.req.originalUrl
         }
     }

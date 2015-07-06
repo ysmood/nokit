@@ -6,8 +6,7 @@ module.exports = (opts) ->
 	self = {}
 
 	init = ->
-		if opts.autoReload
-			initAutoReload()
+		initAutoReload()
 
 	self.log = (msg, action = 'log') ->
 		console[action] msg
