@@ -288,28 +288,15 @@ proxy =
 				{ req, res } = parentCtx
 
 			resolve = reject = null
-			next = new Promise (r, rj) ->
+			promise = new Promise (r, rj) ->
 				resolve = r
 				reject = rj
 
-			ctx = { req, res, body: null, next }
+			ctx = { req, res, body: null }
 
 			index = 0
-			iter = (ret) ->
-				if ret == $err
-					reject $err.e
-					return ctx.next.then ->
-						endCtx ctx
-					, (err) ->
-						ctx.res.statusCode = 500
-						ctx.body = http.STATUS_CODES[500]
-						endCtx ctx
-				else if ret != ctx
-					if ret != ctx.next and kit.isPromise ret
-						return ret.then iter, reject
-					else
-						resolve()
-						return endCtx ctx
+			ctx.next = (onFulfiled, onRejected) ->
+				promise = promise.then onFulfiled, onRejected
 
 				m = middlewares[index++]
 				if not m
@@ -326,16 +313,28 @@ proxy =
 				match(ctx, req, 'url', m.url)
 					if _.isFunction m.handler
 						tryMid m.handler, ctx
-					else if m.handler == undefined
-						ctx
-					else
+					else if m.handler != undefined
 						ctx.body = m.handler
+
+				if ret == $err
+					reject $err.e
+					return ctx.next ->
+						endCtx ctx
+					, (err) ->
+						ctx.res.statusCode = 500
+						ctx.body = http.STATUS_CODES[500]
+						endCtx ctx
+
+				else if kit.isPromise ret
+					return ret.then ->
+						resolve()
+						endCtx ctx
+					, reject
 				else
-					ctx
+					resolve()
+					return endCtx ctx
 
-				iter ret
-
-			iter ctx
+			ctx.next()
 
 	###*
 	 * Generate an express like unix path selector. See the example of `proxy.mid`.

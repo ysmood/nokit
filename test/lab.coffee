@@ -5,17 +5,26 @@ kit.require 'url'
 http = require 'http'
 # require '../lib/proxy'
 
-sHelper = proxy.serverHelper()
+run = ->
+	sHelper = proxy.serverHelper()
 
-routes = [{
-	url: '/'
-	handler: (ctx) ->
-		ctx.body = kit.readFile '.gitignore'
-}]
+	routes = [(ctx) ->
+		kit.log 'access'
+		ctx.next ->
+			kit.log 'done'
+	, {
+		url: '/'
+		handler: (ctx) ->
+			kit.log 'read'
+			throw 123
+			ctx.body = kit.readFile '.gitignore'
+	}]
 
-http.createServer proxy.mid(routes)
+	http.createServer proxy.mid(routes)
 
-.listen 8123, ->
-	kit.log 'listen ' + 8123
+	.listen 8123, ->
+		kit.log 'listen ' + 8123
 
-	kit.spawn 'http', ['-v', '127.0.0.1:8123/']
+		kit.spawn 'http', ['127.0.0.1:8123/']
+
+run()
