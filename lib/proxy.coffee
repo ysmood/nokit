@@ -71,9 +71,6 @@ proxy =
 	 * 	method: String | Regex | Function
 	 * 	handler: ({ body, req, res, next, url, method }) -> Promise
 	 *
-	 *  # You can also use express-like middlewares.
-	 * 	handler: (req, res, next) ->
-	 *
 	 * 	# When this, it will be assigned to ctx.body
 	 * 	handler: String | Object | Promise | Stream
 	 *
@@ -89,7 +86,7 @@ proxy =
 	 * of the string will be captured.
 	 * <h4>handler</h4>
 	 * If the handler has async operation inside, it should return a promise,
-	 * the promise can reject with a http `statusCode` property.
+	 * the promise can reject an error with a http `statusCode` property.
 	 * <h4>error</h4>
 	 * If any previous middleware rejects, current error handler will be called.
 	 * <h4>body</h4>
@@ -250,7 +247,7 @@ proxy =
 			body = ctx.body
 			res = ctx.res
 
-			return if body == next
+			return if body == ctx
 
 			switch typeof body
 				when 'string'
@@ -283,6 +280,7 @@ proxy =
 				fn ctx, err
 			catch e
 				$err.e = e
+				$err
 
 		(req, res) ->
 			if not res
@@ -298,14 +296,24 @@ proxy =
 
 			index = 0
 			iter = (ret) ->
-				if ret != next
-					resolve()
-					return endCtx ctx
+				if ret == $err
+					reject $err.e
+					return ctx.next.then ->
+						endCtx ctx
+					, (err) ->
+						ctx.res.statusCode = 500
+						ctx.body = http.STATUS_CODES[500]
+						endCtx ctx
+				else if ret != ctx
+					if ret != ctx.next and kit.isPromise ret
+						return ret.then iter, reject
+					else
+						resolve()
+						return endCtx ctx
 
 				m = middlewares[index++]
-
 				if not m
-					return parentCtx.next if parentCtx
+					return parentCtx if parentCtx
 					res.statusCode = 404
 					ctx.body = http.STATUS_CODES[404]
 					resolve()
@@ -319,20 +327,15 @@ proxy =
 					if _.isFunction m.handler
 						tryMid m.handler, ctx
 					else if m.handler == undefined
-						next
+						ctx
 					else
 						ctx.body = m.handler
 				else
-					next
+					ctx
 
-				if kit.isPromise ret
-					ret.then iter, reject
-				else if ret == $err
-					reject $err.e
-				else
-					iter ret
+				iter ret
 
-			iter next
+			iter ctx
 
 	###*
 	 * Generate an express like unix path selector. See the example of `proxy.mid`.
