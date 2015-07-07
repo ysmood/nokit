@@ -8,16 +8,24 @@ http = require 'http'
 run = ->
 	sHelper = proxy.serverHelper()
 
-	routes = [(ctx) ->
-		kit.log 'access'
-		ctx.next ->
-			kit.log 'done'
-	, {
-		url: '/'
+	routes = [{
+		url: /\/site$/
 		handler: (ctx) ->
-			kit.log 'read'
-			throw 123
-			ctx.body = kit.readFile '.gitignore'
+			ctx.body = 'site' + ctx.req.headers.proxy
+	}, {
+		url: /\/proxy$/
+		handler: proxy.url {
+			url: '/site'
+			bps: 1024 * 10
+			handleReqHeaders: (headers) ->
+				headers['proxy'] = '-proxy'
+				headers
+			handleResHeaders: (headers) ->
+				headers['x'] = '-ok'
+				headers
+			handleResBody: (body) ->
+				body + '-body'
+		}
 	}]
 
 	http.createServer proxy.mid(routes)
@@ -25,6 +33,6 @@ run = ->
 	.listen 8123, ->
 		kit.log 'listen ' + 8123
 
-		kit.spawn 'http', ['127.0.0.1:8123/']
+		kit.spawn 'http', ['127.0.0.1:8123/proxy']
 
 run()

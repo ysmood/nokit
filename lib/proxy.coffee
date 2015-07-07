@@ -297,6 +297,8 @@ proxy =
 						tryMid m.handler, ctx
 					else if m.handler != undefined
 						ctx.body = m.handler
+				else
+					ctx.next()
 
 				if ret == $err
 					return Promise.reject $err.e
@@ -641,7 +643,7 @@ proxy =
 			}
 
 			if opts.handleResBody
-				p.then (proxyRes) ->
+				p = p.then (proxyRes) ->
 					ctx.body = opts.handleResBody proxyRes.body, req, proxyRes
 					hs = opts.handleResHeaders proxyRes.headers, req, proxyRes
 					for k, v of hs

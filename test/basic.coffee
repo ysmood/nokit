@@ -520,16 +520,17 @@ describe 'Kit:', ->
 		proxy = kit.require 'proxy'
 
 		routes = [{
+			handler: (ctx) ->
+				ctx.next().catch (err) ->
+					ctx.res.statusCode = 501
+					ctx.body = err.message
+		}, {
 			url: '/sub'
 			handler: proxy.mid [{
 				url: '/home'
 				handler: (ctx) ->
 					a()
 			}]
-		}, {
-			error: (ctx, err) ->
-				ctx.res.statusCode = 501
-				ctx.body = err.message
 		}]
 
 		createRandomServer proxy.mid(routes)
