@@ -266,12 +266,25 @@ proxy =
 			return
 
 		$err = {}
-		tryMid = (fn, ctx, err) ->
+		tryMid = (fn, ctx) ->
 			try
-				fn ctx, err
+				fn ctx
 			catch e
 				$err.e = e
 				$err
+
+		error = (err, ctx) ->
+			if not ctx.res.statusCode and ctx.res.statusCode != 404
+				ctx.res.statusCode = 500
+
+			ctx.body = if err
+				"""<pre>
+				#{if err instanceof Error then err.stack else err}
+				</pre>"""
+			else
+				ctx.body = http.STATUS_CODES[ctx.res.statusCode]
+
+			endCtx ctx
 
 		(req, res) ->
 			if not res
@@ -305,20 +318,10 @@ proxy =
 
 				Promise.resolve ret
 
-			ctx.next().then ->
-				endCtx ctx
-			, (err) ->
-				if not res.statusCode and res.statusCode != 404
-					res.statusCode = 500
-
-				ctx.body = if err
-					"""<pre>
-					#{if err instanceof Error then err.stack else err}
-					</pre>"""
-				else
-					ctx.body = http.STATUS_CODES[res.statusCode]
-
-				endCtx ctx
+			ctx.next().then(
+				-> endCtx ctx
+				(err) -> error err, ctx
+			)
 
 	###*
 	 * Generate an express like unix path selector. See the example of `proxy.mid`.
