@@ -287,24 +287,15 @@ proxy =
 				parentCtx = req
 				{ req, res } = parentCtx
 
-			resolve = reject = null
-			promise = new Promise (r, rj) ->
-				resolve = r
-				reject = rj
-
 			ctx = { req, res, body: null }
 
 			index = 0
-			ctx.next = (onFulfiled, onRejected) ->
-				promise = promise.then onFulfiled, onRejected
-
+			ctx.next = ->
 				m = middlewares[index++]
 				if not m
-					return parentCtx if parentCtx
+					return parentCtx.next() if parentCtx
 					res.statusCode = 404
-					ctx.body = http.STATUS_CODES[404]
-					resolve()
-					return endCtx ctx
+					return Promise.reject()
 
 				ret = if _.isFunction m
 					tryMid m, ctx
@@ -317,24 +308,24 @@ proxy =
 						ctx.body = m.handler
 
 				if ret == $err
-					reject $err.e
-					return ctx.next ->
-						endCtx ctx
-					, (err) ->
-						ctx.res.statusCode = 500
-						ctx.body = http.STATUS_CODES[500]
-						endCtx ctx
+					return Promise.reject $err.e
 
-				else if kit.isPromise ret
-					return ret.then ->
-						resolve()
-						endCtx ctx
-					, reject
+				Promise.resolve ret
+
+			ctx.next().then ->
+				endCtx ctx
+			, (err) ->
+				if res.statusCode != 404
+					res.statusCode = 500
+
+				ctx.body = if err
+					"""<pre>
+					#{if err instanceof Error then err.stack else err}
+					</pre>"""
 				else
-					resolve()
-					return endCtx ctx
+					ctx.body = http.STATUS_CODES[res.statusCode]
 
-			ctx.next()
+				endCtx ctx
 
 	###*
 	 * Generate an express like unix path selector. See the example of `proxy.mid`.
