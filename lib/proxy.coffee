@@ -69,12 +69,10 @@ proxy =
 	 * {
 	 * 	url: String | Regex | Function
 	 * 	method: String | Regex | Function
-	 * 	handler: ({ body, req, res, next, url, method }) -> Promise
+	 * 	handler: ({ body, req, res, next, url, method, headers }) -> Promise | Any
 	 *
 	 * 	# When this, it will be assigned to ctx.body
 	 * 	handler: String | Object | Promise | Stream
-	 *
-	 * 	error: (ctx, err) -> Promise
 	 * }
 	 * ```
 	 * <h4>selector</h4>
@@ -87,15 +85,12 @@ proxy =
 	 * <h4>handler</h4>
 	 * If the handler has async operation inside, it should return a promise,
 	 * the promise can reject an error with a http `statusCode` property.
-	 * <h4>error</h4>
-	 * If any previous middleware rejects, current error handler will be called.
 	 * <h4>body</h4>
-	 * The `body` can be a `String`, `Buffer`, `Stream`, `Object` or `Promise`.
-	 * If `body == next`, the proxy won't end the request automatically, which means
-	 * you can handle the `res.end()` yourself.
+	 * The `body` can be a `String`, `Buffer`, `Stream`, `Object` or a `Promise`
+	 * contains previous types.
 	 * <h4>next</h4>
-	 * The `next = -> next` function is a function that returns itself. If a handler
-	 * resolves the value `next`, middleware next to it will be called.
+	 * `-> Promise` It returns a promise which settles after all the next middlewares
+	 * are setttled.
 	 * @param {opts} opts Defaults:
 	 * ```coffee
 	 * {
@@ -103,7 +98,8 @@ proxy =
 	 * 	etag: (ctx, data, isStr) -> Boolean
 	 * }
 	 * ```
-	 * @return {Function} `(req, res) -> Promise | Any` The http request listener.
+	 * @return {Function} `(req, res) -> Promise | Any` or `(ctx) -> Promise`.
+	 * The http request listener or middleware.
 	 * @example
 	 * ```coffee
 	 * proxy = kit.require 'proxy'
@@ -111,22 +107,19 @@ proxy =
 	 *
 	 * middlewares = [
 	 * 	(ctx) ->
-	 * 		kit.log 'access: ' + ctx.req.url
-	 * 		# We need the other handlers to handle the response.
-	 * 		kit.sleep(300).then -> ctx.next
+	 * 		start = new Date
+	 * 		ctx.next().then ->
+	 * 			console.log ctx.req.url, new Date - start
+	 * 		, (err) ->
+	 * 			console.error err
 	 * 	{
 	 * 		url: /\/items\/(\d+)$/
 	 * 		handler: (ctx) ->
-	 * 			ctx.body = kit.sleep(300).then -> { id: ctx.url[1] }
+	 * 			ctx.body = kit.sleep(300).then -> 'Hello World'
 	 * 	}
 	 * 	{
 	 * 		url: '/api'
 	 * 		handler: { fake: 'api' }
-	 * 	}
-	 * 	{
-	 * 		error: (ctx, err) ->
-	 			ctx.statusCode = 500
-	 * 			ctx.body = err
 	 * 	}
 	 * ]
 	 *
@@ -247,8 +240,6 @@ proxy =
 			body = ctx.body
 			res = ctx.res
 
-			return if body == ctx
-
 			switch typeof body
 				when 'string'
 					endRes ctx, body, true
@@ -315,7 +306,7 @@ proxy =
 			ctx.next().then ->
 				endCtx ctx
 			, (err) ->
-				if res.statusCode != 404
+				if not res.statusCode and res.statusCode != 404
 					res.statusCode = 500
 
 				ctx.body = if err
@@ -360,17 +351,13 @@ proxy =
 	 * @return {Function}   `(ctx) -> Promise`
 	###
 	normalizeMid: (h) ->
-		return h if h.length < 2
-
 		(ctx) ->
 			new Promise (resolve, reject) ->
-				ctx.body = ctx.next
 				h ctx.req, ctx.res, (err) ->
-					ctx.body = null
 					if err
 						reject err
 					else
-						resolve ctx.next
+						resolve()
 
 					return
 
@@ -389,13 +376,12 @@ proxy =
 	 * Visit 'http://127.0.0.1:80123', every 3 sec, the page will be reloaded.
 	 * If the `./static/default.css` is modified, the page will also be reloaded.
 	 * ```coffee
+	 * kit = require 'nokit'
 	 * http = require 'http'
-	 * handler = kit.serverHelper()
+	 * proxy = kit.require 'proxy'
+	 * handler = kit.browserHelper()
 	 *
-	 * http.createServer (req, res) ->
-	 * 	handler req, res, ->
-	 * 		res.end kit.browserHelper()
-	 *
+	 * http.createServer proxy.mid [handler]
 	 * .listen 8123, ->
 	 * 	kit.log 'listen ' + 8123
 	 *
@@ -418,7 +404,6 @@ proxy =
 			switch req.url
 				when '/nokit-sse'
 					handler.sse req, res
-					ctx.body = ctx.next
 				when '/nokit-log'
 					data = ''
 
@@ -436,9 +421,8 @@ proxy =
 						catch e
 							res.statusCode = 500
 							res.end(e.stack)
-					ctx.body = ctx.next
 				else
-					ctx.next
+					ctx.next()
 
 		handler.sse = kit.require('sse')(opts)
 
@@ -495,7 +479,7 @@ proxy =
 			s.on 'error', (err) ->
 				kit.log err.status
 				if err.status == 404
-					resolve ctx.next
+					ctx.next().then resolve
 				else
 					err.statusCode = err.status
 					reject err
