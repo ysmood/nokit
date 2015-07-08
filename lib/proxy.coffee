@@ -64,7 +64,7 @@ proxy =
 	###*
 	 * A promise based middlewares proxy.
 	 * @param  {Array} middlewares Each item is a function `(ctx) -> Promise`,
-	 * or an object:
+	 * or a middleware object:
 	 * ```coffee
 	 * {
 	 * 	url: String | Regex | Function
