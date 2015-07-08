@@ -76,7 +76,7 @@ proxy =
 	 * }
 	 * ```
 	 * <h4>selector</h4>
-	 * The `url` and `method` are act as selectors. If current
+	 * The `url`, `method` and `headers` are act as selectors. If current
 	 * request matches the selector, the `handler` will be called with the
 	 * captured result. If the selector is a function, it should return a
 	 * truthy value when matches, it will be assigned to the `ctx`.
@@ -123,7 +123,7 @@ proxy =
 	 * 	}
 	 * ]
 	 *
-	 * http.createServer proxy.flow(middlewares).listen 8123
+	 * http.createServer(proxy.flow middlewares).listen 8123
 	 * ```
 	 * @example
 	 * Express like path to named capture.
@@ -139,7 +139,7 @@ proxy =
 	 * 	}
 	 * ]
 	 *
-	 * http.createServer proxy.flow(middlewares).listen 8123
+	 * http.createServer(proxy.flow middlewares).listen 8123
 	 * ```
 	 * @example
 	 * Use with normal thrid middlewares. This example will map
@@ -171,7 +171,7 @@ proxy =
 	 * 	}
 	 * ]
 	 *
-	 * http.createServer proxy.flow(middlewares).listen 8123
+	 * http.createServer(proxy.flow middlewares).listen 8123
 	 * ```
 	###
 	flow: (middlewares, opts = {}) ->
@@ -480,7 +480,7 @@ proxy =
 	 * 	handler: proxy.static('static')
 	 * }]
 	 *
-	 * http.createServer proxy.flow(middlewares).listen 8123
+	 * http.createServer(proxy.flow middlewares).listen 8123
 	 * ```
 	###
 	static: (opts) ->
@@ -551,29 +551,29 @@ proxy =
 	 * proxy = kit.require 'proxy'
 	 * http = require 'http'
 	 *
-	 * http.createServer proxy.flow [{
-	 * 	url: '/a'
-	 * 	handler: proxy.url() # Transparent proxy
-	 * }, {
-	 * 	url: '/b'
-	 * 	handler proxy.url { url: 'a.com' } # Porxy to `a.com`
-	 * }, {
-	 * 	url: '/c'
-	 * 	handler proxy.url { url: 'c.com/s.js' } # Porxy to a file
-	 * }, {
-	 * 	url: /\/$/ # match path that ends with '/'
-	 * 	method: 'GET'
-	 * 	handler proxy.url {
-	 * 		url: 'd.com'
-	 * 		# Inject script to html page.
-	 * 		handleResBody: (body, req, res) ->
-	 * 			if res.headers['content-type'].indexOf('text/html') > -1
-	 * 				body + '<script>alert("test")</script>'
-	 * 			else
-	 * 				body
-	 * 	}
-	 * }]
-	 * .listen 8123
+	 * http.createServer(proxy.flow [{
+	 * 		url: '/a'
+	 * 		handler: proxy.url() # Transparent proxy
+	 * 	}, {
+	 * 		url: '/b'
+	 * 		handler proxy.url { url: 'a.com' } # Porxy to `a.com`
+	 * 	}, {
+	 * 		url: '/c'
+	 * 		handler proxy.url { url: 'c.com/s.js' } # Porxy to a file
+	 * 	}, {
+	 * 		url: /\/$/ # match path that ends with '/'
+	 * 		method: 'GET'
+	 * 		handler proxy.url {
+	 * 			url: 'd.com'
+	 * 			# Inject script to html page.
+	 * 			handleResBody: (body, req, res) ->
+	 * 				if res.headers['content-type'].indexOf('text/html') > -1
+	 * 					body + '<script>alert("test")</script>'
+	 * 				else
+	 * 					body
+	 * 		}
+	 * 	}]
+	 * ).listen 8123
 	 * ```
 	###
 	url: (opts = {}) ->
