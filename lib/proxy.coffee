@@ -152,7 +152,7 @@ proxy =
 	 *
 	 * middlewares = [
 	 * 	# Express middleware
-	 * 	proxy.normalizeMid bodyParser.json()
+	 * 	proxy.midToFlow bodyParser.json()
 	 *
 	 * 	{
 	 * 		url: '/st'
@@ -373,7 +373,7 @@ proxy =
 	 * @param  {Function} h `(req, res, next) ->`
 	 * @return {Function}   `(ctx) -> Promise`
 	###
-	normalizeMid: (h) ->
+	midToFlow: (h) ->
 		(ctx) ->
 			new Promise (resolve, reject) ->
 				h ctx.req, ctx.res, (err) ->
