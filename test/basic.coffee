@@ -560,6 +560,26 @@ describe 'Kit:', ->
 			.then (res) ->
 				shouldEqual '404Not Found', res.statusCode + res.body
 
+	it 'proxy mid sub route next', ->
+		proxy = kit.require 'proxy'
+
+		routes = [{
+			url: '/sub'
+			handler: proxy.mid [{
+				url: proxy.match('/home')
+				handler: (ctx) ->
+					ctx.body = ctx.url
+			}]
+		}, (ctx) ->
+			ctx.body = 'next'
+		]
+
+		createRandomServer proxy.mid(routes)
+		.then (port) ->
+			kit.request "http://127.0.0.1:#{port}/sub/home/test"
+			.then (body) ->
+				shouldEqual 'next', body
+
 	it 'proxy mid sub route error', ->
 		proxy = kit.require 'proxy'
 
