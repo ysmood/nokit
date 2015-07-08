@@ -197,33 +197,39 @@ proxy =
 
 		etag = opts.etag
 
-		match = (ctx, obj, key, pattern) ->
+		matchKey = (ctx, obj, key, pattern) ->
 			return true if pattern == undefined
 
+			str = obj[key]
+
+			return false if not _.isString str
+
 			ret = if _.isString(pattern)
-				if key == 'url' and _.startsWith(obj[key], pattern)
+				if key == 'url' and _.startsWith(str, pattern)
 					ctx.req.originalUrl = ctx.req.url
-					ctx.req.url = obj[key].slice pattern.length
-				else if obj[key] == pattern
-					obj[key]
+					ctx.req.url = str.slice pattern.length
+				else if str == pattern
+					str
 			else if _.isRegExp pattern
-				obj[key].match pattern
+				str.match pattern
 			else if _.isFunction pattern
-				pattern obj[key]
+				pattern str
 
 			if ret != undefined and ret != null
 				ctx[key] = ret
 				true
 
-		matchObj = (ctx, obj, key, target) ->
-			return true if target == undefined
+		matchHeaders = (ctx, headers) ->
+			headers = headers
+			return true if headers == undefined
 
 			ret = {}
 
-			for k, v of target
-				return false if not match ret, obj[key], k, v
+			for k, v of headers
+				if not matchKey(ret, ctx.req.headers, k, v)
+					return false
 
-			ctx[key] = ret
+			ctx.headers = ret
 			return true
 
 		endRes = (ctx, data, isStr) ->
@@ -265,6 +271,7 @@ proxy =
 
 			return
 
+		# hack v8
 		$err = {}
 		tryMid = (fn, ctx) ->
 			try
@@ -274,7 +281,7 @@ proxy =
 				$err
 
 		error = (err, ctx) ->
-			if not ctx.res.statusCode and ctx.res.statusCode != 404
+			if ctx.res.statusCode == 200
 				ctx.res.statusCode = 500
 
 			ctx.body = if err
@@ -286,26 +293,33 @@ proxy =
 
 			endCtx ctx
 
-		(req, res) ->
-			if not res
-				parentCtx = req
-				{ req, res } = parentCtx
+		error404 = (ctx) ->
+			ctx.res.statusCode = 404
+			ctx.body = http.STATUS_CODES[404]
 
-			ctx = { req, res, body: null }
+		(req, res) ->
+			if res
+				ctx = { req, res, body: null }
+			else
+				ctx = req
+				parentNext = req.next
+				{ req, res } = ctx
 
 			index = 0
 			ctx.next = ->
 				m = middlewares[index++]
 				if not m
-					return parentCtx.next() if parentCtx
-					res.statusCode = 404
-					return Promise.reject()
+					return if parentNext
+						ctx.next = parentNext
+						ctx.next()
+					else
+						error404 ctx
 
 				ret = if _.isFunction m
 					tryMid m, ctx
-				else if match(ctx, req, 'method', m.method) and
-				matchObj(ctx, req, 'headers', m.headers) and
-				match(ctx, req, 'url', m.url)
+				else if matchKey(ctx, req, 'method', m.method) and
+				matchHeaders(ctx, m.headers) and
+				matchKey(ctx, req, 'url', m.url)
 					if _.isFunction m.handler
 						tryMid m.handler, ctx
 					else if m.handler != undefined
@@ -318,10 +332,14 @@ proxy =
 
 				Promise.resolve ret
 
-			ctx.next().then(
-				-> endCtx ctx
-				(err) -> error err, ctx
-			)
+			if parentNext
+				ctx.next()
+			else
+				# Only the root route has the error handler.
+				ctx.next().then(
+					-> endCtx ctx
+					(err) -> error err, ctx
+				)
 
 	###*
 	 * Generate an express like unix path selector. See the example of `proxy.mid`.

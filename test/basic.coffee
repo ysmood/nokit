@@ -465,6 +465,47 @@ describe 'Kit:', ->
 			.then (body) ->
 				shouldEqual '123', body
 
+	it 'proxy mid headers', ->
+		proxy = kit.require 'proxy'
+
+		routes = [{
+			headers: {
+				'x': /ok/
+			}
+			handler: (ctx) ->
+				ctx.body = ctx.headers.x
+		}]
+
+		createRandomServer proxy.mid(routes)
+		.then (port) ->
+			kit.request {
+				url: "http://127.0.0.1:#{port}"
+				headers: { x: 'ok' }
+			}
+			.then (body) ->
+				shouldEqual '["ok"]', body
+
+	it 'proxy mid headers not match', ->
+		proxy = kit.require 'proxy'
+
+		routes = [{
+			headers: {
+				'x': /test/
+			}
+			handler: (ctx) ->
+				ctx.body = ctx.headers.x
+		}]
+
+		createRandomServer proxy.mid(routes)
+		.then (port) ->
+			kit.request {
+				url: "http://127.0.0.1:#{port}"
+				headers: { x: 'ok' }
+				body: false
+			}
+			.then (res) ->
+				shouldEqual 404, res.statusCode
+
 	it 'proxy mid 404', ->
 		proxy = kit.require 'proxy'
 
@@ -512,9 +553,12 @@ describe 'Kit:', ->
 
 		createRandomServer proxy.mid(routes)
 		.then (port) ->
-			kit.request "http://127.0.0.1:#{port}/sub/homex"
-			.then (body) ->
-				shouldEqual 'Not Found', body
+			kit.request {
+				url: "http://127.0.0.1:#{port}/sub/homex"
+				body: false
+			}
+			.then (res) ->
+				shouldEqual '404Not Found', res.statusCode + res.body
 
 	it 'proxy mid sub route error', ->
 		proxy = kit.require 'proxy'
