@@ -1,7 +1,7 @@
 ###*
  * For test, page injection development.
  * A cross-platform programmable Fiddler alternative.
- * You can even replace express.js with it's `mid` function.
+ * You can even replace express.js with it's `flow` function.
 ###
 Overview = 'proxy'
 
@@ -123,7 +123,7 @@ proxy =
 	 * 	}
 	 * ]
 	 *
-	 * http.createServer proxy.mid(middlewares).listen 8123
+	 * http.createServer proxy.flow(middlewares).listen 8123
 	 * ```
 	 * @example
 	 * Express like path to named capture.
@@ -139,7 +139,7 @@ proxy =
 	 * 	}
 	 * ]
 	 *
-	 * http.createServer proxy.mid(middlewares).listen 8123
+	 * http.createServer proxy.flow(middlewares).listen 8123
 	 * ```
 	 * @example
 	 * Use with normal thrid middlewares. This example will map
@@ -163,7 +163,7 @@ proxy =
 	 * 	# sub-route
 	 * 	{
 	 * 		url: '/sub'
-	 * 		handler: proxy.mid([{
+	 * 		handler: proxy.flow([{
 	 * 			url: '/home'
 	 * 			handler: (ctx) ->
 	 * 				ctx.body = 'hello world'
@@ -171,10 +171,10 @@ proxy =
 	 * 	}
 	 * ]
 	 *
-	 * http.createServer proxy.mid(middlewares).listen 8123
+	 * http.createServer proxy.flow(middlewares).listen 8123
 	 * ```
 	###
-	mid: (middlewares, opts = {}) ->
+	flow: (middlewares, opts = {}) ->
 		Stream = require 'stream'
 		jhash = new (kit.require('jhash').constructor)
 
@@ -342,7 +342,7 @@ proxy =
 				)
 
 	###*
-	 * Generate an express like unix path selector. See the example of `proxy.mid`.
+	 * Generate an express like unix path selector. See the example of `proxy.flow`.
 	 * @param {String} pattern
 	 * @param {Object} opts Same as the [path-to-regexp](https://github.com/pillarjs/path-to-regexp)'s
 	 * options.
@@ -369,7 +369,7 @@ proxy =
 			, null
 
 	###*
-	 * Convert a Express-like middleware to `proxy.mid` middleware.
+	 * Convert a Express-like middleware to `proxy.flow` middleware.
 	 * @param  {Function} h `(req, res, next) ->`
 	 * @return {Function}   `(ctx) -> Promise`
 	###
@@ -404,7 +404,7 @@ proxy =
 	 * proxy = kit.require 'proxy'
 	 * handler = kit.browserHelper()
 	 *
-	 * http.createServer proxy.mid [handler]
+	 * http.createServer proxy.flow [handler]
 	 * .listen 8123, ->
 	 * 	kit.log 'listen ' + 8123
 	 *
@@ -467,10 +467,10 @@ proxy =
 		handler
 
 	###*
-	 * Create a static file middleware for `proxy.mid`.
+	 * Create a static file middleware for `proxy.flow`.
 	 * @param  {String | Object} opts Same as the [send](https://github.com/pillarjs/send)'s.
 	 * It has an extra option `{ onFile: (path, stats, ctx) -> }`.
-	 * @return {Function} The middleware handler of `porxy.mid`.
+	 * @return {Function} The middleware handler of `porxy.flow`.
 	 * ```coffee
 	 * proxy = kit.require 'proxy'
 	 * http = require 'http'
@@ -480,7 +480,7 @@ proxy =
 	 * 	handler: proxy.static('static')
 	 * }]
 	 *
-	 * http.createServer proxy.mid(middlewares).listen 8123
+	 * http.createServer proxy.flow(middlewares).listen 8123
 	 * ```
 	###
 	static: (opts) ->
@@ -551,7 +551,7 @@ proxy =
 	 * proxy = kit.require 'proxy'
 	 * http = require 'http'
 	 *
-	 * http.createServer proxy.mid [{
+	 * http.createServer proxy.flow [{
 	 * 	url: '/a'
 	 * 	handler: proxy.url() # Transparent proxy
 	 * }, {

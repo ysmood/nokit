@@ -404,7 +404,7 @@ describe 'Kit:', ->
 	it 'proxy url', ->
 		proxy = kit.require 'proxy'
 
-		createRandomServer proxy.mid([{
+		createRandomServer proxy.flow([{
 			url: /\/site$/
 			handler: (ctx) ->
 				ctx.body = 'site' + ctx.req.headers.proxy
@@ -431,7 +431,7 @@ describe 'Kit:', ->
 		.then ({ headers, body }) ->
 			shouldEqual 'site-proxy-body-ok', body + headers.x
 
-	it 'proxy mid handler', ->
+	it 'proxy flow handler', ->
 		proxy = kit.require 'proxy'
 
 		routes = [
@@ -441,7 +441,7 @@ describe 'Kit:', ->
 					r()
 		]
 
-		createRandomServer proxy.mid(routes)
+		createRandomServer proxy.flow(routes)
 		.then (port) ->
 			kit.request {
 				url: "http://127.0.0.1:#{port}"
@@ -450,7 +450,7 @@ describe 'Kit:', ->
 			.then (body) ->
 				shouldEqual 'echo: test', body
 
-	it 'proxy mid url', ->
+	it 'proxy flow url', ->
 		proxy = kit.require 'proxy'
 
 		routes = [{
@@ -459,13 +459,13 @@ describe 'Kit:', ->
 				ctx.body = ctx.url[1]
 		}]
 
-		createRandomServer proxy.mid(routes)
+		createRandomServer proxy.flow(routes)
 		.then (port) ->
 			kit.request "http://127.0.0.1:#{port}/items/123"
 			.then (body) ->
 				shouldEqual '123', body
 
-	it 'proxy mid headers', ->
+	it 'proxy flow headers', ->
 		proxy = kit.require 'proxy'
 
 		routes = [{
@@ -476,7 +476,7 @@ describe 'Kit:', ->
 				ctx.body = ctx.headers.x
 		}]
 
-		createRandomServer proxy.mid(routes)
+		createRandomServer proxy.flow(routes)
 		.then (port) ->
 			kit.request {
 				url: "http://127.0.0.1:#{port}"
@@ -485,7 +485,7 @@ describe 'Kit:', ->
 			.then (body) ->
 				shouldEqual '["ok"]', body
 
-	it 'proxy mid headers not match', ->
+	it 'proxy flow headers not match', ->
 		proxy = kit.require 'proxy'
 
 		routes = [{
@@ -496,7 +496,7 @@ describe 'Kit:', ->
 				ctx.body = ctx.headers.x
 		}]
 
-		createRandomServer proxy.mid(routes)
+		createRandomServer proxy.flow(routes)
 		.then (port) ->
 			kit.request {
 				url: "http://127.0.0.1:#{port}"
@@ -506,7 +506,7 @@ describe 'Kit:', ->
 			.then (res) ->
 				shouldEqual 404, res.statusCode
 
-	it 'proxy mid 404', ->
+	it 'proxy flow 404', ->
 		proxy = kit.require 'proxy'
 
 		routes = [{
@@ -515,43 +515,43 @@ describe 'Kit:', ->
 				ctx.body = ctx.url[1]
 		}]
 
-		createRandomServer proxy.mid(routes)
+		createRandomServer proxy.flow(routes)
 		.then (port) ->
 			kit.request "http://127.0.0.1:#{port}/itemx"
 			.then (body) ->
 				shouldEqual 'Not Found', body
 
-	it 'proxy mid sub route', ->
+	it 'proxy flow sub route', ->
 		proxy = kit.require 'proxy'
 
 		routes = [{
 			url: '/sub'
-			handler: proxy.mid [{
+			handler: proxy.flow [{
 				url: '/home'
 				handler: (ctx) ->
 					ctx.body = ctx.url
 			}]
 		}]
 
-		createRandomServer proxy.mid(routes)
+		createRandomServer proxy.flow(routes)
 		.then (port) ->
 			kit.request "http://127.0.0.1:#{port}/sub/home/test"
 			.then (body) ->
 				shouldEqual '/test', body
 
-	it 'proxy mid sub route 404', ->
+	it 'proxy flow sub route 404', ->
 		proxy = kit.require 'proxy'
 
 		routes = [{
 			url: '/sub'
-			handler: proxy.mid [{
+			handler: proxy.flow [{
 				url: /\/home$/
 				handler: (ctx) ->
 					ctx.body = ctx.url
 			}]
 		}]
 
-		createRandomServer proxy.mid(routes)
+		createRandomServer proxy.flow(routes)
 		.then (port) ->
 			kit.request {
 				url: "http://127.0.0.1:#{port}/sub/homex"
@@ -560,12 +560,12 @@ describe 'Kit:', ->
 			.then (res) ->
 				shouldEqual '404Not Found', res.statusCode + res.body
 
-	it 'proxy mid sub route next', ->
+	it 'proxy flow sub route next', ->
 		proxy = kit.require 'proxy'
 
 		routes = [{
 			url: '/sub'
-			handler: proxy.mid [{
+			handler: proxy.flow [{
 				url: proxy.match('/home')
 				handler: (ctx) ->
 					ctx.body = ctx.url
@@ -574,13 +574,13 @@ describe 'Kit:', ->
 			ctx.body = 'next'
 		]
 
-		createRandomServer proxy.mid(routes)
+		createRandomServer proxy.flow(routes)
 		.then (port) ->
 			kit.request "http://127.0.0.1:#{port}/sub/home/test"
 			.then (body) ->
 				shouldEqual 'next', body
 
-	it 'proxy mid sub route error', ->
+	it 'proxy flow sub route error', ->
 		proxy = kit.require 'proxy'
 
 		routes = [{
@@ -590,14 +590,14 @@ describe 'Kit:', ->
 					ctx.body = err.message
 		}, {
 			url: '/sub'
-			handler: proxy.mid [{
+			handler: proxy.flow [{
 				url: '/home'
 				handler: (ctx) ->
 					a()
 			}]
 		}]
 
-		createRandomServer proxy.mid(routes)
+		createRandomServer proxy.flow(routes)
 		.then (port) ->
 			kit.request {
 				url: "http://127.0.0.1:#{port}/sub/home/test"
@@ -606,20 +606,20 @@ describe 'Kit:', ->
 			.then (res) ->
 				shouldEqual '501 a is not defined', res.statusCode + ' ' + res.body
 
-	it 'proxy mid promise', ->
+	it 'proxy flow promise', ->
 		proxy = kit.require 'proxy'
 
 		routes = [(ctx) ->
 			ctx.body = kit.readFile '.gitignore'
 		]
 
-		createRandomServer proxy.mid(routes)
+		createRandomServer proxy.flow(routes)
 		.then (port) ->
 			kit.request "http://127.0.0.1:#{port}"
 			.then (body) ->
 				shouldEqual kit.readFileSync('.gitignore', 'utf8'), body
 
-	it 'proxy mid url match', ->
+	it 'proxy flow url match', ->
 		proxy = kit.require 'proxy'
 
 		routes = [{
@@ -628,13 +628,13 @@ describe 'Kit:', ->
 				ctx.body = ctx.url.id
 		}]
 
-		createRandomServer proxy.mid(routes)
+		createRandomServer proxy.flow(routes)
 		.then (port) ->
 			kit.request "http://127.0.0.1:#{port}/items/123"
 			.then (body) ->
 				shouldEqual '123', body
 
-	it 'proxy mid post', ->
+	it 'proxy flow post', ->
 		proxy = kit.require 'proxy'
 
 		routes = [{
@@ -643,7 +643,7 @@ describe 'Kit:', ->
 				ctx.body = ctx.method
 		}]
 
-		createRandomServer proxy.mid(routes)
+		createRandomServer proxy.flow(routes)
 		.then (port) ->
 			kit.request {
 				method: 'POST'
@@ -652,7 +652,7 @@ describe 'Kit:', ->
 			.then (body) ->
 				shouldEqual 'POST', body
 
-	it 'proxy mid static', ->
+	it 'proxy flow static', ->
 		proxy = kit.require 'proxy'
 
 		routes = [{
@@ -660,7 +660,7 @@ describe 'Kit:', ->
 			handler: proxy.static 'test/fixtures'
 		}]
 
-		createRandomServer proxy.mid(routes)
+		createRandomServer proxy.flow(routes)
 		.then (port) ->
 			kit.request encodeURI "http://127.0.0.1:#{port}/st/ひまわり.txt"
 			.then (body) ->

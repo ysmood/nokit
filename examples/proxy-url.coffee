@@ -14,5 +14,5 @@ routes = [{
 	}
 }]
 
-http.createServer proxy.mid(routes)
+http.createServer proxy.flow(routes)
 .listen 8123
