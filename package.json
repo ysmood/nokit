@@ -20,7 +20,7 @@
     "nofile",
     "node",
     "kit",
-    "helpers",
+    "helpers"
   ],
   "files": [
     "bin",
