@@ -79,7 +79,7 @@ proxy =
 	 * The `url`, `method` and `headers` are act as selectors. If current
 	 * request matches the selector, the `handler` will be called with the
 	 * captured result. If the selector is a function, it should return a
-	 * `non-undefined` value when matches, it will be assigned to the `ctx`.
+	 * `non-undefined, non-null` value when matches, it will be assigned to the `ctx`.
 	 * When the `url` is a string, if `req.url` starts with the `url`, the rest
 	 * of the string will be captured.
 	 * <h4>handler</h4>
@@ -215,7 +215,7 @@ proxy =
 			else if _.isFunction pattern
 				pattern str
 
-			if ret != undefined
+			if ret?
 				ctx[key] = ret
 				true
 
@@ -427,6 +427,7 @@ proxy =
 			switch req.url
 				when '/nokit-sse'
 					handler.sse req, res
+					new Promise(->)
 				when '/nokit-log'
 					data = ''
 
@@ -444,6 +445,7 @@ proxy =
 						catch e
 							res.statusCode = 500
 							res.end(e.stack)
+					new Promise(->)
 				else
 					ctx.next()
 
