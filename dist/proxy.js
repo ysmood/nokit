@@ -2,7 +2,7 @@
 /**
  * For test, page injection development.
  * A cross-platform programmable Fiddler alternative.
- * You can even replace express.js with it's `mid` function.
+ * You can even replace express.js with it's `flow` function.
  */
 var Overview, Promise, _, http, kit, proxy;
 
@@ -69,41 +69,33 @@ proxy = {
   /**
   	 * A promise based middlewares proxy.
   	 * @param  {Array} middlewares Each item is a function `(ctx) -> Promise`,
-  	 * or an object:
+  	 * or a middleware object:
   	 * ```coffee
   	 * {
   	 * 	url: String | Regex | Function
   	 * 	method: String | Regex | Function
-  	 * 	handler: ({ body, req, res, next, url, method }) -> Promise
-  	 *
-  	 *  # You can also use express-like middlewares.
-  	 * 	handler: (req, res, next) ->
+  	 * 	handler: ({ body, req, res, next, url, method, headers }) -> Promise | Any
   	 *
   	 * 	# When this, it will be assigned to ctx.body
   	 * 	handler: String | Object | Promise | Stream
-  	 *
-  	 * 	error: (ctx, err) -> Promise
   	 * }
   	 * ```
   	 * <h4>selector</h4>
-  	 * The `url` and `method` are act as selectors. If current
+  	 * The `url`, `method` and `headers` are act as selectors. If current
   	 * request matches the selector, the `handler` will be called with the
   	 * captured result. If the selector is a function, it should return a
-  	 * truthy value when matches, it will be assigned to the `ctx`.
+  	 * `non-undefined, non-null` value when matches, it will be assigned to the `ctx`.
   	 * When the `url` is a string, if `req.url` starts with the `url`, the rest
   	 * of the string will be captured.
   	 * <h4>handler</h4>
   	 * If the handler has async operation inside, it should return a promise,
-  	 * the promise can reject with a http `statusCode` property.
-  	 * <h4>error</h4>
-  	 * If any previous middleware rejects, current error handler will be called.
+  	 * the promise can reject an error with a http `statusCode` property.
   	 * <h4>body</h4>
-  	 * The `body` can be a `String`, `Buffer`, `Stream`, `Object` or `Promise`.
-  	 * If `body == next`, the proxy won't end the request automatically, which means
-  	 * you can handle the `res.end()` yourself.
+  	 * The `body` can be a `String`, `Buffer`, `Stream`, `Object` or a `Promise`
+  	 * contains previous types.
   	 * <h4>next</h4>
-  	 * The `next = -> next` function is a function that returns itself. If a handler
-  	 * resolves the value `next`, middleware next to it will be called.
+  	 * `-> Promise` It returns a promise which settles after all the next middlewares
+  	 * are setttled.
   	 * @param {opts} opts Defaults:
   	 * ```coffee
   	 * {
@@ -111,7 +103,8 @@ proxy = {
   	 * 	etag: (ctx, data, isStr) -> Boolean
   	 * }
   	 * ```
-  	 * @return {Function} `(req, res) -> Promise` The http request listener.
+  	 * @return {Function} `(req, res) -> Promise | Any` or `(ctx) -> Promise`.
+  	 * The http request listener or middleware.
   	 * @example
   	 * ```coffee
   	 * proxy = kit.require 'proxy'
@@ -119,26 +112,23 @@ proxy = {
   	 *
   	 * middlewares = [
   	 * 	(ctx) ->
-  	 * 		kit.log 'access: ' + ctx.req.url
-  	 * 		# We need the other handlers to handle the response.
-  	 * 		kit.sleep(300).then -> ctx.next
+  	 * 		start = new Date
+  	 * 		ctx.next().then ->
+  	 * 			console.log ctx.req.url, new Date - start
+  	 * 		, (err) ->
+  	 * 			console.error err
   	 * 	{
   	 * 		url: /\/items\/(\d+)$/
   	 * 		handler: (ctx) ->
-  	 * 			ctx.body = kit.sleep(300).then -> { id: ctx.url[1] }
+  	 * 			ctx.body = kit.sleep(300).then -> 'Hello World'
   	 * 	}
   	 * 	{
   	 * 		url: '/api'
   	 * 		handler: { fake: 'api' }
   	 * 	}
-  	 * 	{
-  	 * 		error: (ctx, err) ->
-  	 			ctx.statusCode = 500
-  	 * 			ctx.body = err
-  	 * 	}
   	 * ]
   	 *
-  	 * http.createServer proxy.mid(middlewares).listen 8123
+  	 * http.createServer(proxy.flow middlewares).listen 8123
   	 * ```
   	 * @example
   	 * Express like path to named capture.
@@ -154,7 +144,7 @@ proxy = {
   	 * 	}
   	 * ]
   	 *
-  	 * http.createServer proxy.mid(middlewares).listen 8123
+  	 * http.createServer(proxy.flow middlewares).listen 8123
   	 * ```
   	 * @example
   	 * Use with normal thrid middlewares. This example will map
@@ -166,7 +156,9 @@ proxy = {
   	 * bodyParser = require('body-parser')
   	 *
   	 * middlewares = [
-  	 * 	bodyParser.json() # Express middleware
+  	 * 	# Express middleware
+  	 * 	proxy.midToFlow bodyParser.json()
+  	 *
   	 * 	{
   	 * 		url: '/st'
   	 * 		handler: (ctx) ->
@@ -176,7 +168,7 @@ proxy = {
   	 * 	# sub-route
   	 * 	{
   	 * 		url: '/sub'
-  	 * 		handler: proxy.mid([{
+  	 * 		handler: proxy.flow([{
   	 * 			url: '/home'
   	 * 			handler: (ctx) ->
   	 * 				ctx.body = 'hello world'
@@ -184,11 +176,11 @@ proxy = {
   	 * 	}
   	 * ]
   	 *
-  	 * http.createServer proxy.mid(middlewares).listen 8123
+  	 * http.createServer(proxy.flow middlewares).listen 8123
   	 * ```
    */
-  mid: function(middlewares, opts) {
-    var Stream, endCtx, endRes, etag, jhash, match, matchObj, next, normalizeHandler, tryMid;
+  flow: function(middlewares, opts) {
+    var $err, Stream, endCtx, endRes, error, error404, etag, jhash, matchHeaders, matchKey, tryMid;
     if (opts == null) {
       opts = {};
     }
@@ -208,34 +200,36 @@ proxy = {
       }
     });
     etag = opts.etag;
-    match = function(ctx, obj, key, pattern) {
-      var ret;
+    matchKey = function(ctx, obj, key, pattern) {
+      var ret, str;
       if (pattern === void 0) {
         return true;
       }
-      ret = _.isString(pattern) ? key === 'url' && _.startsWith(obj[key], pattern) ? (ctx.req.originalUrl = ctx.req.url, ctx.req.url = obj[key].slice(pattern.length)) : obj[key] === pattern ? obj[key] : void 0 : _.isRegExp(pattern) ? obj[key].match(pattern) : _.isFunction(pattern) ? pattern(obj[key]) : void 0;
-      if (ret !== void 0 && ret !== null) {
+      str = obj[key];
+      if (!_.isString(str)) {
+        return false;
+      }
+      ret = _.isString(pattern) ? key === 'url' && _.startsWith(str, pattern) ? (ctx.req.originalUrl = ctx.req.url, ctx.req.url = str.slice(pattern.length)) : str === pattern ? str : void 0 : _.isRegExp(pattern) ? str.match(pattern) : _.isFunction(pattern) ? pattern(str) : void 0;
+      if (ret != null) {
         ctx[key] = ret;
         return true;
       }
     };
-    matchObj = function(ctx, obj, key, target) {
+    matchHeaders = function(ctx, headers) {
       var k, ret, v;
-      if (target === void 0) {
+      headers = headers;
+      if (headers === void 0) {
         return true;
       }
       ret = {};
-      for (k in target) {
-        v = target[k];
-        if (!match(ret, obj[key], k, v)) {
+      for (k in headers) {
+        v = headers[k];
+        if (!matchKey(ret, ctx.req.headers, k, v)) {
           return false;
         }
       }
-      ctx[key] = ret;
+      ctx.headers = ret;
       return true;
-    };
-    next = function() {
-      return next;
     };
     endRes = function(ctx, data, isStr) {
       var buf;
@@ -252,9 +246,6 @@ proxy = {
       var body, res;
       body = ctx.body;
       res = ctx.res;
-      if (body === next) {
-        return;
-      }
       switch (typeof body) {
         case 'string':
           endRes(ctx, body, true);
@@ -267,7 +258,7 @@ proxy = {
           } else if (body instanceof Buffer) {
             endRes(ctx, body);
           } else if (_.isFunction(body.then)) {
-            body.then(function(data) {
+            return body.then(function(data) {
               ctx.body = data;
               return endCtx(ctx);
             });
@@ -285,93 +276,73 @@ proxy = {
           endRes(ctx, body.toString(), true);
       }
     };
-    tryMid = function(fn, ctx, err) {
+    $err = {};
+    tryMid = function(fn, ctx) {
       var e;
       try {
-        return fn(ctx, err);
+        return fn(ctx);
       } catch (_error) {
         e = _error;
-        return Promise.reject(e);
+        $err.e = e;
+        return $err;
       }
     };
-    normalizeHandler = function(h) {
-      if (h.length < 2) {
-        return h;
+    error = function(err, ctx) {
+      if (ctx.res.statusCode === 200) {
+        ctx.res.statusCode = 500;
       }
-      return function(ctx) {
-        return new Promise(function(resolve, reject) {
-          ctx.body = ctx.next;
-          return h(ctx.req, ctx.res, function(err) {
-            ctx.body = null;
-            if (err) {
-              reject(err);
-            } else {
-              resolve(ctx.next);
-            }
-          });
-        });
-      };
+      ctx.body = err ? "<pre>\n" + (err instanceof Error ? err.stack : err) + "\n</pre>" : ctx.body = http.STATUS_CODES[ctx.res.statusCode];
+      return endCtx(ctx);
     };
-    return function(req, res, _next) {
-      var ctx, errIter, index, iter;
+    error404 = function(ctx) {
+      ctx.res.statusCode = 404;
+      return ctx.body = http.STATUS_CODES[404];
+    };
+    return function(req, res) {
+      var ctx, index, parentNext;
+      if (res) {
+        ctx = {
+          req: req,
+          res: res,
+          body: null
+        };
+      } else {
+        ctx = req;
+        parentNext = req.next;
+        req = ctx.req, res = ctx.res;
+      }
       index = 0;
-      ctx = {
-        req: req,
-        res: res,
-        body: null,
-        next: next
-      };
-      iter = function(flag) {
-        var m, ret;
-        if (flag !== next) {
-          return endCtx(ctx);
-        }
-        m = middlewares[index++];
-        if (!m) {
-          if (_.isFunction(_next)) {
-            return _next();
-          }
-          res.statusCode = 404;
-          ctx.body = http.STATUS_CODES[404];
-          return endCtx(ctx);
-        }
-        ret = _.isFunction(m) ? tryMid(normalizeHandler(m), ctx) : match(ctx, req, 'method', m.method) && matchObj(ctx, req, 'headers', m.headers) && match(ctx, req, 'url', m.url) ? _.isFunction(m.handler) ? tryMid(normalizeHandler(m.handler), ctx) : m.handler === void 0 ? next : ctx.body = m.handler : next;
-        if (kit.isPromise(ret)) {
-          ret.then(iter, errIter);
-        } else {
-          iter(ret);
-        }
-      };
-      errIter = function(err) {
+      ctx.next = function() {
         var m, ret;
         m = middlewares[index++];
         if (!m) {
-          if (_.isFunction(_next)) {
-            return _next(err);
+          if (parentNext) {
+            ctx.next = parentNext;
+            return ctx.next();
+          } else {
+            return error404(ctx);
           }
-          ctx.res.statusCode = err.statusCode || 500;
-          ctx.body = kit.isDevelopment() ? "<pre>" + (err instanceof Error ? err.stack : err) + "</pre>" : http.STATUS_CODES[ctx.res.statusCode];
-          endCtx(ctx);
-          return;
         }
-        if (m && m.error) {
-          ret = tryMid(m.error, ctx, err);
-        } else {
-          errIter(err);
-          return;
+        ret = _.isFunction(m) ? tryMid(m, ctx) : matchKey(ctx, req, 'method', m.method) && matchHeaders(ctx, m.headers) && matchKey(ctx, req, 'url', m.url) ? _.isFunction(m.handler) ? tryMid(m.handler, ctx) : m.handler !== void 0 ? ctx.body = m.handler : void 0 : ctx.next();
+        if (ret === $err) {
+          return Promise.reject($err.e);
         }
-        if (kit.isPromise(ret)) {
-          ret.then(iter, errIter);
-        } else {
-          iter(ret);
-        }
+        return Promise.resolve(ret);
       };
-      iter(next);
+      if (parentNext) {
+        return ctx.next();
+      } else {
+        return ctx.next().then(function() {
+          return endCtx(ctx);
+        }, function(err) {
+          return error(err, ctx);
+        });
+      }
     };
   },
 
   /**
-  	 * Generate an express like unix path selector. See the example of `proxy.mid`.
+  	 * Generate an express like unix path selector. See the example of `proxy.flow`.
   	 * @param {String} pattern
   	 * @param {Object} opts Same as the [path-to-regexp](https://github.com/pillarjs/path-to-regexp)'s
   	 * options.
@@ -405,10 +376,118 @@ proxy = {
   },
 
   /**
-  	 * Create a static file middleware for `proxy.mid`.
+  	 * Convert a Express-like middleware to `proxy.flow` middleware.
+  	 * @param  {Function} h `(req, res, next) ->`
+  	 * @return {Function}   `(ctx) -> Promise`
+   */
+  midToFlow: function(h) {
+    return function(ctx) {
+      return new Promise(function(resolve, reject) {
+        return h(ctx.req, ctx.res, function(err) {
+          if (err) {
+            reject(err);
+          } else {
+            resolve();
+          }
+        });
+      });
+    };
+  },
+
+  /**
+  	 * Create a http request handler middleware.
+  	 * @param  {Object} opts Same as the sse.
+  	 * @return {Function} `(req, res, next) ->`.
+  	 * It has some extra properties:
+  	 * ```coffee
+  	 * {
+  	 * 	sse: kit.sse
+  	 * 	watch: (filePath, reqUrl) ->
+  	 * }
+  	 * ```
+  	 * @example
+  	 * Visit 'http://127.0.0.1:80123', every 3 sec, the page will be reloaded.
+  	 * If the `./static/default.css` is modified, the page will also be reloaded.
+  	 * ```coffee
+  	 * kit = require 'nokit'
+  	 * http = require 'http'
+  	 * proxy = kit.require 'proxy'
+  	 * handler = kit.browserHelper()
+  	 *
+  	 * http.createServer proxy.flow [handler]
+  	 * .listen 8123, ->
+  	 * 	kit.log 'listen ' + 8123
+  	 *
+  	 * 	handler.watch './static/default.css', '/st/default.css'
+  	 *
+  	 * 	setInterval ->
+  	 * 		handler.sse.emit 'fileModified', 'changed-file-path.js'
+  	 * 	, 3000
+  	 * ```
+  	 * You can also use the `nokit.log` on the browser to log to the remote server.
+  	 * ```coffee
+  	 * nokit.log { any: 'thing' }
+  	 * ```
+   */
+  serverHelper: function(opts) {
+    var cs, handler, watchList;
+    cs = kit.require('colors/safe');
+    handler = function(ctx) {
+      var data, req, res;
+      req = ctx.req, res = ctx.res;
+      switch (req.url) {
+        case '/nokit-sse':
+          handler.sse(req, res);
+          return new Promise(function() {});
+        case '/nokit-log':
+          data = '';
+          req.on('data', function(chunk) {
+            return data += chunk;
+          });
+          req.on('end', function() {
+            var e;
+            try {
+              kit.log(cs.cyan('client') + cs.grey(' | ') + (data ? kit.xinspect(JSON.parse(data)) : data));
+              return res.end();
+            } catch (_error) {
+              e = _error;
+              res.statusCode = 500;
+              return res.end(e.stack);
+            }
+          });
+          return new Promise(function() {});
+        default:
+          return ctx.next();
+      }
+    };
+    handler.sse = kit.require('sse')(opts);
+    watchList = [];
+    handler.watch = function(path, url) {
+      if (_.contains(watchList, path)) {
+        return;
+      }
+      return kit.fileExists(path).then(function(exists) {
+        if (!exists) {
+          return;
+        }
+        kit.logs(cs.cyan('watch:'), path, cs.magenta('|'), url);
+        watchList.push(path);
+        return kit.watchPath(path, {
+          handler: function() {
+            kit.logs(cs.cyan('changed:'), url);
+            return handler.sse.emit('fileModified', url);
+          }
+        });
+      });
+    };
+    return handler;
+  },
+
+  /**
+  	 * Create a static file middleware for `proxy.flow`.
   	 * @param  {String | Object} opts Same as the [send](https://github.com/pillarjs/send)'s.
   	 * It has an extra option `{ onFile: (path, stats, ctx) -> }`.
-  	 * @return {Function} The middleware handler of `porxy.mid`.
+  	 * @return {Function} The middleware handler of `porxy.flow`.
   	 * ```coffee
   	 * proxy = kit.require 'proxy'
   	 * http = require 'http'
@@ -418,7 +497,7 @@ proxy = {
   	 * 	handler: proxy.static('static')
   	 * }]
   	 *
-  	 * http.createServer proxy.mid(middlewares).listen 8123
+  	 * http.createServer(proxy.flow middlewares).listen 8123
   	 * ```
    */
   "static": function(opts) {
@@ -443,7 +522,7 @@ proxy = {
         return s.on('error', function(err) {
           kit.log(err.status);
           if (err.status === 404) {
-            return resolve(ctx.next);
+            return ctx.next().then(resolve);
           } else {
             err.statusCode = err.status;
             return reject(err);
@@ -455,7 +534,8 @@ proxy = {
 
   /**
   	 * Use it to proxy one url to another.
-  	 * @param {Object} opts Other options. Default:
+  	 * @param {Object | String} opts Other options, if it is a string, it will
+  	 * be converted to `{ url: opts }`. Default:
   	 * ```coffee
   	 * {
   	 * 	# The target url forced to. Optional.
@@ -482,7 +562,7 @@ proxy = {
   	 * 	handleResHeaders: (headers, req, proxyRes) -> headers
   	 *
   	 * 	# Manipulate the response body content of the response here,
-  	 * 	# such as inject script into it.
+  	 * 	# such as inject script into it. Its return type is same as the `ctx.body`.
   	 * 	handleResBody: (body, req, proxyRes) -> body
   	 *
   	 * 	# It will log some basic error info.
@@ -496,38 +576,43 @@ proxy = {
   	 * proxy = kit.require 'proxy'
   	 * http = require 'http'
   	 *
-  	 * http.createServer proxy.mid [{
-  	 * 	url: '/a'
-  	 * 	handler: proxy.url() # Transparent proxy
-  	 * }, {
-  	 * 	url: '/b'
-  	 * 	handler proxy.url { url: 'a.com' } # Porxy to `a.com`
-  	 * }, {
-  	 * 	url: '/c'
-  	 * 	handler proxy.url { url: 'c.com/s.js' } # Porxy to a file
-  	 * }, {
-  	 * 	url: /\/$/ # match path that ends with '/'
-  	 * 	method: 'GET'
-  	 * 	handler proxy.url {
-  	 * 		url: 'd.com'
-  	 * 		# Inject script to html page.
-  	 * 		handleResBody: (body, req, res) ->
-  	 * 			if res.headers['content-type'].indexOf('text/html') > -1
-  	 * 				body + '<script>alert("test")</script>'
-  	 * 			else
-  	 * 				body
-  	 * 	}
-  	 * }]
-  	 * .listen 8123
+  	 * http.createServer(proxy.flow [{
+  	 * 		url: '/a'
+  	 * 		handler: proxy.url() # Transparent proxy
+  	 * 	}, {
+  	 * 		url: '/b'
+  	 * 		handler proxy.url { url: 'a.com' } # Porxy to `a.com`
+  	 * 	}, {
+  	 * 		url: '/c'
+  	 * 		handler proxy.url { url: 'c.com/s.js' } # Porxy to a file
+  	 * 	}, {
+  	 * 		url: /\/$/ # match path that ends with '/'
+  	 * 		method: 'GET'
+  	 * 		handler proxy.url {
+  	 * 			url: 'd.com'
+  	 * 			# Inject script to html page.
+  	 * 			handleResBody: (body, req, res) ->
+  	 * 				if res.headers['content-type'].indexOf('text/html') > -1
+  	 * 					body + '<script>alert("test")</script>'
+  	 * 				else
+  	 * 					body
+  	 * 		}
+  	 * 	}]
+  	 * ).listen 8123
   	 * ```
    */
   url: function(opts) {
-    var cs, headerUpReg, normalizeHeaders, normalizeStream, normalizeUrl, uppperCase;
+    var cs, normalizeStream, normalizeUrl, uppperCase;
+    kit.require('url');
+    cs = kit.require('colors/safe');
+    if (_.isString(opts)) {
+      opts = {
+        url: opts
+      };
+    }
     if (opts == null) {
       opts = {};
     }
-    kit.require('url');
-    cs = kit.require('colors/safe');
     _.defaults(opts, {
       globalBps: false,
       agent: proxy.agent,
@@ -547,17 +632,6 @@ proxy = {
     });
     uppperCase = function(m, p1, p2) {
       return p1.toUpperCase() + p2;
-    };
-    headerUpReg = /(\w)(\w*)/g;
-    normalizeHeaders = function(headers, req) {
-      var k, nheaders, nk, v;
-      nheaders = {};
-      for (k in headers) {
-        v = headers[k];
-        nk = k.replace(headerUpReg, uppperCase);
-        nheaders[nk] = v;
-      }
-      return opts.handleReqHeaders(nheaders, req);
     };
     normalizeUrl = function(req, url) {
       var sepIndex;
@@ -607,10 +681,11 @@ proxy = {
         return res;
       }
     };
-    return function(req, res) {
-      var headers, p, stream, url;
+    return function(ctx) {
+      var headers, p, req, res, stream, url;
+      req = ctx.req, res = ctx.res;
       url = normalizeUrl(req, opts.url);
-      headers = normalizeHeaders(req.headers, req);
+      headers = opts.handleReqHeaders(req.headers, req);
       stream = normalizeStream(res);
       if (opts.isForceHeaderHost && opts.url) {
         headers['Host'] = url.host;
@@ -630,16 +705,15 @@ proxy = {
         }
       });
       if (opts.handleResBody) {
-        p.then(function(proxyRes) {
-          var body, hs;
-          body = opts.handleResBody(proxyRes.body, req, proxyRes);
-          if (!body instanceof Buffer) {
-            body = new Buffer(body);
-          }
+        p = p.then(function(proxyRes) {
+          var hs, k, v;
+          ctx.body = opts.handleResBody(proxyRes.body, req, proxyRes);
           hs = opts.handleResHeaders(proxyRes.headers, req, proxyRes);
-          hs['Content-Length'] = body.length;
-          res.writeHead(proxyRes.statusCode, hs);
-          return res.end(body);
+          for (k in hs) {
+            v = hs[k];
+            res.setHeader(k, v);
+          }
+          return res.statusCode = proxyRes.statusCode;
         });
       } else {
         p.req.on('response', function(proxyRes) {

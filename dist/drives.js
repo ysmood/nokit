@@ -623,9 +623,15 @@ module.exports = {
       };
     }
     return function() {
+      var err;
       this.deps = [this.path];
-      this.set((uglify.minify(this.contents + '', opts)).code);
-      return kit.log(cls.cyan('uglifyjs: ') + this.dest);
+      try {
+        kit.log(cls.cyan('uglifyjs: ') + this.dest);
+        return this.set((uglify.minify(this.contents + '', opts)).code);
+      } catch (_error) {
+        err = _error;
+        return kit.logs(cls.cyan('uglifyjs err:'), this.path, err.message);
+      }
     };
   }, {
     compress: ['.js']

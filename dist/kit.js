@@ -809,9 +809,11 @@ _.extend(kit, fs, fs.PromiseUtils, {
         }).join(':')
       ].join(' '));
     }
-    log = function() {
-      var err, str;
-      str = _.toArray(_.pull(arguments, void 0)).join(' ');
+    log = function(str, time) {
+      var err;
+      if (opts.isShowTime) {
+        str = str + ' ' + time;
+      }
       if (kit.logReg && !kit.logReg.test(str)) {
         return;
       }
@@ -1857,93 +1859,6 @@ _.extend(kit, fs, fs.PromiseUtils, {
   	 * @type {Object}
    */
   semver: null,
-
-  /**
-  	 * Create a http request handler middleware.
-  	 * @param  {Object} opts Same as the sse.
-  	 * @return {Function} `(req, res, next) ->`.
-  	 * It has some extra properties:
-  	 * ```coffee
-  	 * {
-  	 * 	sse: kit.sse
-  	 * 	watch: (filePath, reqUrl) ->
-  	 * }
-  	 * ```
-  	 * @example
-  	 * Visit 'http://127.0.0.1:80123', every 3 sec, the page will be reloaded.
-  	 * If the `./static/default.css` is modified, the page will also be reloaded.
-  	 * ```coffee
-  	 * http = require 'http'
-  	 * handler = kit.serverHelper()
-  	 *
-  	 * http.createServer (req, res) ->
-  	 * 	handler req, res, ->
-  	 * 		res.end kit.browserHelper()
-  	 *
-  	 * .listen 8123, ->
-  	 * 	kit.log 'listen ' + 8123
-  	 *
-  	 * 	handler.watch './static/default.css', '/st/default.css'
-  	 *
-  	 * 	setInterval ->
-  	 * 		handler.sse.emit 'fileModified', 'changed-file-path.js'
-  	 * 	, 3000
-  	 * ```
-  	 * You can also use the `nokit.log` on the browser to log to the remote server.
-  	 * ```coffee
-  	 * nokit.log { any: 'thing' }
-  	 * ```
-   */
-  serverHelper: function(opts) {
-    var cs, handler, watchList;
-    cs = kit.require('colors/safe');
-    handler = function(req, res, next) {
-      var data;
-      switch (req.url) {
-        case '/nokit-sse':
-          return handler.sse(req, res);
-        case '/nokit-log':
-          data = '';
-          req.on('data', function(chunk) {
-            return data += chunk;
-          });
-          return req.on('end', function() {
-            var e;
-            try {
-              kit.log(cs.cyan('client') + cs.grey(' | ') + (data ? kit.xinspect(JSON.parse(data)) : data));
-              return res.end();
-            } catch (_error) {
-              e = _error;
-              res.statusCode = 500;
-              return res.end(e.stack);
-            }
-          });
-        default:
-          return typeof next === "function" ? next() : void 0;
-      }
-    };
-    handler.sse = kit.require('sse')(opts);
-    watchList = [];
-    handler.watch = function(path, url) {
-      if (_.contains(watchList, path)) {
-        return;
-      }
-      return kit.fileExists(path).then(function(exists) {
-        if (!exists) {
-          return;
-        }
-        kit.logs(cs.cyan('watch:'), path, cs.magenta('|'), url);
-        watchList.push(path);
-        return kit.watchPath(path, {
-          handler: function() {
-            kit.logs(cs.cyan('changed:'), url);
-            return handler.sse.emit('fileModified', url);
-          }
-        });
-      });
-    };
-    return handler;
-  },
 
   /**
   	 * A safer version of `child_process.spawn` to cross-platform run

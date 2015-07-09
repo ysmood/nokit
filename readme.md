@@ -583,7 +583,7 @@ Goto [changelog](doc/changelog.md)
         # => '[2015-02-07 08:31:49] a b 10'
         ```
 
-- ## **[logs(args)](lib/kit.coffee?source#L773)**
+- ## **[logs(args)](lib/kit.coffee?source#L774)**
 
     Shortcut for logging multiple strings.
 
@@ -598,7 +598,7 @@ Goto [changelog](doc/changelog.md)
         # => [2015-02-07 08:31:49] test1 test2 test3
         ```
 
-- ## **[monitorApp(opts)](lib/kit.coffee?source#L847)**
+- ## **[monitorApp(opts)](lib/kit.coffee?source#L848)**
 
     Monitor an application and automatically restart it when file changed.
     Even when the monitored app exit with error, the monitor will still wait
@@ -670,13 +670,13 @@ Goto [changelog](doc/changelog.md)
         }
         ```
 
-- ## **[nodeVersion()](lib/kit.coffee?source#L933)**
+- ## **[nodeVersion()](lib/kit.coffee?source#L934)**
 
     Node version. Such as `v0.10.23` is `0.1023`, `v0.10.1` is `0.1001`.
 
     - **<u>return</u>**: { _Float_ }
 
-- ## **[defaultArgs(args, defaults)](lib/kit.coffee?source#L963)**
+- ## **[defaultArgs(args, defaults)](lib/kit.coffee?source#L964)**
 
     A helper for arguments type based function override.
 
@@ -710,7 +710,7 @@ Goto [changelog](doc/changelog.md)
         { name: 'test', colors: ['red'], family: null, fn: -> 'nothing' }
         ```
 
-- ## **[parseComment(code, opts)](lib/kit.coffee?source#L1013)**
+- ## **[parseComment(code, opts)](lib/kit.coffee?source#L1014)**
 
     A comments parser for javascript and coffee-script.
     Used to generate documentation from source code automatically.
@@ -755,7 +755,7 @@ Goto [changelog](doc/changelog.md)
         }
         ```
 
-- ## **[parseDependency(entryPaths, opts)](lib/kit.coffee?source#L1116)**
+- ## **[parseDependency(entryPaths, opts)](lib/kit.coffee?source#L1117)**
 
     Parse dependency tree by regex. The dependency relationships
     is not a tree, but a graph. To avoid dependency cycle, this
@@ -798,11 +798,11 @@ Goto [changelog](doc/changelog.md)
         	kit.log markdownStr
         ```
 
-- ## **[path](lib/kit.coffee?source#L1179)**
+- ## **[path](lib/kit.coffee?source#L1180)**
 
     io.js native module `path`. See `nofs` for more information.
 
-- ## **[Promise](lib/kit.coffee?source#L1187)**
+- ## **[Promise](lib/kit.coffee?source#L1188)**
 
     The promise lib. Now, it uses Yaku as ES5 polyfill.
     In the future, the Yaku will be replaced with native
@@ -810,13 +810,13 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>type</u>**: { _Object_ }
 
-- ## **[proxy](lib/kit.coffee?source#L1194)**
+- ## **[proxy](lib/kit.coffee?source#L1195)**
 
     The `proxy` module.
     You must `kit.require 'proxy'` before using it.
     For more information goto the `Proxy` section.
 
-- ## **[regexReduce(reg, str, iter, init)](lib/kit.coffee?source#L1213)**
+- ## **[regexReduce(reg, str, iter, init)](lib/kit.coffee?source#L1214)**
 
     Reduce a string via a regex.
 
@@ -843,7 +843,7 @@ Goto [changelog](doc/changelog.md)
         kit.log out # => [1, 10, 3]
         ```
 
-- ## **[regexMap(reg, str, iter)](lib/kit.coffee?source#L1237)**
+- ## **[regexMap(reg, str, iter)](lib/kit.coffee?source#L1238)**
 
     Map a string via a regex.
 
@@ -865,7 +865,7 @@ Goto [changelog](doc/changelog.md)
         kit.log out # => [1, 10, 3]
         ```
 
-- ## **[require(moduleName, dir, loaded)](lib/kit.coffee?source#L1275)**
+- ## **[require(moduleName, dir, loaded)](lib/kit.coffee?source#L1276)**
 
     Much faster than the native require of node, but you should
     follow some rules to use it safely.
@@ -906,7 +906,7 @@ Goto [changelog](doc/changelog.md)
         jhash = kit.require 'jhash', __dirname
         ```
 
-- ## **[requireOptional(name, dir, semver)](lib/kit.coffee?source#L1347)**
+- ## **[requireOptional(name, dir, semver)](lib/kit.coffee?source#L1348)**
 
     Require an optional package. If not found, it will
     warn the user to npm install it, and exit the process.
@@ -929,7 +929,7 @@ Goto [changelog](doc/changelog.md)
 
         The required package.
 
-- ## **[request(opts)](lib/kit.coffee?source#L1479)**
+- ## **[request(opts)](lib/kit.coffee?source#L1480)**
 
     A handy extended combination of `http.request` and `https.request`.
 
@@ -1041,59 +1041,14 @@ Goto [changelog](doc/changelog.md)
         	kit.log body
         ```
 
-- ## **[semver](lib/kit.coffee?source#L1683)**
+- ## **[semver](lib/kit.coffee?source#L1684)**
 
     The semantic versioner for npm, known as [semver](https://github.com/npm/node-semver).
     You must `kit.require 'semver'` before using it.
 
     - **<u>type</u>**: { _Object_ }
 
-- ## **[serverHelper(opts)](lib/kit.coffee?source#L1721)**
-
-    Create a http request handler middleware.
-
-    - **<u>param</u>**: `opts` { _Object_ }
-
-        Same as the sse.
-
-    - **<u>return</u>**: { _Function_ }
-
-        `(req, res, next) ->`.
-        It has some extra properties:
-        ```coffee
-        {
-        	sse: kit.sse
-        	watch: (filePath, reqUrl) ->
-        }
-        ```
-
-    - **<u>example</u>**:
-
-        Visit 'http://127.0.0.1:80123', every 3 sec, the page will be reloaded.
-        If the `./static/default.css` is modified, the page will also be reloaded.
-        ```coffee
-        http = require 'http'
-        handler = kit.serverHelper()
-
-        http.createServer (req, res) ->
-        	handler req, res, ->
-        		res.end kit.browserHelper()
-
-        .listen 8123, ->
-        	kit.log 'listen ' + 8123
-
-        	handler.watch './static/default.css', '/st/default.css'
-
-        	setInterval ->
-        		handler.sse.emit 'fileModified', 'changed-file-path.js'
-        	, 3000
-        ```
-        You can also use the `nokit.log` on the browser to log to the remote server.
-        ```coffee
-        nokit.log { any: 'thing' }
-        ```
-
-- ## **[spawn(cmd, args, opts)](lib/kit.coffee?source#L1797)**
+- ## **[spawn(cmd, args, opts)](lib/kit.coffee?source#L1715)**
 
     A safer version of `child_process.spawn` to cross-platform run
     a process. In some conditions, it may be more convenient
@@ -1137,13 +1092,13 @@ Goto [changelog](doc/changelog.md)
         .then ({code}) -> kit.log code
         ```
 
-- ## **[sse](lib/kit.coffee?source#L1855)**
+- ## **[sse](lib/kit.coffee?source#L1773)**
 
     The `sse` module.
     You must `kit.require 'sse'` before using it.
     For more information goto the `sse` section.
 
-- ## **[task(name, opts, fn)](lib/kit.coffee?source#L1916)**
+- ## **[task(name, opts, fn)](lib/kit.coffee?source#L1834)**
 
     Sequencing and executing tasks and dependencies concurrently.
 
@@ -1223,12 +1178,12 @@ Goto [changelog](doc/changelog.md)
         	kit.log 'All Done!'
         ```
 
-- ## **[url](lib/kit.coffee?source#L1988)**
+- ## **[url](lib/kit.coffee?source#L1906)**
 
     The `url` module of [io.js](iojs.org).
     You must `kit.require 'url'` before using it.
 
-- ## **[warp(from, opts)](lib/kit.coffee?source#L2103)**
+- ## **[warp(from, opts)](lib/kit.coffee?source#L2021)**
 
     Works much like `gulp.src`, but with Promise instead.
     The warp control and error handling is more pleasant.
@@ -1353,7 +1308,7 @@ Goto [changelog](doc/changelog.md)
         .run 'dist'
         ```
 
-- ## **[which(name)](lib/kit.coffee?source#L2176)**
+- ## **[which(name)](lib/kit.coffee?source#L2094)**
 
     Same as the unix `which` command.
     You must `kit.require 'which'` before using it.
@@ -1364,14 +1319,14 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Promise_ }
 
-- ## **[whichSync](lib/kit.coffee?source#L2183)**
+- ## **[whichSync](lib/kit.coffee?source#L2101)**
 
     Sync version of `which`.
     You must `kit.require 'whichSync'` before using it.
 
     - **<u>type</u>**: { _Function_ }
 
-- ## **[xinspect(obj, opts)](lib/kit.coffee?source#L2194)**
+- ## **[xinspect(obj, opts)](lib/kit.coffee?source#L2112)**
 
     For debugging. Dump a colorful object.
 
@@ -1388,7 +1343,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _String_ }
 
-- ## **[xopen(cmds, opts)](lib/kit.coffee?source#L2217)**
+- ## **[xopen(cmds, opts)](lib/kit.coffee?source#L2135)**
 
     Open a thing that your system can recognize.
     Now only support Windows, OSX or system that installed 'xdg-open'.
@@ -1744,7 +1699,7 @@ kit.warp 'src/**/*.coffee'
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[writer()](lib/drives.coffee?source#L524)**
+- ## **[writer()](lib/drives.coffee?source#L527)**
 
     Output file by `contents` and `dest`.
     If the 'ext' or 'name' is not null,
@@ -1760,7 +1715,7 @@ kit.warp 'src/**/*.coffee'
 
     For test, page injection development.
     A cross-platform programmable Fiddler alternative.
-    You can even replace express.js with it's `mid` function.
+    You can even replace express.js with it's `flow` function.
 
 - ## **[connect(req, sock, head, host, port, err)](lib/proxy.coffee?source#L39)**
 
@@ -1800,48 +1755,40 @@ kit.warp 'src/**/*.coffee'
         server.listen 8123
         ```
 
-- ## **[mid(middlewares, opts)](lib/proxy.coffee?source#L185)**
+- ## **[flow(middlewares, opts)](lib/proxy.coffee?source#L177)**
 
     A promise based middlewares proxy.
 
     - **<u>param</u>**: `middlewares` { _Array_ }
 
         Each item is a function `(ctx) -> Promise`,
-        or an object:
+        or a middleware object:
         ```coffee
         {
         	url: String | Regex | Function
         	method: String | Regex | Function
-        	handler: ({ body, req, res, next, url, method }) -> Promise
-
-         # You can also use express-like middlewares.
-        	handler: (req, res, next) ->
+        	handler: ({ body, req, res, next, url, method, headers }) -> Promise | Any
 
         	# When this, it will be assigned to ctx.body
         	handler: String | Object | Promise | Stream
-
-        	error: (ctx, err) -> Promise
         }
         ```
         <h4>selector</h4>
-        The `url` and `method` are act as selectors. If current
+        The `url`, `method` and `headers` are act as selectors. If current
         request matches the selector, the `handler` will be called with the
         captured result. If the selector is a function, it should return a
-        truthy value when matches, it will be assigned to the `ctx`.
+        `non-undefined, non-null` value when matches, it will be assigned to the `ctx`.
         When the `url` is a string, if `req.url` starts with the `url`, the rest
         of the string will be captured.
         <h4>handler</h4>
         If the handler has async operation inside, it should return a promise,
-        the promise can reject with a http `statusCode` property.
-        <h4>error</h4>
-        If any previous middleware rejects, current error handler will be called.
+        the promise can reject an error with a http `statusCode` property.
         <h4>body</h4>
-        The `body` can be a `String`, `Buffer`, `Stream`, `Object` or `Promise`.
-        If `body == next`, the proxy won't end the request automatically, which means
-        you can handle the `res.end()` yourself.
+        The `body` can be a `String`, `Buffer`, `Stream`, `Object` or a `Promise`
+        contains previous types.
         <h4>next</h4>
-        The `next = -> next` function is a function that returns itself. If a handler
-        resolves the value `next`, middleware next to it will be called.
+        `-> Promise` It returns a promise which settles after all the next middlewares
+        are setttled.
 
     - **<u>param</u>**: `opts` { _opts_ }
 
@@ -1855,7 +1802,8 @@ kit.warp 'src/**/*.coffee'
 
     - **<u>return</u>**: { _Function_ }
 
-        `(req, res) -> Promise` The http request listener.
+        `(req, res) -> Promise | Any` or `(ctx) -> Promise`.
+        The http request listener or middleware.
 
     - **<u>example</u>**:
 
@@ -1865,26 +1813,23 @@ kit.warp 'src/**/*.coffee'
 
         middlewares = [
         	(ctx) ->
-        		kit.log 'access: ' + ctx.req.url
-        		# We need the other handlers to handle the response.
-        		kit.sleep(300).then -> ctx.next
+        		start = new Date
+        		ctx.next().then ->
+        			console.log ctx.req.url, new Date - start
+        		, (err) ->
+        			console.error err
         	{
         		url: //items/(\d+)$/
         		handler: (ctx) ->
-        			ctx.body = kit.sleep(300).then -> { id: ctx.url[1] }
+        			ctx.body = kit.sleep(300).then -> 'Hello World'
         	}
         	{
         		url: '/api'
         		handler: { fake: 'api' }
         	}
-        	{
-        		error: (ctx, err) ->
-        	 			ctx.statusCode = 500
-        			ctx.body = err
-        	}
         ]
 
-        http.createServer proxy.mid(middlewares).listen 8123
+        http.createServer(proxy.flow middlewares).listen 8123
         ```
 
     - **<u>example</u>**:
@@ -1902,7 +1847,7 @@ kit.warp 'src/**/*.coffee'
         	}
         ]
 
-        http.createServer proxy.mid(middlewares).listen 8123
+        http.createServer(proxy.flow middlewares).listen 8123
         ```
 
     - **<u>example</u>**:
@@ -1916,7 +1861,9 @@ kit.warp 'src/**/*.coffee'
         bodyParser = require('body-parser')
 
         middlewares = [
-        	bodyParser.json() # Express middleware
+        	# Express middleware
+        	proxy.midToFlow bodyParser.json()
+
         	{
         		url: '/st'
         		handler: (ctx) ->
@@ -1926,7 +1873,7 @@ kit.warp 'src/**/*.coffee'
         	# sub-route
         	{
         		url: '/sub'
-        		handler: proxy.mid([{
+        		handler: proxy.flow([{
         			url: '/home'
         			handler: (ctx) ->
         				ctx.body = 'hello world'
@@ -1934,12 +1881,12 @@ kit.warp 'src/**/*.coffee'
         	}
         ]
 
-        http.createServer proxy.mid(middlewares).listen 8123
+        http.createServer(proxy.flow middlewares).listen 8123
         ```
 
-- ## **[match(pattern, opts)](lib/proxy.coffee?source#L384)**
+- ## **[match(pattern, opts)](lib/proxy.coffee?source#L357)**
 
-    Generate an express like unix path selector. See the example of `proxy.mid`.
+    Generate an express like unix path selector. See the example of `proxy.flow`.
 
     - **<u>param</u>**: `pattern` { _String_ }
 
@@ -1960,9 +1907,65 @@ kit.warp 'src/**/*.coffee'
         kit.log match '/items/10' # output => { id: '10' }
         ```
 
-- ## **[static(opts)](lib/proxy.coffee?source#L415)**
+- ## **[midToFlow(h)](lib/proxy.coffee?source#L376)**
 
-    Create a static file middleware for `proxy.mid`.
+    Convert a Express-like middleware to `proxy.flow` middleware.
+
+    - **<u>param</u>**: `h` { _Function_ }
+
+        `(req, res, next) ->`
+
+    - **<u>return</u>**: { _Function_ }
+
+        `(ctx) -> Promise`
+
+- ## **[serverHelper(opts)](lib/proxy.coffee?source#L422)**
+
+    Create a http request handler middleware.
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+        Same as the sse.
+
+    - **<u>return</u>**: { _Function_ }
+
+        `(req, res, next) ->`.
+        It has some extra properties:
+        ```coffee
+        {
+        	sse: kit.sse
+        	watch: (filePath, reqUrl) ->
+        }
+        ```
+
+    - **<u>example</u>**:
+
+        Visit 'http://127.0.0.1:80123', every 3 sec, the page will be reloaded.
+        If the `./static/default.css` is modified, the page will also be reloaded.
+        ```coffee
+        kit = require 'nokit'
+        http = require 'http'
+        proxy = kit.require 'proxy'
+        handler = kit.browserHelper()
+
+        http.createServer proxy.flow [handler]
+        .listen 8123, ->
+        	kit.log 'listen ' + 8123
+
+        	handler.watch './static/default.css', '/st/default.css'
+
+        	setInterval ->
+        		handler.sse.emit 'fileModified', 'changed-file-path.js'
+        	, 3000
+        ```
+        You can also use the `nokit.log` on the browser to log to the remote server.
+        ```coffee
+        nokit.log { any: 'thing' }
+        ```
+
+- ## **[static(opts)](lib/proxy.coffee?source#L488)**
+
+    Create a static file middleware for `proxy.flow`.
 
     - **<u>param</u>**: `opts` { _String | Object_ }
 
@@ -1971,7 +1974,7 @@ kit.warp 'src/**/*.coffee'
 
     - **<u>return</u>**: { _Function_ }
 
-        The middleware handler of `porxy.mid`.
+        The middleware handler of `porxy.flow`.
         ```coffee
         proxy = kit.require 'proxy'
         http = require 'http'
@@ -1981,16 +1984,17 @@ kit.warp 'src/**/*.coffee'
         	handler: proxy.static('static')
         }]
 
-        http.createServer proxy.mid(middlewares).listen 8123
+        http.createServer(proxy.flow middlewares).listen 8123
         ```
 
-- ## **[url(opts)](lib/proxy.coffee?source#L508)**
+- ## **[url(opts)](lib/proxy.coffee?source#L582)**
 
     Use it to proxy one url to another.
 
-    - **<u>param</u>**: `opts` { _Object_ }
+    - **<u>param</u>**: `opts` { _Object | String_ }
 
-        Other options. Default:
+        Other options, if it is a string, it will
+        be converted to `{ url: opts }`. Default:
         ```coffee
         {
         	# The target url forced to. Optional.
@@ -2017,7 +2021,7 @@ kit.warp 'src/**/*.coffee'
         	handleResHeaders: (headers, req, proxyRes) -> headers
 
         	# Manipulate the response body content of the response here,
-        	# such as inject script into it.
+        	# such as inject script into it. Its return type is same as the `ctx.body`.
         	handleResBody: (body, req, proxyRes) -> body
 
         	# It will log some basic error info.
@@ -2036,29 +2040,29 @@ kit.warp 'src/**/*.coffee'
         proxy = kit.require 'proxy'
         http = require 'http'
 
-        http.createServer proxy.mid [{
-        	url: '/a'
-        	handler: proxy.url() # Transparent proxy
-        }, {
-        	url: '/b'
-        	handler proxy.url { url: 'a.com' } # Porxy to `a.com`
-        }, {
-        	url: '/c'
-        	handler proxy.url { url: 'c.com/s.js' } # Porxy to a file
-        }, {
-        	url: //$/ # match path that ends with '/'
-        	method: 'GET'
-        	handler proxy.url {
-        		url: 'd.com'
-        		# Inject script to html page.
-        		handleResBody: (body, req, res) ->
-        			if res.headers['content-type'].indexOf('text/html') > -1
-        				body + '<script>alert("test")</script>'
-        			else
-        				body
-        	}
-        }]
-        .listen 8123
+        http.createServer(proxy.flow [{
+        		url: '/a'
+        		handler: proxy.url() # Transparent proxy
+        	}, {
+        		url: '/b'
+        		handler proxy.url { url: 'a.com' } # Porxy to `a.com`
+        	}, {
+        		url: '/c'
+        		handler proxy.url { url: 'c.com/s.js' } # Porxy to a file
+        	}, {
+        		url: //$/ # match path that ends with '/'
+        		method: 'GET'
+        		handler proxy.url {
+        			url: 'd.com'
+        			# Inject script to html page.
+        			handleResBody: (body, req, res) ->
+        				if res.headers['content-type'].indexOf('text/html') > -1
+        					body + '<script>alert("test")</script>'
+        				else
+        					body
+        		}
+        	}]
+        ).listen 8123
         ```
 
 
