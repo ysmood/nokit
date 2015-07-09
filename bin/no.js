@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// This is the nofile entrace for project "nokit"
 
 try {
 	require('../dist/no')();

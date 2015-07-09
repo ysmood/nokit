@@ -16,9 +16,11 @@
     "url": "https://github.com/ysmood/nokit.git"
   },
   "keywords": [
+    "no",
+    "nofile",
     "node",
     "kit",
-    "helpers"
+    "helpers",
   ],
   "files": [
     "bin",
