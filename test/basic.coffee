@@ -565,14 +565,18 @@ describe 'Kit:', ->
 
 		routes = [{
 			url: '/sub'
+			handler: (ctx) -> ctx.next()
+		}, {
+			url: '/sub'
 			handler: proxy.flow [{
 				url: proxy.match('/home')
 				handler: (ctx) ->
 					ctx.body = ctx.url
 			}]
-		}, (ctx) ->
-			ctx.body = 'next'
-		]
+		}, {
+			url: '/sub'
+			handler: (ctx) -> ctx.body = 'next'
+		}]
 
 		createRandomServer proxy.flow(routes)
 		.then (port) ->

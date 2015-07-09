@@ -318,15 +318,19 @@ proxy =
 				ctx = req
 				parentNext = req.next
 				{ req, res } = ctx
+				{ originalUrl } = req
+				req.originalUrl = null
 
 			index = 0
 			ctx.next = ->
-				req.url = req.originalUrl if _.isString req.originalUrl
+				if _.isString req.originalUrl
+					req.url = req.originalUrl
 
 				m = middlewares[index++]
 				if not m
 					return if parentNext
 						ctx.next = parentNext
+						req.originalUrl = originalUrl
 						ctx.next()
 					else
 						error404 ctx
