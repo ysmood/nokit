@@ -511,8 +511,11 @@ module.exports =
 
 		->
 			@deps = [@path]
-			@set (uglify.minify @contents + '', opts).code
-			kit.log cls.cyan('uglifyjs: ') + @dest
+			try
+				@set (uglify.minify @contents + '', opts).code
+				kit.log cls.cyan('uglifyjs: ') + @dest
+			catch err
+				kit.logs cls.cyan('uglifyjs err:'), @path, err.message
 	, compress: ['.js']
 
 	###*
