@@ -14,6 +14,20 @@ proxy =
 	agent: new http.Agent
 
 	###*
+	 * A simple request body middleware.
+	 * @return {Function} `(ctx) -> Promise`
+	###
+	body: (opts) ->
+		(ctx) -> new Promise (resolve, reject) ->
+			buf = new Buffer 0
+			ctx.req.on 'data', (chunk) ->
+				buf = Buffer.concat [buf, chunk]
+			ctx.req.on 'error', reject
+			ctx.req.on 'end', ->
+				ctx.reqBody = buf if buf.length > 0
+				ctx.next().then resolve, reject
+
+	###*
 	 * Http CONNECT method tunneling proxy helper.
 	 * Most times used with https proxing.
 	 * @param {http.IncomingMessage} req
@@ -307,6 +321,8 @@ proxy =
 
 			index = 0
 			ctx.next = ->
+				req.url = req.originalUrl if _.isString req.originalUrl
+
 				m = middlewares[index++]
 				if not m
 					return if parentNext
@@ -504,7 +520,7 @@ proxy =
 			s.on 'error', (err) ->
 				kit.log err.status
 				if err.status == 404
-					ctx.next().then resolve
+					ctx.next().then resolve, reject
 				else
 					err.statusCode = err.status
 					reject err
