@@ -510,7 +510,8 @@ proxy =
 
 	###*
 	 * Use it to proxy one url to another.
-	 * @param {Object} opts Other options. Default:
+	 * @param {Object | String} opts Other options, if it is a string, it will
+	 * be converted to `{ url: opts }`. Default:
 	 * ```coffee
 	 * {
 	 * 	# The target url forced to. Optional.
@@ -576,9 +577,14 @@ proxy =
 	 * ).listen 8123
 	 * ```
 	###
-	url: (opts = {}) ->
+	url: (opts) ->
 		kit.require 'url'
 		cs = kit.require 'colors/safe'
+
+		if _.isString opts
+			opts = { url: opts }
+
+		opts ?= {}
 
 		_.defaults opts, {
 			globalBps: false
