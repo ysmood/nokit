@@ -6,6 +6,7 @@
     please see the doc and example for details.
   - opt: rename `proxy.mid` to `proxy.flow`
   - add: `kit.regexReduce` and `kit.regexMap`
+  - upd: `nofs`, there is a api change
 
 - v0.8.9
 
