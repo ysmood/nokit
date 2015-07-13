@@ -6,44 +6,36 @@ http = require 'http'
 # require '../lib/proxy'
 
 run = ->
-	sHelper = proxy.serverHelper()
-
-	routes = [(ctx) ->
-		kit.log ctx.req.url
-		ctx.next()
-	, {
-		url: '/test'
-		handler: proxy.body()
-	}, {
-		url: '/test'
+	routes = [{
+		url: '/site'
 		handler: (ctx) ->
-			kit.log ctx.reqBody + ''
-			ctx.body = 'site' + ctx.req.headers.proxy
+			ctx.body = 'site'
 	}, {
 		url: /\/proxy$/
 		handler: proxy.url {
 			url: '/site'
 			bps: 1024 * 10
 			handleReqHeaders: (headers) ->
-				headers['proxy'] = '-proxy'
+				headers['proxy'] = 'proxy'
 				headers
 			handleResHeaders: (headers) ->
-				headers['x'] = '-ok'
+				headers['x'] = 'ok'
 				headers
 
 			handleResPipe: (res, resPipe) ->
-				if res.headers['content-length'] != '10'
+				kit.logs 'content-length', res.headers['content-length']
+				if res.headers['content-length'] == '10'
 					resPipe
-			# handleResBody: (body) ->
-			# 	body + '-body'
+			handleResBody: (body) ->
+				body + '-body'
 		}
 	}]
 
 	http.createServer proxy.flow(routes)
 
 	.listen 8123, ->
-		kit.log 'listen ' + 8123
+		# kit.log 'listen ' + 8123
 
-		kit.spawn 'http', ['http://127.0.0.1:8123/test', 'a=10']
+		kit.spawn 'http', ['http://127.0.0.1:8123/proxy', 'a=10']
 
 run()
