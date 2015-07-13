@@ -8,9 +8,16 @@ http = require 'http'
 run = ->
 	sHelper = proxy.serverHelper()
 
-	routes = [{
-		url: /\/site$/
+	routes = [(ctx) ->
+		kit.log ctx.req.url
+		ctx.next()
+	, {
+		url: '/test'
+		handler: proxy.body()
+	}, {
+		url: '/test'
 		handler: (ctx) ->
+			kit.log ctx.reqBody + ''
 			ctx.body = 'site' + ctx.req.headers.proxy
 	}, {
 		url: /\/proxy$/
@@ -37,6 +44,6 @@ run = ->
 	.listen 8123, ->
 		kit.log 'listen ' + 8123
 
-		kit.spawn 'http', ['127.0.0.1:8123/proxy']
+		kit.spawn 'http', ['http://127.0.0.1:8123/test', 'a=10']
 
 run()
