@@ -1556,6 +1556,11 @@ _.extend(kit, fs, fs.PromiseUtils, {
   	 * 	# Writable stream.
   	 * 	resPipe: null
   	 *
+  	 * 	# Handle resPipe before it's piped.
+  	 * 	# Its returned value will be assigned to `opts.resPipe`. So you can return
+  	 * 	# null to make the request resolve the `body`.
+  	 * 	handleResPipe: (res, resPipe) -> resPipe
+  	 *
   	 * 	# The progress of the request.
   	 * 	reqProgress: (complete, total) ->
   	 *
@@ -1705,6 +1710,9 @@ _.extend(kit, fs, fs.PromiseUtils, {
               return opts.resProgress(complete, total);
             });
           })();
+        }
+        if (_.isFunction(opts.handleResPipe)) {
+          opts.resPipe = opts.handleResPipe(res, opts.resPipe);
         }
         if (opts.resPipe) {
           if (opts.autoUnzip) {

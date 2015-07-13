@@ -18,6 +18,29 @@ proxy = {
   agent: new http.Agent,
 
   /**
+  	 * A simple request body middleware.
+  	 * @return {Function} `(ctx) -> Promise`
+   */
+  body: function(opts) {
+    return function(ctx) {
+      return new Promise(function(resolve, reject) {
+        var buf;
+        buf = new Buffer(0);
+        ctx.req.on('data', function(chunk) {
+          return buf = Buffer.concat([buf, chunk]);
+        });
+        ctx.req.on('error', reject);
+        return ctx.req.on('end', function() {
+          if (buf.length > 0) {
+            ctx.reqBody = buf;
+          }
+          return ctx.next().then(resolve, reject);
+        });
+      });
+    };
+  },
+
+  /**
   	 * Http CONNECT method tunneling proxy helper.
   	 * Most times used with https proxing.
   	 * @param {http.IncomingMessage} req
@@ -296,10 +319,11 @@ proxy = {
     };
     error404 = function(ctx) {
       ctx.res.statusCode = 404;
-      return ctx.body = http.STATUS_CODES[404];
+      ctx.body = http.STATUS_CODES[404];
+      return Promise.resolve();
     };
     return function(req, res) {
-      var ctx, index, parentNext;
+      var ctx, index, originalUrl, parentNext;
       if (res) {
         ctx = {
           req: req,
@@ -310,14 +334,20 @@ proxy = {
         ctx = req;
         parentNext = req.next;
         req = ctx.req, res = ctx.res;
+        originalUrl = req.originalUrl;
+        req.originalUrl = null;
       }
       index = 0;
       ctx.next = function() {
         var m, ret;
+        if (_.isString(req.originalUrl)) {
+          req.url = req.originalUrl;
+        }
         m = middlewares[index++];
         if (!m) {
           if (parentNext) {
             ctx.next = parentNext;
+            req.originalUrl = originalUrl;
             return ctx.next();
           } else {
             return error404(ctx);
@@ -520,9 +550,8 @@ proxy = {
           });
         }
         return s.on('error', function(err) {
-          kit.log(err.status);
           if (err.status === 404) {
-            return ctx.next().then(resolve);
+            return ctx.next().then(resolve, reject);
           } else {
             err.statusCode = err.status;
             return reject(err);
@@ -560,6 +589,9 @@ proxy = {
   	 * 	# You can hack the headers before the proxy send it.
   	 * 	handleReqHeaders: (headers, req) -> headers
   	 * 	handleResHeaders: (headers, req, proxyRes) -> headers
+  	 *
+  	 * 	# Same option as the `kit.request`'s `handleResPipe`.
+  	 * 	handleResPipe: (res, stream) -> stream
   	 *
   	 * 	# Manipulate the response body content of the response here,
   	 * 	# such as inject script into it. Its return type is same as the `ctx.body`.
@@ -630,6 +662,11 @@ proxy = {
         return kit.logs(e.toString(), '->', cs.red(req.url));
       }
     });
+    if (opts.handleResBody && !opts.handleResPipe) {
+      opts.handleResPipe = function(res, resPipe) {
+        return null;
+      };
+    }
     uppperCase = function(m, p1, p2) {
       return p1.toUpperCase() + p2;
     };
@@ -664,9 +701,6 @@ proxy = {
     };
     normalizeStream = function(res) {
       var bps, sockNum, throttle;
-      if (opts.handleResBody) {
-        return;
-      }
       if (_.isNumber(opts.bps)) {
         if (opts.globalBps) {
           sockNum = _.keys(opts.agent.sockets).length;
@@ -696,9 +730,10 @@ proxy = {
         headers: headers,
         reqPipe: req,
         resPipe: stream,
+        handleResPipe: opts.handleResPipe,
         autoUnzip: false,
         agent: opts.agent,
-        body: !opts.handleResBody,
+        body: false,
         resPipeError: function() {
           res.statusCode = 502;
           return res.end('Proxy Error: ' + http.STATUS_CODES[502]);
@@ -707,6 +742,9 @@ proxy = {
       if (opts.handleResBody) {
         p = p.then(function(proxyRes) {
           var hs, k, v;
+          if (_.isUndefined(proxyRes.body)) {
+            return;
+          }
           ctx.body = opts.handleResBody(proxyRes.body, req, proxyRes);
           hs = opts.handleResHeaders(proxyRes.headers, req, proxyRes);
           for (k in hs) {

@@ -1,5 +1,11 @@
 # Changelog
 
+- v0.9.1
+
+  - opt: proxy.url
+  - fix: some minor bug fixes
+  - upd: deps
+
 - v0.9.0
 
   - **API CHANGE** `proxy.url` and `proxy.static` changed its api,
