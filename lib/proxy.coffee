@@ -559,6 +559,9 @@ proxy =
 	 * 	handleReqHeaders: (headers, req) -> headers
 	 * 	handleResHeaders: (headers, req, proxyRes) -> headers
 	 *
+	 * 	# Same option as the `kit.request`'s `handleResPipe`.
+	 * 	handleResStream: (res, stream) -> stream
+	 *
 	 * 	# Manipulate the response body content of the response here,
 	 * 	# such as inject script into it. Its return type is same as the `ctx.body`.
 	 * 	handleResBody: (body, req, proxyRes) -> body
@@ -652,8 +655,6 @@ proxy =
 				url
 
 		normalizeStream = (res) ->
-			return if opts.handleResBody
-
 			if _.isNumber opts.bps
 				if opts.globalBps
 					sockNum = _.keys(opts.agent.sockets).length
@@ -683,7 +684,7 @@ proxy =
 				headers
 				reqPipe: req
 				resPipe: stream
-				handleResPipe: opts.handleResPipe
+				handleResPipe: opts.handleResStream
 				autoUnzip: false
 				agent: opts.agent
 				body: not opts.handleResBody
@@ -694,6 +695,8 @@ proxy =
 
 			if opts.handleResBody
 				p = p.then (proxyRes) ->
+					return if _.isUndefined proxyRes.body
+
 					ctx.body = opts.handleResBody proxyRes.body, req, proxyRes
 					hs = opts.handleResHeaders proxyRes.headers, req, proxyRes
 					for k, v of hs

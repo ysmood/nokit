@@ -1423,6 +1423,8 @@ _.extend kit, fs, fs.PromiseUtils,
 	 * 	resPipe: null
 	 *
 	 * 	# Handle resPipe before it's piped.
+	 * 	# Its returned value will be assigned to `opts.resPipe`. So you can return
+	 * 	# null to make the request resolve the `body`.
 	 * 	handleResPipe: (res, resPipe) -> resPipe
 	 *
 	 * 	# The progress of the request.
