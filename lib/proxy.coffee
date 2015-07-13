@@ -296,6 +296,7 @@ proxy =
 		error404 = (ctx) ->
 			ctx.res.statusCode = 404
 			ctx.body = http.STATUS_CODES[404]
+			Promise.resolve()
 
 		(req, res) ->
 			if res
@@ -502,7 +503,6 @@ proxy =
 					opts.onFile path, stats, ctx
 
 			s.on 'error', (err) ->
-				kit.log err.status
 				if err.status == 404
 					ctx.next().then resolve
 				else
