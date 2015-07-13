@@ -560,7 +560,7 @@ proxy =
 	 * 	handleResHeaders: (headers, req, proxyRes) -> headers
 	 *
 	 * 	# Same option as the `kit.request`'s `handleResPipe`.
-	 * 	handleResStream: (res, stream) -> stream
+	 * 	handleResPipe: (res, stream) -> stream
 	 *
 	 * 	# Manipulate the response body content of the response here,
 	 * 	# such as inject script into it. Its return type is same as the `ctx.body`.
@@ -621,6 +621,9 @@ proxy =
 			error: (e, req) ->
 				kit.logs e.toString(), '->', cs.red(req.url)
 		}
+
+		if opts.handleResBody and not opts.handleResPipe
+			opts.handleResPipe = (res, resPipe) -> null
 
 		uppperCase = (m, p1, p2) -> p1.toUpperCase() + p2
 
@@ -684,10 +687,10 @@ proxy =
 				headers
 				reqPipe: req
 				resPipe: stream
-				handleResPipe: opts.handleResStream
+				handleResPipe: opts.handleResPipe
 				autoUnzip: false
 				agent: opts.agent
-				body: not opts.handleResBody
+				body: false
 				resPipeError: ->
 					res.statusCode = 502
 					res.end 'Proxy Error: ' + http.STATUS_CODES[502]
