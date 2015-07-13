@@ -23,8 +23,12 @@ run = ->
 			handleResHeaders: (headers) ->
 				headers['x'] = '-ok'
 				headers
-			handleResBody: (body) ->
-				body + '-body'
+
+			handleResPipe: (res, resPipe) ->
+				if res.headers['content-length'] != '10'
+					resPipe
+			# handleResBody: (body) ->
+			# 	body + '-body'
 		}
 	}]
 

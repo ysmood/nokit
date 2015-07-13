@@ -1422,6 +1422,9 @@ _.extend kit, fs, fs.PromiseUtils,
 	 * 	# Writable stream.
 	 * 	resPipe: null
 	 *
+	 * 	# Handle resPipe before it's piped.
+	 * 	handleResPipe: (res, resPipe) -> resPipe
+	 *
 	 * 	# The progress of the request.
 	 * 	reqProgress: (complete, total) ->
 	 *
@@ -1560,6 +1563,9 @@ _.extend kit, fs, fs.PromiseUtils,
 						res.on 'data', (chunk) ->
 							complete += chunk.length
 							opts.resProgress complete, total
+
+				if _.isFunction opts.handleResPipe
+					opts.resPipe = opts.handleResPipe res, opts.resPipe
 
 				if opts.resPipe
 					if opts.autoUnzip
