@@ -847,6 +847,7 @@ _.extend kit, fs, fs.PromiseUtils,
 	###
 	monitorApp: (opts) ->
 		cs = kit.require 'colors/safe'
+		child_process = require 'child_process'
 		_.defaults opts, {
 			bin: 'node'
 			args: ['index.js']
@@ -903,16 +904,18 @@ _.extend kit, fs, fs.PromiseUtils,
 				opts.onRestart path
 
 				childPromise.catch(->).then(start)
+				try
+					child_process.execSync 'pkill -P ' + childPromise.process.pid
 				childPromise.process.kill 'SIGINT'
-				child_process.exec 'pkill -P ' + childPromise.process.pid
 
 		stop = ->
 			childPromise.watchPromise.then (list) ->
 				kit.unwatchFile w.path, w.handler for w in list
 
 		process.on 'SIGINT', ->
+			try
+				child_process.execSync 'pkill -P ' + childPromise.process.pid
 			childPromise.process.kill 'SIGINT'
-			child_process.exec 'pkill -P ' + childPromise.process.pid
 			process.exit()
 
 		watchPromise = if opts.isNodeDeps
