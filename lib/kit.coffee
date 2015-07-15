@@ -904,6 +904,7 @@ _.extend kit, fs, fs.PromiseUtils,
 
 				childPromise.catch(->).then(start)
 				childPromise.process.kill 'SIGINT'
+				child_process.exec 'pkill -P ' + childPromise.process.pid
 
 		stop = ->
 			childPromise.watchPromise.then (list) ->
@@ -911,6 +912,7 @@ _.extend kit, fs, fs.PromiseUtils,
 
 		process.on 'SIGINT', ->
 			childPromise.process.kill 'SIGINT'
+			child_process.exec 'pkill -P ' + childPromise.process.pid
 			process.exit()
 
 		watchPromise = if opts.isNodeDeps
