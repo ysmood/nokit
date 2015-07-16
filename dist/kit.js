@@ -940,8 +940,9 @@ _.extend(kit, fs, fs.PromiseUtils, {
   	 * ```
    */
   monitorApp: function(opts) {
-    var childPromise, cs, start, stop, watchPromise, watcher;
+    var childPromise, child_process, cs, start, stop, watchPromise, watcher;
     cs = kit.require('colors/safe');
+    child_process = require('child_process');
     _.defaults(opts, {
       bin: 'node',
       args: ['index.js'],
@@ -996,6 +997,9 @@ _.extend(kit, fs, fs.PromiseUtils, {
       if (curr.mtime !== prev.mtime) {
         opts.onRestart(path);
         childPromise["catch"](function() {}).then(start);
+        try {
+          child_process.execSync('pkill -P ' + childPromise.process.pid);
+        } catch (_error) {}
         return childPromise.process.kill('SIGINT');
       }
     };
@@ -1011,6 +1015,9 @@ _.extend(kit, fs, fs.PromiseUtils, {
       });
     };
     process.on('SIGINT', function() {
+      try {
+        child_process.execSync('pkill -P ' + childPromise.process.pid);
+      } catch (_error) {}
       childPromise.process.kill('SIGINT');
       return process.exit();
     });

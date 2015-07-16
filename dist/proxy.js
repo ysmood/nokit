@@ -344,7 +344,7 @@ proxy = {
           req.url = req.originalUrl;
         }
         m = middlewares[index++];
-        if (!m) {
+        if (m === void 0) {
           if (parentNext) {
             ctx.next = parentNext;
             req.originalUrl = originalUrl;
@@ -353,7 +353,7 @@ proxy = {
             return error404(ctx);
           }
         }
-        ret = _.isFunction(m) ? tryMid(m, ctx) : matchKey(ctx, req, 'method', m.method) && matchHeaders(ctx, m.headers) && matchKey(ctx, req, 'url', m.url) ? _.isFunction(m.handler) ? tryMid(m.handler, ctx) : m.handler !== void 0 ? ctx.body = m.handler : void 0 : ctx.next();
+        ret = _.isFunction(m) ? tryMid(m, ctx) : _.isObject(m) ? matchKey(ctx, req, 'method', m.method) && matchHeaders(ctx, m.headers) && matchKey(ctx, req, 'url', m.url) ? _.isFunction(m.handler) ? tryMid(m.handler, ctx) : m.handler !== void 0 ? ctx.body = m.handler : void 0 : ctx.next() : ctx.body = m;
         if (ret === $err) {
           return Promise.reject($err.e);
         }
