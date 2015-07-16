@@ -328,7 +328,7 @@ proxy =
 					req.url = req.originalUrl
 
 				m = middlewares[index++]
-				if not m
+				if m == undefined
 					return if parentNext
 						ctx.next = parentNext
 						req.originalUrl = originalUrl
@@ -338,7 +338,8 @@ proxy =
 
 				ret = if _.isFunction m
 					tryMid m, ctx
-				else if matchKey(ctx, req, 'method', m.method) and
+				else if _.isObject(m) and
+				matchKey(ctx, req, 'method', m.method) and
 				matchHeaders(ctx, m.headers) and
 				matchKey(ctx, req, 'url', m.url)
 					if _.isFunction m.handler
@@ -346,7 +347,7 @@ proxy =
 					else if m.handler != undefined
 						ctx.body = m.handler
 				else
-					ctx.next()
+					ctx.body = m
 
 				if ret == $err
 					return Promise.reject $err.e

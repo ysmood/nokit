@@ -450,6 +450,17 @@ describe 'Kit:', ->
 			.then (body) ->
 				shouldEqual 'echo: test', body
 
+	it 'proxy flow string middleware', ->
+		proxy = kit.require 'proxy'
+
+		createRandomServer proxy.flow(['string works'])
+		.then (port) ->
+			kit.request {
+				url: "http://127.0.0.1:#{port}"
+			}
+			.then (body) ->
+				shouldEqual 'string works', body
+
 	it 'proxy flow url', ->
 		proxy = kit.require 'proxy'
 
