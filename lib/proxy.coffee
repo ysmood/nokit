@@ -338,14 +338,16 @@ proxy =
 
 				ret = if _.isFunction m
 					tryMid m, ctx
-				else if _.isObject(m) and
-				matchKey(ctx, req, 'method', m.method) and
-				matchHeaders(ctx, m.headers) and
-				matchKey(ctx, req, 'url', m.url)
-					if _.isFunction m.handler
-						tryMid m.handler, ctx
-					else if m.handler != undefined
-						ctx.body = m.handler
+				else if _.isObject m
+					if matchKey(ctx, req, 'method', m.method) and
+					matchHeaders(ctx, m.headers) and
+					matchKey(ctx, req, 'url', m.url)
+						if _.isFunction m.handler
+							tryMid m.handler, ctx
+						else if m.handler != undefined
+							ctx.body = m.handler
+					else
+						ctx.next()
 				else
 					ctx.body = m
 
