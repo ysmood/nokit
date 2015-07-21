@@ -345,24 +345,22 @@ describe 'Kit:', ->
 	it 'task sequential', ->
 		seq = []
 
-		kit.task 'default', { deps: ['one', 'two'], isSequential: true } , (v) ->
-			seq.push v
-			seq
+		kit.task 'default', { deps: ['one', 'two'], isSequential: true } , () ->
+		    seq.push 3
 
-		kit.task 'one', (v) ->
-			new Promise (r) ->
-				setTimeout ->
-					seq.push v
-					r 2
-				, 5
+		kit.task 'one', () ->
+		    new Promise (r) ->
+		        setTimeout ->
+		            seq.push 1
+		            r()
+		        , 5
 
-		kit.task 'two', { deps: 'one', description: '2' } , (v) ->
-			seq.push v
-			1
+		kit.task 'two', { description: '2' } , () ->
+		    seq.push 2
 
-		kit.task.run 'default', { isSequential: true, init: 0 }
-		.then (seq) ->
-			shouldDeepEqual seq, [0, [2], 1]
+		kit.task.run 'default'
+		.then ->
+			shouldDeepEqual seq, [1, 2, 3]
 
 	it 'defaultArgs', ->
 		fn = ->
