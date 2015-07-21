@@ -1889,7 +1889,7 @@ _.extend kit, fs, fs.PromiseUtils,
 				else
 					Promise.all depTasks.map (task) -> task val
 			).then fn
-			p.then(opts.logEnd.bind opts).catch(->)
+			p.then(opts.logEnd.bind opts)
 			p
 
 		kit.task.list[name].opts = opts
