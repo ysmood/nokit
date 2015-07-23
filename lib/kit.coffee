@@ -905,7 +905,10 @@ _.extend kit, fs, fs.PromiseUtils,
 
 				childPromise.catch(->).then(start)
 				try
-					child_process.execSync 'pkill -P ' + childPromise.process.pid
+					child_process
+					.execSync 'pkill -P ' + childPromise.process.pid, {
+						stdio: 'ignore'
+					}
 				childPromise.process.kill 'SIGINT'
 
 		stop = ->
@@ -914,7 +917,9 @@ _.extend kit, fs, fs.PromiseUtils,
 
 		process.on 'SIGINT', ->
 			try
-				child_process.execSync 'pkill -P ' + childPromise.process.pid
+				child_process.execSync 'pkill -P ' + childPromise.process.pid, {
+					stdio: 'ignore'
+				}
 			childPromise.process.kill 'SIGINT'
 			process.exit()
 
@@ -2146,11 +2151,17 @@ _.extend kit, fs, fs.PromiseUtils,
 	 * ```
 	###
 	xopen: (cmds, opts = {}) ->
+		child_process = kit.require 'child_process', __dirname
+
+		if _.isString cmds
+			cmds = [cmds]
+
 		(Promise.resolve switch process.platform
 			when 'darwin'
 				'open'
 			when 'win32'
-				'start'
+				child_process.exec 'start ' + cmds.join(' ')
+				null
 			else
 				try
 					kit.require 'which'
@@ -2159,9 +2170,6 @@ _.extend kit, fs, fs.PromiseUtils,
 					null
 		).then (starter) ->
 			return if not starter
-
-			if _.isString cmds
-				cmds = [cmds]
 
 			kit.spawn starter, cmds
 
