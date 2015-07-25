@@ -98,7 +98,7 @@ loadNofile = function() {
     kit.Promise.enableLongStackTrace();
     tasker = require(path);
     if (_.isFunction(tasker)) {
-      tasker(task, cmder.option.bind(cmder))["catch"](kit["throw"]);
+      tasker(task, cmder.option.bind(cmder));
     } else {
       kit.err('No task found.');
     }
@@ -148,7 +148,7 @@ module.exports = launch = function() {
     if (kit.task.list['default']) {
       kit.task.run('default', {
         init: cmder
-      });
+      })["catch"](kit["throw"]);
     } else {
       cmder.outputHelp();
     }
@@ -161,5 +161,5 @@ module.exports = launch = function() {
   return kit.task.run(tasks, {
     init: cmder,
     isSequential: true
-  });
+  })["catch"](kit["throw"]);
 };
