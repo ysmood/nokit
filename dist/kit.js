@@ -998,7 +998,9 @@ _.extend(kit, fs, fs.PromiseUtils, {
         opts.onRestart(path);
         childPromise["catch"](function() {}).then(start);
         try {
-          child_process.execSync('pkill -P ' + childPromise.process.pid);
+          child_process.execSync('pkill -P ' + childPromise.process.pid, {
+            stdio: 'ignore'
+          });
         } catch (_error) {}
         return childPromise.process.kill('SIGINT');
       }
@@ -1016,7 +1018,9 @@ _.extend(kit, fs, fs.PromiseUtils, {
     };
     process.on('SIGINT', function() {
       try {
-        child_process.execSync('pkill -P ' + childPromise.process.pid);
+        child_process.execSync('pkill -P ' + childPromise.process.pid, {
+          stdio: 'ignore'
+        });
       } catch (_error) {}
       childPromise.process.kill('SIGINT');
       return process.exit();
@@ -2084,7 +2088,7 @@ _.extend(kit, fs, fs.PromiseUtils, {
         p = (!opts.deps || opts.deps.length < 1 ? Promise.resolve(val) : (depTasks = opts.deps.map(runTask(warp)), opts.isSequential ? kit.flow(depTasks)(val) : Promise.all(depTasks.map(function(task) {
           return task(val);
         })))).then(fn);
-        p.then(opts.logEnd.bind(opts))["catch"](function() {});
+        p.then(opts.logEnd.bind(opts));
         return p;
       };
     };
@@ -2400,15 +2404,21 @@ _.extend(kit, fs, fs.PromiseUtils, {
   	 * ```
    */
   xopen: function(cmds, opts) {
+    var child_process;
     if (opts == null) {
       opts = {};
+    }
+    child_process = kit.require('child_process', __dirname);
+    if (_.isString(cmds)) {
+      cmds = [cmds];
     }
     return (Promise.resolve((function() {
       switch (process.platform) {
         case 'darwin':
           return 'open';
         case 'win32':
-          return 'start';
+          child_process.exec('start ' + cmds.join(' '));
+          return null;
         default:
           try {
             kit.require('which');
@@ -2420,9 +2430,6 @@ _.extend(kit, fs, fs.PromiseUtils, {
     })())).then(function(starter) {
       if (!starter) {
         return;
-      }
-      if (_.isString(cmds)) {
-        cmds = [cmds];
       }
       return kit.spawn(starter, cmds);
     });

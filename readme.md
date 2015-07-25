@@ -670,13 +670,13 @@ Goto [changelog](doc/changelog.md)
         }
         ```
 
-- ## **[nodeVersion()](lib/kit.coffee?source#L939)**
+- ## **[nodeVersion()](lib/kit.coffee?source#L944)**
 
     Node version. Such as `v0.10.23` is `0.1023`, `v0.10.1` is `0.1001`.
 
     - **<u>return</u>**: { _Float_ }
 
-- ## **[defaultArgs(args, defaults)](lib/kit.coffee?source#L969)**
+- ## **[defaultArgs(args, defaults)](lib/kit.coffee?source#L974)**
 
     A helper for arguments type based function override.
 
@@ -710,7 +710,7 @@ Goto [changelog](doc/changelog.md)
         { name: 'test', colors: ['red'], family: null, fn: -> 'nothing' }
         ```
 
-- ## **[parseComment(code, opts)](lib/kit.coffee?source#L1019)**
+- ## **[parseComment(code, opts)](lib/kit.coffee?source#L1024)**
 
     A comments parser for javascript and coffee-script.
     Used to generate documentation from source code automatically.
@@ -755,7 +755,7 @@ Goto [changelog](doc/changelog.md)
         }
         ```
 
-- ## **[parseDependency(entryPaths, opts)](lib/kit.coffee?source#L1122)**
+- ## **[parseDependency(entryPaths, opts)](lib/kit.coffee?source#L1127)**
 
     Parse dependency tree by regex. The dependency relationships
     is not a tree, but a graph. To avoid dependency cycle, this
@@ -798,11 +798,11 @@ Goto [changelog](doc/changelog.md)
         	kit.log markdownStr
         ```
 
-- ## **[path](lib/kit.coffee?source#L1185)**
+- ## **[path](lib/kit.coffee?source#L1190)**
 
     io.js native module `path`. See `nofs` for more information.
 
-- ## **[Promise](lib/kit.coffee?source#L1193)**
+- ## **[Promise](lib/kit.coffee?source#L1198)**
 
     The promise lib. Now, it uses Yaku as ES5 polyfill.
     In the future, the Yaku will be replaced with native
@@ -810,13 +810,13 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>type</u>**: { _Object_ }
 
-- ## **[proxy](lib/kit.coffee?source#L1200)**
+- ## **[proxy](lib/kit.coffee?source#L1205)**
 
     The `proxy` module.
     You must `kit.require 'proxy'` before using it.
     For more information goto the `Proxy` section.
 
-- ## **[regexReduce(reg, str, iter, init)](lib/kit.coffee?source#L1219)**
+- ## **[regexReduce(reg, str, iter, init)](lib/kit.coffee?source#L1224)**
 
     Reduce a string via a regex.
 
@@ -843,7 +843,7 @@ Goto [changelog](doc/changelog.md)
         kit.log out # => [1, 10, 3]
         ```
 
-- ## **[regexMap(reg, str, iter)](lib/kit.coffee?source#L1243)**
+- ## **[regexMap(reg, str, iter)](lib/kit.coffee?source#L1248)**
 
     Map a string via a regex.
 
@@ -865,7 +865,7 @@ Goto [changelog](doc/changelog.md)
         kit.log out # => [1, 10, 3]
         ```
 
-- ## **[require(moduleName, dir, loaded)](lib/kit.coffee?source#L1281)**
+- ## **[require(moduleName, dir, loaded)](lib/kit.coffee?source#L1286)**
 
     Much faster than the native require of node, but you should
     follow some rules to use it safely.
@@ -906,7 +906,7 @@ Goto [changelog](doc/changelog.md)
         jhash = kit.require 'jhash', __dirname
         ```
 
-- ## **[requireOptional(name, dir, semver)](lib/kit.coffee?source#L1353)**
+- ## **[requireOptional(name, dir, semver)](lib/kit.coffee?source#L1358)**
 
     Require an optional package. If not found, it will
     warn the user to npm install it, and exit the process.
@@ -929,7 +929,7 @@ Goto [changelog](doc/changelog.md)
 
         The required package.
 
-- ## **[request(opts)](lib/kit.coffee?source#L1490)**
+- ## **[request(opts)](lib/kit.coffee?source#L1495)**
 
     A handy extended combination of `http.request` and `https.request`.
 
@@ -1046,14 +1046,14 @@ Goto [changelog](doc/changelog.md)
         	kit.log body
         ```
 
-- ## **[semver](lib/kit.coffee?source#L1697)**
+- ## **[semver](lib/kit.coffee?source#L1702)**
 
     The semantic versioner for npm, known as [semver](https://github.com/npm/node-semver).
     You must `kit.require 'semver'` before using it.
 
     - **<u>type</u>**: { _Object_ }
 
-- ## **[spawn(cmd, args, opts)](lib/kit.coffee?source#L1728)**
+- ## **[spawn(cmd, args, opts)](lib/kit.coffee?source#L1733)**
 
     A safer version of `child_process.spawn` to cross-platform run
     a process. In some conditions, it may be more convenient
@@ -1097,13 +1097,13 @@ Goto [changelog](doc/changelog.md)
         .then ({code}) -> kit.log code
         ```
 
-- ## **[sse](lib/kit.coffee?source#L1786)**
+- ## **[sse](lib/kit.coffee?source#L1791)**
 
     The `sse` module.
     You must `kit.require 'sse'` before using it.
     For more information goto the `sse` section.
 
-- ## **[task(name, opts, fn)](lib/kit.coffee?source#L1847)**
+- ## **[task(name, opts, fn)](lib/kit.coffee?source#L1852)**
 
     Sequencing and executing tasks and dependencies concurrently.
 
@@ -1183,12 +1183,12 @@ Goto [changelog](doc/changelog.md)
         	kit.log 'All Done!'
         ```
 
-- ## **[url](lib/kit.coffee?source#L1919)**
+- ## **[url](lib/kit.coffee?source#L1924)**
 
     The `url` module of [io.js](iojs.org).
     You must `kit.require 'url'` before using it.
 
-- ## **[warp(from, opts)](lib/kit.coffee?source#L2034)**
+- ## **[warp(from, opts)](lib/kit.coffee?source#L2039)**
 
     Works much like `gulp.src`, but with Promise instead.
     The warp control and error handling is more pleasant.
@@ -1313,7 +1313,7 @@ Goto [changelog](doc/changelog.md)
         .run 'dist'
         ```
 
-- ## **[which(name)](lib/kit.coffee?source#L2107)**
+- ## **[which(name)](lib/kit.coffee?source#L2112)**
 
     Same as the unix `which` command.
     You must `kit.require 'which'` before using it.
@@ -1324,14 +1324,14 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Promise_ }
 
-- ## **[whichSync](lib/kit.coffee?source#L2114)**
+- ## **[whichSync](lib/kit.coffee?source#L2119)**
 
     Sync version of `which`.
     You must `kit.require 'whichSync'` before using it.
 
     - **<u>type</u>**: { _Function_ }
 
-- ## **[xinspect(obj, opts)](lib/kit.coffee?source#L2125)**
+- ## **[xinspect(obj, opts)](lib/kit.coffee?source#L2130)**
 
     For debugging. Dump a colorful object.
 
@@ -1348,7 +1348,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _String_ }
 
-- ## **[xopen(cmds, opts)](lib/kit.coffee?source#L2148)**
+- ## **[xopen(cmds, opts)](lib/kit.coffee?source#L2153)**
 
     Open a thing that your system can recognize.
     Now only support Windows, OSX or system that installed 'xdg-open'.
