@@ -72,7 +72,6 @@ loadNofile = ->
 		tasker = require path
 		if _.isFunction tasker
 			tasker task, cmder.option.bind(cmder)
-			.catch kit.throw
 		else
 			kit.err 'No task found.'
 		return path
@@ -125,6 +124,7 @@ module.exports = launch = ->
 	if cmder.args.length == 0
 		if kit.task.list['default']
 			kit.task.run 'default', { init: cmder }
+			.catch kit.throw
 		else
 			cmder.outputHelp()
 		return
@@ -135,3 +135,4 @@ module.exports = launch = ->
 		error 'No such tasks: ' + cmder.args
 
 	kit.task.run tasks, { init: cmder, isSequential: true }
+	.catch kit.throw
