@@ -98,7 +98,7 @@ loadNofile = function() {
     kit.Promise.enableLongStackTrace();
     tasker = require(path);
     if (_.isFunction(tasker)) {
-      tasker(task, cmder.option.bind(cmder));
+      tasker(task, cmder.option.bind(cmder))["catch"](kit["throw"]);
     } else {
       kit.err('No task found.');
     }
