@@ -3,12 +3,15 @@ kit = require '../lib/kit'
 proxy = kit.require 'proxy'
 kit.require 'url'
 http = require 'http'
+{ Promise } = kit
 # require '../lib/proxy'
 
-ken = require '../lib/test'
+ken = require '../lib/ken'
+test = ken()
 
-
-ken 'main', (ken, t) ->
-
-    ken 'test 01', (t) ->
-        t.eq 1, 2
+ken.all [
+    test 'basic 1', ->
+        test.eq 'ok', 'ok'
+    test 'basic 2', ->
+        test.eq 'ok', 'ok1'
+]
