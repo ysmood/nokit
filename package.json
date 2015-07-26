@@ -39,7 +39,7 @@
     "colors": "1.1.2",
     "commander": "2.8.1",
     "jhash": "0.1.7",
-    "nofs": "0.9.4",
+    "nofs": "0.9.6",
     "semver": "5.0.1"
   },
   "devDependencies": {
@@ -47,7 +47,7 @@
     "clean-css": "3.3.6",
     "coffee-script": "1.9.3",
     "coffeelint": "1.10.1",
-    "form-data": "1.0.0-rc1",
+    "form-data": "1.0.0-rc2",
     "formidable": "1.0.17",
     "iconv-lite": "0.4.11",
     "jshint": "2.8.0",
@@ -58,6 +58,6 @@
     "send": "0.13.0",
     "stylus": "0.52.0",
     "throttle": "1.0.3",
-    "uglify-js": "2.4.23"
+    "uglify-js": "2.4.24"
   }
 }
