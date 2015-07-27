@@ -29,9 +29,7 @@ assert = require 'assert'
  * @example
  * ```coffeescript
  * ken = kit.require 'ken'
- * test = ken {
- *     isBail: true
- * }
+ * test = ken()
  *
  * test.sync [
  *     test 'basic 1', ->
@@ -97,7 +95,7 @@ ken = (opts = {}) ->
 			.then onFinal, onFinal
 	}
 
-_.extend module.exports, {
+module.exports = _.extend ken, {
 	eq: assert.strictEqual
 	deepEq: assert.deepEqual
 }
