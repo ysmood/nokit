@@ -13,14 +13,13 @@ assert = require 'assert'
  * 		console.log cs.green('o'), msg
  * 	logFail: (err) ->
  * 		console.error cs.red('x'), err
- * 	logFinal: (all, passed, failed) ->
+ * 	logFinal: (passed, failed) ->
  * 		console.log """
  * 		#{cs.grey '----------------'}
- * 		tests #{cs.cyan all}
  * 		pass  #{cs.green passed}
  * 		fail  #{cs.red failed}
  * 		"""
- * 	onEnd: (all, passed, failed) ->
+ * 	onEnd: (passed, failed) ->
  * 		if failed
  * 			process.exit 1
  * }
@@ -52,27 +51,24 @@ ken = (opts = {}) ->
 	_.defaults opts, {
 		isBail: true
 		logPass: (msg) ->
-			console.log cs.green('o'), msg
+			console.log cs.green('o'), cs.grey(msg)
 		logFail: (err) ->
 			console.error cs.red('x'), err
-		logFinal: (all, passed, failed) ->
+		logFinal: (passed, failed) ->
 			console.log """
 			#{cs.grey '----------------'}
-			tests #{cs.cyan all}
-			pass  #{cs.green passed}
-			fail  #{cs.red failed}
+			pass #{cs.green passed}
+			fail #{cs.red failed}
 			"""
-		onEnd: (all, passed, failed) ->
+		onEnd: (passed, failed) ->
 			if failed
 				process.exit 1
 	}
 
-	all = 0
 	passed = 0
 	failed = 0
 
 	test = (msg, fn) ->
-		all++
 		->
 			Promise.resolve()
 			.then fn
@@ -85,8 +81,8 @@ ken = (opts = {}) ->
 				Promise.reject err if opts.isBail
 
 	onFinal = ->
-		opts.logFinal all, passed, failed
-		opts.onEnd all, passed, failed
+		opts.logFinal passed, failed
+		opts.onEnd passed, failed
 
 	_.extend test, {
 		async: ->

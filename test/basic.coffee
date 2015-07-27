@@ -402,7 +402,7 @@ describe 'Kit:', ->
 	it 'ken all passed', ->
 		ken = kit.require 'ken'
 		test = ken {
-			onEnd: (all, passed, failed) ->
+			onEnd: (passed, failed) ->
 				passed
 		}
 
@@ -427,7 +427,7 @@ describe 'Kit:', ->
 	it 'ken failed', ->
 		ken = kit.require 'ken'
 		test = ken {
-			onEnd: (all, passed, failed) ->
+			onEnd: (passed, failed) ->
 				failed
 		}
 

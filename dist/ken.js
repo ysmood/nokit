@@ -19,14 +19,13 @@ assert = require('assert');
  * 		console.log cs.green('o'), msg
  * 	logFail: (err) ->
  * 		console.error cs.red('x'), err
- * 	logFinal: (all, passed, failed) ->
+ * 	logFinal: (passed, failed) ->
  * 		console.log """
  * 		#{cs.grey '----------------'}
- * 		tests #{cs.cyan all}
  * 		pass  #{cs.green passed}
  * 		fail  #{cs.red failed}
  * 		"""
- * 	onEnd: (all, passed, failed) ->
+ * 	onEnd: (passed, failed) ->
  * 		if failed
  * 			process.exit 1
  * }
@@ -56,32 +55,30 @@ assert = require('assert');
  */
 
 ken = function(opts) {
-  var all, failed, onFinal, passed, test;
+  var failed, onFinal, passed, test;
   if (opts == null) {
     opts = {};
   }
   _.defaults(opts, {
     isBail: true,
     logPass: function(msg) {
-      return console.log(cs.green('o'), msg);
+      return console.log(cs.green('o'), cs.grey(msg));
     },
     logFail: function(err) {
       return console.error(cs.red('x'), err);
     },
-    logFinal: function(all, passed, failed) {
-      return console.log((cs.grey('----------------')) + "\ntests " + (cs.cyan(all)) + "\npass  " + (cs.green(passed)) + "\nfail  " + (cs.red(failed)));
+    logFinal: function(passed, failed) {
+      return console.log((cs.grey('----------------')) + "\npass " + (cs.green(passed)) + "\nfail " + (cs.red(failed)));
     },
-    onEnd: function(all, passed, failed) {
+    onEnd: function(passed, failed) {
       if (failed) {
         return process.exit(1);
       }
     }
   });
-  all = 0;
   passed = 0;
   failed = 0;
   test = function(msg, fn) {
-    all++;
     return function() {
       return Promise.resolve().then(fn).then(function() {
         passed++;
@@ -96,8 +93,8 @@ ken = function(opts) {
     };
   };
   onFinal = function() {
-    opts.logFinal(all, passed, failed);
-    return opts.onEnd(all, passed, failed);
+    opts.logFinal(passed, failed);
+    return opts.onEnd(passed, failed);
   };
   return _.extend(test, {
     async: function() {

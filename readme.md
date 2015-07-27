@@ -1719,7 +1719,7 @@ kit.warp 'src/**/*.coffee'
 
 # Ken
 
-- ## **[ken(opts)](lib/ken.coffee?source#L51)**
+- ## **[ken(opts)](lib/ken.coffee?source#L50)**
 
     A simple promise based test module.
 
@@ -1733,14 +1733,13 @@ kit.warp 'src/**/*.coffee'
         		console.log cs.green('o'), msg
         	logFail: (err) ->
         		console.error cs.red('x'), err
-        	logFinal: (all, passed, failed) ->
+        	logFinal: (passed, failed) ->
         		console.log """
         		#{cs.grey '----------------'}
-        		tests #{cs.cyan all}
         		pass  #{cs.green passed}
         		fail  #{cs.red failed}
         		"""
-        	onEnd: (all, passed, failed) ->
+        	onEnd: (passed, failed) ->
         		if failed
         			process.exit 1
         }
