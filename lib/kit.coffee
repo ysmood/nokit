@@ -645,6 +645,13 @@ _.extend kit, fs, fs.PromiseUtils,
 	jhash: null
 
 	###*
+	 * The `ken` module.
+	 * You must `kit.require 'ken'` before using it.
+	 * For more information goto the `Ken` section.
+	###
+	ken: null
+
+	###*
 	 * A better log for debugging, it uses the `kit.xinspect` to log.
 	 *
 	 * Use terminal command like `logReg='pattern' node app.js` to
