@@ -204,7 +204,8 @@ proxy =
 					ctx.res.end()
 					return true
 
-				ctx.res.setHeader 'ETag', hash
+				if not ctx.res.headersSent
+					ctx.res.setHeader 'ETag', hash
 
 				return false
 		}
