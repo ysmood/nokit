@@ -31,18 +31,20 @@ assert = require 'assert'
  * ken = kit.require 'ken'
  * test = ken()
  *
- * test.sync [
- *     test 'basic 1', ->
- *         ken.eq 'ok', 'ok'
- *     test 'basic 2', ->
- *         ken.deepEq { a: 1, b: 2 }, { a: '1', b: 2 }
+ * # Async tests
+ * test.async [
+ * 	test 'basic 1', ->
+ * 		ken.eq 'ok', 'ok'
+ * 	test 'basic 2', ->
+ * 		ken.deepEq { a: 1, b: 2 }, { a: 1, b: 2 }
  *
- *     kit.flow [
- *         test 'basic 3', ->
- *             ken.eq 'ok', 'ok'
- *         test 'basic 4', ->
- *             ken.eq 'ok', 'ok'
- *     ]
+ * 	# Sync tests
+ * 	kit.flow [
+ * 		test 'basic 3', ->
+ * 			ken.eq 'ok', 'ok'
+ * 		test 'basic 4', ->
+ * 			ken.eq 'ok', 'ok'
+ * 	]
  * ]
  * ```
 ###
