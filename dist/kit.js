@@ -729,6 +729,13 @@ _.extend(kit, fs, fs.PromiseUtils, {
   jhash: null,
 
   /**
+  	 * The `ken` module.
+  	 * You must `kit.require 'ken'` before using it.
+  	 * For more information goto the `Ken` section.
+   */
+  ken: null,
+
+  /**
   	 * A better log for debugging, it uses the `kit.xinspect` to log.
   	 *
   	 * Use terminal command like `logReg='pattern' node app.js` to
@@ -1554,15 +1561,12 @@ _.extend(kit, fs, fs.PromiseUtils, {
   	 * 	# For more info, see https://github.com/ashtuchkin/iconv-lite
   	 * 	resEncoding: 'auto'
   	 *
-  	 * 	# It's string, object or buffer, optional. When it's an object,
+  	 * 	# It's string, object, stream or buffer, it's optional. When it's an object,
   	 * 	# The request will be 'application/x-www-form-urlencoded'.
   	 * 	reqData: null
   	 *
   	 * 	# auto end the request.
   	 * 	autoEndReq: true
-  	 *
-  	 * 	# Readable stream.
-  	 * 	reqPipe: null
   	 *
   	 * 	# Writable stream.
   	 * 	resPipe: null
@@ -1621,7 +1625,7 @@ _.extend(kit, fs, fs.PromiseUtils, {
   	 * 	# the 'Content-Length'.
   	 * 	setTE: true
   	 *
-  	 * 	reqPipe: form
+  	 * 	reqData: form
   	 * }
   	 * .then (body) ->
   	 * 	kit.log body
@@ -1683,12 +1687,16 @@ _.extend(kit, fs, fs.PromiseUtils, {
     } else if (_.isString(opts.reqData)) {
       reqBuf = new Buffer(opts.reqData);
     } else if (_.isObject(opts.reqData)) {
-      if ((base = opts.headers)['content-type'] == null) {
-        base['content-type'] = 'application/x-www-form-urlencoded; charset=utf-8';
+      if (opts.reqData.constructor.name === 'ReadStream') {
+        opts.reqPipe = opts.reqData;
+      } else {
+        if ((base = opts.headers)['content-type'] == null) {
+          base['content-type'] = 'application/x-www-form-urlencoded; charset=utf-8';
+        }
+        reqBuf = new Buffer(_.map(opts.reqData, function(v, k) {
+          return [encodeURIComponent(k), encodeURIComponent(v)].join('=');
+        }).join('&'));
       }
-      reqBuf = new Buffer(_.map(opts.reqData, function(v, k) {
-        return [encodeURIComponent(k), encodeURIComponent(v)].join('=');
-      }).join('&'));
     } else {
       reqBuf = void 0;
     }

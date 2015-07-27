@@ -534,7 +534,13 @@ Goto [changelog](doc/changelog.md)
         jhash.hash 'test' # output => 'ede'
         ```
 
-- ## **[log(msg, action, opts)](lib/kit.coffee?source#L684)**
+- ## **[ken](lib/kit.coffee?source#L652)**
+
+    The `ken` module.
+    You must `kit.require 'ken'` before using it.
+    For more information goto the `Ken` section.
+
+- ## **[log(msg, action, opts)](lib/kit.coffee?source#L691)**
 
     A better log for debugging, it uses the `kit.xinspect` to log.
 
@@ -583,7 +589,7 @@ Goto [changelog](doc/changelog.md)
         # => '[2015-02-07 08:31:49] a b 10'
         ```
 
-- ## **[logs(args)](lib/kit.coffee?source#L774)**
+- ## **[logs(args)](lib/kit.coffee?source#L781)**
 
     Shortcut for logging multiple strings.
 
@@ -598,7 +604,7 @@ Goto [changelog](doc/changelog.md)
         # => [2015-02-07 08:31:49] test1 test2 test3
         ```
 
-- ## **[monitorApp(opts)](lib/kit.coffee?source#L848)**
+- ## **[monitorApp(opts)](lib/kit.coffee?source#L855)**
 
     Monitor an application and automatically restart it when file changed.
     Even when the monitored app exit with error, the monitor will still wait
@@ -670,13 +676,13 @@ Goto [changelog](doc/changelog.md)
         }
         ```
 
-- ## **[nodeVersion()](lib/kit.coffee?source#L944)**
+- ## **[nodeVersion()](lib/kit.coffee?source#L951)**
 
     Node version. Such as `v0.10.23` is `0.1023`, `v0.10.1` is `0.1001`.
 
     - **<u>return</u>**: { _Float_ }
 
-- ## **[defaultArgs(args, defaults)](lib/kit.coffee?source#L974)**
+- ## **[defaultArgs(args, defaults)](lib/kit.coffee?source#L981)**
 
     A helper for arguments type based function override.
 
@@ -710,7 +716,7 @@ Goto [changelog](doc/changelog.md)
         { name: 'test', colors: ['red'], family: null, fn: -> 'nothing' }
         ```
 
-- ## **[parseComment(code, opts)](lib/kit.coffee?source#L1024)**
+- ## **[parseComment(code, opts)](lib/kit.coffee?source#L1031)**
 
     A comments parser for javascript and coffee-script.
     Used to generate documentation from source code automatically.
@@ -755,7 +761,7 @@ Goto [changelog](doc/changelog.md)
         }
         ```
 
-- ## **[parseDependency(entryPaths, opts)](lib/kit.coffee?source#L1127)**
+- ## **[parseDependency(entryPaths, opts)](lib/kit.coffee?source#L1134)**
 
     Parse dependency tree by regex. The dependency relationships
     is not a tree, but a graph. To avoid dependency cycle, this
@@ -798,11 +804,11 @@ Goto [changelog](doc/changelog.md)
         	kit.log markdownStr
         ```
 
-- ## **[path](lib/kit.coffee?source#L1190)**
+- ## **[path](lib/kit.coffee?source#L1197)**
 
     io.js native module `path`. See `nofs` for more information.
 
-- ## **[Promise](lib/kit.coffee?source#L1198)**
+- ## **[Promise](lib/kit.coffee?source#L1205)**
 
     The promise lib. Now, it uses Yaku as ES5 polyfill.
     In the future, the Yaku will be replaced with native
@@ -810,13 +816,13 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>type</u>**: { _Object_ }
 
-- ## **[proxy](lib/kit.coffee?source#L1205)**
+- ## **[proxy](lib/kit.coffee?source#L1212)**
 
     The `proxy` module.
     You must `kit.require 'proxy'` before using it.
     For more information goto the `Proxy` section.
 
-- ## **[regexReduce(reg, str, iter, init)](lib/kit.coffee?source#L1224)**
+- ## **[regexReduce(reg, str, iter, init)](lib/kit.coffee?source#L1231)**
 
     Reduce a string via a regex.
 
@@ -843,7 +849,7 @@ Goto [changelog](doc/changelog.md)
         kit.log out # => [1, 10, 3]
         ```
 
-- ## **[regexMap(reg, str, iter)](lib/kit.coffee?source#L1248)**
+- ## **[regexMap(reg, str, iter)](lib/kit.coffee?source#L1255)**
 
     Map a string via a regex.
 
@@ -865,7 +871,7 @@ Goto [changelog](doc/changelog.md)
         kit.log out # => [1, 10, 3]
         ```
 
-- ## **[require(moduleName, dir, loaded)](lib/kit.coffee?source#L1286)**
+- ## **[require(moduleName, dir, loaded)](lib/kit.coffee?source#L1293)**
 
     Much faster than the native require of node, but you should
     follow some rules to use it safely.
@@ -906,7 +912,7 @@ Goto [changelog](doc/changelog.md)
         jhash = kit.require 'jhash', __dirname
         ```
 
-- ## **[requireOptional(name, dir, semver)](lib/kit.coffee?source#L1358)**
+- ## **[requireOptional(name, dir, semver)](lib/kit.coffee?source#L1365)**
 
     Require an optional package. If not found, it will
     warn the user to npm install it, and exit the process.
@@ -929,7 +935,7 @@ Goto [changelog](doc/changelog.md)
 
         The required package.
 
-- ## **[request(opts)](lib/kit.coffee?source#L1495)**
+- ## **[request(opts)](lib/kit.coffee?source#L1499)**
 
     A handy extended combination of `http.request` and `https.request`.
 
@@ -968,15 +974,12 @@ Goto [changelog](doc/changelog.md)
         	# For more info, see https://github.com/ashtuchkin/iconv-lite
         	resEncoding: 'auto'
 
-        	# It's string, object or buffer, optional. When it's an object,
+        	# It's string, object, stream or buffer, it's optional. When it's an object,
         	# The request will be 'application/x-www-form-urlencoded'.
         	reqData: null
 
         	# auto end the request.
         	autoEndReq: true
-
-        	# Readable stream.
-        	reqPipe: null
 
         	# Writable stream.
         	resPipe: null
@@ -1040,20 +1043,20 @@ Goto [changelog](doc/changelog.md)
         	# the 'Content-Length'.
         	setTE: true
 
-        	reqPipe: form
+        	reqData: form
         }
         .then (body) ->
         	kit.log body
         ```
 
-- ## **[semver](lib/kit.coffee?source#L1702)**
+- ## **[semver](lib/kit.coffee?source#L1709)**
 
     The semantic versioner for npm, known as [semver](https://github.com/npm/node-semver).
     You must `kit.require 'semver'` before using it.
 
     - **<u>type</u>**: { _Object_ }
 
-- ## **[spawn(cmd, args, opts)](lib/kit.coffee?source#L1733)**
+- ## **[spawn(cmd, args, opts)](lib/kit.coffee?source#L1740)**
 
     A safer version of `child_process.spawn` to cross-platform run
     a process. In some conditions, it may be more convenient
@@ -1097,13 +1100,13 @@ Goto [changelog](doc/changelog.md)
         .then ({code}) -> kit.log code
         ```
 
-- ## **[sse](lib/kit.coffee?source#L1791)**
+- ## **[sse](lib/kit.coffee?source#L1798)**
 
     The `sse` module.
     You must `kit.require 'sse'` before using it.
     For more information goto the `sse` section.
 
-- ## **[task(name, opts, fn)](lib/kit.coffee?source#L1852)**
+- ## **[task(name, opts, fn)](lib/kit.coffee?source#L1859)**
 
     Sequencing and executing tasks and dependencies concurrently.
 
@@ -1183,12 +1186,12 @@ Goto [changelog](doc/changelog.md)
         	kit.log 'All Done!'
         ```
 
-- ## **[url](lib/kit.coffee?source#L1924)**
+- ## **[url](lib/kit.coffee?source#L1931)**
 
     The `url` module of [io.js](iojs.org).
     You must `kit.require 'url'` before using it.
 
-- ## **[warp(from, opts)](lib/kit.coffee?source#L2039)**
+- ## **[warp(from, opts)](lib/kit.coffee?source#L2046)**
 
     Works much like `gulp.src`, but with Promise instead.
     The warp control and error handling is more pleasant.
@@ -1313,7 +1316,7 @@ Goto [changelog](doc/changelog.md)
         .run 'dist'
         ```
 
-- ## **[which(name)](lib/kit.coffee?source#L2112)**
+- ## **[which(name)](lib/kit.coffee?source#L2119)**
 
     Same as the unix `which` command.
     You must `kit.require 'which'` before using it.
@@ -1324,14 +1327,14 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Promise_ }
 
-- ## **[whichSync](lib/kit.coffee?source#L2119)**
+- ## **[whichSync](lib/kit.coffee?source#L2126)**
 
     Sync version of `which`.
     You must `kit.require 'whichSync'` before using it.
 
     - **<u>type</u>**: { _Function_ }
 
-- ## **[xinspect(obj, opts)](lib/kit.coffee?source#L2130)**
+- ## **[xinspect(obj, opts)](lib/kit.coffee?source#L2137)**
 
     For debugging. Dump a colorful object.
 
@@ -1348,7 +1351,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _String_ }
 
-- ## **[xopen(cmds, opts)](lib/kit.coffee?source#L2153)**
+- ## **[xopen(cmds, opts)](lib/kit.coffee?source#L2160)**
 
     Open a thing that your system can recognize.
     Now only support Windows, OSX or system that installed 'xdg-open'.
@@ -1714,6 +1717,62 @@ kit.warp 'src/**/*.coffee'
 
 
 
+# Ken
+
+- ## **[ken(opts)](lib/ken.coffee?source#L51)**
+
+    A simple promise based test module.
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+        Defaults:
+        ```coffeescript
+        {
+        	isBail: true
+        	logPass: (msg) ->
+        		console.log cs.green('o'), msg
+        	logFail: (err) ->
+        		console.error cs.red('x'), err
+        	logFinal: (all, passed, failed) ->
+        		console.log """
+        		#{cs.grey '----------------'}
+        		tests #{cs.cyan all}
+        		pass  #{cs.green passed}
+        		fail  #{cs.red failed}
+        		"""
+        	onEnd: (all, passed, failed) ->
+        		if failed
+        			process.exit 1
+        }
+        ```
+
+    - **<u>return</u>**: { _Promise_ }
+
+    - **<u>example</u>**:
+
+        ```coffeescript
+        ken = kit.require 'ken'
+        test = ken()
+
+        # Async tests
+        test.async [
+        	test 'basic 1', ->
+        		ken.eq 'ok', 'ok'
+        	test 'basic 2', ->
+        		ken.deepEq { a: 1, b: 2 }, { a: 1, b: 2 }
+
+        	# Sync tests
+        	kit.flow [
+        		test 'basic 3', ->
+        			ken.eq 'ok', 'ok'
+        		test 'basic 4', ->
+        			ken.eq 'ok', 'ok'
+        	]
+        ]
+        ```
+
+
+
 # Proxy
 
 - ## **[Overview](lib/proxy.coffee?source#L6)**
@@ -1897,7 +1956,7 @@ kit.warp 'src/**/*.coffee'
         http.createServer(proxy.flow middlewares).listen 8123
         ```
 
-- ## **[match(pattern, opts)](lib/proxy.coffee?source#L381)**
+- ## **[match(pattern, opts)](lib/proxy.coffee?source#L382)**
 
     Generate an express like unix path selector. See the example of `proxy.flow`.
 
@@ -1920,7 +1979,7 @@ kit.warp 'src/**/*.coffee'
         kit.log match '/items/10' # output => { id: '10' }
         ```
 
-- ## **[midToFlow(h)](lib/proxy.coffee?source#L400)**
+- ## **[midToFlow(h)](lib/proxy.coffee?source#L401)**
 
     Convert a Express-like middleware to `proxy.flow` middleware.
 
@@ -1932,7 +1991,7 @@ kit.warp 'src/**/*.coffee'
 
         `(ctx) -> Promise`
 
-- ## **[serverHelper(opts)](lib/proxy.coffee?source#L446)**
+- ## **[serverHelper(opts)](lib/proxy.coffee?source#L447)**
 
     Create a http request handler middleware.
 
@@ -1976,7 +2035,7 @@ kit.warp 'src/**/*.coffee'
         nokit.log { any: 'thing' }
         ```
 
-- ## **[static(opts)](lib/proxy.coffee?source#L512)**
+- ## **[static(opts)](lib/proxy.coffee?source#L513)**
 
     Create a static file middleware for `proxy.flow`.
 
@@ -2000,7 +2059,7 @@ kit.warp 'src/**/*.coffee'
         http.createServer(proxy.flow middlewares).listen 8123
         ```
 
-- ## **[url(opts)](lib/proxy.coffee?source#L608)**
+- ## **[url(opts)](lib/proxy.coffee?source#L609)**
 
     Use it to proxy one url to another.
 
