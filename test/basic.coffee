@@ -399,6 +399,50 @@ describe 'Kit:', ->
 			'ss', 'ab'
 		]), undefined
 
+	it 'ken all passed', ->
+		ken = kit.require 'ken'
+		test = ken {
+			onEnd: (all, passed, failed) ->
+				passed
+		}
+
+		# Async tests
+		test.async [
+			test 'basic 1', ->
+				ken.eq 'ok', 'ok'
+			test 'basic 2', ->
+				ken.deepEq { a: 1, b: 2 }, { a: 1, b: 2 }
+
+			# Sync tests
+			kit.flow [
+				test 'basic 3', ->
+					ken.eq 'ok', 'ok'
+				test 'basic 4', ->
+					ken.eq 'ok', 'ok'
+			]
+		]
+		.then (passed) ->
+			shouldEqual 4, passed
+
+	it 'ken failed', ->
+		ken = kit.require 'ken'
+		test = ken {
+			onEnd: (all, passed, failed) ->
+				failed
+		}
+
+		# Async tests
+		test.async [
+			test 'basic 1', ->
+				ken.eq 'ok', 'ok'
+			test 'basic 2', ->
+				ken.eq 'ok', 'ok1'
+			test 'basic 3', ->
+				ken.deepEq { a: 1, b: 2 }, { a: 1, b: 2 }
+		]
+		.then (failed) ->
+			shouldEqual 1, failed
+
 	it 'proxy url', ->
 		proxy = kit.require 'proxy'
 

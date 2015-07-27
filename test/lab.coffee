@@ -6,12 +6,21 @@ http = require 'http'
 { Promise } = kit
 # require '../lib/proxy'
 
-ken = require '../lib/ken'
+ken = kit.require 'ken'
 test = ken()
 
-ken.all [
-    test 'basic 1', ->
-        test.eq 'ok', 'ok'
-    test 'basic 2', ->
-        test.eq 'ok', 'ok1'
+# Async tests
+test.async [
+	test 'basic 1', ->
+		ken.eq 'ok', 'ok'
+	test 'basic 2', ->
+		ken.deepEq { a: 1, b: 2 }, { a: 1, b: 2 }
+
+	# Sync tests
+	kit.flow [
+		test 'basic 3', ->
+			ken.eq 'ok', 'ok'
+		test 'basic 4', ->
+			ken.eq 'ok', 'ok'
+	]
 ]
