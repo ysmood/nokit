@@ -1721,7 +1721,7 @@ kit.warp 'src/**/*.coffee'
 
 - ## **[ken(opts)](lib/ken.coffee?source#L50)**
 
-    A simple promise based test module.
+    A simple promise based module for unit tests.
 
     - **<u>param</u>**: `opts` { _Object_ }
 

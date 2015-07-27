@@ -1,10 +1,11 @@
 # Changelog
 
-- v0.9.2
+- v0.9.3
 
   - opt: proxy.url
   - fix: some minor bug fixes
   - upd: deps
+  - add: `kit.ken` module
 
 - v0.9.0
 

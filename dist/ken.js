@@ -10,7 +10,7 @@ assert = require('assert');
 
 
 /**
- * A simple promise based test module.
+ * A simple promise based module for unit tests.
  * @param  {Object} opts Defaults:
  * ```coffeescript
  * {
