@@ -723,3 +723,26 @@ describe 'Kit:', ->
 			.then (body) ->
 				str = kit.readFileSync 'test/fixtures/ひまわり.txt', 'utf8'
 				shouldEqual str, body
+
+	it 'proxy flow midToFlow', ->
+		proxy = kit.require 'proxy'
+		bodyParser = require 'body-parser'
+
+		routes = [
+			proxy.midToFlow(bodyParser.json())
+			(ctx) ->
+				ctx.body = ctx.req.body
+		]
+
+		createRandomServer proxy.flow(routes)
+		.then (port) ->
+			kit.request {
+				url: "http://127.0.0.1:#{port}/"
+				reqData: '{"a": 10}'
+				headers: {
+					'Content-Type': 'application/json'
+				}
+			}
+			.then (body) ->
+				console.log body
+				shouldDeepEqual {a: 10}, JSON.parse(body)

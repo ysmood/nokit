@@ -405,7 +405,7 @@ proxy =
 					if err
 						reject err
 					else
-						resolve()
+						ctx.next().then resolve
 
 					return
 
