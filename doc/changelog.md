@@ -1,11 +1,12 @@
 # Changelog
 
-- v0.9.3
+- v0.9.4
 
   - opt: proxy.url
   - fix: some minor bug fixes
   - upd: deps
   - add: `kit.ken` module
+  - fix: a bug of midToFlow
 
 - v0.9.0
 

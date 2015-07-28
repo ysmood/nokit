@@ -1978,7 +1978,7 @@ kit.warp 'src/**/*.coffee'
         kit.log match '/items/10' # output => { id: '10' }
         ```
 
-- ## **[midToFlow(h)](lib/proxy.coffee?source#L401)**
+- ## **[midToFlow(h)](lib/proxy.coffee?source#L414)**
 
     Convert a Express-like middleware to `proxy.flow` middleware.
 
@@ -1989,8 +1989,21 @@ kit.warp 'src/**/*.coffee'
     - **<u>return</u>**: { _Function_ }
 
         `(ctx) -> Promise`
+        ```coffee
+        proxy = kit.require 'proxy'
+        http = require 'http'
+        bodyParser = require('body-parser')
 
-- ## **[serverHelper(opts)](lib/proxy.coffee?source#L447)**
+        middlewares = [
+        	proxy.midToFlow bodyParser.json()
+
+        	(ctx) -> ctx.body = ctx.req.body
+        ]
+
+        http.createServer(proxy.flow middlewares).listen 8123
+        ```
+
+- ## **[serverHelper(opts)](lib/proxy.coffee?source#L460)**
 
     Create a http request handler middleware.
 
@@ -2034,7 +2047,7 @@ kit.warp 'src/**/*.coffee'
         nokit.log { any: 'thing' }
         ```
 
-- ## **[static(opts)](lib/proxy.coffee?source#L513)**
+- ## **[static(opts)](lib/proxy.coffee?source#L526)**
 
     Create a static file middleware for `proxy.flow`.
 
@@ -2058,7 +2071,7 @@ kit.warp 'src/**/*.coffee'
         http.createServer(proxy.flow middlewares).listen 8123
         ```
 
-- ## **[url(opts)](lib/proxy.coffee?source#L609)**
+- ## **[url(opts)](lib/proxy.coffee?source#L622)**
 
     Use it to proxy one url to another.
 

@@ -411,6 +411,19 @@ proxy = {
   	 * Convert a Express-like middleware to `proxy.flow` middleware.
   	 * @param  {Function} h `(req, res, next) ->`
   	 * @return {Function}   `(ctx) -> Promise`
+  	 * ```coffee
+  	 * proxy = kit.require 'proxy'
+  	 * http = require 'http'
+  	 * bodyParser = require('body-parser')
+  	 *
+  	 * middlewares = [
+  	 * 	proxy.midToFlow bodyParser.json()
+  	 *
+  	 * 	(ctx) -> ctx.body = ctx.req.body
+  	 * ]
+  	 *
+  	 * http.createServer(proxy.flow middlewares).listen 8123
+  	 * ```
    */
   midToFlow: function(h) {
     return function(ctx) {
@@ -419,7 +432,7 @@ proxy = {
           if (err) {
             reject(err);
           } else {
-            resolve();
+            ctx.next().then(resolve);
           }
         });
       });
