@@ -904,7 +904,7 @@ _.extend kit, fs, fs.PromiseUtils,
 					return Promise.reject err.stack
 				opts.onErrorExit err
 
-		watcher = (path, curr, prev, isDelete) ->
+		watcher = _.debounce (path, curr, prev, isDelete) ->
 			return if isDelete
 
 			if curr.mtime != prev.mtime
@@ -917,6 +917,7 @@ _.extend kit, fs, fs.PromiseUtils,
 						stdio: 'ignore'
 					}
 				childPromise.process.kill 'SIGINT'
+		, 50
 
 		stop = ->
 			childPromise.watchPromise.then (list) ->

@@ -997,7 +997,7 @@ _.extend(kit, fs, fs.PromiseUtils, {
         return opts.onErrorExit(err);
       });
     };
-    watcher = function(path, curr, prev, isDelete) {
+    watcher = _.debounce(function(path, curr, prev, isDelete) {
       if (isDelete) {
         return;
       }
@@ -1011,7 +1011,7 @@ _.extend(kit, fs, fs.PromiseUtils, {
         } catch (_error) {}
         return childPromise.process.kill('SIGINT');
       }
-    };
+    }, 50);
     stop = function() {
       return childPromise.watchPromise.then(function(list) {
         var j, len, results, w;
