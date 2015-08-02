@@ -35,6 +35,17 @@ describe 'Kit:', ->
 		for s in serverList
 			try s.close()
 
+	it 'brush', ->
+		br = kit.require 'brush'
+		shouldEqual br.red('ok'), '\u001b[31mok\u001b[39m'
+
+	it 'brush disable', ->
+		br = kit.require 'brush'
+		br.isEnabled = false
+		ret = br.green('ok')
+		br.isEnabled = true
+		shouldEqual ret, 'ok'
+
 	it 'log', ->
 		kit.logs 'a', 'b', 'c'
 		kit.log '%s + %s + %s', ['red'.red, 'green'.green, 'blue'.blue]

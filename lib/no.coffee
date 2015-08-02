@@ -6,7 +6,7 @@ if not process.env.NODE_ENV?
 	process.env.NODE_ENV = 'development'
 
 kit = require './kit'
-cls = kit.require 'colors/safe'
+br = kit.require 'brush'
 { _ } = kit
 cmder = require 'commander'
 
@@ -35,7 +35,7 @@ task = ->
 
 	depsInfo = if args.deps
 		sep = if args.isSequential then ' -> ' else ', '
-		cls.grey "deps: [#{args.deps.join sep}]"
+		br.grey "deps: [#{args.deps.join sep}]"
 	else
 		''
 
@@ -49,7 +49,7 @@ task = ->
 		.description helpInfo
 		kit.task name, args, -> args.fn cmder
 
-		helpInfo = cls.cyan('-> ') + alias[0]
+		helpInfo = br.cyan('-> ') + alias[0]
 
 ###*
  * Load nofile.
@@ -90,7 +90,7 @@ loadNofile = ->
 
 			rdir = kit.path.relative '.', dir
 			if rdir
-				kit.log cls.cyan('Change Working Direcoty: ') + cls.green rdir
+				kit.log br.cyan('Change Working Direcoty: ') + br.green rdir
 
 			process.chdir dir
 
@@ -114,7 +114,7 @@ module.exports = launch = ->
 	cmder
 	.option '--nofile <path>', 'force nofile path'
 	.usage '[options] [fuzzy_task_name]...' +
-		cls.grey "  # #{kit.path.relative cwd, nofilePath}"
+		br.grey "  # #{kit.path.relative cwd, nofilePath}"
 
 	if not kit.task.list
 		return

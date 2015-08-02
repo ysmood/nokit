@@ -1,5 +1,10 @@
 # Changelog
 
+- v0.1.0
+
+ - **API CHANGE** `kit.require 'colors/safe'` now changed to `kit.require 'brush`,
+   the colors module now will not pollute the `String.prototype` any more.
+
 - v0.9.5
 
   - opt: proxy.url

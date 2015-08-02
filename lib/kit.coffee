@@ -90,19 +90,18 @@ _.extend kit, fs, fs.PromiseUtils,
 			"""
 
 	###*
-	 * The [colors](https://github.com/Marak/colors.js) lib
-	 * makes it easier to print colorful info in CLI.
-	 * You must `kit.require 'colors'` before using it.
-	 * Sometimes use `kit.require 'colors/safe'` will be better.
-	 * @type {Object}
+	 * Generate styled string for terminal.
+	 * It's disabled when `process.env.NODE_ENV == 'production'`.
 	 * @example
 	 * ```coffee
-	 * cs = kit.require 'colors/safe'
-	 * kit.log cs.red 'error info'
+	 * br = kit.require 'brush'
+	 * kit.log br.red 'error info'
+	 *
+	 * # Disable color globally.
+	 * br.isEnabled = false
 	 * ```
 	###
-	colors: null
-	'colors/safe': null
+	brush: null
 
 	###*
 	 * A fast file cache helper. It uses hard link to cache files.
@@ -689,7 +688,7 @@ _.extend kit, fs, fs.PromiseUtils,
 	 * ```
 	###
 	log: (args...) ->
-		cs = kit.require 'colors/safe'
+		br = kit.require 'brush'
 
 		if _.isObject action
 			opts = action
@@ -716,9 +715,9 @@ _.extend kit, fs, fs.PromiseUtils,
 
 		if opts.isShowTime
 			time = new Date()
-			timeDelta = cs.magenta(+time - +kit.lastLogTime) + 'ms'
+			timeDelta = br.magenta(+time - +kit.lastLogTime) + 'ms'
 			kit.lastLogTime = time
-			time = cs.grey [
+			time = br.grey [
 				[
 					[time.getFullYear(), 4, '0']
 					[time.getMonth() + 1, 2, '0']
@@ -744,7 +743,7 @@ _.extend kit, fs, fs.PromiseUtils,
 				console[action] str
 
 			if opts.logTrace
-				err = cs.grey (new Error).stack
+				err = br.grey (new Error).stack
 					.replace(/.+\n.+\n.+/, '\nStack trace:')
 				console.log err
 
@@ -852,7 +851,7 @@ _.extend kit, fs, fs.PromiseUtils,
 	 * ```
 	###
 	monitorApp: (opts) ->
-		cs = kit.require 'colors/safe'
+		br = kit.require 'brush'
 		child_process = require 'child_process'
 		_.defaults opts, {
 			bin: 'node'
@@ -862,22 +861,22 @@ _.extend kit, fs, fs.PromiseUtils,
 			parseDependency: {}
 			opts: {}
 			onStart: ->
-				kit.log cs.yellow("Monitor: ") + opts.watchList
+				kit.log br.yellow("Monitor: ") + opts.watchList
 			onRestart: (path) ->
-				kit.log cs.yellow("Reload app, modified: ") + path
+				kit.log br.yellow("Reload app, modified: ") + path
 			onWatchFiles: (paths) ->
-				kit.log cs.yellow('Watching: ') + paths.join(', ')
+				kit.log br.yellow('Watching: ') + paths.join(', ')
 			onNormalExit: ({ code, signal }) ->
-				kit.log cs.yellow('EXIT') +
-					" code: #{cs.cyan code} signal: #{cs.cyan signal}"
+				kit.log br.yellow('EXIT') +
+					" code: #{br.cyan code} signal: #{br.cyan signal}"
 			onErrorExit: ({ code, signal }) ->
-				kit.err cs.yellow('EXIT') +
-				" code: #{cs.cyan code} " +
-				"signal: #{cs.cyan signal}\n" +
-				cs.red 'Process closed. Edit and save
+				kit.err br.yellow('EXIT') +
+				" code: #{br.cyan code} " +
+				"signal: #{br.cyan signal}\n" +
+				br.red 'Process closed. Edit and save
 				the watched file to restart.'
 			sepLine: ->
-				process.stdout.write cs.yellow _.repeat(
+				process.stdout.write br.yellow _.repeat(
 					'*', process.stdout.columns
 				)
 		}
@@ -968,7 +967,7 @@ _.extend kit, fs, fs.PromiseUtils,
 	 * foo = ->
 	 * 	args = kit.defaultArgs arguments, {
 	 * 		name: { String: 'A' }
-	 * 		colors: { Array: [] }
+	 * 		brush: { Array: [] }
 	 * 		family: { String: null }
 	 * 		isReal: { Boolean: false }
 	 * 		fn: { Function: -> 'callback' }
@@ -976,7 +975,7 @@ _.extend kit, fs, fs.PromiseUtils,
 	 *
 	 * kit.log foo('test', false, ['red'], -> 'nothing')
 	 * # Here the logged value will deeply equal:
-	 * { name: 'test', colors: ['red'], family: null, fn: -> 'nothing' }
+	 * { name: 'test', brush: ['red'], family: null, fn: -> 'nothing' }
 	 * ```
 	###
 	defaultArgs: (args, defaults) ->
@@ -1381,13 +1380,13 @@ _.extend kit, fs, fs.PromiseUtils,
 		catch err
 			throw err if err.source == 'nokit'
 
-			cs = kit.require 'colors/safe'
+			br = kit.require 'brush'
 			kit.err(
-				(cs.red "Optional module required.\n" +
-				cs.red "If current module is installed globally, run " +
-				cs.green "'npm install -g #{name}'" +
-				cs.red " first, else run " +
-				cs.green "'npm install -S #{name}'" + cs.red " first.\n") +
+				(br.red "Optional module required.\n" +
+				br.red "If current module is installed globally, run " +
+				br.green "'npm install -g #{name}'" +
+				br.red " first, else run " +
+				br.green "'npm install -S #{name}'" + br.red " first.\n") +
 				err.stack
 			, { isShowTime: false })
 			process.exit 1
@@ -1858,7 +1857,7 @@ _.extend kit, fs, fs.PromiseUtils,
 	 * ```
 	###
 	task: (name, opts, fn) ->
-		cs = require 'colors/safe'
+		br = kit.require 'brush'
 		if _.isFunction opts
 			fn = opts
 			opts = {}
@@ -1867,11 +1866,11 @@ _.extend kit, fs, fs.PromiseUtils,
 			isSequential: false
 			description: ''
 			logStart: ->
-				kit.log cs.cyan('Task Start >> ') +
-					cs.green("[#{name}] ") + @description
+				kit.log br.cyan('Task Start >> ') +
+					br.green("[#{name}] ") + @description
 			logEnd: ->
-				kit.log cs.cyan('Task Done >> ') +
-					cs.green("[#{name}] ") + @description
+				kit.log br.cyan('Task Done >> ') +
+					br.green("[#{name}] ") + @description
 		}
 
 		if _.isString opts.deps
@@ -2131,7 +2130,7 @@ _.extend kit, fs, fs.PromiseUtils,
 	 * @param  {Object} obj Your target object.
 	 * @param  {Object} opts Options. Default:
 	 * ```coffee
-	 * { colors: true, depth: 7 }
+	 * { brush: true, depth: 7 }
 	 * ```
 	 * @return {String}
 	###
@@ -2139,7 +2138,7 @@ _.extend kit, fs, fs.PromiseUtils,
 		util = kit.require 'util', __dirname
 
 		_.defaults opts, {
-			colors: kit.isDevelopment()
+			brush: kit.isDevelopment()
 			depth: 7
 		}
 

@@ -59,8 +59,8 @@ module.exports = (task, option) ->
     task 'default', ['clean'], 'This is a comment info', (opts) ->
         kit.log opts.hello
 
-        # Use colors.
-        kit.require 'colors'
+        # Use brush.
+        kit.require 'brush'
         kit.log 'print red words'.red
 
     task 'clean', ->

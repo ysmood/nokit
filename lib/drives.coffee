@@ -1,6 +1,6 @@
 kit = require './kit'
 { _, Promise } = kit
-cls = kit.require 'colors/safe'
+cls = kit.require 'brush'
 jhash = null
 
 ###*

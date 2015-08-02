@@ -66,8 +66,8 @@ proxy =
 		psock.pipe sock
 
 		error = err or (err, socket) ->
-			cs = kit.require 'colors/safe'
-			kit.log err.toString() + ' -> ' + cs.red req.url
+			br = kit.require 'brush'
+			kit.log err.toString() + ' -> ' + br.red req.url
 			socket.end()
 
 		sock.on 'error', (err) ->
@@ -458,7 +458,7 @@ proxy =
 	 * ```
 	###
 	serverHelper: (opts) ->
-		cs = kit.require 'colors/safe'
+		br = kit.require 'brush'
 
 		handler = (ctx) ->
 			{ req, res } = ctx
@@ -474,7 +474,7 @@ proxy =
 
 					req.on 'end', ->
 						try
-							kit.log cs.cyan('client') + cs.grey(' | ') +
+							kit.log br.cyan('client') + br.grey(' | ') +
 							if data
 								kit.xinspect JSON.parse(data)
 							else
@@ -496,11 +496,11 @@ proxy =
 			kit.fileExists(path).then (exists) ->
 				return if not exists
 
-				kit.logs cs.cyan('watch:'), path, cs.magenta('|'), url
+				kit.logs br.cyan('watch:'), path, br.magenta('|'), url
 				watchList.push path
 				kit.watchPath path, {
 					handler: ->
-						kit.logs cs.cyan('changed:'), url
+						kit.logs br.cyan('changed:'), url
 						handler.sse.emit 'fileModified', url
 				}
 
@@ -621,7 +621,7 @@ proxy =
 	###
 	url: (opts) ->
 		kit.require 'url'
-		cs = kit.require 'colors/safe'
+		br = kit.require 'brush'
 
 		if _.isString opts
 			opts = { url: opts }
@@ -636,7 +636,7 @@ proxy =
 			handleResHeaders: (headers) -> headers
 			handleUrl: (url) -> url
 			error: (e, req) ->
-				kit.logs e.toString(), '->', cs.red(req.url)
+				kit.logs e.toString(), '->', br.red(req.url)
 		}
 
 		if opts.handleResBody and not opts.handleResPipe

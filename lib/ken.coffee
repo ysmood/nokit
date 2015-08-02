@@ -1,6 +1,6 @@
 kit = require './kit'
 { _, Promise } = kit
-cs = kit.require 'colors/safe'
+br = kit.require 'brush'
 assert = require 'assert'
 
 ###*
@@ -10,14 +10,14 @@ assert = require 'assert'
  * {
  * 	isBail: true
  * 	logPass: (msg) ->
- * 		console.log cs.green('o'), msg
+ * 		console.log br.green('o'), msg
  * 	logFail: (err) ->
- * 		console.error cs.red('x'), err
+ * 		console.error br.red('x'), err
  * 	logFinal: (passed, failed) ->
  * 		console.log """
- * 		#{cs.grey '----------------'}
- * 		pass  #{cs.green passed}
- * 		fail  #{cs.red failed}
+ * 		#{br.grey '----------------'}
+ * 		pass  #{br.green passed}
+ * 		fail  #{br.red failed}
  * 		"""
  * 	onEnd: (passed, failed) ->
  * 		if failed
@@ -51,14 +51,14 @@ ken = (opts = {}) ->
 	_.defaults opts, {
 		isBail: true
 		logPass: (msg) ->
-			console.log cs.green('o'), cs.grey(msg)
+			console.log br.green('o'), br.grey(msg)
 		logFail: (err) ->
-			console.error cs.red('x'), err
+			console.error br.red('x'), err
 		logFinal: (passed, failed) ->
 			console.log """
-			#{cs.grey '----------------'}
-			pass #{cs.green passed}
-			fail #{cs.red failed}
+			#{br.grey '----------------'}
+			pass #{br.green passed}
+			fail #{br.red failed}
 			"""
 		onEnd: (passed, failed) ->
 			if failed
