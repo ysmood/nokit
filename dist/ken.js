@@ -1,10 +1,10 @@
-var Promise, _, assert, cs, ken, kit;
+var Promise, _, assert, br, ken, kit;
 
 kit = require('./kit');
 
 _ = kit._, Promise = kit.Promise;
 
-cs = kit.require('colors/safe');
+br = kit.require('brush');
 
 assert = require('assert');
 
@@ -16,14 +16,14 @@ assert = require('assert');
  * {
  * 	isBail: true
  * 	logPass: (msg) ->
- * 		console.log cs.green('o'), msg
+ * 		console.log br.green('o'), msg
  * 	logFail: (err) ->
- * 		console.error cs.red('x'), err
+ * 		console.error br.red('x'), err
  * 	logFinal: (passed, failed) ->
  * 		console.log """
- * 		#{cs.grey '----------------'}
- * 		pass  #{cs.green passed}
- * 		fail  #{cs.red failed}
+ * 		#{br.grey '----------------'}
+ * 		pass  #{br.green passed}
+ * 		fail  #{br.red failed}
  * 		"""
  * 	onEnd: (passed, failed) ->
  * 		if failed
@@ -62,13 +62,13 @@ ken = function(opts) {
   _.defaults(opts, {
     isBail: true,
     logPass: function(msg) {
-      return console.log(cs.green('o'), cs.grey(msg));
+      return console.log(br.green('o'), br.grey(msg));
     },
     logFail: function(err) {
-      return console.error(cs.red('x'), err);
+      return console.error(br.red('x'), err);
     },
     logFinal: function(passed, failed) {
-      return console.log((cs.grey('----------------')) + "\npass " + (cs.green(passed)) + "\nfail " + (cs.red(failed)));
+      return console.log((br.grey('----------------')) + "\npass " + (br.green(passed)) + "\nfail " + (br.red(failed)));
     },
     onEnd: function(passed, failed) {
       if (failed) {

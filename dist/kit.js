@@ -94,19 +94,18 @@ _.extend(kit, fs, fs.PromiseUtils, {
   },
 
   /**
-  	 * The [colors](https://github.com/Marak/colors.js) lib
-  	 * makes it easier to print colorful info in CLI.
-  	 * You must `kit.require 'colors'` before using it.
-  	 * Sometimes use `kit.require 'colors/safe'` will be better.
-  	 * @type {Object}
+  	 * Generate styled string for terminal.
+  	 * It's disabled when `process.env.NODE_ENV == 'production'`.
   	 * @example
   	 * ```coffee
-  	 * cs = kit.require 'colors/safe'
-  	 * kit.log cs.red 'error info'
+  	 * br = kit.require 'brush'
+  	 * kit.log br.red 'error info'
+  	 *
+  	 * # Disable color globally.
+  	 * br.isEnabled = false
   	 * ```
    */
-  colors: null,
-  'colors/safe': null,
+  brush: null,
 
   /**
   	 * A fast file cache helper. It uses hard link to cache files.
@@ -773,9 +772,9 @@ _.extend(kit, fs, fs.PromiseUtils, {
   	 * ```
    */
   log: function() {
-    var action, args, cs, formats, log, msg, opts, ref, time, timeDelta, util;
+    var action, args, br, formats, log, msg, opts, ref, time, timeDelta, util;
     args = 1 <= arguments.length ? slice.call(arguments, 0) : [];
-    cs = kit.require('colors/safe');
+    br = kit.require('brush');
     if (_.isObject(action)) {
       opts = action;
       action = 'log';
@@ -806,9 +805,9 @@ _.extend(kit, fs, fs.PromiseUtils, {
     }
     if (opts.isShowTime) {
       time = new Date();
-      timeDelta = cs.magenta(+time - +kit.lastLogTime) + 'ms';
+      timeDelta = br.magenta(+time - +kit.lastLogTime) + 'ms';
       kit.lastLogTime = time;
-      time = cs.grey([
+      time = br.grey([
         [[time.getFullYear(), 4, '0'], [time.getMonth() + 1, 2, '0'], [time.getDate(), 2, '0']].map(function(e) {
           return _.padLeft.apply(0, e);
         }).join('-'), [[time.getHours(), 2, '0'], [time.getMinutes(), 2, '0'], [time.getSeconds(), 2, '0']].map(function(e) {
@@ -830,7 +829,7 @@ _.extend(kit, fs, fs.PromiseUtils, {
         console[action](str);
       }
       if (opts.logTrace) {
-        err = cs.grey((new Error).stack).replace(/.+\n.+\n.+/, '\nStack trace:');
+        err = br.grey((new Error).stack).replace(/.+\n.+\n.+/, '\nStack trace:');
         return console.log(err);
       }
     };
@@ -919,8 +918,7 @@ _.extend(kit, fs, fs.PromiseUtils, {
   	 * 		process.stdout.write _.repeat('*', process.stdout.columns)
   	 * }
   	 * ```
-  	 * @return {Promise} It has a property `process`, which is the monitored
-  	 * child process. Properties:
+  	 * @return {Object} Properties:
   	 * ```coffee
   	 * {
   	 * 	process: Object
@@ -947,8 +945,8 @@ _.extend(kit, fs, fs.PromiseUtils, {
   	 * ```
    */
   monitorApp: function(opts) {
-    var childPromise, child_process, cs, start, stop, watchPromise, watcher;
-    cs = kit.require('colors/safe');
+    var br, childProcess, childPromise, child_process, start, stop, watchPromise, watcher;
+    br = kit.require('brush');
     child_process = require('child_process');
     _.defaults(opts, {
       bin: 'node',
@@ -958,36 +956,37 @@ _.extend(kit, fs, fs.PromiseUtils, {
       parseDependency: {},
       opts: {},
       onStart: function() {
-        return kit.log(cs.yellow("Monitor: ") + opts.watchList);
+        return kit.log(br.yellow("Monitor: ") + opts.watchList);
       },
       onRestart: function(path) {
-        return kit.log(cs.yellow("Reload app, modified: ") + path);
+        return kit.log(br.yellow("Reload app, modified: ") + path);
       },
       onWatchFiles: function(paths) {
-        return kit.log(cs.yellow('Watching: ') + paths.join(', '));
+        return kit.log(br.yellow('Watching: ') + paths.join(', '));
       },
       onNormalExit: function(arg1) {
         var code, signal;
         code = arg1.code, signal = arg1.signal;
-        return kit.log(cs.yellow('EXIT') + (" code: " + (cs.cyan(code)) + " signal: " + (cs.cyan(signal))));
+        return kit.log(br.yellow('EXIT') + (" code: " + (br.cyan(code)) + " signal: " + (br.cyan(signal))));
       },
       onErrorExit: function(arg1) {
         var code, signal;
         code = arg1.code, signal = arg1.signal;
-        return kit.err(cs.yellow('EXIT') + (" code: " + (cs.cyan(code)) + " ") + ("signal: " + (cs.cyan(signal)) + "\n") + cs.red('Process closed. Edit and save the watched file to restart.'));
+        return kit.err(br.yellow('EXIT') + (" code: " + (br.cyan(code)) + " ") + ("signal: " + (br.cyan(signal)) + "\n") + br.red('Process closed. Edit and save the watched file to restart.'));
       },
       sepLine: function() {
-        return process.stdout.write(cs.yellow(_.repeat('*', process.stdout.columns)));
+        return process.stdout.write(br.yellow(_.repeat('*', process.stdout.columns)));
       }
     });
     if (opts.watchList == null) {
       opts.watchList = opts.args;
     }
     childPromise = null;
+    childProcess = null;
     start = function() {
       opts.sepLine();
       childPromise = kit.spawn(opts.bin, opts.args, opts.opts);
-      childPromise.watchPromise = watchPromise;
+      childProcess = childPromise.process;
       return childPromise.then(function(msg) {
         return opts.onNormalExit(msg);
       })["catch"](function(err) {
@@ -1013,7 +1012,7 @@ _.extend(kit, fs, fs.PromiseUtils, {
       }
     }, 50);
     stop = function() {
-      return childPromise.watchPromise.then(function(list) {
+      return watchPromise.then(function(list) {
         var j, len, results, w;
         results = [];
         for (j = 0, len = list.length; j < len; j++) {
@@ -1042,10 +1041,11 @@ _.extend(kit, fs, fs.PromiseUtils, {
     });
     opts.onStart();
     start();
-    return _.extend(childPromise, {
+    return {
+      process: childProcess,
       watchPromise: watchPromise,
       stop: stop
-    });
+    };
   },
 
   /**
@@ -1075,7 +1075,7 @@ _.extend(kit, fs, fs.PromiseUtils, {
   	 * foo = ->
   	 * 	args = kit.defaultArgs arguments, {
   	 * 		name: { String: 'A' }
-  	 * 		colors: { Array: [] }
+  	 * 		brush: { Array: [] }
   	 * 		family: { String: null }
   	 * 		isReal: { Boolean: false }
   	 * 		fn: { Function: -> 'callback' }
@@ -1083,7 +1083,7 @@ _.extend(kit, fs, fs.PromiseUtils, {
   	 *
   	 * kit.log foo('test', false, ['red'], -> 'nothing')
   	 * # Here the logged value will deeply equal:
-  	 * { name: 'test', colors: ['red'], family: null, fn: -> 'nothing' }
+  	 * { name: 'test', brush: ['red'], family: null, fn: -> 'nothing' }
   	 * ```
    */
   defaultArgs: function(args, defaults) {
@@ -1141,7 +1141,7 @@ _.extend(kit, fs, fs.PromiseUtils, {
       opts = {};
     }
     _.defaults(opts, {
-      commentReg: /(?:\#\#\#|\/\*)\*([\s\S]+?)(?:\#\#\#|\*\/)\s+(?:var\s+)?([$@\w\.-]+)/g,
+      commentReg: /(?:\#\#\#|\/\*)\*([\s\S]+?)(?:\#\#\#|\*\/)\s+(?:var\s+)?['"]?([$@\w\.-]+)['"]?/g,
       splitReg: /^\s+\* @/m,
       tagNameReg: /^([\w\.]+)\s*/,
       typeReg: /^\{(.+?)\}\s*/,
@@ -1497,7 +1497,7 @@ _.extend(kit, fs, fs.PromiseUtils, {
   	 * @return {Any} The required package.
    */
   requireOptional: function(name, dir, semver) {
-    var cs, err, info, key, version;
+    var br, err, info, key, version;
     key = semver ? name + '@' + semver : name;
     if (kit.requireCache[key]) {
       return kit.requireCache[key];
@@ -1518,8 +1518,8 @@ _.extend(kit, fs, fs.PromiseUtils, {
       if (err.source === 'nokit') {
         throw err;
       }
-      cs = kit.require('colors/safe');
-      kit.err((cs.red("Optional module required.\n" + cs.red("If current module is installed globally, run " + cs.green(("'npm install -g " + name + "'") + cs.red(" first, else run " + cs.green(("'npm install -S " + name + "'") + cs.red(" first.\n"))))))) + err.stack, {
+      br = kit.require('brush');
+      kit.err((br.red("Optional module required.\n" + br.red("If current module is installed globally, run " + br.green(("'npm install -g " + name + "'") + br.red(" first, else run " + br.green(("'npm install -S " + name + "'") + br.red(" first.\n"))))))) + err.stack, {
         isShowTime: false
       });
       return process.exit(1);
@@ -2053,8 +2053,8 @@ _.extend(kit, fs, fs.PromiseUtils, {
   	 * ```
    */
   task: function(name, opts, fn) {
-    var base, base1, cs, runTask;
-    cs = require('colors/safe');
+    var base, base1, br, runTask;
+    br = kit.require('brush');
     if (_.isFunction(opts)) {
       fn = opts;
       opts = {};
@@ -2063,10 +2063,10 @@ _.extend(kit, fs, fs.PromiseUtils, {
       isSequential: false,
       description: '',
       logStart: function() {
-        return kit.log(cs.cyan('Task Start >> ') + cs.green("[" + name + "] ") + this.description);
+        return kit.log(br.cyan('Task Start >> ') + br.green("[" + name + "] ") + this.description);
       },
       logEnd: function() {
-        return kit.log(cs.cyan('Task Done >> ') + cs.green("[" + name + "] ") + this.description);
+        return kit.log(br.cyan('Task Done >> ') + br.green("[" + name + "] ") + this.description);
       }
     });
     if (_.isString(opts.deps)) {
@@ -2381,7 +2381,7 @@ _.extend(kit, fs, fs.PromiseUtils, {
   	 * @param  {Object} obj Your target object.
   	 * @param  {Object} opts Options. Default:
   	 * ```coffee
-  	 * { colors: true, depth: 7 }
+  	 * { brush: true, depth: 7 }
   	 * ```
   	 * @return {String}
    */
@@ -2392,7 +2392,7 @@ _.extend(kit, fs, fs.PromiseUtils, {
     }
     util = kit.require('util', __dirname);
     _.defaults(opts, {
-      colors: kit.isDevelopment(),
+      brush: kit.isDevelopment(),
       depth: 7
     });
     return str = util.inspect(obj, opts);

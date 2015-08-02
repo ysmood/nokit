@@ -2,7 +2,7 @@
 /*
 	A simplified version of Make.
  */
-var _, cls, cmder, error, kit, launch, loadNofile, searchTasks, task;
+var _, br, cmder, error, kit, launch, loadNofile, searchTasks, task;
 
 if (process.env.NODE_ENV == null) {
   process.env.NODE_ENV = 'development';
@@ -10,7 +10,7 @@ if (process.env.NODE_ENV == null) {
 
 kit = require('./kit');
 
-cls = kit.require('colors/safe');
+br = kit.require('brush');
 
 _ = kit._;
 
@@ -53,7 +53,7 @@ task = function() {
       Function: function() {}
     }
   });
-  depsInfo = args.deps ? (sep = args.isSequential ? ' -> ' : ', ', cls.grey("deps: [" + (args.deps.join(sep)) + "]")) : '';
+  depsInfo = args.deps ? (sep = args.isSequential ? ' -> ' : ', ', br.grey("deps: [" + (args.deps.join(sep)) + "]")) : '';
   sep = args.description ? ' ' : '';
   helpInfo = args.description + sep + depsInfo;
   alias = args.name.split(' ');
@@ -62,7 +62,7 @@ task = function() {
     kit.task(name, args, function() {
       return args.fn(cmder);
     });
-    return helpInfo = cls.cyan('-> ') + alias[0];
+    return helpInfo = br.cyan('-> ') + alias[0];
   });
 };
 
@@ -118,7 +118,7 @@ loadNofile = function() {
       dir = kit.path.dirname(path);
       rdir = kit.path.relative('.', dir);
       if (rdir) {
-        kit.log(cls.cyan('Change Working Direcoty: ') + cls.green(rdir));
+        kit.log(br.cyan('Change Working Direcoty: ') + br.green(rdir));
       }
       process.chdir(dir);
       return load(path);
@@ -139,7 +139,7 @@ module.exports = launch = function() {
   var cwd, nofilePath, tasks;
   cwd = process.cwd();
   nofilePath = loadNofile();
-  cmder.option('--nofile <path>', 'force nofile path').usage('[options] [fuzzy_task_name]...' + cls.grey("  # " + (kit.path.relative(cwd, nofilePath))));
+  cmder.option('--nofile <path>', 'force nofile path').usage('[options] [fuzzy_task_name]...' + br.grey("  # " + (kit.path.relative(cwd, nofilePath))));
   if (!kit.task.list) {
     return;
   }

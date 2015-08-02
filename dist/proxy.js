@@ -76,9 +76,9 @@ proxy = {
     sock.pipe(psock);
     psock.pipe(sock);
     error = err || function(err, socket) {
-      var cs;
-      cs = kit.require('colors/safe');
-      kit.log(err.toString() + ' -> ' + cs.red(req.url));
+      var br;
+      br = kit.require('brush');
+      kit.log(err.toString() + ' -> ' + br.red(req.url));
       return socket.end();
     };
     sock.on('error', function(err) {
@@ -475,8 +475,8 @@ proxy = {
   	 * ```
    */
   serverHelper: function(opts) {
-    var cs, handler, watchList;
-    cs = kit.require('colors/safe');
+    var br, handler, watchList;
+    br = kit.require('brush');
     handler = function(ctx) {
       var data, req, res;
       req = ctx.req, res = ctx.res;
@@ -492,7 +492,7 @@ proxy = {
           req.on('end', function() {
             var e;
             try {
-              kit.log(cs.cyan('client') + cs.grey(' | ') + (data ? kit.xinspect(JSON.parse(data)) : data));
+              kit.log(br.cyan('client') + br.grey(' | ') + (data ? kit.xinspect(JSON.parse(data)) : data));
               return res.end();
             } catch (_error) {
               e = _error;
@@ -515,11 +515,11 @@ proxy = {
         if (!exists) {
           return;
         }
-        kit.logs(cs.cyan('watch:'), path, cs.magenta('|'), url);
+        kit.logs(br.cyan('watch:'), path, br.magenta('|'), url);
         watchList.push(path);
         return kit.watchPath(path, {
           handler: function() {
-            kit.logs(cs.cyan('changed:'), url);
+            kit.logs(br.cyan('changed:'), url);
             return handler.sse.emit('fileModified', url);
           }
         });
@@ -649,9 +649,9 @@ proxy = {
   	 * ```
    */
   url: function(opts) {
-    var cs, normalizeStream, normalizeUrl, uppperCase;
+    var br, normalizeStream, normalizeUrl, uppperCase;
     kit.require('url');
-    cs = kit.require('colors/safe');
+    br = kit.require('brush');
     if (_.isString(opts)) {
       opts = {
         url: opts
@@ -674,7 +674,7 @@ proxy = {
         return url;
       },
       error: function(e, req) {
-        return kit.logs(e.toString(), '->', cs.red(req.url));
+        return kit.logs(e.toString(), '->', br.red(req.url));
       }
     });
     if (opts.handleResBody && !opts.handleResPipe) {

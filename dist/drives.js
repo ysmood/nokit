@@ -4,7 +4,7 @@ kit = require('./kit');
 
 _ = kit._, Promise = kit.Promise;
 
-cls = kit.require('colors/safe');
+cls = kit.require('brush');
 
 jhash = null;
 
