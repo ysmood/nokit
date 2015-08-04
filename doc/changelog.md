@@ -1,9 +1,11 @@
 # Changelog
 
-- v0.1.0
+- v0.10.0
 
  - **API CHANGE** `kit.require 'colors/safe'` now changed to `kit.require 'brush`,
-   the colors module now will not pollute the `String.prototype` any more.
+   the colors module now will not pollute the `String.prototype` any more
+ - opt: `monitorApp`
+ - minor bug fixes
 
 - v0.9.5
 
