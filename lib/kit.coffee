@@ -99,6 +99,9 @@ _.extend kit, fs, fs.PromiseUtils,
 	 *
 	 * # Disable color globally.
 	 * br.isEnabled = false
+	 *
+	 * # To see all the available brushes.
+	 * kit.log Object.keys(br)
 	 * ```
 	###
 	brush: null
