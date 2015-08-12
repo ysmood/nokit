@@ -91,8 +91,8 @@ proxy = {
 
   /**
   	 * A promise based middlewares proxy.
-  	 * @param  {Array} middlewares Each item is a function `(ctx) -> Promise`,
-  	 * or a middleware object:
+  	 * @param  {Array} middlewares Each item will be converted to a middleware object
+  	 * sanely, even it's a string, buffer or anything else.
   	 * ```coffee
   	 * {
   	 * 	url: String | Regex | Function
