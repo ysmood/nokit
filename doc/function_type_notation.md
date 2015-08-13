@@ -33,11 +33,25 @@ We use pascal cased string to represent a class. For example `String`, `Number`,
 
 ```js
 
+var T = kit.require('type');
+
 var foo = T({}, 'a', ['a']);
 
 var bar = T({ a: String, b: Number }, 'a', 'b', { id: 'a', val: ['b'], foo: foo });
 
 // a can be String or Number
-var bar = T({ a: [String, Number] }, 'a', ['a']);
+var toArr = T({ a: [String, Number] }, 'a', ['a']);
+
+// a more complex example, it show the recursive characteristic of the DSL
+var tree = T({}, 'a', function () { return { val: 'a', children: [this] }; });
+
+var tree_instance = tree(function (a) {
+  return {
+    val: a,
+    children: [function (a) {
+      return { val: a + 1, children: [] };
+    }]
+  };
+});
 
 ```
