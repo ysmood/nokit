@@ -76,6 +76,28 @@ proxy =
 			error err, psock
 
 	###*
+	 * Create a etag middleware.
+	 * @param  {Object} opts
+	 * @return {Function}
+	###
+	etag: (opts) ->
+		Stream = require 'stream'
+
+		(ctx) -> ctx.next().then ->
+			Promise.resolve(ctx.body).then (data) ->
+				return if data instanceof Stream
+
+				hash = jhash.hash data
+
+				if +ctx.req.headers['if-none-match'] == hash
+					ctx.res.statusCode = 304
+					ctx.res.end()
+					return kit.end()
+
+				if not ctx.res.headersSent
+					ctx.res.setHeader 'ETag', hash
+
+	###*
 	 * A promise based middlewares proxy.
 	 * @param  {Array} middlewares Each item is a function `(ctx) -> Promise`,
 	 * or a middleware object:
@@ -105,13 +127,6 @@ proxy =
 	 * <h4>next</h4>
 	 * `-> Promise` It returns a promise which settles after all the next middlewares
 	 * are setttled.
-	 * @param {opts} opts Defaults:
-	 * ```coffee
-	 * {
-	 * 	# If it returns true, the http will end with 304.
-	 * 	etag: (ctx, data, isStr) -> Boolean
-	 * }
-	 * ```
 	 * @return {Function} `(req, res) -> Promise | Any` or `(ctx) -> Promise`.
 	 * The http request listener or middleware.
 	 * @example
@@ -188,29 +203,9 @@ proxy =
 	 * http.createServer(proxy.flow middlewares).listen 8123
 	 * ```
 	###
-	flow: (middlewares, opts = {}) ->
+	flow: (middlewares) ->
 		Stream = require 'stream'
 		jhash = new (kit.require('jhash').constructor)
-
-		_.defaults opts, {
-			etag: (ctx, data, isStr) ->
-				hash = if isStr
-					jhash.hashStr data
-				else
-					jhash.hashArr data
-
-				if +ctx.req.headers['if-none-match'] == hash
-					ctx.res.statusCode = 304
-					ctx.res.end()
-					return true
-
-				if not ctx.res.headersSent
-					ctx.res.setHeader 'ETag', hash
-
-				return false
-		}
-
-		etag = opts.etag
 
 		matchKey = (ctx, obj, key, pattern) ->
 			return true if pattern == undefined
@@ -248,8 +243,6 @@ proxy =
 			return true
 
 		endRes = (ctx, data, isStr) ->
-			return if etag ctx, data, isStr
-
 			buf = if isStr then new Buffer data else data
 			if not ctx.res.headersSent
 				ctx.res.setHeader 'Content-Length', buf.length
