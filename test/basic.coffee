@@ -457,13 +457,11 @@ describe 'Kit:', ->
 	it 'proxy url', ->
 		proxy = kit.require 'proxy'
 
-		createRandomServer proxy.flow([{
-			url: /\/site$/
-			handler: (ctx) ->
+		createRandomServer proxy.flow([
+			proxy.select url: /\/site$/, (ctx) ->
 				ctx.body = 'site' + ctx.req.headers.proxy
-		}, {
-			url: /\/proxy$/
-			handler: proxy.url {
+
+			proxy.select url: /\/proxy$/, proxy.url {
 				url: '/site'
 				bps: 1024 * 10
 				handleReqHeaders: (headers) ->
@@ -475,7 +473,7 @@ describe 'Kit:', ->
 				handleResBody: (body) ->
 					body + '-body'
 			}
-		}])
+		])
 		.then (port) ->
 			kit.request {
 				url: "http://127.0.0.1:#{port}/proxy"
@@ -517,11 +515,9 @@ describe 'Kit:', ->
 	it 'proxy flow url', ->
 		proxy = kit.require 'proxy'
 
-		routes = [{
-			url: /\/items\/(\d+)/
-			handler: (ctx) ->
-				ctx.body = ctx.url[1]
-		}]
+		routes = [proxy.select url: /\/items\/(\d+)/, (ctx) ->
+			ctx.body = ctx.url[1]
+		]
 
 		createRandomServer proxy.flow(routes)
 		.then (port) ->
@@ -532,13 +528,9 @@ describe 'Kit:', ->
 	it 'proxy flow headers', ->
 		proxy = kit.require 'proxy'
 
-		routes = [{
-			headers: {
-				'x': /ok/
-			}
-			handler: (ctx) ->
-				ctx.body = ctx.headers.x
-		}]
+		routes = [proxy.select headers: { 'x': /ok/ }, (ctx) ->
+			ctx.body = ctx.headers.x
+		]
 
 		createRandomServer proxy.flow(routes)
 		.then (port) ->
@@ -552,13 +544,9 @@ describe 'Kit:', ->
 	it 'proxy flow headers not match', ->
 		proxy = kit.require 'proxy'
 
-		routes = [{
-			headers: {
-				'x': /test/
-			}
-			handler: (ctx) ->
-				ctx.body = ctx.headers.x
-		}]
+		routes = [proxy.select headers: { 'x': /test/ }, (ctx) ->
+			ctx.body = ctx.headers.x
+		]
 
 		createRandomServer proxy.flow(routes)
 		.then (port) ->
@@ -573,11 +561,9 @@ describe 'Kit:', ->
 	it 'proxy flow 404', ->
 		proxy = kit.require 'proxy'
 
-		routes = [{
-			url: /\/items\/(\d+)/
-			handler: (ctx) ->
-				ctx.body = ctx.url[1]
-		}]
+		routes = [proxy.select url: /\/items\/(\d+)/, (ctx) ->
+			ctx.body = ctx.url[1]
+		]
 
 		createRandomServer proxy.flow(routes)
 		.then (port) ->
@@ -588,14 +574,11 @@ describe 'Kit:', ->
 	it 'proxy flow sub route', ->
 		proxy = kit.require 'proxy'
 
-		routes = [{
-			url: '/sub'
-			handler: proxy.flow [{
-				url: '/home'
-				handler: (ctx) ->
+		routes = [proxy.select url: '/sub', proxy.flow [
+				proxy.select url: '/home', (ctx) ->
 					ctx.body = ctx.url
-			}]
-		}]
+			]
+		]
 
 		createRandomServer proxy.flow(routes)
 		.then (port) ->
@@ -606,14 +589,11 @@ describe 'Kit:', ->
 	it 'proxy flow sub route 404', ->
 		proxy = kit.require 'proxy'
 
-		routes = [{
-			url: '/sub'
-			handler: proxy.flow [{
-				url: /\/home$/
-				handler: (ctx) ->
+		routes = [proxy.select url: '/sub', proxy.flow [
+				proxy.select url: /\/home$/, (ctx) ->
 					ctx.body = ctx.url
-			}]
-		}]
+			]
+		]
 
 		createRandomServer proxy.flow(routes)
 		.then (port) ->
@@ -627,20 +607,14 @@ describe 'Kit:', ->
 	it 'proxy flow sub route next', ->
 		proxy = kit.require 'proxy'
 
-		routes = [{
-			url: '/sub'
-			handler: (ctx) -> ctx.next()
-		}, {
-			url: '/sub'
-			handler: proxy.flow [{
-				url: proxy.match('/home')
-				handler: (ctx) ->
+		routes = [
+			proxy.select url: '/sub', (ctx) -> ctx.next()
+			proxy.select(url: '/sub', proxy.flow [
+				proxy.select url: proxy.match('/home'), (ctx) ->
 					ctx.body = ctx.url
-			}]
-		}, {
-			url: '/sub'
-			handler: (ctx) -> ctx.body = 'next'
-		}]
+			])
+			proxy.select url: '/sub', (ctx) -> ctx.body = 'next'
+		]
 
 		createRandomServer proxy.flow(routes)
 		.then (port) ->
@@ -651,19 +625,15 @@ describe 'Kit:', ->
 	it 'proxy flow sub route error', ->
 		proxy = kit.require 'proxy'
 
-		routes = [{
-			handler: (ctx) ->
+		routes = [
+			(ctx) ->
 				ctx.next().catch (err) ->
 					ctx.res.statusCode = 501
 					ctx.body = err.message
-		}, {
-			url: '/sub'
-			handler: proxy.flow [{
-				url: '/home'
-				handler: (ctx) ->
-					a()
-			}]
-		}]
+			proxy.select url: '/sub', proxy.flow [
+				proxy.select url: '/home', (ctx) -> a()
+			]
+		]
 
 		createRandomServer proxy.flow(routes)
 		.then (port) ->
@@ -690,11 +660,9 @@ describe 'Kit:', ->
 	it 'proxy flow url match', ->
 		proxy = kit.require 'proxy'
 
-		routes = [{
-			url: proxy.match '/items/:id'
-			handler: (ctx) ->
-				ctx.body = ctx.url.id
-		}]
+		routes = [proxy.select url: proxy.match('/items/:id'), (ctx) ->
+			ctx.body = ctx.url.id
+		]
 
 		createRandomServer proxy.flow(routes)
 		.then (port) ->
@@ -705,11 +673,9 @@ describe 'Kit:', ->
 	it 'proxy flow post', ->
 		proxy = kit.require 'proxy'
 
-		routes = [{
-			method: 'POST'
-			handler: (ctx) ->
-				ctx.body = ctx.method
-		}]
+		routes = [proxy.select method: 'POST', (ctx) ->
+			ctx.body = ctx.method
+		]
 
 		createRandomServer proxy.flow(routes)
 		.then (port) ->
@@ -723,10 +689,9 @@ describe 'Kit:', ->
 	it 'proxy flow static', ->
 		proxy = kit.require 'proxy'
 
-		routes = [{
-			url: '/st'
-			handler: proxy.static 'test/fixtures'
-		}]
+		routes = [
+			proxy.select url: '/st', proxy.static 'test/fixtures'
+		]
 
 		createRandomServer proxy.flow(routes)
 		.then (port) ->

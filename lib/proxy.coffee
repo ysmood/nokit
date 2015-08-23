@@ -99,34 +99,24 @@ proxy =
 
 	###*
 	 * A promise based middlewares proxy.
-	 * @param  {Array} middlewares Each item is a function `(ctx) -> Promise`,
-	 * or a middleware object:
+	 * @param  {Array} middlewares Each item is a function `(ctx) -> Promise | Any`,
+	 * or an object with the same type with `body`.
+	 * If the middleware has async operation inside, it should return a promise.
+	 * The promise can reject an error with a http `statusCode` property.
+	 * The members of `ctx`:
 	 * ```coffee
 	 * {
-	 * 	url: String | Regex | Function
-	 * 	method: String | Regex | Function
-	 * 	handler: ({ body, req, res, next, url, method, headers }) -> Promise | Any
+	 * 	# It can be a `String`, `Buffer`, `Stream`, `Object` or a `Promise` contains previous types.
+	 * 	body: Any
 	 *
-	 * 	# When this, it will be assigned to ctx.body
-	 * 	handler: String | Object | Promise | Stream
+	 * 	req: http.IncomingMessage
+	 *
+	 * 	res: http.IncomingMessage
+	 *
+	 * 	# It returns a promise which settles after all the next middlewares are setttled.
+	 * 	next: -> Promise
 	 * }
 	 * ```
-	 * <h4>selector</h4>
-	 * The `url`, `method` and `headers` are act as selectors. If current
-	 * request matches the selector, the `handler` will be called with the
-	 * captured result. If the selector is a function, it should return a
-	 * `non-undefined, non-null` value when matches, it will be assigned to the `ctx`.
-	 * When the `url` is a string, if `req.url` starts with the `url`, the rest
-	 * of the string will be captured.
-	 * <h4>handler</h4>
-	 * If the handler has async operation inside, it should return a promise,
-	 * the promise can reject an error with a http `statusCode` property.
-	 * <h4>body</h4>
-	 * The `body` can be a `String`, `Buffer`, `Stream`, `Object` or a `Promise`
-	 * contains previous types.
-	 * <h4>next</h4>
-	 * `-> Promise` It returns a promise which settles after all the next middlewares
-	 * are setttled.
 	 * @return {Function} `(req, res) -> Promise | Any` or `(ctx) -> Promise`.
 	 * The http request listener or middleware.
 	 * @example
@@ -141,15 +131,11 @@ proxy =
 	 * 			console.log ctx.req.url, new Date - start
 	 * 		, (err) ->
 	 * 			console.error err
-	 * 	{
-	 * 		url: /\/items\/(\d+)$/
-	 * 		handler: (ctx) ->
-	 * 			ctx.body = kit.sleep(300).then -> 'Hello World'
-	 * 	}
-	 * 	{
-	 * 		url: '/api'
-	 * 		handler: { fake: 'api' }
-	 * 	}
+	 *
+	 * 	proxy.select { url: '/api' }, (ctx) ->
+	 * 		ctx.body = kit.sleep(300).then -> 'Hello World'
+	 *
+	 * 	proxy.select { url: /\/items\/(\d+)$/ }, { fake: 'api' }
 	 * ]
 	 *
 	 * http.createServer(proxy.flow middlewares).listen 8123
@@ -161,11 +147,8 @@ proxy =
 	 * http = require 'http'
 	 *
 	 * middlewares = [
-	 * 	{
-	 * 		url: proxy.match '/items/:id'
-	 * 		handler: (ctx) ->
-	 * 			ctx.body = ctx.url.id
-	 * 	}
+	 * 	proxy.select { url: proxy.match '/items/:id' }, (ctx) ->
+	 * 		ctx.body = ctx.url.id
 	 * ]
 	 *
 	 * http.createServer(proxy.flow middlewares).listen 8123
@@ -183,21 +166,14 @@ proxy =
 	 * 	# Express middleware
 	 * 	proxy.midToFlow bodyParser.json()
 	 *
-	 * 	{
-	 * 		url: '/st'
-	 * 		handler: (ctx) ->
-	 * 			ctx.body = send(ctx.req, ctx.url, { root: 'static' })
-	 * 	}
+	 * 	proxy.select { url: '/st' }, (ctx) ->
+	 * 		ctx.body = send(ctx.req, ctx.url, { root: 'static' })
 	 *
 	 * 	# sub-route
-	 * 	{
-	 * 		url: '/sub'
-	 * 		handler: proxy.flow([{
-	 * 			url: '/home'
-	 * 			handler: (ctx) ->
-	 * 				ctx.body = 'hello world'
-	 * 		}])
-	 * 	}
+	 * 	proxy.select { url: '/sub' }, proxy.flow([{
+	 * 		proxy.select { url: '/home' }, (ctx) ->
+	 * 			ctx.body = 'hello world'
+	 * 	}])
 	 * ]
 	 *
 	 * http.createServer(proxy.flow middlewares).listen 8123
@@ -206,41 +182,6 @@ proxy =
 	flow: (middlewares) ->
 		Stream = require 'stream'
 		jhash = new (kit.require('jhash').constructor)
-
-		matchKey = (ctx, obj, key, pattern) ->
-			return true if pattern == undefined
-
-			str = obj[key]
-
-			return false if not _.isString str
-
-			ret = if _.isString(pattern)
-				if key == 'url' and _.startsWith(str, pattern)
-					ctx.req.originalUrl = ctx.req.url
-					ctx.req.url = str.slice pattern.length
-				else if str == pattern
-					str
-			else if _.isRegExp pattern
-				str.match pattern
-			else if _.isFunction pattern
-				pattern str
-
-			if ret?
-				ctx[key] = ret
-				true
-
-		matchHeaders = (ctx, headers) ->
-			headers = headers
-			return true if headers == undefined
-
-			ret = {}
-
-			for k, v of headers
-				if not matchKey(ret, ctx.req.headers, k, v)
-					return false
-
-			ctx.headers = ret
-			return true
 
 		endRes = (ctx, data, isStr) ->
 			buf = if isStr then new Buffer data else data
@@ -279,7 +220,7 @@ proxy =
 
 			return
 
-		# hack v8
+		# performance optimization, hack v8
 		$err = {}
 		tryMid = (fn, ctx) ->
 			try
@@ -332,16 +273,6 @@ proxy =
 
 				ret = if _.isFunction m
 					tryMid m, ctx
-				else if _.isObject m
-					if matchKey(ctx, req, 'method', m.method) and
-					matchHeaders(ctx, m.headers) and
-					matchKey(ctx, req, 'url', m.url)
-						if _.isFunction m.handler
-							tryMid m.handler, ctx
-						else if m.handler != undefined
-							ctx.body = m.handler
-					else
-						ctx.next()
 				else
 					ctx.body = m
 
@@ -416,7 +347,73 @@ proxy =
 					return
 
 	###*
-	 * Create a http request handler middleware.
+	 * Create a conditional middleware that only works when the pattern matches.
+	 * @param  {Object} sel The selector. Members:
+	 * ```coffee
+	 * {
+	 * 	url: String | Regex | Function
+	 * 	method: String | Regex | Function
+	 * 	headers: Object
+	 * }
+	 * ```
+	 * The `url`, `method` and `headers` are act as selectors. If current
+	 * request matches the selector, the `middleware` will be called with the
+	 * captured result. If the selector is a function, it should return a
+	 * `non-undefined, non-null` value when matches, it will be assigned to the `ctx`.
+	 * When the `url` is a string, if `req.url` starts with the `url`, the rest
+	 * of the string will be captured.
+	 * @param  {Function} middleware
+	 * @return {Function}
+	###
+	select: (sel, middleware) ->
+		matchKey = (ctx, obj, key, pattern) ->
+			return true if pattern == undefined
+
+			str = obj[key]
+
+			return false if not _.isString str
+
+			ret = if _.isString(pattern)
+				if key == 'url' and _.startsWith(str, pattern)
+					ctx.req.originalUrl = ctx.req.url
+					ctx.req.url = str.slice pattern.length
+				else if str == pattern
+					str
+			else if _.isRegExp pattern
+				str.match pattern
+			else if _.isFunction pattern
+				pattern str
+
+			if ret?
+				ctx[key] = ret
+				true
+
+		matchHeaders = (ctx, headers) ->
+			headers = headers
+			return true if headers == undefined
+
+			ret = {}
+
+			for k, v of headers
+				if not matchKey(ret, ctx.req.headers, k, v)
+					return false
+
+			ctx.headers = ret
+			return true
+
+		(ctx) ->
+			if matchKey(ctx, ctx.req, 'method', sel.method) and
+			matchHeaders(ctx, sel.headers) and
+			matchKey(ctx, ctx.req, 'url', sel.url)
+				if _.isFunction middleware
+					middleware ctx
+				else
+					ctx.body = middleware
+			else
+				ctx.next()
+
+	###*
+	 * Create a http request middleware.
 	 * @param  {Object} opts Same as the sse.
 	 * @return {Function} `(req, res, next) ->`.
 	 * It has some extra properties:
@@ -508,10 +505,7 @@ proxy =
 	 * proxy = kit.require 'proxy'
 	 * http = require 'http'
 	 *
-	 * middlewares = [{
-	 * 	url: '/st'
-	 * 	handler: proxy.static('static')
-	 * }]
+	 * middlewares = [proxy.select { url: '/st' } proxy.static('static')]
 	 *
 	 * http.createServer(proxy.flow middlewares).listen 8123
 	 * ```
@@ -587,19 +581,19 @@ proxy =
 	 * proxy = kit.require 'proxy'
 	 * http = require 'http'
 	 *
-	 * http.createServer(proxy.flow [{
-	 * 		url: '/a'
-	 * 		handler: proxy.url() # Transparent proxy
-	 * 	}, {
-	 * 		url: '/b'
-	 * 		handler proxy.url { url: 'a.com' } # Porxy to `a.com`
-	 * 	}, {
-	 * 		url: '/c'
-	 * 		handler proxy.url { url: 'c.com/s.js' } # Porxy to a file
-	 * 	}, {
-	 * 		url: /\/$/ # match path that ends with '/'
-	 * 		method: 'GET'
-	 * 		handler proxy.url {
+	 * http.createServer(proxy.flow [
+	 * 	# Transparent proxy
+	 * 	proxy.select { url: '/a' }, proxy.url()
+	 *
+	 * 	# Porxy to `a.com`
+	 * 	proxy.select { url: '/b' }, proxy.url { url: 'a.com' }
+	 *
+	 *  # Porxy to a file
+	 * 	proxy.select { url: '/c' }, proxy.url { url: 'c.com/s.js' }
+	 *
+	 * 	proxy.select(
+	 * 		{ url: /\/$/, method: 'GET' }
+	 * 		proxy.url {
 	 * 			url: 'd.com'
 	 * 			# Inject script to html page.
 	 * 			handleResBody: (body, req, res) ->
@@ -608,8 +602,8 @@ proxy =
 	 * 				else
 	 * 					body
 	 * 		}
-	 * 	}]
-	 * ).listen 8123
+	 * 	)
+	 * ]).listen 8123
 	 * ```
 	###
 	url: (opts) ->
