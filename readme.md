@@ -2061,7 +2061,7 @@ kit.warp 'src/**/*.coffee'
         proxy = kit.require 'proxy'
         http = require 'http'
 
-        middlewares = [proxy.select { url: '/st' } proxy.static('static')]
+        middlewares = [proxy.select { url: '/st' }, proxy.static('static')]
 
         http.createServer(proxy.flow middlewares).listen 8123
         ```
