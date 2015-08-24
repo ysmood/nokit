@@ -77,16 +77,17 @@ proxy =
 
 	###*
 	 * Create a etag middleware.
-	 * @param  {Object} opts
 	 * @return {Function}
 	###
-	etag: (opts) ->
+	etag: ->
 		Stream = require 'stream'
+		jhash = new (kit.require('jhash').constructor)
 
 		(ctx) -> ctx.next().then ->
 			Promise.resolve(ctx.body).then (data) ->
 				return if data instanceof Stream
 
+				console.log '*****'
 				hash = jhash.hash data
 
 				if +ctx.req.headers['if-none-match'] == hash
@@ -181,7 +182,6 @@ proxy =
 	###
 	flow: (middlewares) ->
 		Stream = require 'stream'
-		jhash = new (kit.require('jhash').constructor)
 
 		endRes = (ctx, data, isStr) ->
 			buf = if isStr then new Buffer data else data

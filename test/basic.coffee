@@ -700,6 +700,20 @@ describe 'Kit:', ->
 				str = kit.readFileSync 'test/fixtures/ひまわり.txt', 'utf8'
 				shouldEqual str, body
 
+	it 'proxy flow etag', ->
+		proxy = kit.require 'proxy'
+
+		routes = [
+			proxy.etag()
+			(ctx) -> ctx.body = 'test'
+		]
+
+		createRandomServer proxy.flow(routes)
+		.then (port) ->
+			kit.request { url: "http://127.0.0.1:#{port}", body: false }
+			.then (res) ->
+				shouldEqual '349o', res.headers.etag
+
 	it 'proxy flow midToFlow', ->
 		proxy = kit.require 'proxy'
 		bodyParser = require 'body-parser'
