@@ -1827,48 +1827,34 @@ kit.warp 'src/**/*.coffee'
         server.listen 8123
         ```
 
-- ## **[flow(middlewares, opts)](lib/proxy.coffee?source#L191)**
+- ## **[etag()](lib/proxy.coffee?source#L82)**
+
+    Create a etag middleware.
+
+    - **<u>return</u>**: { _Function_ }
+
+- ## **[flow(middlewares)](lib/proxy.coffee?source#L183)**
 
     A promise based middlewares proxy.
 
     - **<u>param</u>**: `middlewares` { _Array_ }
 
-        Each item will be converted to a middleware object
-        sanely, even it's a string, buffer or anything else.
+        Each item is a function `(ctx) -> Promise | Any`,
+        or an object with the same type with `body`.
+        If the middleware has async operation inside, it should return a promise.
+        The promise can reject an error with a http `statusCode` property.
+        The members of `ctx`:
         ```coffee
         {
-        	url: String | Regex | Function
-        	method: String | Regex | Function
-        	handler: ({ body, req, res, next, url, method, headers }) -> Promise | Any
+        	# It can be a `String`, `Buffer`, `Stream`, `Object` or a `Promise` contains previous types.
+        	body: Any
 
-        	# When this, it will be assigned to ctx.body
-        	handler: String | Object | Promise | Stream
-        }
-        ```
-        <h4>selector</h4>
-        The `url`, `method` and `headers` are act as selectors. If current
-        request matches the selector, the `handler` will be called with the
-        captured result. If the selector is a function, it should return a
-        `non-undefined, non-null` value when matches, it will be assigned to the `ctx`.
-        When the `url` is a string, if `req.url` starts with the `url`, the rest
-        of the string will be captured.
-        <h4>handler</h4>
-        If the handler has async operation inside, it should return a promise,
-        the promise can reject an error with a http `statusCode` property.
-        <h4>body</h4>
-        The `body` can be a `String`, `Buffer`, `Stream`, `Object` or a `Promise`
-        contains previous types.
-        <h4>next</h4>
-        `-> Promise` It returns a promise which settles after all the next middlewares
-        are setttled.
+        	req: http.IncomingMessage
 
-    - **<u>param</u>**: `opts` { _opts_ }
+        	res: http.IncomingMessage
 
-        Defaults:
-        ```coffee
-        {
-        	# If it returns true, the http will end with 304.
-        	etag: (ctx, data, isStr) -> Boolean
+        	# It returns a promise which settles after all the next middlewares are setttled.
+        	next: -> Promise
         }
         ```
 
@@ -1890,15 +1876,11 @@ kit.warp 'src/**/*.coffee'
         			console.log ctx.req.url, new Date - start
         		, (err) ->
         			console.error err
-        	{
-        		url: //items/(\d+)$/
-        		handler: (ctx) ->
-        			ctx.body = kit.sleep(300).then -> 'Hello World'
-        	}
-        	{
-        		url: '/api'
-        		handler: { fake: 'api' }
-        	}
+
+        	proxy.select { url: '/api' }, (ctx) ->
+        		ctx.body = kit.sleep(300).then -> 'Hello World'
+
+        	proxy.select { url: //items/(\d+)$/ }, { fake: 'api' }
         ]
 
         http.createServer(proxy.flow middlewares).listen 8123
@@ -1912,11 +1894,8 @@ kit.warp 'src/**/*.coffee'
         http = require 'http'
 
         middlewares = [
-        	{
-        		url: proxy.match '/items/:id'
-        		handler: (ctx) ->
-        			ctx.body = ctx.url.id
-        	}
+        	proxy.select { url: proxy.match '/items/:id' }, (ctx) ->
+        		ctx.body = ctx.url.id
         ]
 
         http.createServer(proxy.flow middlewares).listen 8123
@@ -1936,27 +1915,20 @@ kit.warp 'src/**/*.coffee'
         	# Express middleware
         	proxy.midToFlow bodyParser.json()
 
-        	{
-        		url: '/st'
-        		handler: (ctx) ->
-        			ctx.body = send(ctx.req, ctx.url, { root: 'static' })
-        	}
+        	proxy.select { url: '/st' }, (ctx) ->
+        		ctx.body = send(ctx.req, ctx.url, { root: 'static' })
 
         	# sub-route
-        	{
-        		url: '/sub'
-        		handler: proxy.flow([{
-        			url: '/home'
-        			handler: (ctx) ->
-        				ctx.body = 'hello world'
-        		}])
-        	}
+        	proxy.select { url: '/sub' }, proxy.flow([{
+        		proxy.select { url: '/home' }, (ctx) ->
+        			ctx.body = 'hello world'
+        	}])
         ]
 
         http.createServer(proxy.flow middlewares).listen 8123
         ```
 
-- ## **[match(pattern, opts)](lib/proxy.coffee?source#L382)**
+- ## **[match(pattern, opts)](lib/proxy.coffee?source#L306)**
 
     Generate an express like unix path selector. See the example of `proxy.flow`.
 
@@ -1979,7 +1951,7 @@ kit.warp 'src/**/*.coffee'
         kit.log match '/items/10' # output => { id: '10' }
         ```
 
-- ## **[midToFlow(h)](lib/proxy.coffee?source#L414)**
+- ## **[midToFlow(h)](lib/proxy.coffee?source#L338)**
 
     Convert a Express-like middleware to `proxy.flow` middleware.
 
@@ -2004,9 +1976,34 @@ kit.warp 'src/**/*.coffee'
         http.createServer(proxy.flow middlewares).listen 8123
         ```
 
-- ## **[serverHelper(opts)](lib/proxy.coffee?source#L460)**
+- ## **[select(sel, middleware)](lib/proxy.coffee?source#L368)**
 
-    Create a http request handler middleware.
+    Create a conditional middleware that only works when the pattern matches.
+
+    - **<u>param</u>**: `sel` { _Object_ }
+
+        The selector. Members:
+        ```coffee
+        {
+        	url: String | Regex | Function
+        	method: String | Regex | Function
+        	headers: Object
+        }
+        ```
+        The `url`, `method` and `headers` are act as selectors. If current
+        request matches the selector, the `middleware` will be called with the
+        captured result. If the selector is a function, it should return a
+        `non-undefined, non-null` value when matches, it will be assigned to the `ctx`.
+        When the `url` is a string, if `req.url` starts with the `url`, the rest
+        of the string will be captured.
+
+    - **<u>param</u>**: `middleware` { _Function_ }
+
+    - **<u>return</u>**: { _Function_ }
+
+- ## **[serverHelper(opts)](lib/proxy.coffee?source#L450)**
+
+    Create a http request middleware.
 
     - **<u>param</u>**: `opts` { _Object_ }
 
@@ -2048,7 +2045,7 @@ kit.warp 'src/**/*.coffee'
         nokit.log { any: 'thing' }
         ```
 
-- ## **[static(opts)](lib/proxy.coffee?source#L526)**
+- ## **[static(opts)](lib/proxy.coffee?source#L513)**
 
     Create a static file middleware for `proxy.flow`.
 
@@ -2064,15 +2061,12 @@ kit.warp 'src/**/*.coffee'
         proxy = kit.require 'proxy'
         http = require 'http'
 
-        middlewares = [{
-        	url: '/st'
-        	handler: proxy.static('static')
-        }]
+        middlewares = [proxy.select { url: '/st' } proxy.static('static')]
 
         http.createServer(proxy.flow middlewares).listen 8123
         ```
 
-- ## **[url(opts)](lib/proxy.coffee?source#L622)**
+- ## **[url(opts)](lib/proxy.coffee?source#L609)**
 
     Use it to proxy one url to another.
 
@@ -2128,19 +2122,19 @@ kit.warp 'src/**/*.coffee'
         proxy = kit.require 'proxy'
         http = require 'http'
 
-        http.createServer(proxy.flow [{
-        		url: '/a'
-        		handler: proxy.url() # Transparent proxy
-        	}, {
-        		url: '/b'
-        		handler proxy.url { url: 'a.com' } # Porxy to `a.com`
-        	}, {
-        		url: '/c'
-        		handler proxy.url { url: 'c.com/s.js' } # Porxy to a file
-        	}, {
-        		url: //$/ # match path that ends with '/'
-        		method: 'GET'
-        		handler proxy.url {
+        http.createServer(proxy.flow [
+        	# Transparent proxy
+        	proxy.select { url: '/a' }, proxy.url()
+
+        	# Porxy to `a.com`
+        	proxy.select { url: '/b' }, proxy.url { url: 'a.com' }
+
+         # Porxy to a file
+        	proxy.select { url: '/c' }, proxy.url { url: 'c.com/s.js' }
+
+        	proxy.select(
+        		{ url: //$/, method: 'GET' }
+        		proxy.url {
         			url: 'd.com'
         			# Inject script to html page.
         			handleResBody: (body, req, res) ->
@@ -2149,8 +2143,8 @@ kit.warp 'src/**/*.coffee'
         				else
         					body
         		}
-        	}]
-        ).listen 8123
+        	)
+        ]).listen 8123
         ```
 
 

@@ -1,11 +1,16 @@
 # Changelog
 
+- v0.11.0
+
+  - **API CHANGE** `proxy.flow` now only accepts functions as middlewares. `etag` now works as a
+    standalone middleware. The selector now also works as a standalone middleware, `proxy.select`.
+
 - v0.10.0
 
- - **API CHANGE** `kit.require 'colors/safe'` now changed to `kit.require 'brush`,
-   the colors module now will not pollute the `String.prototype` any more
- - opt: `monitorApp`
- - minor bug fixes
+  - **API CHANGE** `kit.require 'colors/safe'` now changed to `kit.require 'brush`,
+    the colors module now will not pollute the `String.prototype` any more
+  - opt: `monitorApp`
+  - minor bug fixes
 
 - v0.9.5
 
