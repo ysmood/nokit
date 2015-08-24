@@ -1833,8 +1833,8 @@ kit.warp 'src/**/*.coffee'
 
     - **<u>param</u>**: `middlewares` { _Array_ }
 
-        Each item is a function `(ctx) -> Promise`,
-        or a middleware object:
+        Each item will be converted to a middleware object
+        sanely, even it's a string, buffer or anything else.
         ```coffee
         {
         	url: String | Regex | Function
