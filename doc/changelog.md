@@ -1,6 +1,6 @@
 # Changelog
 
-- v0.11.0
+- v0.11.1
 
   - **API CHANGE** `proxy.flow` now only accepts functions as middlewares. `etag` now works as a
     standalone middleware. The selector now also works as a standalone middleware, `proxy.select`.
