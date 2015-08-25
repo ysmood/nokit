@@ -1545,7 +1545,7 @@ _.extend kit, fs, fs.PromiseUtils,
 		else if _.isString opts.reqData
 			reqBuf = new Buffer(opts.reqData)
 		else if _.isObject opts.reqData
-			if opts.reqData.constructor.name == 'ReadStream'
+			if opts.reqData and _.isFunction(opts.reqData.pipe)
 				opts.reqPipe = opts.reqData
 			else
 				opts.headers['content-type'] ?=
