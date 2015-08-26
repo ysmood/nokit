@@ -1304,7 +1304,10 @@ _.extend kit, fs, fs.PromiseUtils,
 
 		if not dir?
 			if moduleName[0] == '.' or kit[moduleName] != null
-				err = new Error "[kit.require] argument 'dir' is not defined"
+				err = new Error(
+					"[kit.require] argument 'dir' is not defined: " +
+					moduleName
+				)
 				err.source = 'nokit'
 				throw err
 
