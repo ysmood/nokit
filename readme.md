@@ -913,7 +913,7 @@ Goto [changelog](doc/changelog.md)
         jhash = kit.require 'jhash', __dirname
         ```
 
-- ## **[requireOptional(name, dir, semver)](lib/kit.coffee?source#L1368)**
+- ## **[requireOptional(name, dir, semver)](lib/kit.coffee?source#L1371)**
 
     Require an optional package. If not found, it will
     warn the user to npm install it, and exit the process.
@@ -936,7 +936,7 @@ Goto [changelog](doc/changelog.md)
 
         The required package.
 
-- ## **[request(opts)](lib/kit.coffee?source#L1502)**
+- ## **[request(opts)](lib/kit.coffee?source#L1505)**
 
     A handy extended combination of `http.request` and `https.request`.
 
@@ -1050,14 +1050,14 @@ Goto [changelog](doc/changelog.md)
         	kit.log body
         ```
 
-- ## **[semver](lib/kit.coffee?source#L1712)**
+- ## **[semver](lib/kit.coffee?source#L1715)**
 
     The semantic versioner for npm, known as [semver](https://github.com/npm/node-semver).
     You must `kit.require 'semver'` before using it.
 
     - **<u>type</u>**: { _Object_ }
 
-- ## **[spawn(cmd, args, opts)](lib/kit.coffee?source#L1743)**
+- ## **[spawn(cmd, args, opts)](lib/kit.coffee?source#L1746)**
 
     A safer version of `child_process.spawn` to cross-platform run
     a process. In some conditions, it may be more convenient
@@ -1101,13 +1101,13 @@ Goto [changelog](doc/changelog.md)
         .then ({code}) -> kit.log code
         ```
 
-- ## **[sse](lib/kit.coffee?source#L1801)**
+- ## **[sse](lib/kit.coffee?source#L1804)**
 
     The `sse` module.
     You must `kit.require 'sse'` before using it.
     For more information goto the `sse` section.
 
-- ## **[task(name, opts, fn)](lib/kit.coffee?source#L1862)**
+- ## **[task(name, opts, fn)](lib/kit.coffee?source#L1865)**
 
     Sequencing and executing tasks and dependencies concurrently.
 
@@ -1187,12 +1187,12 @@ Goto [changelog](doc/changelog.md)
         	kit.log 'All Done!'
         ```
 
-- ## **[url](lib/kit.coffee?source#L1934)**
+- ## **[url](lib/kit.coffee?source#L1937)**
 
     The `url` module of [io.js](iojs.org).
     You must `kit.require 'url'` before using it.
 
-- ## **[warp(from, opts)](lib/kit.coffee?source#L2049)**
+- ## **[warp(from, opts)](lib/kit.coffee?source#L2052)**
 
     Works much like `gulp.src`, but with Promise instead.
     The warp control and error handling is more pleasant.
@@ -1317,7 +1317,7 @@ Goto [changelog](doc/changelog.md)
         .run 'dist'
         ```
 
-- ## **[which(name)](lib/kit.coffee?source#L2122)**
+- ## **[which(name)](lib/kit.coffee?source#L2125)**
 
     Same as the unix `which` command.
     You must `kit.require 'which'` before using it.
@@ -1328,14 +1328,14 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Promise_ }
 
-- ## **[whichSync](lib/kit.coffee?source#L2129)**
+- ## **[whichSync](lib/kit.coffee?source#L2132)**
 
     Sync version of `which`.
     You must `kit.require 'whichSync'` before using it.
 
     - **<u>type</u>**: { _Function_ }
 
-- ## **[xinspect(obj, opts)](lib/kit.coffee?source#L2140)**
+- ## **[xinspect(obj, opts)](lib/kit.coffee?source#L2143)**
 
     For debugging. Dump a colorful object.
 
@@ -1352,7 +1352,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _String_ }
 
-- ## **[xopen(cmds, opts)](lib/kit.coffee?source#L2163)**
+- ## **[xopen(cmds, opts)](lib/kit.coffee?source#L2166)**
 
     Open a thing that your system can recognize.
     Now only support Windows, OSX or system that installed 'xdg-open'.
@@ -1740,13 +1740,13 @@ kit.warp 'src/**/*.coffee'
         		pass  #{br.green passed}
         		fail  #{br.red failed}
         		"""
-        	onEnd: (passed, failed) ->
-        		if failed
-        			process.exit 1
         }
         ```
 
     - **<u>return</u>**: { _Promise_ }
+
+        It will resolve { code, passed, failed },
+        if all passed, code will be 0, else it will be 1.
 
     - **<u>example</u>**:
 
@@ -1769,6 +1769,8 @@ kit.warp 'src/**/*.coffee'
         			ken.eq 'ok', 'ok'
         	]
         ]
+        .then ({ failed }) ->
+        	process.exit failed
         ```
 
 

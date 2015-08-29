@@ -1,5 +1,9 @@
 # Changelog
 
+- v0.11.2
+
+  - opt: `kit.ken`, now it will auto-exit process for you any more.
+
 - v0.11.1
 
   - **API CHANGE** `proxy.flow` now only accepts functions as middlewares. `etag` now works as a

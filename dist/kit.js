@@ -1429,7 +1429,7 @@ _.extend(kit, fs, fs.PromiseUtils, {
     }
     if (dir == null) {
       if (moduleName[0] === '.' || kit[moduleName] !== null) {
-        err = new Error("[kit.require] argument 'dir' is not defined");
+        err = new Error("[kit.require] argument 'dir' is not defined: " + moduleName);
         err.source = 'nokit';
         throw err;
       }
