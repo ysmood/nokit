@@ -19,12 +19,10 @@ assert = require 'assert'
  * 		pass  #{br.green passed}
  * 		fail  #{br.red failed}
  * 		"""
- * 	onEnd: (passed, failed) ->
- * 		if failed
- * 			process.exit 1
  * }
  * ```
- * @return {Promise}
+ * @return {Promise} It will resolve { code, passed, failed },
+ * if all passed, code will be 0, else it will be 1.
  * @example
  * ```coffeescript
  * ken = kit.require 'ken'
@@ -45,6 +43,8 @@ assert = require 'assert'
  * 			ken.eq 'ok', 'ok'
  * 	]
  * ]
+ * .then ({ failed }) ->
+ * 	process.exit failed
  * ```
 ###
 ken = (opts = {}) ->
@@ -60,9 +60,6 @@ ken = (opts = {}) ->
 			pass #{br.green passed}
 			fail #{br.red failed}
 			"""
-		onEnd: (passed, failed) ->
-			if failed
-				process.exit 1
 	}
 
 	passed = 0
@@ -82,7 +79,7 @@ ken = (opts = {}) ->
 
 	onFinal = ->
 		opts.logFinal passed, failed
-		opts.onEnd passed, failed
+		return { passed, failed }
 
 	_.extend test, {
 		async: ->

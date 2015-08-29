@@ -412,10 +412,7 @@ describe 'Kit:', ->
 
 	it 'ken all passed', ->
 		ken = kit.require 'ken'
-		test = ken {
-			onEnd: (passed, failed) ->
-				passed
-		}
+		test = ken()
 
 		# Async tests
 		test.async [
@@ -432,15 +429,12 @@ describe 'Kit:', ->
 					ken.eq 'ok', 'ok'
 			]
 		]
-		.then (passed) ->
+		.then ({ passed }) ->
 			shouldEqual 4, passed
 
 	it 'ken failed', ->
 		ken = kit.require 'ken'
-		test = ken {
-			onEnd: (passed, failed) ->
-				failed
-		}
+		test = ken()
 
 		# Async tests
 		test.async [
@@ -451,7 +445,7 @@ describe 'Kit:', ->
 			test 'basic 3', ->
 				ken.deepEq { a: 1, b: 2 }, { a: 1, b: 2 }
 		]
-		.then (failed) ->
+		.then ({ failed }) ->
 			shouldEqual 1, failed
 
 	it 'proxy url', ->
