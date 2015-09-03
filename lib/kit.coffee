@@ -2,7 +2,8 @@
 
 _ = require './lodash'
 fs = require 'nofs'
-{ Promise } = fs
+Promise = require 'yaku'
+yutils = require 'yaku/lib/utils'
 
 kit = {}
 
@@ -29,7 +30,7 @@ kit = {}
 ###
 Overview = 'overview'
 
-_.extend kit, fs, fs.PromiseUtils,
+_.extend kit, fs, yutils,
 
 	###*
 	 * The [lodash](https://lodash.com) lib.
