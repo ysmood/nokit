@@ -22,8 +22,8 @@ assert = require 'assert'
  * 		"""
  * }
  * ```
- * @return {Promise} It will resolve { code, passed, failed },
- * if all passed, code will be 0, else it will be 1.
+ * @return {Function} It has two members: `{ async, sync }`.
+ * Then both will resolve `{ passed, failed }`.
  * @example
  * ```coffeescript
  * ken = kit.require 'ken'
@@ -45,6 +45,30 @@ assert = require 'assert'
  * 	]
  * ]
  * .then ({ failed }) ->
+ * 	process.exit failed
+ * ```
+ * @example
+ * Filter the tests, only test the odd ones.
+ * ```coffeescript
+ * ken = kit.require 'ken'
+ * test = ken()
+ *
+ * # Async tests
+ * test.async(
+ * 	[
+ * 		test 'basic 1', ->
+ * 			ken.eq 'ok', 'ok'
+ * 		test 'basic 2', ->
+ * 			ken.deepEq { a: 1, b: 2 }, { a: 1, b: 2 }
+ * 		test 'basic 3', ->
+ * 			ken.deepEq 1, 1
+ * 	]
+ * 	.filter (fn, index) -> index % 2
+ * 	.map (fn) ->
+ * 		# prefix all the messages with current file path
+ * 		fn.msg = "#{__filename} - #{fn.msg}"
+ * 		fn
+ * ).then ({ failed }) ->
  * 	process.exit failed
  * ```
 ###
@@ -74,16 +98,20 @@ ken = (opts = {}) ->
 	failed = 0
 
 	test = (msg, fn) ->
-		->
+		tsetFn = ->
 			Promise.resolve()
 			.then fn
 			.then ->
 				passed++
-				opts.logPass msg
+				opts.logPass tsetFn.msg
 			, (err) ->
 				failed++
-				opts.logFail msg, err
+				opts.logFail tsetFn.msg, err
 				Promise.reject err if opts.isBail
+
+		tsetFn.msg = msg
+
+		tsetFn
 
 	onFinal = ->
 		opts.logFinal passed, failed
