@@ -1347,7 +1347,7 @@ Goto [changelog](doc/changelog.md)
 
         Options. Default:
         ```coffee
-        { brush: true, depth: 7 }
+        { colors: true, depth: 7 }
         ```
 
     - **<u>return</u>**: { _String_ }

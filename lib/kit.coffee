@@ -2136,7 +2136,7 @@ _.extend kit, fs, fs.PromiseUtils,
 	 * @param  {Object} obj Your target object.
 	 * @param  {Object} opts Options. Default:
 	 * ```coffee
-	 * { brush: true, depth: 7 }
+	 * { colors: true, depth: 7 }
 	 * ```
 	 * @return {String}
 	###
@@ -2144,7 +2144,7 @@ _.extend kit, fs, fs.PromiseUtils,
 		util = kit.require 'util', __dirname
 
 		_.defaults opts, {
-			brush: kit.isDevelopment()
+			colors: kit.isDevelopment()
 			depth: 7
 		}
 

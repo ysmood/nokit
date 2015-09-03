@@ -1,6 +1,6 @@
 kit = require './kit'
 { _, Promise } = kit
-cls = kit.require 'brush'
+br = kit.require 'brush'
 jhash = null
 
 ###*
@@ -22,7 +22,7 @@ module.exports =
 		->
 			@deps = [@path]
 			@set (new clean(opts).minify @contents).styles
-			kit.log cls.cyan('clean css: ') + @dest
+			kit.log br.cyan('clean css: ') + @dest
 	, compress: ['.css']
 
 	###*
@@ -42,9 +42,9 @@ module.exports =
 			@dest.ext = '.js'
 			try
 				@set coffee.compile @contents + '', opts
-				kit.log cls.cyan('coffee: ') + @path
+				kit.log br.cyan('coffee: ') + @path
 			catch err
-				kit.err cls.red err.stack
+				kit.err br.red err.stack
 				Promise.reject 'coffeescriptCompileError'
 	, compile: ['.coffee']
 
@@ -88,7 +88,7 @@ module.exports =
 			reporter = new Reporter errorReport, opts
 
 			for path, errors of errorReport.paths
-				kit.log cls.cyan('coffeelint: ') + _.trim reporter.reportPath(path, errors)
+				kit.log br.cyan('coffeelint: ') + _.trim reporter.reportPath(path, errors)
 				if errors.length > 0
 					return Promise.reject errors[0]
 	, lint: ['.coffee']
@@ -150,7 +150,7 @@ module.exports =
 			.then (tpl) ->
 				file.set _.template(tpl) { doc: opts.doc }
 			.then ->
-				kit.log cls.cyan('comment2md: ') +
+				kit.log br.cyan('comment2md: ') +
 					kit.path.join(file.to, opts.out)
 				file.super()
 
@@ -181,7 +181,7 @@ module.exports =
 
 		list = _(kit.drives).map(action)
 			.compact().flatten().value().join ' '
-		kit.log cls.green("#{action}: ") + "[ #{list} ]"
+		kit.log br.green("#{action}: ") + "[ #{list} ]"
 
 		compilers = {}
 		auto = ->
@@ -231,7 +231,7 @@ module.exports =
 
 		_.extend ->
 			all.push @contents
-			kit.log cls.cyan('concat: ') + @path
+			kit.log br.cyan('concat: ') + @path
 		, isWriter: true, onEnd: ->
 			return if all.length < @list.length
 
@@ -279,16 +279,16 @@ module.exports =
 		jshint = (file) ->
 			@deps = [@path]
 			if JSHINT @contents, opts.config, opts.global
-				kit.log cls.cyan('jshint: ') + @path
+				kit.log br.cyan('jshint: ') + @path
 				return
 
 			errs = ''
 			JSHINT.errors.forEach (err) ->
 				if err
-					errs += """\nJshint #{cls.red err.id}: \
+					errs += """\nJshint #{br.red err.id}: \
 						#{file.path}:#{err.line}:#{err.character}
-						"#{cls.cyan err.evidence}"
-						#{cls.yellow err.reason}
+						"#{br.cyan err.evidence}"
+						#{br.yellow err.reason}
 						------------------------------------
 					"""
 			Promise.reject errs
@@ -314,7 +314,7 @@ module.exports =
 			.then (output) ->
 				file.deps = [file.path].concat output.imports
 				file.set output.css
-				kit.log cls.cyan('less: ') + file.path
+				kit.log br.cyan('less: ') + file.path
 			, (err) ->
 				if not err.line?
 					return Promise.reject err
@@ -344,9 +344,9 @@ module.exports =
 			@dest.ext = '.js'
 			try
 				@set LiveScript.compile @contents + '', opts
-				kit.log cls.cyan('livescript: ') + @path
+				kit.log br.cyan('livescript: ') + @path
 			catch err
-				kit.err cls.red err
+				kit.err br.red err
 				Promise.reject 'livescriptCompileError'
 	, compile: ['.ls']
 
@@ -422,8 +422,8 @@ module.exports =
 				.then (cache) ->
 					file.deps = cache.deps
 					if cache.isNewer
-						kit.log cls.green('reader cache: ') +
-							file.deps.join cls.grey ', '
+						kit.log br.green('reader cache: ') +
+							file.deps.join br.grey ', '
 						file.drives.length = 0
 
 						Promise.all _.map cache.dests, (cachePath, dest) ->
@@ -481,7 +481,7 @@ module.exports =
 			.then (css) ->
 				file.deps = [file.path].concat styl.deps()
 				file.set css
-				kit.log cls.cyan('stylus: ') + file.path
+				kit.log br.cyan('stylus: ') + file.path
 	, compile: ['.styl']
 
 	###*
@@ -512,10 +512,10 @@ module.exports =
 		->
 			@deps = [@path]
 			try
-				kit.log cls.cyan('uglifyjs: ') + @dest
+				kit.log br.cyan('uglifyjs: ') + @dest
 				@set (uglify.minify @contents + '', opts).code
 			catch err
-				kit.logs cls.cyan('uglifyjs err:'), @path, err.message
+				kit.logs br.cyan('uglifyjs err:'), @path, err.message
 	, compress: ['.js']
 
 	###*
@@ -529,12 +529,12 @@ module.exports =
 			{ dest, contents } = @
 			return if not dest? or not contents?
 
-			kit.log cls.cyan('writer: ') + @dest
+			kit.log br.cyan('writer: ') + @dest
 			kit.outputFile dest + '', contents, @opts
 			.then ->
 				return if not file.list.isCache
 
-				kit.log cls.cyan('writer cache: ') + file.dest
+				kit.log br.cyan('writer cache: ') + file.dest
 				kit.depsCache
 					dests: file.dests or [file.dest + '']
 					deps: file.deps or [file.path]

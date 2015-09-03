@@ -1,10 +1,10 @@
-var Overview, Promise, _, cls, jhash, kit;
+var Overview, Promise, _, br, jhash, kit;
 
 kit = require('./kit');
 
 _ = kit._, Promise = kit.Promise;
 
-cls = kit.require('brush');
+br = kit.require('brush');
 
 jhash = null;
 
@@ -32,7 +32,7 @@ module.exports = {
     return function() {
       this.deps = [this.path];
       this.set((new clean(opts).minify(this.contents)).styles);
-      return kit.log(cls.cyan('clean css: ') + this.dest);
+      return kit.log(br.cyan('clean css: ') + this.dest);
     };
   }, {
     compress: ['.css']
@@ -59,10 +59,10 @@ module.exports = {
       this.dest.ext = '.js';
       try {
         this.set(coffee.compile(this.contents + '', opts));
-        return kit.log(cls.cyan('coffee: ') + this.path);
+        return kit.log(br.cyan('coffee: ') + this.path);
       } catch (_error) {
         err = _error;
-        kit.err(cls.red(err.stack));
+        kit.err(br.red(err.stack));
         return Promise.reject('coffeescriptCompileError');
       }
     };
@@ -114,7 +114,7 @@ module.exports = {
       ref = errorReport.paths;
       for (path in ref) {
         errors = ref[path];
-        kit.log(cls.cyan('coffeelint: ') + _.trim(reporter.reportPath(path, errors)));
+        kit.log(br.cyan('coffeelint: ') + _.trim(reporter.reportPath(path, errors)));
         if (errors.length > 0) {
           return Promise.reject(errors[0]);
         }
@@ -188,7 +188,7 @@ module.exports = {
             doc: opts.doc
           }));
         }).then(function() {
-          kit.log(cls.cyan('comment2md: ') + kit.path.join(file.to, opts.out));
+          kit.log(br.cyan('comment2md: ') + kit.path.join(file.to, opts.out));
           return file["super"]();
         });
       }
@@ -225,7 +225,7 @@ module.exports = {
       onNotFound: function() {}
     });
     list = _(kit.drives).map(action).compact().flatten().value().join(' ');
-    kit.log(cls.green(action + ": ") + ("[ " + list + " ]"));
+    kit.log(br.green(action + ": ") + ("[ " + list + " ]"));
     compilers = {};
     auto = function() {
       var d, ext;
@@ -280,7 +280,7 @@ module.exports = {
     all = [];
     return _.extend(function() {
       all.push(this.contents);
-      return kit.log(cls.cyan('concat: ') + this.path);
+      return kit.log(br.cyan('concat: ') + this.path);
     }, {
       isWriter: true,
       onEnd: function() {
@@ -342,13 +342,13 @@ module.exports = {
       var errs;
       this.deps = [this.path];
       if (JSHINT(this.contents, opts.config, opts.global)) {
-        kit.log(cls.cyan('jshint: ') + this.path);
+        kit.log(br.cyan('jshint: ') + this.path);
         return;
       }
       errs = '';
       JSHINT.errors.forEach(function(err) {
         if (err) {
-          return errs += "\nJshint " + (cls.red(err.id)) + ": " + file.path + ":" + err.line + ":" + err.character + "\n\"" + (cls.cyan(err.evidence)) + "\"\n" + (cls.yellow(err.reason)) + "\n------------------------------------";
+          return errs += "\nJshint " + (br.red(err.id)) + ": " + file.path + ":" + err.line + ":" + err.character + "\n\"" + (br.cyan(err.evidence)) + "\"\n" + (br.yellow(err.reason)) + "\n------------------------------------";
         }
       });
       return Promise.reject(errs);
@@ -377,7 +377,7 @@ module.exports = {
       return less.render(this.contents + '', opts).then(function(output) {
         file.deps = [file.path].concat(output.imports);
         file.set(output.css);
-        return kit.log(cls.cyan('less: ') + file.path);
+        return kit.log(br.cyan('less: ') + file.path);
       }, function(err) {
         var ref;
         if (err.line == null) {
@@ -412,10 +412,10 @@ module.exports = {
       this.dest.ext = '.js';
       try {
         this.set(LiveScript.compile(this.contents + '', opts));
-        return kit.log(cls.cyan('livescript: ') + this.path);
+        return kit.log(br.cyan('livescript: ') + this.path);
       } catch (_error) {
         err = _error;
-        kit.err(cls.red(err));
+        kit.err(br.red(err));
         return Promise.reject('livescriptCompileError');
       }
     };
@@ -514,7 +514,7 @@ module.exports = {
         }).then(function(cache) {
           file.deps = cache.deps;
           if (cache.isNewer) {
-            kit.log(cls.green('reader cache: ') + file.deps.join(cls.grey(', ')));
+            kit.log(br.green('reader cache: ') + file.deps.join(br.grey(', ')));
             file.drives.length = 0;
             return Promise.all(_.map(cache.dests, function(cachePath, dest) {
               return kit.mkdirs(kit.path.dirname(dest)).then(function() {
@@ -581,7 +581,7 @@ module.exports = {
       return kit.promisify(styl.render, styl)().then(function(css) {
         file.deps = [file.path].concat(styl.deps());
         file.set(css);
-        return kit.log(cls.cyan('stylus: ') + file.path);
+        return kit.log(br.cyan('stylus: ') + file.path);
       });
     };
   }, {
@@ -626,11 +626,11 @@ module.exports = {
       var err;
       this.deps = [this.path];
       try {
-        kit.log(cls.cyan('uglifyjs: ') + this.dest);
+        kit.log(br.cyan('uglifyjs: ') + this.dest);
         return this.set((uglify.minify(this.contents + '', opts)).code);
       } catch (_error) {
         err = _error;
-        return kit.logs(cls.cyan('uglifyjs err:'), this.path, err.message);
+        return kit.logs(br.cyan('uglifyjs err:'), this.path, err.message);
       }
     };
   }, {
@@ -651,12 +651,12 @@ module.exports = {
       if ((dest == null) || (contents == null)) {
         return;
       }
-      kit.log(cls.cyan('writer: ') + this.dest);
+      kit.log(br.cyan('writer: ') + this.dest);
       return kit.outputFile(dest + '', contents, this.opts).then(function() {
         if (!file.list.isCache) {
           return;
         }
-        kit.log(cls.cyan('writer cache: ') + file.dest);
+        kit.log(br.cyan('writer cache: ') + file.dest);
         return kit.depsCache({
           dests: file.dests || [file.dest + ''],
           deps: file.deps || [file.path],
