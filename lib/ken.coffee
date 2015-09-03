@@ -9,10 +9,11 @@ assert = require 'assert'
  * ```coffeescript
  * {
  * 	isBail: true
+ * 	isExitOnUnhandled: true
  * 	logPass: (msg) ->
  * 		console.log br.green('o'), msg
- * 	logFail: (err) ->
- * 		console.error br.red('x'), err
+ * 	logFail: (msg, err) ->
+ * 		console.error br.red('x'), msg, err
  * 	logFinal: (passed, failed) ->
  * 		console.log """
  * 		#{br.grey '----------------'}
@@ -50,10 +51,11 @@ assert = require 'assert'
 ken = (opts = {}) ->
 	_.defaults opts, {
 		isBail: true
+		isExitOnUnhandled: true,
 		logPass: (msg) ->
 			console.log br.green('o'), br.grey(msg)
-		logFail: (err) ->
-			console.error br.red('x'), err
+		logFail: (msg, err) ->
+			console.error br.red('x'), br.grey(msg), err.message
 		logFinal: (passed, failed) ->
 			console.log """
 			#{br.grey '----------------'}
@@ -61,6 +63,12 @@ ken = (opts = {}) ->
 			fail #{br.red failed}
 			"""
 	}
+
+	if opts.isExitOnUnhandled
+		onUnhandledRejection = Promise.onUnhandledRejection
+		Promise.onUnhandledRejection = (reason, p) ->
+			onUnhandledRejection reason, p
+			process.exit 1
 
 	passed = 0
 	failed = 0
@@ -74,7 +82,7 @@ ken = (opts = {}) ->
 				opts.logPass msg
 			, (err) ->
 				failed++
-				opts.logFail err
+				opts.logFail msg, err
 				Promise.reject err if opts.isBail
 
 	onFinal = ->
@@ -90,7 +98,14 @@ ken = (opts = {}) ->
 			.then onFinal, onFinal
 	}
 
+wrap = (fn) -> ->
+	try
+		Promise.resolve fn.apply(0, arguments)
+	catch err
+		Promise.reject err
+
 module.exports = _.extend ken, {
-	eq: assert.strictEqual
-	deepEq: assert.deepEqual
+	eq: wrap assert.strictEqual
+
+	deepEq: wrap assert.deepEqual
 }
