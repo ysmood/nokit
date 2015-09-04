@@ -1,6 +1,6 @@
 # Changelog
 
-- v0.11.3
+- v0.11.5
 
   - opt: `kit.ken`, now it will auto-exit process for you any more
   - fix: minor bugs

@@ -23,7 +23,7 @@ assert = require 'assert'
  * }
  * ```
  * @return {Function} It has two members: `{ async, sync }`.
- * Then both will resolve `{ passed, failed }`.
+ * Both of them will resolve `{ passed, failed }`.
  * @example
  * ```coffeescript
  * ken = kit.require 'ken'

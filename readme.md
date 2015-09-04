@@ -95,7 +95,7 @@ Goto [changelog](doc/changelog.md)
 
 # API
 
-- ## **[Overview](lib/kit.coffee?source#L30)**
+- ## **[Overview](lib/kit.coffee?source#L31)**
 
     Nokit extends all the functions of [nofs](https://github.com/ysmood/nofs)
     and [`yaku/lib/utils`](https://github.com/ysmood/yaku#utils).
@@ -119,7 +119,7 @@ Goto [changelog](doc/changelog.md)
         .then -> kit.log 'done'
         ```
 
-- ## **[_](lib/kit.coffee?source#L42)**
+- ## **[_](lib/kit.coffee?source#L43)**
 
     The [lodash](https://lodash.com) lib.
 
@@ -131,7 +131,7 @@ Goto [changelog](doc/changelog.md)
         kit._.map [1, 2, 3]
         ```
 
-- ## **[browserHelper(opts, useJs)](lib/kit.coffee?source#L70)**
+- ## **[browserHelper(opts, useJs)](lib/kit.coffee?source#L71)**
 
     The browser helper. It helps you to live reload the page and log remotely.
 
@@ -168,7 +168,7 @@ Goto [changelog](doc/changelog.md)
         	console.log 'file changed'
         ```
 
-- ## **[brush](lib/kit.coffee?source#L107)**
+- ## **[brush](lib/kit.coffee?source#L108)**
 
     Generate styled string for terminal.
     It's disabled when `process.env.NODE_ENV == 'production'`.
@@ -186,7 +186,7 @@ Goto [changelog](doc/changelog.md)
         kit.log Object.keys(br)
         ```
 
-- ## **[depsCache(info)](lib/kit.coffee?source#L156)**
+- ## **[depsCache(info)](lib/kit.coffee?source#L157)**
 
     A fast file cache helper. It uses hard link to cache files.
 
@@ -242,7 +242,7 @@ Goto [changelog](doc/changelog.md)
         		kit.log cache.dests
         ```
 
-- ## **[daemonize(opts)](lib/kit.coffee?source#L238)**
+- ## **[daemonize(opts)](lib/kit.coffee?source#L239)**
 
     Daemonize a program. Just a shortcut usage of `kit.spawn`.
 
@@ -262,7 +262,7 @@ Goto [changelog](doc/changelog.md)
 
         The daemonized process.
 
-- ## **[decrypt(data, password, algorithm)](lib/kit.coffee?source#L265)**
+- ## **[decrypt(data, password, algorithm)](lib/kit.coffee?source#L266)**
 
     A simple decrypt helper. Cross-version of node.
 
@@ -276,7 +276,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Buffer_ }
 
-- ## **[drives](lib/kit.coffee?source#L287)**
+- ## **[drives](lib/kit.coffee?source#L288)**
 
     The warp drives.
     You must `kit.require 'drives'` before using it.
@@ -284,7 +284,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>type</u>**: { _Object_ }
 
-- ## **[encrypt(data, password, algorithm)](lib/kit.coffee?source#L296)**
+- ## **[encrypt(data, password, algorithm)](lib/kit.coffee?source#L297)**
 
     A simple encrypt helper. Cross-version of node.
 
@@ -298,7 +298,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Buffer_ }
 
-- ## **[err(msg, opts)](lib/kit.coffee?source#L317)**
+- ## **[err(msg, opts)](lib/kit.coffee?source#L318)**
 
     A error log shortcut for `kit.log(msg, 'error', opts)`
 
@@ -306,7 +306,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>param</u>**: `opts` { _Object_ }
 
-- ## **[exec(cmd, shell)](lib/kit.coffee?source#L355)**
+- ## **[exec(cmd, shell)](lib/kit.coffee?source#L356)**
 
     A better `child_process.exec`. Supports multi-line shell script.
     For supporting old version of node, it will create 3 temp files,
@@ -353,7 +353,7 @@ Goto [changelog](doc/changelog.md)
         	kit.log proc.pid
         ```
 
-- ## **[formatComment(comments, opts)](lib/kit.coffee?source#L425)**
+- ## **[formatComment(comments, opts)](lib/kit.coffee?source#L426)**
 
     Format the parsed comments array to a markdown string.
 
@@ -377,13 +377,13 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _String_ }
 
-- ## **[fs](lib/kit.coffee?source#L478)**
+- ## **[fs](lib/kit.coffee?source#L479)**
 
     See my project [nofs](https://github.com/ysmood/nofs).
 
     [Offline Documentation](?gotoDoc=nofs/readme.md)
 
-- ## **[fuzzySearch(keys, list, opts)](lib/kit.coffee?source#L519)**
+- ## **[fuzzySearch(keys, list, opts)](lib/kit.coffee?source#L520)**
 
     Fuzzy search a string list by a key word.
 
@@ -437,7 +437,7 @@ Goto [changelog](doc/changelog.md)
         # ]
         ```
 
-- ## **[genModulePaths(moduleName, dir, modDir)](lib/kit.coffee?source#L573)**
+- ## **[genModulePaths(moduleName, dir, modDir)](lib/kit.coffee?source#L574)**
 
     Generate a list of module paths from a name and a directory.
 
@@ -465,7 +465,7 @@ Goto [changelog](doc/changelog.md)
         # output => ['/home/a/node_modules/test', '/home/node_modules/test', '/node_modules/test']
         ```
 
-- ## **[indent(text, num, char, reg)](lib/kit.coffee?source#L603)**
+- ## **[indent(text, num, char, reg)](lib/kit.coffee?source#L604)**
 
     Indent a text block.
 
@@ -495,7 +495,7 @@ Goto [changelog](doc/changelog.md)
         # => "one\ntwo"
         ```
 
-- ## **[isDevelopment()](lib/kit.coffee?source#L613)**
+- ## **[isDevelopment()](lib/kit.coffee?source#L614)**
 
     Nokit use it to check the running mode of the app.
     Overwrite it if you want to control the check logic.
@@ -503,7 +503,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Boolean_ }
 
-- ## **[isProduction()](lib/kit.coffee?source#L622)**
+- ## **[isProduction()](lib/kit.coffee?source#L623)**
 
     Nokit use it to check the running mode of the app.
     Overwrite it if you want to control the check logic.
@@ -511,7 +511,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Boolean_ }
 
-- ## **[jhash](lib/kit.coffee?source#L647)**
+- ## **[jhash](lib/kit.coffee?source#L648)**
 
     A fast helper to hash string or binary file.
     See my [jhash](https://github.com/ysmood/jhash) project.
@@ -536,13 +536,13 @@ Goto [changelog](doc/changelog.md)
         jhash.hash 'test' # output => 'ede'
         ```
 
-- ## **[ken](lib/kit.coffee?source#L654)**
+- ## **[ken](lib/kit.coffee?source#L655)**
 
     The `ken` module.
     You must `kit.require 'ken'` before using it.
     For more information goto the `Ken` section.
 
-- ## **[log(msg, action, opts)](lib/kit.coffee?source#L693)**
+- ## **[log(msg, action, opts)](lib/kit.coffee?source#L694)**
 
     A better log for debugging, it uses the `kit.xinspect` to log.
 
@@ -591,7 +591,7 @@ Goto [changelog](doc/changelog.md)
         # => '[2015-02-07 08:31:49] a b 10'
         ```
 
-- ## **[logs(args)](lib/kit.coffee?source#L783)**
+- ## **[logs(args)](lib/kit.coffee?source#L784)**
 
     Shortcut for logging multiple strings.
 
@@ -606,7 +606,7 @@ Goto [changelog](doc/changelog.md)
         # => [2015-02-07 08:31:49] test1 test2 test3
         ```
 
-- ## **[monitorApp(opts)](lib/kit.coffee?source#L856)**
+- ## **[monitorApp(opts)](lib/kit.coffee?source#L857)**
 
     Monitor an application and automatically restart it when file changed.
     Even when the monitored app exit with error, the monitor will still wait
@@ -677,13 +677,13 @@ Goto [changelog](doc/changelog.md)
         }
         ```
 
-- ## **[nodeVersion()](lib/kit.coffee?source#L954)**
+- ## **[nodeVersion()](lib/kit.coffee?source#L955)**
 
     Node version. Such as `v0.10.23` is `0.1023`, `v0.10.1` is `0.1001`.
 
     - **<u>return</u>**: { _Float_ }
 
-- ## **[defaultArgs(args, defaults)](lib/kit.coffee?source#L984)**
+- ## **[defaultArgs(args, defaults)](lib/kit.coffee?source#L985)**
 
     A helper for arguments type based function override.
 
@@ -717,7 +717,7 @@ Goto [changelog](doc/changelog.md)
         { name: 'test', brush: ['red'], family: null, fn: -> 'nothing' }
         ```
 
-- ## **[parseComment(code, opts)](lib/kit.coffee?source#L1034)**
+- ## **[parseComment(code, opts)](lib/kit.coffee?source#L1035)**
 
     A comments parser for javascript and coffee-script.
     Used to generate documentation from source code automatically.
@@ -762,7 +762,7 @@ Goto [changelog](doc/changelog.md)
         }
         ```
 
-- ## **[parseDependency(entryPaths, opts)](lib/kit.coffee?source#L1137)**
+- ## **[parseDependency(entryPaths, opts)](lib/kit.coffee?source#L1138)**
 
     Parse dependency tree by regex. The dependency relationships
     is not a tree, but a graph. To avoid dependency cycle, this
@@ -805,11 +805,11 @@ Goto [changelog](doc/changelog.md)
         	kit.log markdownStr
         ```
 
-- ## **[path](lib/kit.coffee?source#L1200)**
+- ## **[path](lib/kit.coffee?source#L1201)**
 
     io.js native module `path`. See `nofs` for more information.
 
-- ## **[Promise](lib/kit.coffee?source#L1208)**
+- ## **[Promise](lib/kit.coffee?source#L1209)**
 
     The promise lib. Now, it uses Yaku as ES5 polyfill.
     In the future, the Yaku will be replaced with native
@@ -817,13 +817,13 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>type</u>**: { _Object_ }
 
-- ## **[proxy](lib/kit.coffee?source#L1215)**
+- ## **[proxy](lib/kit.coffee?source#L1216)**
 
     The `proxy` module.
     You must `kit.require 'proxy'` before using it.
     For more information goto the `Proxy` section.
 
-- ## **[regexReduce(reg, str, iter, init)](lib/kit.coffee?source#L1234)**
+- ## **[regexReduce(reg, str, iter, init)](lib/kit.coffee?source#L1235)**
 
     Reduce a string via a regex.
 
@@ -850,7 +850,7 @@ Goto [changelog](doc/changelog.md)
         kit.log out # => [1, 10, 3]
         ```
 
-- ## **[regexMap(reg, str, iter)](lib/kit.coffee?source#L1258)**
+- ## **[regexMap(reg, str, iter)](lib/kit.coffee?source#L1259)**
 
     Map a string via a regex.
 
@@ -872,7 +872,7 @@ Goto [changelog](doc/changelog.md)
         kit.log out # => [1, 10, 3]
         ```
 
-- ## **[require(moduleName, dir, loaded)](lib/kit.coffee?source#L1296)**
+- ## **[require(moduleName, dir, loaded)](lib/kit.coffee?source#L1297)**
 
     Much faster than the native require of node, but you should
     follow some rules to use it safely.
@@ -913,7 +913,7 @@ Goto [changelog](doc/changelog.md)
         jhash = kit.require 'jhash', __dirname
         ```
 
-- ## **[requireOptional(name, dir, semver)](lib/kit.coffee?source#L1371)**
+- ## **[requireOptional(name, dir, semver)](lib/kit.coffee?source#L1372)**
 
     Require an optional package. If not found, it will
     warn the user to npm install it, and exit the process.
@@ -936,7 +936,7 @@ Goto [changelog](doc/changelog.md)
 
         The required package.
 
-- ## **[request(opts)](lib/kit.coffee?source#L1505)**
+- ## **[request(opts)](lib/kit.coffee?source#L1506)**
 
     A handy extended combination of `http.request` and `https.request`.
 
@@ -1050,14 +1050,14 @@ Goto [changelog](doc/changelog.md)
         	kit.log body
         ```
 
-- ## **[semver](lib/kit.coffee?source#L1715)**
+- ## **[semver](lib/kit.coffee?source#L1716)**
 
     The semantic versioner for npm, known as [semver](https://github.com/npm/node-semver).
     You must `kit.require 'semver'` before using it.
 
     - **<u>type</u>**: { _Object_ }
 
-- ## **[spawn(cmd, args, opts)](lib/kit.coffee?source#L1746)**
+- ## **[spawn(cmd, args, opts)](lib/kit.coffee?source#L1747)**
 
     A safer version of `child_process.spawn` to cross-platform run
     a process. In some conditions, it may be more convenient
@@ -1101,13 +1101,13 @@ Goto [changelog](doc/changelog.md)
         .then ({code}) -> kit.log code
         ```
 
-- ## **[sse](lib/kit.coffee?source#L1804)**
+- ## **[sse](lib/kit.coffee?source#L1805)**
 
     The `sse` module.
     You must `kit.require 'sse'` before using it.
     For more information goto the `sse` section.
 
-- ## **[task(name, opts, fn)](lib/kit.coffee?source#L1865)**
+- ## **[task(name, opts, fn)](lib/kit.coffee?source#L1866)**
 
     Sequencing and executing tasks and dependencies concurrently.
 
@@ -1187,12 +1187,12 @@ Goto [changelog](doc/changelog.md)
         	kit.log 'All Done!'
         ```
 
-- ## **[url](lib/kit.coffee?source#L1937)**
+- ## **[url](lib/kit.coffee?source#L1938)**
 
     The `url` module of [io.js](iojs.org).
     You must `kit.require 'url'` before using it.
 
-- ## **[warp(from, opts)](lib/kit.coffee?source#L2052)**
+- ## **[warp(from, opts)](lib/kit.coffee?source#L2053)**
 
     Works much like `gulp.src`, but with Promise instead.
     The warp control and error handling is more pleasant.
@@ -1317,7 +1317,7 @@ Goto [changelog](doc/changelog.md)
         .run 'dist'
         ```
 
-- ## **[which(name)](lib/kit.coffee?source#L2125)**
+- ## **[which(name)](lib/kit.coffee?source#L2126)**
 
     Same as the unix `which` command.
     You must `kit.require 'which'` before using it.
@@ -1328,14 +1328,14 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Promise_ }
 
-- ## **[whichSync](lib/kit.coffee?source#L2132)**
+- ## **[whichSync](lib/kit.coffee?source#L2133)**
 
     Sync version of `which`.
     You must `kit.require 'whichSync'` before using it.
 
     - **<u>type</u>**: { _Function_ }
 
-- ## **[xinspect(obj, opts)](lib/kit.coffee?source#L2143)**
+- ## **[xinspect(obj, opts)](lib/kit.coffee?source#L2144)**
 
     For debugging. Dump a colorful object.
 
@@ -1352,7 +1352,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _String_ }
 
-- ## **[xopen(cmds, opts)](lib/kit.coffee?source#L2166)**
+- ## **[xopen(cmds, opts)](lib/kit.coffee?source#L2167)**
 
     Open a thing that your system can recognize.
     Now only support Windows, OSX or system that installed 'xdg-open'.
@@ -1630,21 +1630,7 @@ kit.warp 'src/**/*.coffee'
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[mocha(opts)](lib/drives.coffee?source#L363)**
-
-    mocha test
-
-    - **<u>param</u>**: `opts` { _Object_ }
-
-        ```
-        {
-        	timeout: 5000
-        }
-        ```
-
-    - **<u>return</u>**: { _Function_ }
-
-- ## **[reader(opts)](lib/drives.coffee?source#L393)**
+- ## **[reader(opts)](lib/drives.coffee?source#L365)**
 
     read file and set `contents`
 
@@ -1661,7 +1647,7 @@ kit.warp 'src/**/*.coffee'
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[stylus(opts)](lib/drives.coffee?source#L462)**
+- ## **[stylus(opts)](lib/drives.coffee?source#L434)**
 
     Compile stylus.
 
@@ -1688,7 +1674,7 @@ kit.warp 'src/**/*.coffee'
         }
         ```
 
-- ## **[uglifyjs(opts)](lib/drives.coffee?source#L502)**
+- ## **[uglifyjs(opts)](lib/drives.coffee?source#L474)**
 
     uglify-js processor
 
@@ -1708,7 +1694,7 @@ kit.warp 'src/**/*.coffee'
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[writer()](lib/drives.coffee?source#L527)**
+- ## **[writer()](lib/drives.coffee?source#L499)**
 
     Output file by `contents` and `dest`.
     If the 'ext' or 'name' is not null,
@@ -1720,7 +1706,7 @@ kit.warp 'src/**/*.coffee'
 
 # Ken
 
-- ## **[ken(opts)](lib/ken.coffee?source#L50)**
+- ## **[ken(opts)](lib/ken.coffee?source#L75)**
 
     A simple promise based module for unit tests.
 
@@ -1730,10 +1716,11 @@ kit.warp 'src/**/*.coffee'
         ```coffeescript
         {
         	isBail: true
+        	isExitOnUnhandled: true
         	logPass: (msg) ->
         		console.log br.green('o'), msg
-        	logFail: (err) ->
-        		console.error br.red('x'), err
+        	logFail: (msg, err) ->
+        		console.error br.red('x'), msg, err
         	logFinal: (passed, failed) ->
         		console.log """
         		#{br.grey '----------------'}
@@ -1743,10 +1730,10 @@ kit.warp 'src/**/*.coffee'
         }
         ```
 
-    - **<u>return</u>**: { _Promise_ }
+    - **<u>return</u>**: { _Function_ }
 
-        It will resolve { code, passed, failed },
-        if all passed, code will be 0, else it will be 1.
+        It has two members: `{ async, sync }`.
+        Both of them will resolve `{ passed, failed }`.
 
     - **<u>example</u>**:
 
@@ -1773,6 +1760,32 @@ kit.warp 'src/**/*.coffee'
         	process.exit failed
         ```
 
+    - **<u>example</u>**:
+
+        Filter the tests, only test the odd ones.
+        ```coffeescript
+        ken = kit.require 'ken'
+        test = ken()
+
+        # Async tests
+        test.async(
+        	[
+        		test 'basic 1', ->
+        			ken.eq 'ok', 'ok'
+        		test 'basic 2', ->
+        			ken.deepEq { a: 1, b: 2 }, { a: 1, b: 2 }
+        		test 'basic 3', ->
+        			ken.deepEq 1, 1
+        	]
+        	.filter (fn, index) -> index % 2
+        	.map (fn) ->
+        		# prefix all the messages with current file path
+        		fn.msg = "#{__filename} - #{fn.msg}"
+        		fn
+        ).then ({ failed }) ->
+        	process.exit failed
+        ```
+
 
 
 # Proxy
@@ -1783,7 +1796,7 @@ kit.warp 'src/**/*.coffee'
     A cross-platform programmable Fiddler alternative.
     You can even replace express.js with it's `flow` function.
 
-- ## **[body()](lib/proxy.coffee?source#L20)**
+- ## **[body()](lib/proxy.coffee?source#L21)**
 
     A simple request body middleware.
 
@@ -1791,7 +1804,7 @@ kit.warp 'src/**/*.coffee'
 
         `(ctx) -> Promise`
 
-- ## **[connect(req, sock, head, host, port, err)](lib/proxy.coffee?source#L53)**
+- ## **[connect(req, sock, head, host, port, err)](lib/proxy.coffee?source#L54)**
 
     Http CONNECT method tunneling proxy helper.
     Most times used with https proxing.
@@ -1829,13 +1842,13 @@ kit.warp 'src/**/*.coffee'
         server.listen 8123
         ```
 
-- ## **[etag()](lib/proxy.coffee?source#L82)**
+- ## **[etag()](lib/proxy.coffee?source#L83)**
 
     Create a etag middleware.
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[flow(middlewares)](lib/proxy.coffee?source#L183)**
+- ## **[flow(middlewares)](lib/proxy.coffee?source#L178)**
 
     A promise based middlewares proxy.
 
@@ -1919,18 +1932,18 @@ kit.warp 'src/**/*.coffee'
 
         	proxy.select { url: '/st' }, (ctx) ->
         		ctx.body = send(ctx.req, ctx.url, { root: 'static' })
-
-        	# sub-route
-        	proxy.select { url: '/sub' }, proxy.flow([{
-        		proxy.select { url: '/home' }, (ctx) ->
-        			ctx.body = 'hello world'
-        	}])
         ]
 
         http.createServer(proxy.flow middlewares).listen 8123
         ```
 
-- ## **[match(pattern, opts)](lib/proxy.coffee?source#L306)**
+- ## **[noflow](lib/proxy.coffee?source#L184)**
+
+    See project [noflow](https://github.com/ysmood/noflow).
+
+    - **<u>type</u>**: { _Object_ }
+
+- ## **[match(pattern, opts)](lib/proxy.coffee?source#L199)**
 
     Generate an express like unix path selector. See the example of `proxy.flow`.
 
@@ -1953,7 +1966,7 @@ kit.warp 'src/**/*.coffee'
         kit.log match '/items/10' # output => { id: '10' }
         ```
 
-- ## **[midToFlow(h)](lib/proxy.coffee?source#L338)**
+- ## **[midToFlow(h)](lib/proxy.coffee?source#L231)**
 
     Convert a Express-like middleware to `proxy.flow` middleware.
 
@@ -1978,7 +1991,7 @@ kit.warp 'src/**/*.coffee'
         http.createServer(proxy.flow middlewares).listen 8123
         ```
 
-- ## **[select(sel, middleware)](lib/proxy.coffee?source#L368)**
+- ## **[select(sel, middleware)](lib/proxy.coffee?source#L261)**
 
     Create a conditional middleware that only works when the pattern matches.
 
@@ -2003,7 +2016,7 @@ kit.warp 'src/**/*.coffee'
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[serverHelper(opts)](lib/proxy.coffee?source#L450)**
+- ## **[serverHelper(opts)](lib/proxy.coffee?source#L344)**
 
     Create a http request middleware.
 
@@ -2047,7 +2060,7 @@ kit.warp 'src/**/*.coffee'
         nokit.log { any: 'thing' }
         ```
 
-- ## **[static(opts)](lib/proxy.coffee?source#L513)**
+- ## **[static(opts)](lib/proxy.coffee?source#L407)**
 
     Create a static file middleware for `proxy.flow`.
 
@@ -2068,7 +2081,7 @@ kit.warp 'src/**/*.coffee'
         http.createServer(proxy.flow middlewares).listen 8123
         ```
 
-- ## **[url(opts)](lib/proxy.coffee?source#L609)**
+- ## **[url(opts)](lib/proxy.coffee?source#L503)**
 
     Use it to proxy one url to another.
 

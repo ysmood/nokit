@@ -423,59 +423,18 @@ module.exports = {
     compile: ['.ls']
 
     /**
-    	 * mocha test
-    	 * @param  {Object} opts
-    	 * ```
+    	 * read file and set `contents`
+    	 * @param  {Object} opts Defaults:
+    	 * ```coffee
     	 * {
-    	 * 	timeout: 5000
+    	 * 	isCache: true
+    	 * 	encoding: 'utf8'
+    	 * 	cacheDir: '.nokit/warp'
     	 * }
     	 * ```
     	 * @return {Function}
      */
   }),
-  mocha: function(opts) {
-    var Mocha, mocha;
-    if (opts == null) {
-      opts = {};
-    }
-    _.defaults(opts, {
-      timeout: 5000
-    });
-    Mocha = kit.requireOptional('mocha', __dirname);
-    mocha = new Mocha(opts);
-    return _.extend(function() {
-      mocha.addFile(this.path);
-      return this.drives.length = 0;
-    }, {
-      isReader: true,
-      onEnd: function() {
-        return new Promise(function(resolve, reject) {
-          return mocha.run(function(code) {
-            if (code === 0) {
-              return resolve();
-            } else {
-              return reject({
-                code: code
-              });
-            }
-          });
-        });
-      }
-    });
-  },
-
-  /**
-  	 * read file and set `contents`
-  	 * @param  {Object} opts Defaults:
-  	 * ```coffee
-  	 * {
-  	 * 	isCache: true
-  	 * 	encoding: 'utf8'
-  	 * 	cacheDir: '.nokit/warp'
-  	 * }
-  	 * ```
-  	 * @return {Function}
-   */
   reader: function(opts) {
     var hashDrives, read;
     if (opts == null) {

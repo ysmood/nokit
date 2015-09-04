@@ -170,12 +170,6 @@ proxy =
 	 *
 	 * 	proxy.select { url: '/st' }, (ctx) ->
 	 * 		ctx.body = send(ctx.req, ctx.url, { root: 'static' })
-	 *
-	 * 	# sub-route
-	 * 	proxy.select { url: '/sub' }, proxy.flow([{
-	 * 		proxy.select { url: '/home' }, (ctx) ->
-	 * 			ctx.body = 'hello world'
-	 * 	}])
 	 * ]
 	 *
 	 * http.createServer(proxy.flow middlewares).listen 8123
@@ -183,6 +177,10 @@ proxy =
 	###
 	flow: noflow.flow
 
+	###*
+	 * See project [noflow](https://github.com/ysmood/noflow).
+	 * @type {Object}
+	###
 	noflow: noflow
 
 	###*

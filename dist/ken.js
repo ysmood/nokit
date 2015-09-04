@@ -1,4 +1,4 @@
-var Promise, _, assert, br, ken, kit;
+var Promise, _, assert, br, ken, kit, wrap;
 
 kit = require('./kit');
 
@@ -15,10 +15,11 @@ assert = require('assert');
  * ```coffeescript
  * {
  * 	isBail: true
+ * 	isExitOnUnhandled: true
  * 	logPass: (msg) ->
  * 		console.log br.green('o'), msg
- * 	logFail: (err) ->
- * 		console.error br.red('x'), err
+ * 	logFail: (msg, err) ->
+ * 		console.error br.red('x'), msg, err
  * 	logFinal: (passed, failed) ->
  * 		console.log """
  * 		#{br.grey '----------------'}
@@ -27,8 +28,8 @@ assert = require('assert');
  * 		"""
  * }
  * ```
- * @return {Promise} It will resolve { code, passed, failed },
- * if all passed, code will be 0, else it will be 1.
+ * @return {Function} It has two members: `{ async, sync }`.
+ * Both of them will resolve `{ passed, failed }`.
  * @example
  * ```coffeescript
  * ken = kit.require 'ken'
@@ -52,40 +53,75 @@ assert = require('assert');
  * .then ({ failed }) ->
  * 	process.exit failed
  * ```
+ * @example
+ * Filter the tests, only test the odd ones.
+ * ```coffeescript
+ * ken = kit.require 'ken'
+ * test = ken()
+ *
+ * # Async tests
+ * test.async(
+ * 	[
+ * 		test 'basic 1', ->
+ * 			ken.eq 'ok', 'ok'
+ * 		test 'basic 2', ->
+ * 			ken.deepEq { a: 1, b: 2 }, { a: 1, b: 2 }
+ * 		test 'basic 3', ->
+ * 			ken.deepEq 1, 1
+ * 	]
+ * 	.filter (fn, index) -> index % 2
+ * 	.map (fn) ->
+ * 		# prefix all the messages with current file path
+ * 		fn.msg = "#{__filename} - #{fn.msg}"
+ * 		fn
+ * ).then ({ failed }) ->
+ * 	process.exit failed
+ * ```
  */
 
 ken = function(opts) {
-  var failed, onFinal, passed, test;
+  var failed, onFinal, onUnhandledRejection, passed, test;
   if (opts == null) {
     opts = {};
   }
   _.defaults(opts, {
     isBail: true,
+    isExitOnUnhandled: true,
     logPass: function(msg) {
       return console.log(br.green('o'), br.grey(msg));
     },
-    logFail: function(err) {
-      return console.error(br.red('x'), err);
+    logFail: function(msg, err) {
+      return console.error(br.red('x'), br.grey(msg), err.message);
     },
     logFinal: function(passed, failed) {
       return console.log((br.grey('----------------')) + "\npass " + (br.green(passed)) + "\nfail " + (br.red(failed)));
     }
   });
+  if (opts.isExitOnUnhandled) {
+    onUnhandledRejection = Promise.onUnhandledRejection;
+    Promise.onUnhandledRejection = function(reason, p) {
+      onUnhandledRejection(reason, p);
+      return process.exit(1);
+    };
+  }
   passed = 0;
   failed = 0;
   test = function(msg, fn) {
-    return function() {
+    var tsetFn;
+    tsetFn = function() {
       return Promise.resolve().then(fn).then(function() {
         passed++;
-        return opts.logPass(msg);
+        return opts.logPass(tsetFn.msg);
       }, function(err) {
         failed++;
-        opts.logFail(err);
+        opts.logFail(tsetFn.msg, err);
         if (opts.isBail) {
           return Promise.reject(err);
         }
       });
     };
+    tsetFn.msg = msg;
+    return tsetFn;
   };
   onFinal = function() {
     opts.logFinal(passed, failed);
@@ -104,7 +140,19 @@ ken = function(opts) {
   });
 };
 
+wrap = function(fn) {
+  return function() {
+    var err;
+    try {
+      return Promise.resolve(fn.apply(0, arguments));
+    } catch (_error) {
+      err = _error;
+      return Promise.reject(err);
+    }
+  };
+};
+
 module.exports = _.extend(ken, {
-  eq: assert.strictEqual,
-  deepEq: assert.deepEqual
+  eq: wrap(assert.strictEqual),
+  deepEq: wrap(assert.deepEqual)
 });

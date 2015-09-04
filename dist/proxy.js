@@ -4,7 +4,7 @@
  * A cross-platform programmable Fiddler alternative.
  * You can even replace express.js with it's `flow` function.
  */
-var Overview, Promise, _, http, kit, proxy;
+var Overview, Promise, _, http, kit, noflow, proxy;
 
 Overview = 'proxy';
 
@@ -13,6 +13,8 @@ kit = require('./kit');
 _ = kit._, Promise = kit.Promise;
 
 http = require('http');
+
+noflow = require('noflow');
 
 proxy = {
   agent: new http.Agent,
@@ -190,133 +192,18 @@ proxy = {
   	 *
   	 * 	proxy.select { url: '/st' }, (ctx) ->
   	 * 		ctx.body = send(ctx.req, ctx.url, { root: 'static' })
-  	 *
-  	 * 	# sub-route
-  	 * 	proxy.select { url: '/sub' }, proxy.flow([{
-  	 * 		proxy.select { url: '/home' }, (ctx) ->
-  	 * 			ctx.body = 'hello world'
-  	 * 	}])
   	 * ]
   	 *
   	 * http.createServer(proxy.flow middlewares).listen 8123
   	 * ```
    */
-  flow: function(middlewares) {
-    var $err, Stream, endCtx, endRes, error, error404, tryMid;
-    Stream = require('stream');
-    endRes = function(ctx, data, isStr) {
-      var buf;
-      buf = isStr ? new Buffer(data) : data;
-      if (!ctx.res.headersSent) {
-        ctx.res.setHeader('Content-Length', buf.length);
-      }
-      ctx.res.end(buf);
-    };
-    endCtx = function(ctx) {
-      var body, res;
-      body = ctx.body;
-      res = ctx.res;
-      switch (typeof body) {
-        case 'string':
-          endRes(ctx, body, true);
-          break;
-        case 'object':
-          if (body === null) {
-            res.end();
-          } else if (body instanceof Stream) {
-            body.pipe(res);
-          } else if (body instanceof Buffer) {
-            endRes(ctx, body);
-          } else if (_.isFunction(body.then)) {
-            return body.then(function(data) {
-              ctx.body = data;
-              return endCtx(ctx);
-            });
-          } else {
-            if (!ctx.res.headersSent) {
-              res.setHeader('Content-Type', 'application/json');
-            }
-            endRes(ctx, JSON.stringify(body), true);
-          }
-          break;
-        case 'undefined':
-          res.end();
-          break;
-        default:
-          endRes(ctx, body.toString(), true);
-      }
-    };
-    $err = {};
-    tryMid = function(fn, ctx) {
-      var e;
-      try {
-        return fn(ctx);
-      } catch (_error) {
-        e = _error;
-        $err.e = e;
-        return $err;
-      }
-    };
-    error = function(err, ctx) {
-      if (ctx.res.statusCode === 200) {
-        ctx.res.statusCode = 500;
-      }
-      ctx.body = err ? "<pre>\n" + (err instanceof Error ? err.stack : err) + "\n</pre>" : ctx.body = http.STATUS_CODES[ctx.res.statusCode];
-      return endCtx(ctx);
-    };
-    error404 = function(ctx) {
-      ctx.res.statusCode = 404;
-      ctx.body = http.STATUS_CODES[404];
-      return Promise.resolve();
-    };
-    return function(req, res) {
-      var ctx, index, originalUrl, parentNext;
-      if (res) {
-        ctx = {
-          req: req,
-          res: res,
-          body: null
-        };
-      } else {
-        ctx = req;
-        parentNext = req.next;
-        req = ctx.req, res = ctx.res;
-        originalUrl = req.originalUrl;
-        req.originalUrl = null;
-      }
-      index = 0;
-      ctx.next = function() {
-        var m, ret;
-        if (_.isString(req.originalUrl)) {
-          req.url = req.originalUrl;
-        }
-        m = middlewares[index++];
-        if (m === void 0) {
-          if (parentNext) {
-            ctx.next = parentNext;
-            req.originalUrl = originalUrl;
-            return ctx.next();
-          } else {
-            return error404(ctx);
-          }
-        }
-        ret = _.isFunction(m) ? tryMid(m, ctx) : ctx.body = m;
-        if (ret === $err) {
-          return Promise.reject($err.e);
-        }
-        return Promise.resolve(ret);
-      };
-      if (parentNext) {
-        return ctx.next();
-      } else {
-        return ctx.next().then(function() {
-          return endCtx(ctx);
-        }, function(err) {
-          return error(err, ctx);
-        });
-      }
-    };
-  },
+  flow: noflow.flow,
+
+  /**
+  	 * See project [noflow](https://github.com/ysmood/noflow).
+  	 * @type {Object}
+   */
+  noflow: noflow,
 
   /**
   	 * Generate an express like unix path selector. See the example of `proxy.flow`.
@@ -414,7 +301,7 @@ proxy = {
       if (!_.isString(str)) {
         return false;
       }
-      ret = _.isString(pattern) ? key === 'url' && _.startsWith(str, pattern) ? (ctx.req.originalUrl = ctx.req.url, ctx.req.url = str.slice(pattern.length)) : str === pattern ? str : void 0 : _.isRegExp(pattern) ? str.match(pattern) : _.isFunction(pattern) ? pattern(str) : void 0;
+      ret = _.isString(pattern) ? key === 'url' && _.startsWith(str, pattern) ? (str = str.slice(pattern.length), str === '' ? str = '/' : void 0, str) : str === pattern ? str : void 0 : _.isRegExp(pattern) ? str.match(pattern) : _.isFunction(pattern) ? pattern(str) : void 0;
       if (ret != null) {
         ctx[key] = ret;
         return true;
