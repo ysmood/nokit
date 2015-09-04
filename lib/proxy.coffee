@@ -8,6 +8,7 @@ Overview = 'proxy'
 kit = require './kit'
 { _, Promise } = kit
 http = require 'http'
+noflow = require 'noflow'
 
 proxy =
 
@@ -180,115 +181,9 @@ proxy =
 	 * http.createServer(proxy.flow middlewares).listen 8123
 	 * ```
 	###
-	flow: (middlewares) ->
-		Stream = require 'stream'
+	flow: noflow.flow
 
-		endRes = (ctx, data, isStr) ->
-			buf = if isStr then new Buffer data else data
-			if not ctx.res.headersSent
-				ctx.res.setHeader 'Content-Length', buf.length
-			ctx.res.end buf
-
-			return
-
-		endCtx = (ctx) ->
-			body = ctx.body
-			res = ctx.res
-
-			switch typeof body
-				when 'string'
-					endRes ctx, body, true
-				when 'object'
-					if body == null
-						res.end()
-					else if body instanceof Stream
-						body.pipe res
-					else if body instanceof Buffer
-						endRes ctx, body
-					else if _.isFunction body.then
-						return body.then (data) ->
-							ctx.body = data
-							endCtx ctx
-					else
-						if not ctx.res.headersSent
-							res.setHeader 'Content-Type', 'application/json'
-						endRes ctx, JSON.stringify(body), true
-				when 'undefined'
-					res.end()
-				else
-					endRes ctx, body.toString(), true
-
-			return
-
-		# performance optimization, hack v8
-		$err = {}
-		tryMid = (fn, ctx) ->
-			try
-				fn ctx
-			catch e
-				$err.e = e
-				$err
-
-		error = (err, ctx) ->
-			if ctx.res.statusCode == 200
-				ctx.res.statusCode = 500
-
-			ctx.body = if err
-				"""<pre>
-				#{if err instanceof Error then err.stack else err}
-				</pre>"""
-			else
-				ctx.body = http.STATUS_CODES[ctx.res.statusCode]
-
-			endCtx ctx
-
-		error404 = (ctx) ->
-			ctx.res.statusCode = 404
-			ctx.body = http.STATUS_CODES[404]
-			Promise.resolve()
-
-		(req, res) ->
-			if res
-				ctx = { req, res, body: null }
-			else
-				ctx = req
-				parentNext = req.next
-				{ req, res } = ctx
-				{ originalUrl } = req
-				req.originalUrl = null
-
-			index = 0
-			ctx.next = ->
-				if _.isString req.originalUrl
-					req.url = req.originalUrl
-
-				m = middlewares[index++]
-				if m == undefined
-					return if parentNext
-						ctx.next = parentNext
-						req.originalUrl = originalUrl
-						ctx.next()
-					else
-						error404 ctx
-
-				ret = if _.isFunction m
-					tryMid m, ctx
-				else
-					ctx.body = m
-
-				if ret == $err
-					return Promise.reject $err.e
-
-				Promise.resolve ret
-
-			if parentNext
-				ctx.next()
-			else
-				# Only the root route has the error handler.
-				ctx.next().then(
-					-> endCtx ctx
-					(err) -> error err, ctx
-				)
+	noflow: noflow
 
 	###*
 	 * Generate an express like unix path selector. See the example of `proxy.flow`.
@@ -375,8 +270,9 @@ proxy =
 
 			ret = if _.isString(pattern)
 				if key == 'url' and _.startsWith(str, pattern)
-					ctx.req.originalUrl = ctx.req.url
-					ctx.req.url = str.slice pattern.length
+					str = str.slice pattern.length
+					str = '/' if str == ''
+					str
 				else if str == pattern
 					str
 			else if _.isRegExp pattern

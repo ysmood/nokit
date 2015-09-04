@@ -569,7 +569,7 @@ describe 'Kit:', ->
 		proxy = kit.require 'proxy'
 
 		routes = [proxy.select url: '/sub', proxy.flow [
-				proxy.select url: '/home', (ctx) ->
+				proxy.select url: '/sub/home', (ctx) ->
 					ctx.body = ctx.url
 			]
 		]
@@ -625,7 +625,7 @@ describe 'Kit:', ->
 					ctx.res.statusCode = 501
 					ctx.body = err.message
 			proxy.select url: '/sub', proxy.flow [
-				proxy.select url: '/home', (ctx) -> a()
+				proxy.select url: '/sub/home', (ctx) -> a()
 			]
 		]
 
