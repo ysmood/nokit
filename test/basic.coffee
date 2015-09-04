@@ -1,27 +1,14 @@
-assert = require 'assert'
 kit = require '../lib/kit'
 http = require 'http'
 { _, Promise } = kit
 kit.require 'drives'
+ken = kit.require 'ken'
+it = ken()
 
 cacheDir = 'test/fixtures/cacheDir'
 
-shouldEqual = (args...) ->
-	try
-		assert.strictEqual.apply assert, args
-	catch err
-		Promise.reject err
-
-shouldDeepEqual = (args...) ->
-	try
-		assert.deepEqual.apply assert, args
-	catch err
-		Promise.reject err
-
-serverList = []
 createRandomServer = (fn) ->
 	server = http.createServer fn
-	serverList.push server
 
 	listen = kit.promisify server.listen, server
 
@@ -30,21 +17,56 @@ createRandomServer = (fn) ->
 
 unixSep = (p) -> p.replace /\\/g, '\/'
 
-describe 'Kit:', ->
-	after ->
-		for s in serverList
-			try s.close()
+it.async [
+
+	it 'ken all passed', ->
+		ken = kit.require 'ken'
+		test = ken()
+
+		# Async tests
+		test.async [
+			test 'basic 1', ->
+				ken.eq 'ok', 'ok'
+			test 'basic 2', ->
+				ken.deepEq { a: 1, b: 2 }, { a: 1, b: 2 }
+
+			# Sync tests
+			kit.flow [
+				test 'basic 3', ->
+					ken.eq 'ok', 'ok'
+				test 'basic 4', ->
+					ken.eq 'ok', 'ok'
+			]
+		]
+		.then ({ passed }) ->
+			ken.eq 4, passed
+
+	it 'ken failed', ->
+		ken = kit.require 'ken'
+		test = ken()
+
+		# Async tests
+		test.async [
+			test 'basic 1', ->
+				ken.eq 'ok', 'ok'
+			test 'basic 2', ->
+				ken.eq 'ok', 'ok1'
+			test 'basic 3', ->
+				ken.deepEq { a: 1, b: 2 }, { a: 1, b: 2 }
+		]
+		.then ({ failed }) ->
+			ken.eq 1, failed
 
 	it 'brush', ->
 		br = kit.require 'brush'
-		shouldEqual br.red('ok'), '\u001b[31mok\u001b[39m'
+		ken.eq br.red('ok'), '\u001b[31mok\u001b[39m'
 
 	it 'brush disable', ->
 		br = kit.require 'brush'
 		br.isEnabled = false
 		ret = br.green('ok')
 		br.isEnabled = true
-		shouldEqual ret, 'ok'
+		ken.eq ret, 'ok'
 
 	it 'log', ->
 		kit.logs 'a', 'b', 'c'
@@ -57,8 +79,8 @@ describe 'Kit:', ->
 			[ { tags: [tag] } ] = kit.parseComment str
 
 			Promise.all [
-				shouldEqual tag.type, 'Int'
-				shouldEqual tag.name, 'limit'
+				ken.eq tag.type, 'Int'
+				ken.eq tag.name, 'limit'
 			]
 
 	it 'parseComment js', ->
@@ -68,13 +90,13 @@ describe 'Kit:', ->
 			[ { tags: [tag] } ] = kit.parseComment str
 
 			Promise.all [
-				shouldEqual tag.type, 'Int'
-				shouldEqual tag.name, 'limit'
+				ken.eq tag.type, 'Int'
+				ken.eq tag.name, 'limit'
 			]
 
 	it 'crypto', ->
 		en = kit.encrypt '123', 'test'
-		assert.equal kit.decrypt(en, 'test').toString(), '123'
+		ken.eq kit.decrypt(en, 'test').toString(), '123'
 
 	it 'regexReduce', ->
 		out = kit.regexReduce /\w(\d+)/g, 'a1, b10, c3', (ret, ms) ->
@@ -82,11 +104,11 @@ describe 'Kit:', ->
 			ret
 		, []
 
-		shouldDeepEqual [1, 10, 3], out
+		ken.deepEq [1, 10, 3], out
 
 	it 'regexMap', ->
 		out = kit.regexMap /\w(\d+)/g, 'a1, b10, c3', 1
-		shouldDeepEqual [1, 10, 3], out
+		ken.deepEq [1, 10, 3], out
 
 	it 'request', ->
 		info = 'ok'
@@ -101,7 +123,7 @@ describe 'Kit:', ->
 					port: port
 			}
 			.then (body) ->
-				shouldEqual body, info
+				ken.eq body, info
 
 	it 'request timeout', ->
 		createRandomServer (req, res) ->
@@ -116,7 +138,7 @@ describe 'Kit:', ->
 			{ req } = promise
 
 			promise.catch (err) ->
-				shouldEqual err.message, 'timeout'
+				ken.eq err.message, 'timeout'
 
 	it 'request reqPipe', ->
 		path = 'nofile.coffee'
@@ -138,7 +160,7 @@ describe 'Kit:', ->
 				reqPipe: file
 			}
 			.then (body) ->
-				shouldEqual body, info
+				ken.eq body, info
 
 	it 'request form-data', ->
 		createRandomServer (req, res) ->
@@ -162,21 +184,17 @@ describe 'Kit:', ->
 				reqPipe: form
 			}
 			.then (body) ->
-				shouldEqual +body, buffer.length
+				ken.eq +body, buffer.length
 
-	it 'monitorApp', (tdone) ->
+	it 'monitorApp', -> new Promise (resolve) ->
 		p = 'test/fixtures/monitorApp-test.coffee'
 		kit.copySync 'test/fixtures/monitorApp.coffee', p
 		promise = kit.monitorApp {
 			bin: 'coffee'
 			args: [p]
 			onErrorExit: ({ code, signal }) ->
-				try
-					assert.strictEqual code, 10
-					promise.stop()
-					tdone()
-				catch err
-					tdone err
+				resolve ken.eq code, 10
+				promise.stop()
 		}
 		setTimeout ->
 			kit.outputFileSync p, 'process.exit 10'
@@ -187,8 +205,8 @@ describe 'Kit:', ->
 		p.then ({ stdout }) ->
 			p.process.then (proc) ->
 				Promise.all [
-					shouldEqual proc.pid > 0, true
-					shouldEqual stdout.indexOf('exec_ok\n') > -1, true
+					ken.eq proc.pid > 0, true
+					ken.eq stdout.indexOf('exec_ok\n') > -1, true
 				]
 
 	it 'parseDependency', ->
@@ -196,7 +214,7 @@ describe 'Kit:', ->
 			depRoots: ['test/fixtures/depDir']
 		}
 		.then (paths) ->
-			shouldDeepEqual paths.sort(), [
+			ken.deepEq paths.sort(), [
 				'test/fixtures/dep1.coffee'
 				'test/fixtures/dep2.coffee'
 				'test/fixtures/dep3.coffee'
@@ -208,7 +226,7 @@ describe 'Kit:', ->
 			]
 
 	it 'indent', ->
-		assert kit.indent('a\nb', 2), '  a\n  b'
+		ken.eq kit.indent('a\nb', 2), '  a\n  b'
 
 	it 'depsCache cache newer', ->
 		file = 'test/fixtures/depsCache.txt'
@@ -226,7 +244,7 @@ describe 'Kit:', ->
 				cacheDir
 			}
 			.then (cache) ->
-				shouldEqual cache.isNewer, true
+				ken.eq cache.isNewer, true
 
 	it 'depsCache file newer', ->
 		file = 'test/fixtures/depsCacheFileNewer.txt'
@@ -267,7 +285,7 @@ describe 'Kit:', ->
 
 				out.dests[dest] ='test/fixtures/cacheDir/3779283019-depsCacheFileNewer.txt.dest'
 				out.dests[dest1] ='test/fixtures/cacheDir/3263598758-depsCacheFileNewer.txt.dest1'
-				shouldDeepEqual cache, out
+				ken.deepEq cache, out
 
 	it 'warp map', ->
 		tmp = 'test/fixtures/warp'
@@ -283,7 +301,7 @@ describe 'Kit:', ->
 		.then ->
 			kit.glob tmp + '/**/*.coffee'
 		.then (paths) ->
-			shouldDeepEqual paths.map(unixSep) , [
+			ken.deepEq paths.map(unixSep) , [
 				"test/fixtures/warp/dep4.coffee"
 				"test/fixtures/warp/lib/index.coffee"
 			]
@@ -303,7 +321,7 @@ describe 'Kit:', ->
 		.then ->
 			kit.readFile tmp + '/comment.js', 'utf8'
 		.then (str) ->
-			shouldEqual str[0..10], "/**\n\t * An "
+			ken.eq str[0..10], "/**\n\t * An "
 
 	it 'warp concat', ->
 		tmp = 'test/fixtures/warp_all.coffee'
@@ -315,7 +333,7 @@ describe 'Kit:', ->
 		.then ->
 			kit.readFile tmp, 'utf8'
 		.then (str) ->
-			shouldEqual str.indexOf("require './lib'") > 0, true
+			ken.eq str.indexOf("require './lib'") > 0, true
 
 	it 'warp auto', ->
 		path = 'test/fixtures/compiler.all'
@@ -328,7 +346,7 @@ describe 'Kit:', ->
 		.run 'test/fixtures'
 		.then ->
 			str = kit.readFileSync path, 'utf8'
-			shouldDeepEqual _.trim(str).split('\n').sort(), [
+			ken.deepEq _.trim(str).split('\n').sort(), [
 				'.test .bar{color:red}'
 				'.test{color:red}'
 				'var a;a=function(){return console.log("OK")};'
@@ -351,7 +369,7 @@ describe 'Kit:', ->
 
 		kit.task.run()
 		.then ([seq]) ->
-			shouldDeepEqual seq, [ 'two', 'one', 'default' ]
+			ken.deepEq seq, [ 'two', 'one', 'default' ]
 
 	it 'task sequential', ->
 		seq = []
@@ -371,11 +389,11 @@ describe 'Kit:', ->
 
 		kit.task.run 'default'
 		.then ->
-			shouldDeepEqual seq, [1, 2, 3]
+			ken.deepEq seq, [1, 2, 3]
 
 	it 'defaultArgs', ->
 		fn = ->
-		shouldDeepEqual (kit.defaultArgs ['c', fn], {
+		ken.deepEq (kit.defaultArgs ['c', fn], {
 			str1: { String: '0' }
 			fn: { Function: -> 'test' }
 			str2: { String: '1' }
@@ -385,7 +403,7 @@ describe 'Kit:', ->
 
 	it 'defaultArgs2', ->
 		fn = ->
-		shouldDeepEqual (kit.defaultArgs ['c', fn, 'd'], {
+		ken.deepEq (kit.defaultArgs ['c', fn, 'd'], {
 			str1: { String: '0' }
 			fn: { Function: -> 'test' }
 			str2: { String: '1' }
@@ -397,56 +415,18 @@ describe 'Kit:', ->
 		ret = kit.fuzzySearch('ys', [
 			'sy', 'yxs', 'ysbb', 'xys', 'ysx', 'ysb', 'syx'
 		])
-		shouldEqual ret, 'ysx'
+		ken.eq ret, 'ysx'
 
 	it 'fuzzySearch order', ->
 		ret = kit.fuzzySearch('b', [
 			'lb', 'build'
 		])
-		shouldEqual ret, 'build'
+		ken.eq ret, 'build'
 
 	it 'fuzzySearch not found', ->
-		shouldEqual kit.fuzzySearch('ys', [
+		ken.eq kit.fuzzySearch('ys', [
 			'ss', 'ab'
 		]), undefined
-
-	it 'ken all passed', ->
-		ken = kit.require 'ken'
-		test = ken()
-
-		# Async tests
-		test.async [
-			test 'basic 1', ->
-				ken.eq 'ok', 'ok'
-			test 'basic 2', ->
-				ken.deepEq { a: 1, b: 2 }, { a: 1, b: 2 }
-
-			# Sync tests
-			kit.flow [
-				test 'basic 3', ->
-					ken.eq 'ok', 'ok'
-				test 'basic 4', ->
-					ken.eq 'ok', 'ok'
-			]
-		]
-		.then ({ passed }) ->
-			shouldEqual 4, passed
-
-	it 'ken failed', ->
-		ken = kit.require 'ken'
-		test = ken()
-
-		# Async tests
-		test.async [
-			test 'basic 1', ->
-				ken.eq 'ok', 'ok'
-			test 'basic 2', ->
-				ken.eq 'ok', 'ok1'
-			test 'basic 3', ->
-				ken.deepEq { a: 1, b: 2 }, { a: 1, b: 2 }
-		]
-		.then ({ failed }) ->
-			shouldEqual 1, failed
 
 	it 'proxy url', ->
 		proxy = kit.require 'proxy'
@@ -474,7 +454,7 @@ describe 'Kit:', ->
 				body: false
 			}
 		.then ({ headers, body }) ->
-			shouldEqual 'site-proxy-body-ok', body + headers.x
+			ken.eq 'site-proxy-body-ok', body + headers.x
 
 	it 'proxy flow handler', ->
 		proxy = kit.require 'proxy'
@@ -493,7 +473,7 @@ describe 'Kit:', ->
 				reqData: 'test'
 			}
 			.then (body) ->
-				shouldEqual 'echo: test', body
+				ken.eq 'echo: test', body
 
 	it 'proxy flow string middleware', ->
 		proxy = kit.require 'proxy'
@@ -504,7 +484,7 @@ describe 'Kit:', ->
 				url: "http://127.0.0.1:#{port}"
 			}
 			.then (body) ->
-				shouldEqual 'string works', body
+				ken.eq 'string works', body
 
 	it 'proxy flow url', ->
 		proxy = kit.require 'proxy'
@@ -517,7 +497,7 @@ describe 'Kit:', ->
 		.then (port) ->
 			kit.request "http://127.0.0.1:#{port}/items/123"
 			.then (body) ->
-				shouldEqual '123', body
+				ken.eq '123', body
 
 	it 'proxy flow headers', ->
 		proxy = kit.require 'proxy'
@@ -533,7 +513,7 @@ describe 'Kit:', ->
 				headers: { x: 'ok' }
 			}
 			.then (body) ->
-				shouldEqual '["ok"]', body
+				ken.eq '["ok"]', body
 
 	it 'proxy flow headers not match', ->
 		proxy = kit.require 'proxy'
@@ -550,7 +530,7 @@ describe 'Kit:', ->
 				body: false
 			}
 			.then (res) ->
-				shouldEqual 404, res.statusCode
+				ken.eq 404, res.statusCode
 
 	it 'proxy flow 404', ->
 		proxy = kit.require 'proxy'
@@ -563,7 +543,7 @@ describe 'Kit:', ->
 		.then (port) ->
 			kit.request "http://127.0.0.1:#{port}/itemx"
 			.then (body) ->
-				shouldEqual 'Not Found', body
+				ken.eq 'Not Found', body
 
 	it 'proxy flow sub route', ->
 		proxy = kit.require 'proxy'
@@ -578,7 +558,7 @@ describe 'Kit:', ->
 		.then (port) ->
 			kit.request "http://127.0.0.1:#{port}/sub/home/test"
 			.then (body) ->
-				shouldEqual '/test', body
+				ken.eq '/test', body
 
 	it 'proxy flow sub route 404', ->
 		proxy = kit.require 'proxy'
@@ -596,7 +576,7 @@ describe 'Kit:', ->
 				body: false
 			}
 			.then (res) ->
-				shouldEqual '404Not Found', res.statusCode + res.body
+				ken.eq '404Not Found', res.statusCode + res.body
 
 	it 'proxy flow sub route next', ->
 		proxy = kit.require 'proxy'
@@ -614,7 +594,7 @@ describe 'Kit:', ->
 		.then (port) ->
 			kit.request "http://127.0.0.1:#{port}/sub/home/test"
 			.then (body) ->
-				shouldEqual 'next', body
+				ken.eq 'next', body
 
 	it 'proxy flow sub route error', ->
 		proxy = kit.require 'proxy'
@@ -636,7 +616,7 @@ describe 'Kit:', ->
 				body: false
 			}
 			.then (res) ->
-				shouldEqual '501 a is not defined', res.statusCode + ' ' + res.body
+				ken.eq '501 a is not defined', res.statusCode + ' ' + res.body
 
 	it 'proxy flow promise', ->
 		proxy = kit.require 'proxy'
@@ -649,7 +629,7 @@ describe 'Kit:', ->
 		.then (port) ->
 			kit.request "http://127.0.0.1:#{port}"
 			.then (body) ->
-				shouldEqual kit.readFileSync('.gitignore', 'utf8'), body
+				ken.eq kit.readFileSync('.gitignore', 'utf8'), body
 
 	it 'proxy flow url match', ->
 		proxy = kit.require 'proxy'
@@ -662,7 +642,7 @@ describe 'Kit:', ->
 		.then (port) ->
 			kit.request "http://127.0.0.1:#{port}/items/123"
 			.then (body) ->
-				shouldEqual '123', body
+				ken.eq '123', body
 
 	it 'proxy flow post', ->
 		proxy = kit.require 'proxy'
@@ -678,7 +658,7 @@ describe 'Kit:', ->
 				url: "http://127.0.0.1:#{port}"
 			}
 			.then (body) ->
-				shouldEqual 'POST', body
+				ken.eq 'POST', body
 
 	it 'proxy flow static', ->
 		proxy = kit.require 'proxy'
@@ -692,7 +672,7 @@ describe 'Kit:', ->
 			kit.request encodeURI "http://127.0.0.1:#{port}/st/ひまわり.txt"
 			.then (body) ->
 				str = kit.readFileSync 'test/fixtures/ひまわり.txt', 'utf8'
-				shouldEqual str, body
+				ken.eq str, body
 
 	it 'proxy flow etag', ->
 		proxy = kit.require 'proxy'
@@ -706,7 +686,7 @@ describe 'Kit:', ->
 		.then (port) ->
 			kit.request { url: "http://127.0.0.1:#{port}", body: false }
 			.then (res) ->
-				shouldEqual '349o', res.headers.etag
+				ken.eq '349o', res.headers.etag
 
 	it 'proxy flow midToFlow', ->
 		proxy = kit.require 'proxy'
@@ -729,4 +709,8 @@ describe 'Kit:', ->
 			}
 			.then (body) ->
 				console.log body
-				shouldDeepEqual {a: 10}, JSON.parse(body)
+				ken.deepEq {a: 10}, JSON.parse(body)
+
+]
+.then ({ failed }) ->
+	process.exit failed

@@ -69,12 +69,7 @@ module.exports = (task, option) ->
 			kit.spawn 'git', ['clean', '-fd', 'test/fixtures']
 
 		clean().then ->
-			kit.warp 'test/basic.coffee'
-			.load kit.drives.mocha {
-				timeout: opts.timeout
-				grep: opts.grep
-			}
-			.run()
+			kit.spawn 'coffee', ['test/basic.coffee']
 		.then -> clean()
 		.catch (err) ->
 			if err.code

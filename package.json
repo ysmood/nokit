@@ -55,7 +55,6 @@
     "jshint": "2.8.0",
     "less": "2.5.1",
     "lodash-cli": "3.10.1",
-    "mocha": "2.2.5",
     "path-to-regexp": "1.2.1",
     "send": "0.13.0",
     "stylus": "0.52.0",

@@ -351,34 +351,6 @@ module.exports =
 	, compile: ['.ls']
 
 	###*
-	 * mocha test
-	 * @param  {Object} opts
-	 * ```
-	 * {
-	 * 	timeout: 5000
-	 * }
-	 * ```
-	 * @return {Function}
-	###
-	mocha: (opts = {}) ->
-		_.defaults opts,
-			timeout: 5000
-
-		Mocha = kit.requireOptional 'mocha', __dirname
-		mocha = new Mocha opts
-
-		_.extend ->
-			mocha.addFile @path
-			@drives.length = 0
-		, isReader: true, onEnd: ->
-			new Promise (resolve, reject) ->
-				mocha.run (code) ->
-					if code == 0
-						resolve()
-					else
-						reject { code }
-
-	###*
 	 * read file and set `contents`
 	 * @param  {Object} opts Defaults:
 	 * ```coffee
