@@ -452,8 +452,8 @@ describe 'Kit:', ->
 		proxy = kit.require 'proxy'
 
 		createRandomServer proxy.flow([
-			proxy.select url: /\/site$/, (ctx) ->
-				ctx.body = 'site' + ctx.req.headers.proxy
+			proxy.select url: /\/site$/, ($) ->
+				$.body = 'site' + $.req.headers.proxy
 
 			proxy.select url: /\/proxy$/, proxy.url {
 				url: '/site'
@@ -480,9 +480,9 @@ describe 'Kit:', ->
 		proxy = kit.require 'proxy'
 
 		routes = [
-			(ctx) -> new Promise (r) ->
-				ctx.req.on 'data', (data) ->
-					ctx.body = 'echo: ' + data
+			($) -> new Promise (r) ->
+				$.req.on 'data', (data) ->
+					$.body = 'echo: ' + data
 					r()
 		]
 
@@ -509,8 +509,8 @@ describe 'Kit:', ->
 	it 'proxy flow url', ->
 		proxy = kit.require 'proxy'
 
-		routes = [proxy.select url: /\/items\/(\d+)/, (ctx) ->
-			ctx.body = ctx.url[1]
+		routes = [proxy.select url: /\/items\/(\d+)/, ($) ->
+			$.body = $.url[1]
 		]
 
 		createRandomServer proxy.flow(routes)
@@ -522,8 +522,8 @@ describe 'Kit:', ->
 	it 'proxy flow headers', ->
 		proxy = kit.require 'proxy'
 
-		routes = [proxy.select headers: { 'x': /ok/ }, (ctx) ->
-			ctx.body = ctx.headers.x
+		routes = [proxy.select headers: { 'x': /ok/ }, ($) ->
+			$.body = $.headers.x
 		]
 
 		createRandomServer proxy.flow(routes)
@@ -538,8 +538,8 @@ describe 'Kit:', ->
 	it 'proxy flow headers not match', ->
 		proxy = kit.require 'proxy'
 
-		routes = [proxy.select headers: { 'x': /test/ }, (ctx) ->
-			ctx.body = ctx.headers.x
+		routes = [proxy.select headers: { 'x': /test/ }, ($) ->
+			$.body = $.headers.x
 		]
 
 		createRandomServer proxy.flow(routes)
@@ -555,8 +555,8 @@ describe 'Kit:', ->
 	it 'proxy flow 404', ->
 		proxy = kit.require 'proxy'
 
-		routes = [proxy.select url: /\/items\/(\d+)/, (ctx) ->
-			ctx.body = ctx.url[1]
+		routes = [proxy.select url: /\/items\/(\d+)/, ($) ->
+			$.body = $.url[1]
 		]
 
 		createRandomServer proxy.flow(routes)
@@ -569,8 +569,8 @@ describe 'Kit:', ->
 		proxy = kit.require 'proxy'
 
 		routes = [proxy.select url: '/sub', proxy.flow [
-				proxy.select url: '/sub/home', (ctx) ->
-					ctx.body = ctx.url
+				proxy.select url: '/sub/home', ($) ->
+					$.body = $.url
 			]
 		]
 
@@ -584,8 +584,8 @@ describe 'Kit:', ->
 		proxy = kit.require 'proxy'
 
 		routes = [proxy.select url: '/sub', proxy.flow [
-				proxy.select url: /\/home$/, (ctx) ->
-					ctx.body = ctx.url
+				proxy.select url: /\/home$/, ($) ->
+					$.body = $.url
 			]
 		]
 
@@ -602,12 +602,12 @@ describe 'Kit:', ->
 		proxy = kit.require 'proxy'
 
 		routes = [
-			proxy.select url: '/sub', (ctx) -> ctx.next()
+			proxy.select url: '/sub', ($) -> $.next()
 			proxy.select(url: '/sub', proxy.flow [
-				proxy.select url: proxy.match('/home'), (ctx) ->
-					ctx.body = ctx.url
+				proxy.select url: proxy.match('/home'), ($) ->
+					$.body = $.url
 			])
-			proxy.select url: '/sub', (ctx) -> ctx.body = 'next'
+			proxy.select url: '/sub', ($) -> $.body = 'next'
 		]
 
 		createRandomServer proxy.flow(routes)
@@ -620,12 +620,12 @@ describe 'Kit:', ->
 		proxy = kit.require 'proxy'
 
 		routes = [
-			(ctx) ->
-				ctx.next().catch (err) ->
-					ctx.res.statusCode = 501
-					ctx.body = err.message
+			($) ->
+				$.next().catch (err) ->
+					$.res.statusCode = 501
+					$.body = err.message
 			proxy.select url: '/sub', proxy.flow [
-				proxy.select url: '/sub/home', (ctx) -> a()
+				proxy.select url: '/sub/home', ($) -> a()
 			]
 		]
 
@@ -641,8 +641,8 @@ describe 'Kit:', ->
 	it 'proxy flow promise', ->
 		proxy = kit.require 'proxy'
 
-		routes = [(ctx) ->
-			ctx.body = kit.readFile '.gitignore'
+		routes = [($) ->
+			$.body = kit.readFile '.gitignore'
 		]
 
 		createRandomServer proxy.flow(routes)
@@ -654,8 +654,8 @@ describe 'Kit:', ->
 	it 'proxy flow url match', ->
 		proxy = kit.require 'proxy'
 
-		routes = [proxy.select url: proxy.match('/items/:id'), (ctx) ->
-			ctx.body = ctx.url.id
+		routes = [proxy.select url: proxy.match('/items/:id'), ($) ->
+			$.body = $.url.id
 		]
 
 		createRandomServer proxy.flow(routes)
@@ -667,8 +667,8 @@ describe 'Kit:', ->
 	it 'proxy flow post', ->
 		proxy = kit.require 'proxy'
 
-		routes = [proxy.select method: 'POST', (ctx) ->
-			ctx.body = ctx.method
+		routes = [proxy.select method: 'POST', ($) ->
+			$.body = $.method
 		]
 
 		createRandomServer proxy.flow(routes)
@@ -699,7 +699,7 @@ describe 'Kit:', ->
 
 		routes = [
 			proxy.etag()
-			(ctx) -> ctx.body = 'test'
+			($) -> $.body = 'test'
 		]
 
 		createRandomServer proxy.flow(routes)
@@ -714,8 +714,8 @@ describe 'Kit:', ->
 
 		routes = [
 			proxy.midToFlow(bodyParser.json())
-			(ctx) ->
-				ctx.body = ctx.req.body
+			($) ->
+				$.body = $.req.body
 		]
 
 		createRandomServer proxy.flow(routes)
