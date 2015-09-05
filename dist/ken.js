@@ -80,21 +80,22 @@ assert = require('assert');
  */
 
 ken = function(opts) {
-  var failed, onFinal, onUnhandledRejection, passed, test;
+  var failed, onFinal, onUnhandledRejection, passed, test, title;
   if (opts == null) {
     opts = {};
   }
+  title = br.underline(br.grey('ken >'));
   _.defaults(opts, {
     isBail: true,
     isExitOnUnhandled: true,
     logPass: function(msg) {
-      return console.log(br.green('o'), br.grey(msg));
+      return console.log(title, br.green('o'), msg);
     },
     logFail: function(msg, err) {
-      return console.error(br.red('x'), br.grey(msg), err.message);
+      return console.error(title, br.red('x'), msg, br.red(err.message));
     },
     logFinal: function(passed, failed) {
-      return console.log((br.grey('----------------')) + "\npass " + (br.green(passed)) + "\nfail " + (br.red(failed)));
+      return console.log(title + " pass " + (br.green(passed)) + "\n" + title + " fail " + (br.red(failed)));
     }
   });
   if (opts.isExitOnUnhandled) {

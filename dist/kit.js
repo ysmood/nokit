@@ -1,5 +1,5 @@
 'use strict';
-var Overview, Promise, _, fs, kit,
+var Overview, Promise, _, fs, kit, yutils,
   slice = [].slice,
   indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
@@ -7,7 +7,9 @@ _ = require('./lodash');
 
 fs = require('nofs');
 
-Promise = fs.Promise;
+Promise = require('yaku');
+
+yutils = require('yaku/lib/utils');
 
 kit = {};
 
@@ -36,7 +38,7 @@ kit = {};
 
 Overview = 'overview';
 
-_.extend(kit, fs, fs.PromiseUtils, {
+_.extend(kit, fs, yutils, {
 
   /**
   	 * The [lodash](https://lodash.com) lib.
