@@ -7,20 +7,20 @@ http = require 'http'
 # require '../lib/proxy'
 
 ken = kit.require 'ken'
-test = ken()
+it = ken()
 
 # Async tests
-test.async [
-	test 'basic 1', ->
-		ken.eq 'ok', 'ok'
-	test 'basic 2', ->
-		ken.deepEq { a: 1, b: 2 }, { a: 1, b: 2 }
+it.async [
+	it 'basic 1', ->
+		it.eq 'ok', 'ok'
+	it 'basic 2', ->
+		it.eq { a: 1, b: 1 }, { a: 1, b: 2 }
 
 	# Sync tests
 	kit.flow [
-		test 'basic 3', ->
-			ken.eq 'ok', 'ok'
-		test 'basic 4', ->
-			ken.eq 'ok', 'ok'
+		it 'basic 3', ->
+			it.eq 'ok', 'ok'
+		it 'basic 4', ->
+			it.eq 'ok', 'ok'
 	]
 ]
