@@ -1,4 +1,4 @@
-var Promise, _, br, ken, kit;
+var Promise, _, br, bufEq, ken, kit;
 
 kit = require('./kit');
 
@@ -137,13 +137,23 @@ ken = function(opts) {
       return kit.flow.apply(0, arguments)().then(onFinal, onFinal);
     },
     eq: function(actual, expected) {
-      if (_.eq(actual, expected)) {
+      var eq;
+      eq = actual instanceof Buffer || expected instanceof Buffer ? bufEq : _.eq;
+      if (eq(actual, expected)) {
         return Promise.resolve();
       } else {
         return Promise.reject(new Error("\n" + (br.magenta("<<<<<<< actual")) + "\n" + (kit.xinspect(actual)) + "\n" + (br.magenta("=======")) + "\n" + (kit.xinspect(expected)) + "\n" + (br.magenta(">>>>>>> expected"))));
       }
     }
   });
+};
+
+bufEq = function(a, b) {
+  if (Buffer.compare(a, b)) {
+    return false;
+  } else {
+    return true;
+  }
 };
 
 module.exports = ken;

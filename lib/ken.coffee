@@ -125,7 +125,12 @@ ken = (opts = {}) ->
 			.then onFinal, onFinal
 
 		eq: (actual, expected) ->
-			if _.eq actual, expected
+			eq = if actual instanceof Buffer or expected instanceof Buffer
+				bufEq
+			else
+				_.eq
+
+			if eq actual, expected
 				Promise.resolve()
 			else
 				Promise.reject new Error """
@@ -136,5 +141,8 @@ ken = (opts = {}) ->
 				#{br.magenta ">>>>>>> expected"}
 				"""
 	}
+
+bufEq = (a, b) ->
+	if Buffer.compare a, b then false else true
 
 module.exports = ken
