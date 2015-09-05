@@ -198,7 +198,7 @@ it.async [
 		}
 		setTimeout ->
 			kit.outputFileSync p, 'process.exit 10'
-		, 500
+		, 1000
 
 	it 'exec', ->
 		p = kit.exec 'echo exec_ok'
