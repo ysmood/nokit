@@ -1012,7 +1012,7 @@ _.extend(kit, fs, yutils, {
           child_process.execSync('pkill -P ' + childPromise.process.pid, {
             stdio: 'ignore'
           });
-        } catch (_error) {}
+        } catch (undefined) {}
         return childPromise.process.kill('SIGINT');
       }
     }, 50);
@@ -1032,7 +1032,7 @@ _.extend(kit, fs, yutils, {
         child_process.execSync('pkill -P ' + childPromise.process.pid, {
           stdio: 'ignore'
         });
-      } catch (_error) {}
+      } catch (undefined) {}
       childPromise.process.kill('SIGINT');
       return process.exit();
     });
@@ -1420,7 +1420,7 @@ _.extend(kit, fs, yutils, {
   	 * ```
    */
   require: function(moduleName, dir, loaded) {
-    var e, err, j, key, len, modPath, name, names, p;
+    var e, err, error, error1, j, key, len, modPath, name, names, p;
     if (_.isFunction(dir)) {
       loaded = dir;
       dir = null;
@@ -1437,8 +1437,8 @@ _.extend(kit, fs, yutils, {
       }
       try {
         modPath = require.resolve('./' + moduleName);
-      } catch (_error) {
-        e = _error;
+      } catch (error) {
+        e = error;
         if (e.code !== 'MODULE_NOT_FOUND') {
           throw e;
         }
@@ -1466,8 +1466,8 @@ _.extend(kit, fs, yutils, {
       name = names[j];
       try {
         modPath = require.resolve(name);
-      } catch (_error) {
-        e = _error;
+      } catch (error1) {
+        e = error1;
         if (e.code === 'MODULE_NOT_FOUND') {
           modPath = null;
         } else {
@@ -1502,7 +1502,7 @@ _.extend(kit, fs, yutils, {
   	 * @return {Any} The required package.
    */
   requireOptional: function(name, dir, semver) {
-    var br, err, info, key, version;
+    var br, err, error, info, key, version;
     key = semver ? name + '@' + semver : name;
     if (kit.requireCache[key]) {
       return kit.requireCache[key];
@@ -1518,8 +1518,8 @@ _.extend(kit, fs, yutils, {
         }
       }
       return kit.require(name, dir);
-    } catch (_error) {
-      err = _error;
+    } catch (error) {
+      err = error;
       if (err.source === 'nokit') {
         throw err;
       }
@@ -1799,7 +1799,7 @@ _.extend(kit, fs, yutils, {
                 encoding = opts.resEncoding;
               }
               decode = function(buf) {
-                var err;
+                var err, error;
                 if (!encoding) {
                   return buf;
                 }
@@ -1809,8 +1809,8 @@ _.extend(kit, fs, yutils, {
                   } else {
                     return kit.requireOptional('iconv-lite', __dirname).decode(buf, encoding);
                   }
-                } catch (_error) {
-                  err = _error;
+                } catch (error) {
+                  err = error;
                   return reject(err);
                 }
               };
@@ -1963,11 +1963,11 @@ _.extend(kit, fs, yutils, {
       }
     }
     promise = new Promise(function(resolve, reject) {
-      var err;
+      var err, error;
       try {
         ps = spawn(cmd, args, opts);
-      } catch (_error) {
-        err = _error;
+      } catch (error) {
+        err = error;
         reject(err);
       }
       ps.on('error', function(err) {
@@ -2426,6 +2426,7 @@ _.extend(kit, fs, yutils, {
       cmds = [cmds];
     }
     return (Promise.resolve((function() {
+      var error;
       switch (process.platform) {
         case 'darwin':
           return 'open';
@@ -2436,7 +2437,7 @@ _.extend(kit, fs, yutils, {
           try {
             kit.require('which');
             return kit.which('xdg-open');
-          } catch (_error) {
+          } catch (error) {
             return null;
           }
       }

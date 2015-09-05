@@ -1,6 +1,6 @@
 # Changelog
 
-- v0.12.1
+- v0.12.2
 
   - **API CHANGE** ken has changed its api, see the doc of it. We don't need `deepEq` any more.
 

@@ -1706,7 +1706,7 @@ kit.warp 'src/**/*.coffee'
 
 # Ken
 
-- ## **[ken(opts)](lib/ken.coffee?source#L74)**
+- ## **[ken(opts)](lib/ken.coffee?source#L68)**
 
     A simple promise based module for unit tests.
 
@@ -1717,16 +1717,10 @@ kit.warp 'src/**/*.coffee'
         {
         	isBail: true
         	isExitOnUnhandled: true
-        	logPass: (msg) ->
-        		console.log br.green('o'), msg
-        	logFail: (msg, err) ->
-        		console.error br.red('x'), msg, err
+        	timeout: 5000
+        	logPass: (msg, span) ->
+        	logFail: (msg, err, span) ->
         	logFinal: (passed, failed) ->
-        		console.log """
-        		#{br.grey '----------------'}
-        		pass  #{br.green passed}
-        		fail  #{br.red failed}
-        		"""
         }
         ```
 

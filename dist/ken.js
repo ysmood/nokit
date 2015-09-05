@@ -14,16 +14,10 @@ br = kit.require('brush');
  * {
  * 	isBail: true
  * 	isExitOnUnhandled: true
- * 	logPass: (msg) ->
- * 		console.log br.green('o'), msg
- * 	logFail: (msg, err) ->
- * 		console.error br.red('x'), msg, err
+ * 	timeout: 5000
+ * 	logPass: (msg, span) ->
+ * 	logFail: (msg, err, span) ->
  * 	logFinal: (passed, failed) ->
- * 		console.log """
- * 		#{br.grey '----------------'}
- * 		pass  #{br.green passed}
- * 		fail  #{br.red failed}
- * 		"""
  * }
  * ```
  * @return {Function} It has two members: `{ async, sync }`.
@@ -78,7 +72,7 @@ br = kit.require('brush');
  */
 
 ken = function(opts) {
-  var failed, it, onFinal, onUnhandledRejection, passed, title;
+  var failed, isEnd, it, onFinal, onUnhandledRejection, passed, title;
   if (opts == null) {
     opts = {};
   }
@@ -86,11 +80,12 @@ ken = function(opts) {
   _.defaults(opts, {
     isBail: true,
     isExitOnUnhandled: true,
-    logPass: function(msg) {
-      return console.log(title, br.green('o'), msg);
+    timeout: 5000,
+    logPass: function(msg, span) {
+      return console.log(title, br.green('o'), msg, br.grey("(" + span + "ms)"));
     },
-    logFail: function(msg, err) {
-      return console.error(title, br.red('x'), msg, '\n' + kit.indent(err.stack, 2));
+    logFail: function(msg, err, span) {
+      return console.error(title, br.red('x'), msg, br.grey("(" + span + "ms)"), '\n' + kit.indent(err.stack, 2));
     },
     logFinal: function(passed, failed) {
       return console.log(title + " pass " + (br.green(passed)) + "\n" + title + " fail " + (br.red(failed)));
@@ -105,15 +100,30 @@ ken = function(opts) {
   }
   passed = 0;
   failed = 0;
+  isEnd = false;
   it = function(msg, fn) {
     var tsetFn;
     tsetFn = function() {
-      return Promise.resolve().then(fn).then(function() {
+      var startTime, timeouter;
+      timeouter = null;
+      startTime = Date.now();
+      return new Promise(function(resolve, reject) {
+        resolve(fn());
+        return timeouter = setTimeout(reject, opts.timeout, new Error("test_timeout"));
+      }).then(function() {
+        clearTimeout(timeouter);
         passed++;
-        return opts.logPass(tsetFn.msg);
+        if (isEnd) {
+          return;
+        }
+        return opts.logPass(tsetFn.msg, Date.now() - startTime);
       }, function(err) {
+        clearTimeout(timeouter);
         failed++;
-        opts.logFail(tsetFn.msg, err);
+        if (isEnd) {
+          return;
+        }
+        opts.logFail(tsetFn.msg, err, Date.now() - startTime);
         if (opts.isBail) {
           return Promise.reject(err);
         }
@@ -123,6 +133,7 @@ ken = function(opts) {
     return tsetFn;
   };
   onFinal = function() {
+    isEnd = true;
     opts.logFinal(passed, failed);
     return {
       passed: passed,

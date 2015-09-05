@@ -80,15 +80,15 @@ loadNofile = function() {
       lang = ref[i];
       try {
         require(lang);
-      } catch (_error) {}
+      } catch (undefined) {}
     }
   } else {
     try {
       require('babel/register');
-    } catch (_error) {}
+    } catch (undefined) {}
     try {
       require('coffee-script/register');
-    } catch (_error) {}
+    } catch (undefined) {}
   }
   exts = _(require.extensions).keys().filter(function(ext) {
     return ['.json', '.node', '.litcoffee', '.coffee.md'].indexOf(ext) === -1;
