@@ -1706,7 +1706,7 @@ kit.warp 'src/**/*.coffee'
 
 # Ken
 
-- ## **[ken(opts)](lib/ken.coffee?source#L75)**
+- ## **[ken(opts)](lib/ken.coffee?source#L74)**
 
     A simple promise based module for unit tests.
 
@@ -1739,21 +1739,21 @@ kit.warp 'src/**/*.coffee'
 
         ```coffeescript
         ken = kit.require 'ken'
-        test = ken()
+        it = ken()
 
         # Async tests
-        test.async [
-        	test 'basic 1', ->
-        		ken.eq 'ok', 'ok'
-        	test 'basic 2', ->
-        		ken.deepEq { a: 1, b: 2 }, { a: 1, b: 2 }
+        it.async [
+        	it 'basic 1', ->
+        		it.eq 'ok', 'ok'
+        	it 'basic 2', ->
+        		it.eq { a: 1, b: 2 }, { a: 1, b: 2 }
 
         	# Sync tests
         	kit.flow [
-        		test 'basic 3', ->
-        			ken.eq 'ok', 'ok'
-        		test 'basic 4', ->
-        			ken.eq 'ok', 'ok'
+        		it 'basic 3', ->
+        			it.eq 'ok', 'ok'
+        		it 'basic 4', ->
+        			it.eq 'ok', 'ok'
         	]
         ]
         .then ({ failed }) ->
@@ -1762,20 +1762,20 @@ kit.warp 'src/**/*.coffee'
 
     - **<u>example</u>**:
 
-        Filter the tests, only test the odd ones.
+        Filter the tests, only it the odd ones.
         ```coffeescript
         ken = kit.require 'ken'
-        test = ken()
+        it = ken()
 
         # Async tests
-        test.async(
+        it.async(
         	[
-        		test 'basic 1', ->
-        			ken.eq 'ok', 'ok'
-        		test 'basic 2', ->
-        			ken.deepEq { a: 1, b: 2 }, { a: 1, b: 2 }
-        		test 'basic 3', ->
-        			ken.deepEq 1, 1
+        		it 'basic 1', ->
+        			it.eq 'ok', 'ok'
+        		it 'basic 2', ->
+        			it.eq { a: 1, b: 2 }, { a: 1, b: 2 }
+        		it 'basic 3', ->
+        			it.eq 1, 1
         	]
         	.filter (fn, index) -> index % 2
         	.map (fn) ->

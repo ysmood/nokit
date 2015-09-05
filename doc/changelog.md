@@ -1,5 +1,9 @@
 # Changelog
 
+- v0.12.0
+
+  - **API CHANGE** ken has changed its api, see the doc of it. We don't need `deepEq` any more.
+
 - v0.11.6
 
   - opt: `kit.ken`, now it will auto-exit process for you any more

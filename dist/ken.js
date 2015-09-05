@@ -1,12 +1,10 @@
-var Promise, _, assert, br, ken, kit, wrap;
+var Promise, _, br, ken, kit;
 
 kit = require('./kit');
 
 _ = kit._, Promise = kit.Promise;
 
 br = kit.require('brush');
-
-assert = require('assert');
 
 
 /**
@@ -33,41 +31,41 @@ assert = require('assert');
  * @example
  * ```coffeescript
  * ken = kit.require 'ken'
- * test = ken()
+ * it = ken()
  *
  * # Async tests
- * test.async [
- * 	test 'basic 1', ->
- * 		ken.eq 'ok', 'ok'
- * 	test 'basic 2', ->
- * 		ken.deepEq { a: 1, b: 2 }, { a: 1, b: 2 }
+ * it.async [
+ * 	it 'basic 1', ->
+ * 		it.eq 'ok', 'ok'
+ * 	it 'basic 2', ->
+ * 		it.eq { a: 1, b: 2 }, { a: 1, b: 2 }
  *
  * 	# Sync tests
  * 	kit.flow [
- * 		test 'basic 3', ->
- * 			ken.eq 'ok', 'ok'
- * 		test 'basic 4', ->
- * 			ken.eq 'ok', 'ok'
+ * 		it 'basic 3', ->
+ * 			it.eq 'ok', 'ok'
+ * 		it 'basic 4', ->
+ * 			it.eq 'ok', 'ok'
  * 	]
  * ]
  * .then ({ failed }) ->
  * 	process.exit failed
  * ```
  * @example
- * Filter the tests, only test the odd ones.
+ * Filter the tests, only it the odd ones.
  * ```coffeescript
  * ken = kit.require 'ken'
- * test = ken()
+ * it = ken()
  *
  * # Async tests
- * test.async(
+ * it.async(
  * 	[
- * 		test 'basic 1', ->
- * 			ken.eq 'ok', 'ok'
- * 		test 'basic 2', ->
- * 			ken.deepEq { a: 1, b: 2 }, { a: 1, b: 2 }
- * 		test 'basic 3', ->
- * 			ken.deepEq 1, 1
+ * 		it 'basic 1', ->
+ * 			it.eq 'ok', 'ok'
+ * 		it 'basic 2', ->
+ * 			it.eq { a: 1, b: 2 }, { a: 1, b: 2 }
+ * 		it 'basic 3', ->
+ * 			it.eq 1, 1
  * 	]
  * 	.filter (fn, index) -> index % 2
  * 	.map (fn) ->
@@ -80,7 +78,7 @@ assert = require('assert');
  */
 
 ken = function(opts) {
-  var failed, onFinal, onUnhandledRejection, passed, test, title;
+  var failed, it, onFinal, onUnhandledRejection, passed, title;
   if (opts == null) {
     opts = {};
   }
@@ -92,7 +90,7 @@ ken = function(opts) {
       return console.log(title, br.green('o'), msg);
     },
     logFail: function(msg, err) {
-      return console.error(title, br.red('x'), msg, br.red(err.message));
+      return console.error(title, br.red('x'), msg, '\n' + kit.indent(err.stack, 2));
     },
     logFinal: function(passed, failed) {
       return console.log(title + " pass " + (br.green(passed)) + "\n" + title + " fail " + (br.red(failed)));
@@ -107,7 +105,7 @@ ken = function(opts) {
   }
   passed = 0;
   failed = 0;
-  test = function(msg, fn) {
+  it = function(msg, fn) {
     var tsetFn;
     tsetFn = function() {
       return Promise.resolve().then(fn).then(function() {
@@ -131,29 +129,21 @@ ken = function(opts) {
       failed: failed
     };
   };
-  return _.extend(test, {
+  return _.extend(it, {
     async: function() {
       return kit.async.apply(0, arguments).then(onFinal, onFinal);
     },
     sync: function() {
       return kit.flow.apply(0, arguments)().then(onFinal, onFinal);
+    },
+    eq: function(actual, expected) {
+      if (_.eq(actual, expected)) {
+        return Promise.resolve();
+      } else {
+        return Promise.reject(new Error("\n" + (br.magenta("<<<<<<< actual")) + "\n" + (kit.xinspect(actual)) + "\n" + (br.magenta("=======")) + "\n" + (kit.xinspect(expected)) + "\n" + (br.magenta(">>>>>>> expected"))));
+      }
     }
   });
 };
 
-wrap = function(fn) {
-  return function() {
-    var err;
-    try {
-      return Promise.resolve(fn.apply(0, arguments));
-    } catch (_error) {
-      err = _error;
-      return Promise.reject(err);
-    }
-  };
-};
-
-module.exports = _.extend(ken, {
-  eq: wrap(assert.strictEqual),
-  deepEq: wrap(assert.deepEqual)
-});
+module.exports = ken;
