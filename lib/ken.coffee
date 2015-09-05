@@ -9,16 +9,10 @@ br = kit.require 'brush'
  * {
  * 	isBail: true
  * 	isExitOnUnhandled: true
- * 	logPass: (msg) ->
- * 		console.log br.green('o'), msg
- * 	logFail: (msg, err) ->
- * 		console.error br.red('x'), msg, err
+ * 	timeout: 5000
+ * 	logPass: (msg, span) ->
+ * 	logFail: (msg, err, span) ->
  * 	logFinal: (passed, failed) ->
- * 		console.log """
- * 		#{br.grey '----------------'}
- * 		pass  #{br.green passed}
- * 		fail  #{br.red failed}
- * 		"""
  * }
  * ```
  * @return {Function} It has two members: `{ async, sync }`.
@@ -75,11 +69,15 @@ ken = (opts = {}) ->
 	title = br.underline br.grey 'ken >'
 	_.defaults opts, {
 		isBail: true
-		isExitOnUnhandled: true,
-		logPass: (msg) ->
-			console.log title, br.green('o'), msg
-		logFail: (msg, err) ->
-			console.error title, br.red('x'), msg, '\n' + kit.indent(err.stack, 2)
+		isExitOnUnhandled: true
+		timeout: 5000
+		logPass: (msg, span) ->
+			console.log title, br.green('o'), msg, br.grey("(#{span}ms)")
+		logFail: (msg, err, span) ->
+			console.error(
+				title, br.red('x'), msg, br.grey("(#{span}ms)")
+				'\n' + kit.indent(err.stack, 2)
+			)
 		logFinal: (passed, failed) ->
 			console.log """
 			#{title} pass #{br.green passed}
@@ -95,17 +93,29 @@ ken = (opts = {}) ->
 
 	passed = 0
 	failed = 0
+	isEnd = false
 
 	it = (msg, fn) ->
 		tsetFn = ->
-			Promise.resolve()
-			.then fn
+			timeouter = null
+			startTime = Date.now()
+			new Promise (resolve, reject) ->
+				resolve fn()
+				timeouter = setTimeout(
+					reject
+					opts.timeout
+					new Error "test_timeout"
+				)
 			.then ->
+				clearTimeout timeouter
 				passed++
-				opts.logPass tsetFn.msg
+				return if isEnd
+				opts.logPass tsetFn.msg, Date.now() - startTime
 			, (err) ->
+				clearTimeout timeouter
 				failed++
-				opts.logFail tsetFn.msg, err
+				return if isEnd
+				opts.logFail tsetFn.msg, err, Date.now() - startTime
 				Promise.reject err if opts.isBail
 
 		tsetFn.msg = msg
@@ -113,6 +123,7 @@ ken = (opts = {}) ->
 		tsetFn
 
 	onFinal = ->
+		isEnd = true
 		opts.logFinal passed, failed
 		return { passed, failed }
 
