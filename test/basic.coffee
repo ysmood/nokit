@@ -26,20 +26,20 @@ it.async [
 		# Async tests
 		test.async [
 			test 'basic 1', ->
-				ken.eq 'ok', 'ok'
+				it.eq 'ok', 'ok'
 			test 'basic 2', ->
-				ken.deepEq { a: 1, b: 2 }, { a: 1, b: 2 }
+				it.eq { a: 1, b: 2 }, { a: 1, b: 2 }
 
 			# Sync tests
 			kit.flow [
 				test 'basic 3', ->
-					ken.eq 'ok', 'ok'
+					it.eq 'ok', 'ok'
 				test 'basic 4', ->
-					ken.eq 'ok', 'ok'
+					it.eq 'ok', 'ok'
 			]
 		]
 		.then ({ passed }) ->
-			ken.eq 4, passed
+			it.eq 4, passed
 
 	it 'ken failed', ->
 		ken = kit.require 'ken'
@@ -48,25 +48,25 @@ it.async [
 		# Async tests
 		test.async [
 			test 'basic 1', ->
-				ken.eq 'ok', 'ok'
+				it.eq 'ok', 'ok'
 			test 'basic 2', ->
-				ken.eq 'ok', 'ok1'
+				it.eq 'ok', 'ok1'
 			test 'basic 3', ->
-				ken.deepEq { a: 1, b: 2 }, { a: 1, b: 2 }
+				it.eq { a: 1, b: 2 }, { a: 1, b: 2 }
 		]
 		.then ({ failed }) ->
-			ken.eq 1, failed
+			it.eq 1, failed
 
 	it 'brush', ->
 		br = kit.require 'brush'
-		ken.eq br.red('ok'), '\u001b[31mok\u001b[39m'
+		it.eq br.red('ok'), '\u001b[31mok\u001b[39m'
 
 	it 'brush disable', ->
 		br = kit.require 'brush'
 		br.isEnabled = false
 		ret = br.green('ok')
 		br.isEnabled = true
-		ken.eq ret, 'ok'
+		it.eq ret, 'ok'
 
 	it 'log', ->
 		kit.logs 'a', 'b', 'c'
@@ -79,8 +79,8 @@ it.async [
 			[ { tags: [tag] } ] = kit.parseComment str
 
 			Promise.all [
-				ken.eq tag.type, 'Int'
-				ken.eq tag.name, 'limit'
+				it.eq tag.type, 'Int'
+				it.eq tag.name, 'limit'
 			]
 
 	it 'parseComment js', ->
@@ -90,13 +90,13 @@ it.async [
 			[ { tags: [tag] } ] = kit.parseComment str
 
 			Promise.all [
-				ken.eq tag.type, 'Int'
-				ken.eq tag.name, 'limit'
+				it.eq tag.type, 'Int'
+				it.eq tag.name, 'limit'
 			]
 
 	it 'crypto', ->
 		en = kit.encrypt '123', 'test'
-		ken.eq kit.decrypt(en, 'test').toString(), '123'
+		it.eq kit.decrypt(en, 'test').toString(), '123'
 
 	it 'regexReduce', ->
 		out = kit.regexReduce /\w(\d+)/g, 'a1, b10, c3', (ret, ms) ->
@@ -104,11 +104,11 @@ it.async [
 			ret
 		, []
 
-		ken.deepEq [1, 10, 3], out
+		it.eq ['1', '10', '3'], out
 
 	it 'regexMap', ->
 		out = kit.regexMap /\w(\d+)/g, 'a1, b10, c3', 1
-		ken.deepEq [1, 10, 3], out
+		it.eq ['1', '10', '3'], out
 
 	it 'request', ->
 		info = 'ok'
@@ -123,7 +123,7 @@ it.async [
 					port: port
 			}
 			.then (body) ->
-				ken.eq body, info
+				it.eq body, info
 
 	it 'request timeout', ->
 		createRandomServer (req, res) ->
@@ -138,7 +138,7 @@ it.async [
 			{ req } = promise
 
 			promise.catch (err) ->
-				ken.eq err.message, 'timeout'
+				it.eq err.message, 'timeout'
 
 	it 'request reqPipe', ->
 		path = 'nofile.coffee'
@@ -160,7 +160,7 @@ it.async [
 				reqPipe: file
 			}
 			.then (body) ->
-				ken.eq body, info
+				it.eq body, info
 
 	it 'request form-data', ->
 		createRandomServer (req, res) ->
@@ -184,7 +184,7 @@ it.async [
 				reqPipe: form
 			}
 			.then (body) ->
-				ken.eq +body, buffer.length
+				it.eq +body, buffer.length
 
 	it 'monitorApp', -> new Promise (resolve) ->
 		p = 'test/fixtures/monitorApp-test.coffee'
@@ -193,7 +193,7 @@ it.async [
 			bin: 'coffee'
 			args: [p]
 			onErrorExit: ({ code, signal }) ->
-				resolve ken.eq code, 10
+				resolve it.eq code, 10
 				promise.stop()
 		}
 		setTimeout ->
@@ -205,8 +205,8 @@ it.async [
 		p.then ({ stdout }) ->
 			p.process.then (proc) ->
 				Promise.all [
-					ken.eq proc.pid > 0, true
-					ken.eq stdout.indexOf('exec_ok\n') > -1, true
+					it.eq proc.pid > 0, true
+					it.eq stdout.indexOf('exec_ok\n') > -1, true
 				]
 
 	it 'parseDependency', ->
@@ -214,7 +214,7 @@ it.async [
 			depRoots: ['test/fixtures/depDir']
 		}
 		.then (paths) ->
-			ken.deepEq paths.sort(), [
+			it.eq paths.sort(), [
 				'test/fixtures/dep1.coffee'
 				'test/fixtures/dep2.coffee'
 				'test/fixtures/dep3.coffee'
@@ -226,7 +226,7 @@ it.async [
 			]
 
 	it 'indent', ->
-		ken.eq kit.indent('a\nb', 2), '  a\n  b'
+		it.eq kit.indent('a\nb', 2), '  a\n  b'
 
 	it 'depsCache cache newer', ->
 		file = 'test/fixtures/depsCache.txt'
@@ -244,7 +244,7 @@ it.async [
 				cacheDir
 			}
 			.then (cache) ->
-				ken.eq cache.isNewer, true
+				it.eq cache.isNewer, true
 
 	it 'depsCache file newer', ->
 		file = 'test/fixtures/depsCacheFileNewer.txt'
@@ -285,7 +285,7 @@ it.async [
 
 				out.dests[dest] ='test/fixtures/cacheDir/3779283019-depsCacheFileNewer.txt.dest'
 				out.dests[dest1] ='test/fixtures/cacheDir/3263598758-depsCacheFileNewer.txt.dest1'
-				ken.deepEq cache, out
+				it.eq cache, out
 
 	it 'warp map', ->
 		tmp = 'test/fixtures/warp'
@@ -301,7 +301,7 @@ it.async [
 		.then ->
 			kit.glob tmp + '/**/*.coffee'
 		.then (paths) ->
-			ken.deepEq paths.map(unixSep) , [
+			it.eq paths.map(unixSep) , [
 				"test/fixtures/warp/dep4.coffee"
 				"test/fixtures/warp/lib/index.coffee"
 			]
@@ -321,7 +321,7 @@ it.async [
 		.then ->
 			kit.readFile tmp + '/comment.js', 'utf8'
 		.then (str) ->
-			ken.eq str[0..10], "/**\n\t * An "
+			it.eq str[0..10], "/**\n\t * An "
 
 	it 'warp concat', ->
 		tmp = 'test/fixtures/warp_all.coffee'
@@ -333,7 +333,7 @@ it.async [
 		.then ->
 			kit.readFile tmp, 'utf8'
 		.then (str) ->
-			ken.eq str.indexOf("require './lib'") > 0, true
+			it.eq str.indexOf("require './lib'") > 0, true
 
 	it 'warp auto', ->
 		path = 'test/fixtures/compiler.all'
@@ -346,7 +346,7 @@ it.async [
 		.run 'test/fixtures'
 		.then ->
 			str = kit.readFileSync path, 'utf8'
-			ken.deepEq _.trim(str).split('\n').sort(), [
+			it.eq _.trim(str).split('\n').sort(), [
 				'.test .bar{color:red}'
 				'.test{color:red}'
 				'var a;a=function(){return console.log("OK")};'
@@ -369,7 +369,7 @@ it.async [
 
 		kit.task.run()
 		.then ([seq]) ->
-			ken.deepEq seq, [ 'two', 'one', 'default' ]
+			it.eq seq, [ 'two', 'one', 'default' ]
 
 	it 'task sequential', ->
 		seq = []
@@ -389,11 +389,11 @@ it.async [
 
 		kit.task.run 'default'
 		.then ->
-			ken.deepEq seq, [1, 2, 3]
+			it.eq seq, [1, 2, 3]
 
 	it 'defaultArgs', ->
 		fn = ->
-		ken.deepEq (kit.defaultArgs ['c', fn], {
+		it.eq (kit.defaultArgs ['c', fn], {
 			str1: { String: '0' }
 			fn: { Function: -> 'test' }
 			str2: { String: '1' }
@@ -403,7 +403,7 @@ it.async [
 
 	it 'defaultArgs2', ->
 		fn = ->
-		ken.deepEq (kit.defaultArgs ['c', fn, 'd'], {
+		it.eq (kit.defaultArgs ['c', fn, 'd'], {
 			str1: { String: '0' }
 			fn: { Function: -> 'test' }
 			str2: { String: '1' }
@@ -415,16 +415,16 @@ it.async [
 		ret = kit.fuzzySearch('ys', [
 			'sy', 'yxs', 'ysbb', 'xys', 'ysx', 'ysb', 'syx'
 		])
-		ken.eq ret, 'ysx'
+		it.eq ret, 'ysx'
 
 	it 'fuzzySearch order', ->
 		ret = kit.fuzzySearch('b', [
 			'lb', 'build'
 		])
-		ken.eq ret, 'build'
+		it.eq ret, 'build'
 
 	it 'fuzzySearch not found', ->
-		ken.eq kit.fuzzySearch('ys', [
+		it.eq kit.fuzzySearch('ys', [
 			'ss', 'ab'
 		]), undefined
 
@@ -454,7 +454,7 @@ it.async [
 				body: false
 			}
 		.then ({ headers, body }) ->
-			ken.eq 'site-proxy-body-ok', body + headers.x
+			it.eq 'site-proxy-body-ok', body + headers.x
 
 	it 'proxy flow handler', ->
 		proxy = kit.require 'proxy'
@@ -473,7 +473,7 @@ it.async [
 				reqData: 'test'
 			}
 			.then (body) ->
-				ken.eq 'echo: test', body
+				it.eq 'echo: test', body
 
 	it 'proxy flow string middleware', ->
 		proxy = kit.require 'proxy'
@@ -484,7 +484,7 @@ it.async [
 				url: "http://127.0.0.1:#{port}"
 			}
 			.then (body) ->
-				ken.eq 'string works', body
+				it.eq 'string works', body
 
 	it 'proxy flow url', ->
 		proxy = kit.require 'proxy'
@@ -497,7 +497,7 @@ it.async [
 		.then (port) ->
 			kit.request "http://127.0.0.1:#{port}/items/123"
 			.then (body) ->
-				ken.eq '123', body
+				it.eq '123', body
 
 	it 'proxy flow headers', ->
 		proxy = kit.require 'proxy'
@@ -513,7 +513,7 @@ it.async [
 				headers: { x: 'ok' }
 			}
 			.then (body) ->
-				ken.eq '["ok"]', body
+				it.eq '["ok"]', body
 
 	it 'proxy flow headers not match', ->
 		proxy = kit.require 'proxy'
@@ -530,7 +530,7 @@ it.async [
 				body: false
 			}
 			.then (res) ->
-				ken.eq 404, res.statusCode
+				it.eq 404, res.statusCode
 
 	it 'proxy flow 404', ->
 		proxy = kit.require 'proxy'
@@ -543,7 +543,7 @@ it.async [
 		.then (port) ->
 			kit.request "http://127.0.0.1:#{port}/itemx"
 			.then (body) ->
-				ken.eq 'Not Found', body
+				it.eq 'Not Found', body
 
 	it 'proxy flow sub route', ->
 		proxy = kit.require 'proxy'
@@ -558,7 +558,7 @@ it.async [
 		.then (port) ->
 			kit.request "http://127.0.0.1:#{port}/sub/home/test"
 			.then (body) ->
-				ken.eq '/test', body
+				it.eq '/test', body
 
 	it 'proxy flow sub route 404', ->
 		proxy = kit.require 'proxy'
@@ -576,7 +576,7 @@ it.async [
 				body: false
 			}
 			.then (res) ->
-				ken.eq '404Not Found', res.statusCode + res.body
+				it.eq '404Not Found', res.statusCode + res.body
 
 	it 'proxy flow sub route next', ->
 		proxy = kit.require 'proxy'
@@ -594,7 +594,7 @@ it.async [
 		.then (port) ->
 			kit.request "http://127.0.0.1:#{port}/sub/home/test"
 			.then (body) ->
-				ken.eq 'next', body
+				it.eq 'next', body
 
 	it 'proxy flow sub route error', ->
 		proxy = kit.require 'proxy'
@@ -616,7 +616,7 @@ it.async [
 				body: false
 			}
 			.then (res) ->
-				ken.eq '501 a is not defined', res.statusCode + ' ' + res.body
+				it.eq '501 a is not defined', res.statusCode + ' ' + res.body
 
 	it 'proxy flow promise', ->
 		proxy = kit.require 'proxy'
@@ -629,7 +629,7 @@ it.async [
 		.then (port) ->
 			kit.request "http://127.0.0.1:#{port}"
 			.then (body) ->
-				ken.eq kit.readFileSync('.gitignore', 'utf8'), body
+				it.eq kit.readFileSync('.gitignore', 'utf8'), body
 
 	it 'proxy flow url match', ->
 		proxy = kit.require 'proxy'
@@ -642,7 +642,7 @@ it.async [
 		.then (port) ->
 			kit.request "http://127.0.0.1:#{port}/items/123"
 			.then (body) ->
-				ken.eq '123', body
+				it.eq '123', body
 
 	it 'proxy flow post', ->
 		proxy = kit.require 'proxy'
@@ -658,7 +658,7 @@ it.async [
 				url: "http://127.0.0.1:#{port}"
 			}
 			.then (body) ->
-				ken.eq 'POST', body
+				it.eq 'POST', body
 
 	it 'proxy flow static', ->
 		proxy = kit.require 'proxy'
@@ -672,7 +672,7 @@ it.async [
 			kit.request encodeURI "http://127.0.0.1:#{port}/st/ひまわり.txt"
 			.then (body) ->
 				str = kit.readFileSync 'test/fixtures/ひまわり.txt', 'utf8'
-				ken.eq str, body
+				it.eq str, body
 
 	it 'proxy flow etag', ->
 		proxy = kit.require 'proxy'
@@ -686,7 +686,7 @@ it.async [
 		.then (port) ->
 			kit.request { url: "http://127.0.0.1:#{port}", body: false }
 			.then (res) ->
-				ken.eq '349o', res.headers.etag
+				it.eq '349o', res.headers.etag
 
 	it 'proxy flow midToFlow', ->
 		proxy = kit.require 'proxy'
@@ -709,7 +709,7 @@ it.async [
 			}
 			.then (body) ->
 				console.log body
-				ken.deepEq {a: 10}, JSON.parse(body)
+				it.eq {a: 10}, JSON.parse(body)
 
 ]
 .then ({ failed }) ->

@@ -1,7 +1,6 @@
 kit = require './kit'
 { _, Promise } = kit
 br = kit.require 'brush'
-assert = require 'assert'
 
 ###*
  * A simple promise based module for unit tests.
@@ -27,41 +26,41 @@ assert = require 'assert'
  * @example
  * ```coffeescript
  * ken = kit.require 'ken'
- * test = ken()
+ * it = ken()
  *
  * # Async tests
- * test.async [
- * 	test 'basic 1', ->
- * 		ken.eq 'ok', 'ok'
- * 	test 'basic 2', ->
- * 		ken.deepEq { a: 1, b: 2 }, { a: 1, b: 2 }
+ * it.async [
+ * 	it 'basic 1', ->
+ * 		it.eq 'ok', 'ok'
+ * 	it 'basic 2', ->
+ * 		it.eq { a: 1, b: 2 }, { a: 1, b: 2 }
  *
  * 	# Sync tests
  * 	kit.flow [
- * 		test 'basic 3', ->
- * 			ken.eq 'ok', 'ok'
- * 		test 'basic 4', ->
- * 			ken.eq 'ok', 'ok'
+ * 		it 'basic 3', ->
+ * 			it.eq 'ok', 'ok'
+ * 		it 'basic 4', ->
+ * 			it.eq 'ok', 'ok'
  * 	]
  * ]
  * .then ({ failed }) ->
  * 	process.exit failed
  * ```
  * @example
- * Filter the tests, only test the odd ones.
+ * Filter the tests, only it the odd ones.
  * ```coffeescript
  * ken = kit.require 'ken'
- * test = ken()
+ * it = ken()
  *
  * # Async tests
- * test.async(
+ * it.async(
  * 	[
- * 		test 'basic 1', ->
- * 			ken.eq 'ok', 'ok'
- * 		test 'basic 2', ->
- * 			ken.deepEq { a: 1, b: 2 }, { a: 1, b: 2 }
- * 		test 'basic 3', ->
- * 			ken.deepEq 1, 1
+ * 		it 'basic 1', ->
+ * 			it.eq 'ok', 'ok'
+ * 		it 'basic 2', ->
+ * 			it.eq { a: 1, b: 2 }, { a: 1, b: 2 }
+ * 		it 'basic 3', ->
+ * 			it.eq 1, 1
  * 	]
  * 	.filter (fn, index) -> index % 2
  * 	.map (fn) ->
@@ -80,7 +79,7 @@ ken = (opts = {}) ->
 		logPass: (msg) ->
 			console.log title, br.green('o'), msg
 		logFail: (msg, err) ->
-			console.error title, br.red('x'), msg, br.red(err.message)
+			console.error title, br.red('x'), msg, '\n' + kit.indent(err.stack, 2)
 		logFinal: (passed, failed) ->
 			console.log """
 			#{title} pass #{br.green passed}
@@ -97,7 +96,7 @@ ken = (opts = {}) ->
 	passed = 0
 	failed = 0
 
-	test = (msg, fn) ->
+	it = (msg, fn) ->
 		tsetFn = ->
 			Promise.resolve()
 			.then fn
@@ -117,23 +116,25 @@ ken = (opts = {}) ->
 		opts.logFinal passed, failed
 		return { passed, failed }
 
-	_.extend test, {
+	_.extend it, {
 		async: ->
 			kit.async.apply 0, arguments
 			.then onFinal, onFinal
 		sync: ->
 			kit.flow.apply(0, arguments)()
 			.then onFinal, onFinal
+
+		eq: (actual, expected) ->
+			if _.eq actual, expected
+				Promise.resolve()
+			else
+				Promise.reject new Error """
+				\n#{br.magenta "<<<<<<< actual"}
+				#{kit.xinspect actual}
+				#{br.magenta "======="}
+				#{kit.xinspect expected}
+				#{br.magenta ">>>>>>> expected"}
+				"""
 	}
 
-wrap = (fn) -> ->
-	try
-		Promise.resolve fn.apply(0, arguments)
-	catch err
-		Promise.reject err
-
-module.exports = _.extend ken, {
-	eq: wrap assert.strictEqual
-
-	deepEq: wrap assert.deepEqual
-}
+module.exports = ken
