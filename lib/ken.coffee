@@ -73,18 +73,18 @@ assert = require 'assert'
  * ```
 ###
 ken = (opts = {}) ->
+	title = br.underline br.grey 'ken >'
 	_.defaults opts, {
 		isBail: true
 		isExitOnUnhandled: true,
 		logPass: (msg) ->
-			console.log br.green('o'), br.grey(msg)
+			console.log title, br.green('o'), msg
 		logFail: (msg, err) ->
-			console.error br.red('x'), br.grey(msg), err.message
+			console.error title, br.red('x'), msg, br.red(err.message)
 		logFinal: (passed, failed) ->
 			console.log """
-			#{br.grey '----------------'}
-			pass #{br.green passed}
-			fail #{br.red failed}
+			#{title} pass #{br.green passed}
+			#{title} fail #{br.red failed}
 			"""
 	}
 
