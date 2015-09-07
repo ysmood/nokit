@@ -69,7 +69,7 @@ module.exports = (task, option) ->
 			kit.spawn 'git', ['clean', '-fd', 'test/fixtures']
 
 		clean().then ->
-			kit.spawn 'coffee', ['test/basic.coffee']
+			kit.spawn 'coffee', ['test/basic.coffee', opts.grep]
 		.then -> clean()
 		.catch (err) ->
 			if err.code

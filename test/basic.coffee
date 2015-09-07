@@ -4,6 +4,7 @@ http = require 'http'
 kit.require 'drives'
 ken = kit.require 'ken'
 it = ken()
+regPattern = new RegExp process.argv[2]
 
 cacheDir = 'test/fixtures/cacheDir'
 
@@ -711,6 +712,7 @@ it.async [
 				console.log body
 				it.eq {a: 10}, JSON.parse(body)
 
-]
+].filter ({ msg }) -> regPattern.test msg
+
 .then ({ failed }) ->
 	process.exit failed
