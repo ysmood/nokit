@@ -80,8 +80,8 @@ ken = (opts = {}) ->
 			)
 		logFinal: (passed, failed) ->
 			console.log """
-			#{title} pass #{br.green passed}
-			#{title} fail #{br.red failed}
+			#{title} #{br.cyan "passed"} #{br.green passed}
+			#{title} #{br.cyan "failed"} #{br.red failed}
 			"""
 	}
 
