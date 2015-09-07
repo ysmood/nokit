@@ -8,7 +8,7 @@ Overview = 'proxy'
 kit = require './kit'
 { _, Promise } = kit
 http = require 'http'
-noflow = require 'noflow'
+flow = require 'noflow'
 
 proxy =
 
@@ -100,88 +100,10 @@ proxy =
 					ctx.res.setHeader 'ETag', hash
 
 	###*
-	 * A promise based middlewares proxy.
-	 * @param  {Array} middlewares Each item is a function `(ctx) -> Promise | Any`,
-	 * or an object with the same type with `body`.
-	 * If the middleware has async operation inside, it should return a promise.
-	 * The promise can reject an error with a http `statusCode` property.
-	 * The members of `ctx`:
-	 * ```coffee
-	 * {
-	 * 	# It can be a `String`, `Buffer`, `Stream`, `Object` or a `Promise` contains previous types.
-	 * 	body: Any
-	 *
-	 * 	req: http.IncomingMessage
-	 *
-	 * 	res: http.IncomingMessage
-	 *
-	 * 	# It returns a promise which settles after all the next middlewares are setttled.
-	 * 	next: -> Promise
-	 * }
-	 * ```
-	 * @return {Function} `(req, res) -> Promise | Any` or `(ctx) -> Promise`.
-	 * The http request listener or middleware.
-	 * @example
-	 * ```coffee
-	 * proxy = kit.require 'proxy'
-	 * http = require 'http'
-	 *
-	 * middlewares = [
-	 * 	(ctx) ->
-	 * 		start = new Date
-	 * 		ctx.next().then ->
-	 * 			console.log ctx.req.url, new Date - start
-	 * 		, (err) ->
-	 * 			console.error err
-	 *
-	 * 	proxy.select { url: '/api' }, (ctx) ->
-	 * 		ctx.body = kit.sleep(300).then -> 'Hello World'
-	 *
-	 * 	proxy.select { url: /\/items\/(\d+)$/ }, { fake: 'api' }
-	 * ]
-	 *
-	 * http.createServer(proxy.flow middlewares).listen 8123
-	 * ```
-	 * @example
-	 * Express like path to named capture.
-	 * ```coffee
-	 * proxy = kit.require 'proxy'
-	 * http = require 'http'
-	 *
-	 * middlewares = [
-	 * 	proxy.select { url: proxy.match '/items/:id' }, (ctx) ->
-	 * 		ctx.body = ctx.url.id
-	 * ]
-	 *
-	 * http.createServer(proxy.flow middlewares).listen 8123
-	 * ```
-	 * @example
-	 * Use with normal thrid middlewares. This example will map
-	 * `http://127.0.0.1:8123/st` to the `static` folder.
-	 * ```coffee
-	 * proxy = kit.require 'proxy'
-	 * http = require 'http'
-	 * send = require 'send'
-	 * bodyParser = require('body-parser')
-	 *
-	 * middlewares = [
-	 * 	# Express middleware
-	 * 	proxy.midToFlow bodyParser.json()
-	 *
-	 * 	proxy.select { url: '/st' }, (ctx) ->
-	 * 		ctx.body = send(ctx.req, ctx.url, { root: 'static' })
-	 * ]
-	 *
-	 * http.createServer(proxy.flow middlewares).listen 8123
-	 * ```
+	 * A minimal middleware composer for the future.
+	 * https://github.com/ysmood/noflow
 	###
-	flow: noflow.flow
-
-	###*
-	 * See project [noflow](https://github.com/ysmood/noflow).
-	 * @type {Object}
-	###
-	noflow: noflow
+	flow: flow
 
 	###*
 	 * Generate an express like unix path selector. See the example of `proxy.flow`.

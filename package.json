@@ -38,7 +38,7 @@
   "dependencies": {
     "commander": "2.8.1",
     "jhash": "0.1.7",
-    "noflow": "0.4.2",
+    "noflow": "0.5.0",
     "nofs": "0.10.1",
     "semver": "5.0.1",
     "yaku": "0.7.4"
