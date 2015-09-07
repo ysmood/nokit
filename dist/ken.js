@@ -88,7 +88,7 @@ ken = function(opts) {
       return console.error(title, br.red('x'), msg, br.grey("(" + span + "ms)"), '\n' + kit.indent(err.stack, 2));
     },
     logFinal: function(passed, failed) {
-      return console.log(title + " pass " + (br.green(passed)) + "\n" + title + " fail " + (br.red(failed)));
+      return console.log(title + " " + (br.cyan("passed")) + " " + (br.green(passed)) + "\n" + title + " " + (br.cyan("failed")) + " " + (br.red(failed)));
     }
   });
   if (opts.isExitOnUnhandled) {

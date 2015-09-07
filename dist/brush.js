@@ -49,8 +49,4 @@ for (k in codes) {
   });
 }
 
-module.exports.strip = function (str) {
-  return ('' + str).replace(/\x1B\[\d+m/g, '');
-};
-
 module.exports.isEnabled = process.env.NODE_ENV !== 'production';

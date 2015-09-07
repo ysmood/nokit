@@ -1893,6 +1893,12 @@ _.extend(kit, fs, yutils, {
   semver: null,
 
   /**
+  	 * The 'yaku/lib/source'.
+  	 * @type {Function}
+   */
+  source: require('yaku/lib/source'),
+
+  /**
   	 * A safer version of `child_process.spawn` to cross-platform run
   	 * a process. In some conditions, it may be more convenient
   	 * to use the `kit.exec`.

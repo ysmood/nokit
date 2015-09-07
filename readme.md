@@ -1057,7 +1057,13 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>type</u>**: { _Object_ }
 
-- ## **[spawn(cmd, args, opts)](lib/kit.coffee?source#L1747)**
+- ## **[source](lib/kit.coffee?source#L1722)**
+
+    The 'yaku/lib/source'.
+
+    - **<u>type</u>**: { _Function_ }
+
+- ## **[spawn(cmd, args, opts)](lib/kit.coffee?source#L1753)**
 
     A safer version of `child_process.spawn` to cross-platform run
     a process. In some conditions, it may be more convenient
@@ -1101,13 +1107,13 @@ Goto [changelog](doc/changelog.md)
         .then ({code}) -> kit.log code
         ```
 
-- ## **[sse](lib/kit.coffee?source#L1805)**
+- ## **[sse](lib/kit.coffee?source#L1811)**
 
     The `sse` module.
     You must `kit.require 'sse'` before using it.
     For more information goto the `sse` section.
 
-- ## **[task(name, opts, fn)](lib/kit.coffee?source#L1866)**
+- ## **[task(name, opts, fn)](lib/kit.coffee?source#L1872)**
 
     Sequencing and executing tasks and dependencies concurrently.
 
@@ -1187,12 +1193,12 @@ Goto [changelog](doc/changelog.md)
         	kit.log 'All Done!'
         ```
 
-- ## **[url](lib/kit.coffee?source#L1938)**
+- ## **[url](lib/kit.coffee?source#L1944)**
 
     The `url` module of [io.js](iojs.org).
     You must `kit.require 'url'` before using it.
 
-- ## **[warp(from, opts)](lib/kit.coffee?source#L2053)**
+- ## **[warp(from, opts)](lib/kit.coffee?source#L2059)**
 
     Works much like `gulp.src`, but with Promise instead.
     The warp control and error handling is more pleasant.
@@ -1317,7 +1323,7 @@ Goto [changelog](doc/changelog.md)
         .run 'dist'
         ```
 
-- ## **[which(name)](lib/kit.coffee?source#L2126)**
+- ## **[which(name)](lib/kit.coffee?source#L2132)**
 
     Same as the unix `which` command.
     You must `kit.require 'which'` before using it.
@@ -1328,14 +1334,14 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Promise_ }
 
-- ## **[whichSync](lib/kit.coffee?source#L2133)**
+- ## **[whichSync](lib/kit.coffee?source#L2139)**
 
     Sync version of `which`.
     You must `kit.require 'whichSync'` before using it.
 
     - **<u>type</u>**: { _Function_ }
 
-- ## **[xinspect(obj, opts)](lib/kit.coffee?source#L2144)**
+- ## **[xinspect(obj, opts)](lib/kit.coffee?source#L2150)**
 
     For debugging. Dump a colorful object.
 
@@ -1352,7 +1358,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _String_ }
 
-- ## **[xopen(cmds, opts)](lib/kit.coffee?source#L2167)**
+- ## **[xopen(cmds, opts)](lib/kit.coffee?source#L2173)**
 
     Open a thing that your system can recognize.
     Now only support Windows, OSX or system that installed 'xdg-open'.
@@ -1842,102 +1848,12 @@ kit.warp 'src/**/*.coffee'
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[flow(middlewares)](lib/proxy.coffee?source#L178)**
+- ## **[flow](lib/proxy.coffee?source#L106)**
 
-    A promise based middlewares proxy.
+    A minimal middleware composer for the future.
+    https://github.com/ysmood/noflow
 
-    - **<u>param</u>**: `middlewares` { _Array_ }
-
-        Each item is a function `(ctx) -> Promise | Any`,
-        or an object with the same type with `body`.
-        If the middleware has async operation inside, it should return a promise.
-        The promise can reject an error with a http `statusCode` property.
-        The members of `ctx`:
-        ```coffee
-        {
-        	# It can be a `String`, `Buffer`, `Stream`, `Object` or a `Promise` contains previous types.
-        	body: Any
-
-        	req: http.IncomingMessage
-
-        	res: http.IncomingMessage
-
-        	# It returns a promise which settles after all the next middlewares are setttled.
-        	next: -> Promise
-        }
-        ```
-
-    - **<u>return</u>**: { _Function_ }
-
-        `(req, res) -> Promise | Any` or `(ctx) -> Promise`.
-        The http request listener or middleware.
-
-    - **<u>example</u>**:
-
-        ```coffee
-        proxy = kit.require 'proxy'
-        http = require 'http'
-
-        middlewares = [
-        	(ctx) ->
-        		start = new Date
-        		ctx.next().then ->
-        			console.log ctx.req.url, new Date - start
-        		, (err) ->
-        			console.error err
-
-        	proxy.select { url: '/api' }, (ctx) ->
-        		ctx.body = kit.sleep(300).then -> 'Hello World'
-
-        	proxy.select { url: //items/(\d+)$/ }, { fake: 'api' }
-        ]
-
-        http.createServer(proxy.flow middlewares).listen 8123
-        ```
-
-    - **<u>example</u>**:
-
-        Express like path to named capture.
-        ```coffee
-        proxy = kit.require 'proxy'
-        http = require 'http'
-
-        middlewares = [
-        	proxy.select { url: proxy.match '/items/:id' }, (ctx) ->
-        		ctx.body = ctx.url.id
-        ]
-
-        http.createServer(proxy.flow middlewares).listen 8123
-        ```
-
-    - **<u>example</u>**:
-
-        Use with normal thrid middlewares. This example will map
-        `http://127.0.0.1:8123/st` to the `static` folder.
-        ```coffee
-        proxy = kit.require 'proxy'
-        http = require 'http'
-        send = require 'send'
-        bodyParser = require('body-parser')
-
-        middlewares = [
-        	# Express middleware
-        	proxy.midToFlow bodyParser.json()
-
-        	proxy.select { url: '/st' }, (ctx) ->
-        		ctx.body = send(ctx.req, ctx.url, { root: 'static' })
-        ]
-
-        http.createServer(proxy.flow middlewares).listen 8123
-        ```
-
-- ## **[noflow](lib/proxy.coffee?source#L184)**
-
-    See project [noflow](https://github.com/ysmood/noflow).
-
-    - **<u>type</u>**: { _Object_ }
-
-- ## **[match(pattern, opts)](lib/proxy.coffee?source#L199)**
+- ## **[match(pattern, opts)](lib/proxy.coffee?source#L121)**
 
     Generate an express like unix path selector. See the example of `proxy.flow`.
 
@@ -1960,7 +1876,7 @@ kit.warp 'src/**/*.coffee'
         kit.log match '/items/10' # output => { id: '10' }
         ```
 
-- ## **[midToFlow(h)](lib/proxy.coffee?source#L231)**
+- ## **[midToFlow(h)](lib/proxy.coffee?source#L153)**
 
     Convert a Express-like middleware to `proxy.flow` middleware.
 
@@ -1985,7 +1901,7 @@ kit.warp 'src/**/*.coffee'
         http.createServer(proxy.flow middlewares).listen 8123
         ```
 
-- ## **[select(sel, middleware)](lib/proxy.coffee?source#L261)**
+- ## **[select(sel, middleware)](lib/proxy.coffee?source#L183)**
 
     Create a conditional middleware that only works when the pattern matches.
 
@@ -2010,7 +1926,7 @@ kit.warp 'src/**/*.coffee'
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[serverHelper(opts)](lib/proxy.coffee?source#L344)**
+- ## **[serverHelper(opts)](lib/proxy.coffee?source#L266)**
 
     Create a http request middleware.
 
@@ -2054,7 +1970,7 @@ kit.warp 'src/**/*.coffee'
         nokit.log { any: 'thing' }
         ```
 
-- ## **[static(opts)](lib/proxy.coffee?source#L407)**
+- ## **[static(opts)](lib/proxy.coffee?source#L329)**
 
     Create a static file middleware for `proxy.flow`.
 
@@ -2075,7 +1991,7 @@ kit.warp 'src/**/*.coffee'
         http.createServer(proxy.flow middlewares).listen 8123
         ```
 
-- ## **[url(opts)](lib/proxy.coffee?source#L503)**
+- ## **[url(opts)](lib/proxy.coffee?source#L425)**
 
     Use it to proxy one url to another.
 
