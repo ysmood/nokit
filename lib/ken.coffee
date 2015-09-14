@@ -9,6 +9,7 @@ br = kit.require 'brush'
  * {
  * 	isBail: true
  * 	isExitOnUnhandled: true
+ * 	isAutoExitCode: true
  * 	timeout: 5000
  * 	logPass: (msg, span) ->
  * 	logFail: (msg, err, span) ->
@@ -70,13 +71,15 @@ ken = (opts = {}) ->
 	_.defaults opts, {
 		isBail: true
 		isExitOnUnhandled: true
+		isAutoExitCode: true
 		timeout: 5000
 		logPass: (msg, span) ->
 			console.log title, br.green('o'), msg, br.grey("(#{span}ms)")
 		logFail: (msg, err, span) ->
+			err = if err instanceof Error then err.stack else err
 			console.error(
 				title, br.red('x'), msg, br.grey("(#{span}ms)")
-				'\n' + kit.indent(err.stack, 2)
+				'\n' + kit.indent(err, 2)
 			)
 		logFinal: (passed, failed) ->
 			console.log """
@@ -85,15 +88,19 @@ ken = (opts = {}) ->
 			"""
 	}
 
+	passed = 0
+	failed = 0
+	isEnd = false
+
 	if opts.isExitOnUnhandled
 		onUnhandledRejection = Promise.onUnhandledRejection
 		Promise.onUnhandledRejection = (reason, p) ->
 			onUnhandledRejection reason, p
 			process.exit 1
 
-	passed = 0
-	failed = 0
-	isEnd = false
+	if opts.isAutoExitCode
+		process.on 'exit', ->
+			process.exit failed
 
 	it = (msg, fn) ->
 		tsetFn = ->

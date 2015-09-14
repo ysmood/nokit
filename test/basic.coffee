@@ -8,8 +8,10 @@ regPattern = new RegExp process.argv[2]
 
 cacheDir = 'test/fixtures/cacheDir'
 
+servers = []
 createRandomServer = (fn) ->
 	server = http.createServer fn
+	servers.push server
 
 	listen = kit.promisify server.listen, server
 
@@ -22,7 +24,7 @@ it.async [
 
 	it 'ken all passed', ->
 		ken = kit.require 'ken'
-		test = ken()
+		test = ken { isAutoExitCode: false }
 
 		# Async tests
 		test.async [
@@ -44,7 +46,7 @@ it.async [
 
 	it 'ken failed', ->
 		ken = kit.require 'ken'
-		test = ken()
+		test = ken { isAutoExitCode: false }
 
 		# Async tests
 		test.async [
@@ -715,4 +717,4 @@ it.async [
 ].filter ({ msg }) -> regPattern.test msg
 
 .then ({ failed }) ->
-	process.exit failed
+	servers.forEach (s) -> s.close();
