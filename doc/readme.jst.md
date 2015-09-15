@@ -172,10 +172,6 @@ kit.warp 'src/**/*.coffee'
 
 <%= doc['lib/drives.coffee'] %>
 
-# Ken
-
-<%= doc['lib/ken.coffee'] %>
-
 # Proxy
 
 <%= doc['lib/proxy.coffee'] %>

@@ -1,5 +1,9 @@
 # Changelog
 
+- v0.14.0
+
+  - **API CHANGE** removed `ken`, it's now a independent project, called `junit`
+
 - v0.13.0
 
   - opt: ken, add `isAutoExitCode` option, now ken will auto exit the code with failed test.

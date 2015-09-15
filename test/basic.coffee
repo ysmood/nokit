@@ -2,8 +2,8 @@ kit = require '../lib/kit'
 http = require 'http'
 { _, Promise } = kit
 kit.require 'drives'
-ken = kit.require 'ken'
-it = ken()
+junit = require 'junit'
+it = junit()
 regPattern = new RegExp process.argv[2]
 
 cacheDir = 'test/fixtures/cacheDir'
@@ -21,45 +21,6 @@ createRandomServer = (fn) ->
 unixSep = (p) -> p.replace /\\/g, '\/'
 
 it.async [
-
-	it 'ken all passed', ->
-		ken = kit.require 'ken'
-		test = ken { isAutoExitCode: false }
-
-		# Async tests
-		test.async [
-			test 'basic 1', ->
-				it.eq 'ok', 'ok'
-			test 'basic 2', ->
-				it.eq { a: 1, b: 2 }, { a: 1, b: 2 }
-
-			# Sync tests
-			kit.flow [
-				test 'basic 3', ->
-					it.eq 'ok', 'ok'
-				test 'basic 4', ->
-					it.eq 'ok', 'ok'
-			]
-		]
-		.then ({ passed }) ->
-			it.eq 4, passed
-
-	it 'ken failed', ->
-		ken = kit.require 'ken'
-		test = ken { isAutoExitCode: false }
-
-		# Async tests
-		test.async [
-			test 'basic 1', ->
-				it.eq 'ok', 'ok'
-			test 'basic 2', ->
-				it.eq 'ok', 'ok1'
-			test 'basic 3', ->
-				it.eq { a: 1, b: 2 }, { a: 1, b: 2 }
-		]
-		.then ({ failed }) ->
-			it.eq 1, failed
-
 	it 'brush', ->
 		br = kit.require 'brush'
 		it.eq br.red('ok'), '\u001b[31mok\u001b[39m'
