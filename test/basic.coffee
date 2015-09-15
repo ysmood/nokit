@@ -240,9 +240,9 @@ it.async [
 
 				delete cache.deps
 				out =
-					contents: 'out1'
 					dests: {}
 					isNewer: false
+					contents: 'out1'
 
 				cache.dests[dest] = unixSep cache.dests[dest]
 				cache.dests[dest1] = unixSep cache.dests[dest1]
