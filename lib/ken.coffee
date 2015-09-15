@@ -8,7 +8,7 @@ br = kit.require 'brush'
  * ```coffeescript
  * {
  * 	isBail: true
- * 	isExitOnUnhandled: true
+ * 	isFailOnUnhandled: true
  * 	isAutoExitCode: true
  * 	timeout: 5000
  * 	logPass: (msg, span) ->
@@ -70,7 +70,7 @@ ken = (opts = {}) ->
 	title = br.underline br.grey 'ken >'
 	_.defaults opts, {
 		isBail: true
-		isExitOnUnhandled: true
+		isFailOnUnhandled: true
 		isAutoExitCode: true
 		timeout: 5000
 		logPass: (msg, span) ->
@@ -79,7 +79,7 @@ ken = (opts = {}) ->
 			err = if err instanceof Error then err.stack else err
 			console.error(
 				title, br.red('x'), msg, br.grey("(#{span}ms)")
-				'\n' + kit.indent(err, 2)
+				'\n' + br.red kit.indent(err + '', 2)
 			)
 		logFinal: (passed, failed) ->
 			console.log """
@@ -92,11 +92,11 @@ ken = (opts = {}) ->
 	failed = 0
 	isEnd = false
 
-	if opts.isExitOnUnhandled
+	if opts.isFailOnUnhandled
 		onUnhandledRejection = Promise.onUnhandledRejection
 		Promise.onUnhandledRejection = (reason, p) ->
 			onUnhandledRejection reason, p
-			process.exit 1
+			failed++
 
 	if opts.isAutoExitCode
 		process.on 'exit', ->
@@ -151,13 +151,14 @@ ken = (opts = {}) ->
 			if eq actual, expected
 				Promise.resolve()
 			else
-				Promise.reject new Error """
+				{ stack } = new Error """
 				\n#{br.magenta "<<<<<<< actual"}
 				#{kit.xinspect actual}
 				#{br.magenta "======="}
 				#{kit.xinspect expected}
 				#{br.magenta ">>>>>>> expected"}
 				"""
+				Promise.reject stack.replace ///.+#{__filename}.+\n///g, ''
 	}
 
 bufEq = (a, b) ->
