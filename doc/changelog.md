@@ -1,8 +1,10 @@
 # Changelog
 
-- v0.12.3
+- v0.13.0
 
+  - opt: ken, add `isAutoExitCode` option, now ken will auto exit the code with failed test.
   - **API CHANGE** ken has changed its api, see the doc of it. We don't need `deepEq` any more.
+    `isAutoExitCode` renamed to `isFailOnUnhandled`.
 
 - v0.11.6
 

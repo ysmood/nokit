@@ -13,7 +13,8 @@ br = kit.require('brush');
  * ```coffeescript
  * {
  * 	isBail: true
- * 	isExitOnUnhandled: true
+ * 	isFailOnUnhandled: true
+ * 	isAutoExitCode: true
  * 	timeout: 5000
  * 	logPass: (msg, span) ->
  * 	logFail: (msg, err, span) ->
@@ -79,28 +80,35 @@ ken = function(opts) {
   title = br.underline(br.grey('ken >'));
   _.defaults(opts, {
     isBail: true,
-    isExitOnUnhandled: true,
+    isFailOnUnhandled: true,
+    isAutoExitCode: true,
     timeout: 5000,
     logPass: function(msg, span) {
       return console.log(title, br.green('o'), msg, br.grey("(" + span + "ms)"));
     },
     logFail: function(msg, err, span) {
-      return console.error(title, br.red('x'), msg, br.grey("(" + span + "ms)"), '\n' + kit.indent(err.stack, 2));
+      err = err instanceof Error ? err.stack : err;
+      return console.error(title, br.red('x'), msg, br.grey("(" + span + "ms)"), '\n' + br.red(kit.indent(err + '', 2)));
     },
     logFinal: function(passed, failed) {
       return console.log(title + " " + (br.cyan("passed")) + " " + (br.green(passed)) + "\n" + title + " " + (br.cyan("failed")) + " " + (br.red(failed)));
     }
   });
-  if (opts.isExitOnUnhandled) {
-    onUnhandledRejection = Promise.onUnhandledRejection;
-    Promise.onUnhandledRejection = function(reason, p) {
-      onUnhandledRejection(reason, p);
-      return process.exit(1);
-    };
-  }
   passed = 0;
   failed = 0;
   isEnd = false;
+  if (opts.isFailOnUnhandled) {
+    onUnhandledRejection = Promise.onUnhandledRejection;
+    Promise.onUnhandledRejection = function(reason, p) {
+      onUnhandledRejection(reason, p);
+      return failed++;
+    };
+  }
+  if (opts.isAutoExitCode) {
+    process.on('exit', function() {
+      return process.exit(failed);
+    });
+  }
   it = function(msg, fn) {
     var tsetFn;
     tsetFn = function() {
@@ -148,12 +156,13 @@ ken = function(opts) {
       return kit.flow.apply(0, arguments)().then(onFinal, onFinal);
     },
     eq: function(actual, expected) {
-      var eq;
+      var eq, stack;
       eq = actual instanceof Buffer || expected instanceof Buffer ? bufEq : _.eq;
       if (eq(actual, expected)) {
         return Promise.resolve();
       } else {
-        return Promise.reject(new Error("\n" + (br.magenta("<<<<<<< actual")) + "\n" + (kit.xinspect(actual)) + "\n" + (br.magenta("=======")) + "\n" + (kit.xinspect(expected)) + "\n" + (br.magenta(">>>>>>> expected"))));
+        stack = new Error("\n" + (br.magenta("<<<<<<< actual")) + "\n" + (kit.xinspect(actual)) + "\n" + (br.magenta("=======")) + "\n" + (kit.xinspect(expected)) + "\n" + (br.magenta(">>>>>>> expected"))).stack;
+        return Promise.reject(stack.replace(RegExp(".+" + __filename + ".+\\n", "g"), ''));
       }
     }
   });
