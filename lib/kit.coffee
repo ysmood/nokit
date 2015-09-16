@@ -1033,7 +1033,7 @@ _.extend kit, fs, yutils,
 				([\s\S]+?)
 				(?:\#\#\#|\*\/)
 				# "var" and space
-				\s+(?:var\s+)?
+				\s+(?:var|let|function\s+)?
 				# variable name
 				['"]?([$@\w\.-]+)['"]?
 			///g
