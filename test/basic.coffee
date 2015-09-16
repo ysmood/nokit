@@ -51,12 +51,22 @@ it.async [
 		path = 'test/fixtures/comment.js'
 		kit.readFile path, 'utf8'
 		.then (str) ->
-			[ { tags: [tag] } ] = kit.parseComment str
+			[ { name, tags: [tag] } ] = kit.parseComment str
 
 			Promise.all [
+				it.eq name, 'as_ync1'
 				it.eq tag.type, 'Int'
 				it.eq tag.name, 'limit'
 			]
+
+	it 'parseComment js 2', ->
+		path = 'test/fixtures/comment.js'
+		kit.readFile path, 'utf8'
+		.then (str) ->
+			parsed = kit.parseComment str
+			[ n0, { name } ] = parsed
+
+			it.eq name, 'indent'
 
 	it 'crypto', ->
 		en = kit.encrypt '123', 'test'
