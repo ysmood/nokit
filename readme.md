@@ -29,6 +29,8 @@ Nokit has provided a cli tool like GNU Make. If you install it globally like thi
 
 ## CLI
 
+### The `no` Comamnd
+
 By default nokit only supports js, if you want nokit to support coffee, you should install nokit like this:
 
 `npm i -g nokit coffee-script`
@@ -88,6 +90,11 @@ Call `no build` or `no b` to run the `build` task.
 For real world example, just see the [nofile](nofile.coffee?source) that nokit is using.
 
 For more doc for the `option` goto [commander.js](https://github.com/tj/commander.js).
+
+### The `noe` Comamnd
+
+`noe` is a dev tool to run / watch / reload program automatically. Run `noe -h` to see what you
+can do with it.
 
 # Changelog
 

@@ -80,15 +80,15 @@ loadNofile = function() {
       lang = ref[i];
       try {
         require(lang);
-      } catch (_error) {}
+      } catch (undefined) {}
     }
   } else {
     try {
       require('babel/register');
-    } catch (_error) {}
+    } catch (undefined) {}
     try {
       require('coffee-script/register');
-    } catch (_error) {}
+    } catch (undefined) {}
   }
   exts = _(require.extensions).keys().filter(function(ext) {
     return ['.json', '.node', '.litcoffee', '.coffee.md'].indexOf(ext) === -1;
@@ -139,7 +139,7 @@ module.exports = launch = function() {
   var cwd, nofilePath, tasks;
   cwd = process.cwd();
   nofilePath = loadNofile();
-  cmder.option('--nofile <path>', 'force nofile path').usage('[options] [fuzzy_task_name]...' + br.grey("  # " + (kit.path.relative(cwd, nofilePath))));
+  cmder.description('a nofile utility to run automation tasks' + br.grey("  # " + (kit.path.relative(cwd, nofilePath)))).option('--nofile <path>', 'force nofile path').usage('[options] [fuzzy task name]...');
   if (!kit.task.list) {
     return;
   }

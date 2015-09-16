@@ -3,6 +3,8 @@
 - v0.14.0
 
   - **API CHANGE** removed `ken`, it's now a independent project, called `junit`
+  - add: `noe` cli helper
+  - fix: some regex bugs
 
 - v0.13.0
 

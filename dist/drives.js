@@ -53,15 +53,15 @@ module.exports = {
     });
     coffee = kit.requireOptional('coffee-script', __dirname, '>=1.8.0');
     return function() {
-      var err;
+      var err, error;
       opts.filename = this.path;
       this.deps = [this.path];
       this.dest.ext = '.js';
       try {
         this.set(coffee.compile(this.contents + '', opts));
         return kit.log(br.cyan('coffee: ') + this.path);
-      } catch (_error) {
-        err = _error;
+      } catch (error) {
+        err = error;
         kit.err(br.red(err.stack));
         return Promise.reject('coffeescriptCompileError');
       }
@@ -406,15 +406,15 @@ module.exports = {
     });
     LiveScript = kit.requireOptional('LiveScript', __dirname, '>=1.2.0');
     return function() {
-      var err;
+      var err, error;
       this.deps = [this.path];
       opts.filename = this.path;
       this.dest.ext = '.js';
       try {
         this.set(LiveScript.compile(this.contents + '', opts));
         return kit.log(br.cyan('livescript: ') + this.path);
-      } catch (_error) {
-        err = _error;
+      } catch (error) {
+        err = error;
         kit.err(br.red(err));
         return Promise.reject('livescriptCompileError');
       }
@@ -582,13 +582,13 @@ module.exports = {
       };
     }
     return function() {
-      var err;
+      var err, error;
       this.deps = [this.path];
       try {
         kit.log(br.cyan('uglifyjs: ') + this.dest);
         return this.set((uglify.minify(this.contents + '', opts)).code);
-      } catch (_error) {
-        err = _error;
+      } catch (error) {
+        err = error;
         return kit.logs(br.cyan('uglifyjs err:'), this.path, err.message);
       }
     };
