@@ -29,11 +29,13 @@ if (sepIndex > 0) {
 
 
 cmder
+    .description('a dev tool to run / watch / reload program automatically')
+    .usage('[options] [file] [-- [child process options]]...')
     .option('-w <pattern>', 'watch file pattern list', function (p) {
         if (!watchList) watchList = [];
         watchList.push(p);
     })
-    .option('-b <babel-node or node>', 'bin to execute', 'babel-node')
+    .option('-b <name>', 'bin to execute, default is babel-node or node', 'babel-node')
     .option('-n', 'don\'t watch dependencies as node')
 .parse(argv);
 

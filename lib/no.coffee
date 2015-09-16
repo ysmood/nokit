@@ -112,9 +112,10 @@ module.exports = launch = ->
 	nofilePath = loadNofile()
 
 	cmder
-	.option '--nofile <path>', 'force nofile path'
-	.usage '[options] [fuzzy_task_name]...' +
+	.description 'a nofile utility to run automation tasks' +
 		br.grey "  # #{kit.path.relative cwd, nofilePath}"
+	.option '--nofile <path>', 'force nofile path'
+	.usage '[options] [fuzzy task name]...'
 
 	if not kit.task.list
 		return
