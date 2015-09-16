@@ -4,7 +4,8 @@
   "description": "A light weight set of handy tools for real world program.",
   "main": "dist/kit.js",
   "bin": {
-    "no": "bin/no.js"
+    "no": "bin/no.js",
+    "noe": "bin/noe.js"
   },
   "scripts": {
     "no": "bin/no.js",

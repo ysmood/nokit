@@ -858,7 +858,7 @@ _.extend kit, fs, yutils,
 			parseDependency: {}
 			opts: {}
 			onStart: ->
-				kit.log br.yellow("Monitor: ") + opts.watchList
+				kit.logs br.yellow("Monitor:"), opts.bin, opts.watchList
 			onRestart: (path) ->
 				kit.log br.yellow("Reload app, modified: ") + path
 			onWatchFiles: (paths) ->
@@ -939,7 +939,7 @@ _.extend kit, fs, yutils,
 
 		start()
 
-		{ process: childProcess, watchPromise, stop }
+		{ process: childProcess, childPromise, watchPromise, stop }
 
 	###*
 	 * Node version. Such as `v0.10.23` is `0.1023`, `v0.10.1` is `0.1001`.
@@ -1130,9 +1130,9 @@ _.extend kit, fs, yutils,
 	###
 	parseDependency: (entryPaths, opts = {}, depPaths = {}) ->
 		_.defaults opts, {
-			depReg: /require\s*\(?['"](.+)['"]\)?/g
+			depReg: ///^\s*import\s+.+?\s+from\s+['"](.+?)['"]///g
 			depRoots: ['']
-			extensions: ['.js', '.coffee', '/index.js', '/index.coffee']
+			extensions: ['.js', '.es', '.jsx', '.coffee', '/index.js', '/index.coffee']
 			handle: (path) ->
 				return path if path.match /^(?:\.|\/|[a-z]:)/i
 		}
@@ -1179,6 +1179,7 @@ _.extend kit, fs, yutils,
 
 						entryPaths = []
 						str.replace opts.depReg, (m, p) ->
+
 							p = opts.handle p
 							return if not p
 							entryPaths.push p

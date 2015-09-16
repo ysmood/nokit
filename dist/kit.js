@@ -733,13 +733,6 @@ _.extend(kit, fs, yutils, {
   jhash: null,
 
   /**
-  	 * The `ken` module.
-  	 * You must `kit.require 'ken'` before using it.
-  	 * For more information goto the `Ken` section.
-   */
-  ken: null,
-
-  /**
   	 * A better log for debugging, it uses the `kit.xinspect` to log.
   	 *
   	 * Use terminal command like `logReg='pattern' node app.js` to
@@ -961,7 +954,7 @@ _.extend(kit, fs, yutils, {
       parseDependency: {},
       opts: {},
       onStart: function() {
-        return kit.log(br.yellow("Monitor: ") + opts.watchList);
+        return kit.logs(br.yellow("Monitor:"), opts.bin, opts.watchList);
       },
       onRestart: function(path) {
         return kit.log(br.yellow("Reload app, modified: ") + path);
@@ -1012,7 +1005,7 @@ _.extend(kit, fs, yutils, {
           child_process.execSync('pkill -P ' + childPromise.process.pid, {
             stdio: 'ignore'
           });
-        } catch (undefined) {}
+        } catch (_error) {}
         return childPromise.process.kill('SIGINT');
       }
     }, 50);
@@ -1032,7 +1025,7 @@ _.extend(kit, fs, yutils, {
         child_process.execSync('pkill -P ' + childPromise.process.pid, {
           stdio: 'ignore'
         });
-      } catch (undefined) {}
+      } catch (_error) {}
       childPromise.process.kill('SIGINT');
       return process.exit();
     });
@@ -1048,6 +1041,7 @@ _.extend(kit, fs, yutils, {
     start();
     return {
       process: childProcess,
+      childPromise: childPromise,
       watchPromise: watchPromise,
       stop: stop
     };
@@ -1250,9 +1244,9 @@ _.extend(kit, fs, yutils, {
       depPaths = {};
     }
     _.defaults(opts, {
-      depReg: /require\s*\(?['"](.+)['"]\)?/g,
+      depReg: /require\s*\(?['"](.+)['"]\)?|^import\s+.+\s+from\s+['"](.+)['"]|^import\s+['"](.+)['"]+\s+as|^import\s+['"](.+)['"][;\s]*$/g,
       depRoots: [''],
-      extensions: ['.js', '.coffee', '/index.js', '/index.coffee'],
+      extensions: ['.js', '.es', '.jsx', '.coffee', '/index.js', '/index.coffee'],
       handle: function(path) {
         if (path.match(/^(?:\.|\/|[a-z]:)/i)) {
           return path;
@@ -1420,7 +1414,7 @@ _.extend(kit, fs, yutils, {
   	 * ```
    */
   require: function(moduleName, dir, loaded) {
-    var e, err, error, error1, j, key, len, modPath, name, names, p;
+    var e, err, j, key, len, modPath, name, names, p;
     if (_.isFunction(dir)) {
       loaded = dir;
       dir = null;
@@ -1437,8 +1431,8 @@ _.extend(kit, fs, yutils, {
       }
       try {
         modPath = require.resolve('./' + moduleName);
-      } catch (error) {
-        e = error;
+      } catch (_error) {
+        e = _error;
         if (e.code !== 'MODULE_NOT_FOUND') {
           throw e;
         }
@@ -1466,8 +1460,8 @@ _.extend(kit, fs, yutils, {
       name = names[j];
       try {
         modPath = require.resolve(name);
-      } catch (error1) {
-        e = error1;
+      } catch (_error) {
+        e = _error;
         if (e.code === 'MODULE_NOT_FOUND') {
           modPath = null;
         } else {
@@ -1502,7 +1496,7 @@ _.extend(kit, fs, yutils, {
   	 * @return {Any} The required package.
    */
   requireOptional: function(name, dir, semver) {
-    var br, err, error, info, key, version;
+    var br, err, info, key, version;
     key = semver ? name + '@' + semver : name;
     if (kit.requireCache[key]) {
       return kit.requireCache[key];
@@ -1518,8 +1512,8 @@ _.extend(kit, fs, yutils, {
         }
       }
       return kit.require(name, dir);
-    } catch (error) {
-      err = error;
+    } catch (_error) {
+      err = _error;
       if (err.source === 'nokit') {
         throw err;
       }
@@ -1799,7 +1793,7 @@ _.extend(kit, fs, yutils, {
                 encoding = opts.resEncoding;
               }
               decode = function(buf) {
-                var err, error;
+                var err;
                 if (!encoding) {
                   return buf;
                 }
@@ -1809,8 +1803,8 @@ _.extend(kit, fs, yutils, {
                   } else {
                     return kit.requireOptional('iconv-lite', __dirname).decode(buf, encoding);
                   }
-                } catch (error) {
-                  err = error;
+                } catch (_error) {
+                  err = _error;
                   return reject(err);
                 }
               };
@@ -1969,11 +1963,11 @@ _.extend(kit, fs, yutils, {
       }
     }
     promise = new Promise(function(resolve, reject) {
-      var err, error;
+      var err;
       try {
         ps = spawn(cmd, args, opts);
-      } catch (error) {
-        err = error;
+      } catch (_error) {
+        err = _error;
         reject(err);
       }
       ps.on('error', function(err) {
@@ -2432,7 +2426,6 @@ _.extend(kit, fs, yutils, {
       cmds = [cmds];
     }
     return (Promise.resolve((function() {
-      var error;
       switch (process.platform) {
         case 'darwin':
           return 'open';
@@ -2443,7 +2436,7 @@ _.extend(kit, fs, yutils, {
           try {
             kit.require('which');
             return kit.which('xdg-open');
-          } catch (error) {
+          } catch (_error) {
             return null;
           }
       }

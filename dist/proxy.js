@@ -309,12 +309,12 @@ proxy = {
             return data += chunk;
           });
           req.on('end', function() {
-            var e, error1;
+            var e;
             try {
               kit.log(br.cyan('client') + br.grey(' | ') + (data ? kit.xinspect(JSON.parse(data)) : data));
               return res.end();
-            } catch (error1) {
-              e = error1;
+            } catch (_error) {
+              e = _error;
               res.statusCode = 500;
               return res.end(e.stack);
             }
