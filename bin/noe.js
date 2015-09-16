@@ -1,13 +1,6 @@
 #!/usr/bin/env node
 
 // Run program automatically
-// Example:
-// ```
-// noe app.js # By default, it will try to use babel-node or node to execute the file.
-// noe node app.js
-// noe coffee app.js
-// noe babel-node app.js
-// ```
 
 var kit = require('../dist/kit');
 var _ = kit._;
@@ -27,7 +20,6 @@ if (sepIndex > 0) {
     childArgs = [];
 }
 
-
 cmder
     .description('a dev tool to run / watch / reload program automatically')
     .usage('[options] [file] [-- [child process options]]...')
@@ -35,11 +27,19 @@ cmder
         if (!watchList) watchList = [];
         watchList.push(p);
     })
-    .option('-b <name>', 'bin to execute, default is babel-node or node', 'babel-node')
+    .option('-b <name>', 'bin to execute, default is babel-node or node', null)
     .option('-n', 'don\'t watch dependencies as node')
+    .on('--help', function () {
+        console.log(
+            '  Examples:\n\n' +
+            '    noe es7.js\n' +
+            '    noe -b coffee test.coffee\n' +
+            '    noe -w \'lib/*.js\' -w \'src/*.js\' test.js\n'
+        );
+    })
 .parse(argv);
 
-if (cmder.B === 'babel-node') {
+if (cmder.B === null) {
     cmder.B = 'node';
     try {
         require.resolve('babel');
