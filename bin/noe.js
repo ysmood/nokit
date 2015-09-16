@@ -57,6 +57,4 @@ kit.monitorApp({
     args: cmder.args.concat(childArgs),
     watchList: watchList,
     isNodeDeps: !cmder.N
-}).childPromise.catch(function () {
-    process.exit(1);
 });

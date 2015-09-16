@@ -1,6 +1,6 @@
 # Changelog
 
-- v0.14.0
+- v0.14.1
 
   - **API CHANGE** removed `ken`, it's now a independent project, called `junit`
   - add: `noe` cli helper
