@@ -1033,7 +1033,7 @@ _.extend kit, fs, yutils,
 				([\s\S]+?)
 				(?:\#\#\#|\*\/)
 				# "var" and space
-				\s+(?:var|let|function\s+)?
+				\s+(?:var\s|let\s|function\s+)?
 				# variable name
 				['"]?([$@\w\.-]+)['"]?
 			///g
@@ -1130,7 +1130,12 @@ _.extend kit, fs, yutils,
 	###
 	parseDependency: (entryPaths, opts = {}, depPaths = {}) ->
 		_.defaults opts, {
-			depReg: ///^\s*import\s+.+?\s+from\s+['"](.+?)['"]///g
+			depReg: ///
+				require\s*\(?['"](.+)['"]\)?
+				| ^\s*import.+?from\s+['"](.+)['"]
+				| ^\s*import\s+['"](.+)['"]+\s+as
+				| ^\s*import\s+['"](.+)['"][;\s]*$
+				///mg
 			depRoots: ['']
 			extensions: ['.js', '.es', '.jsx', '.coffee', '/index.js', '/index.coffee']
 			handle: (path) ->
@@ -1178,9 +1183,8 @@ _.extend kit, fs, yutils,
 						dir = kit.path.dirname path
 
 						entryPaths = []
-						str.replace opts.depReg, (m, p) ->
-
-							p = opts.handle p
+						str.replace opts.depReg, (n0, ms..., n1, n2) ->
+							p = opts.handle _.find(ms, _.isString)
 							return if not p
 							entryPaths.push p
 							entryPaths.push kit.path.join(dir, p)
