@@ -47,6 +47,41 @@ var as_ync1 = function(limit, list, save_resutls) {
 
 
 /**
+   * Indent a text block.
+   * @param {String} text
+   * @param {Int} num
+   * @param {String} char
+   * @param {RegExp} reg Default is `/^/mg`.
+   * @return {String} The indented text block.
+   * @example
+   * ```coffee
+   * # Increase
+   * kit.indent "one\ntwo", 2
+   * # => "  one\n  two"
+   *
+   * # Decrease
+   * kit.indent "--one\n--two", 0, '', /^--/mg
+   * # => "one\ntwo"
+   * ```
+ */
+let indent = function(text, num, char, reg) {
+  var prefix;
+  if (num == null) {
+    num = 0;
+  }
+  if (char == null) {
+    char = ' ';
+  }
+  if (reg == null) {
+    reg = /^/mg;
+  }
+  prefix = _.times(num, function() {
+    return char;
+  }).join('');
+  return text.replace(reg, prefix);
+};
+
+/**
 	 * Indent a text block.
 	 * @param {String} text
 	 * @param {Int} num
@@ -64,7 +99,7 @@ var as_ync1 = function(limit, list, save_resutls) {
 	 * # => "one\ntwo"
 	 * ```
  */
-var indent = function(text, num, char, reg) {
+function indent (text, num, char, reg) {
   var prefix;
   if (num == null) {
     num = 0;
