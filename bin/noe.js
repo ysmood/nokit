@@ -28,7 +28,7 @@ cmder
         watchList.push(p);
     })
     .option('-b <name>', 'bin to execute, default is babel-node or node', null)
-    .option('-n', 'don\'t watch dependencies as node')
+    .option('-n', 'disable parse & watch node dependencies automatically')
     .on('--help', function () {
         console.log(
             '  Examples:\n\n' +
