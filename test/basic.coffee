@@ -20,7 +20,7 @@ createRandomServer = (fn) ->
 
 unixSep = (p) -> p.replace /\\/g, '\/'
 
-it.async [
+it.run [
 	it 'brush', ->
 		br = kit.require 'brush'
 		it.eq br.red('ok'), '\u001b[31mok\u001b[39m'
@@ -518,79 +518,6 @@ it.async [
 			kit.request "http://127.0.0.1:#{port}/itemx"
 			.then (body) ->
 				it.eq 'Not Found', body
-
-	it 'proxy flow sub route', ->
-		proxy = kit.require 'proxy'
-
-		routes = [proxy.select url: '/sub', proxy.flow [
-				proxy.select url: '/sub/home', ($) ->
-					$.body = $.url
-			]
-		]
-
-		createRandomServer proxy.flow(routes)
-		.then (port) ->
-			kit.request "http://127.0.0.1:#{port}/sub/home/test"
-			.then (body) ->
-				it.eq '/test', body
-
-	it 'proxy flow sub route 404', ->
-		proxy = kit.require 'proxy'
-
-		routes = [proxy.select url: '/sub', proxy.flow [
-				proxy.select url: /\/home$/, ($) ->
-					$.body = $.url
-			]
-		]
-
-		createRandomServer proxy.flow(routes)
-		.then (port) ->
-			kit.request {
-				url: "http://127.0.0.1:#{port}/sub/homex"
-				body: false
-			}
-			.then (res) ->
-				it.eq '404Not Found', res.statusCode + res.body
-
-	it 'proxy flow sub route next', ->
-		proxy = kit.require 'proxy'
-
-		routes = [
-			proxy.select url: '/sub', ($) -> $.next()
-			proxy.select(url: '/sub', proxy.flow [
-				proxy.select url: proxy.match('/home'), ($) ->
-					$.body = $.url
-			])
-			proxy.select url: '/sub', ($) -> $.body = 'next'
-		]
-
-		createRandomServer proxy.flow(routes)
-		.then (port) ->
-			kit.request "http://127.0.0.1:#{port}/sub/home/test"
-			.then (body) ->
-				it.eq 'next', body
-
-	it 'proxy flow sub route error', ->
-		proxy = kit.require 'proxy'
-
-		routes = [
-			($) ->
-				$.next().catch (err) ->
-					$.res.statusCode = 501
-					$.body = err.message
-			proxy.select url: '/sub', proxy.flow [
-				proxy.select url: '/sub/home', ($) -> a()
-			]
-		]
-
-		createRandomServer proxy.flow(routes)
-		.then (port) ->
-			kit.request {
-				url: "http://127.0.0.1:#{port}/sub/home/test"
-				body: false
-			}
-			.then (res) ->
-				it.eq '501 a is not defined', res.statusCode + ' ' + res.body
 
 	it 'proxy flow promise', ->
 		proxy = kit.require 'proxy'
