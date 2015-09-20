@@ -1,10 +1,11 @@
 # Changelog
 
-- v0.14.2
+- v0.14.3
 
   - **API CHANGE** removed `ken`, it's now a independent project, called `junit`
   - add: `noe` cli helper
   - fix: some regex bugs
+  - upd: deps
 
 - v0.13.0
 

@@ -614,5 +614,5 @@ it.run [
 
 ].filter ({ msg }) -> regPattern.test msg
 
-.then ({ failed }) ->
+.then () ->
 	servers.forEach (s) -> s.close();
