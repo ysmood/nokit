@@ -62,14 +62,16 @@ module.exports = (task, option) ->
 				kit.remove '.nokit'
 			]
 
-	option '-g, --grep [.]', 'test pattern', '.'
-	option '-t, --timeout [3000]', 'test timeout', 3000
+	option '-g, --grep <pattern>', 'test pattern', ''
 	task 'test t', 'unit tests', (opts) ->
 		clean = ->
 			kit.spawn 'git', ['clean', '-fd', 'test/fixtures']
 
 		clean().then ->
-			kit.spawn 'coffee', ['test/basic.coffee', opts.grep]
+			kit.spawn('junit', [
+				'-r', 'coffee-script/register'
+				'test/basic.coffee', '-g', opts.grep
+			])
 		.then -> clean()
 		.catch (err) ->
 			if err.code

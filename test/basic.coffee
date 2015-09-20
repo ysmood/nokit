@@ -2,25 +2,27 @@ kit = require '../lib/kit'
 http = require 'http'
 { _, Promise } = kit
 kit.require 'drives'
-junit = require 'junit'
-it = junit()
 regPattern = new RegExp process.argv[2]
 
 cacheDir = 'test/fixtures/cacheDir'
 
-servers = []
-createRandomServer = (fn) ->
-	server = http.createServer fn
-	servers.push server
+createRandomServer = (handler, fn) ->
+	server = http.createServer handler
 
 	listen = kit.promisify server.listen, server
 
 	listen(0).then ->
-		server.address().port
+		fn(server.address().port)
+	.then (res) ->
+		server.close()
+		res
+	, (err) ->
+		server.close()
+		Promise.reject err
 
 unixSep = (p) -> p.replace /\\/g, '\/'
 
-it.run [
+module.exports = (it) -> [
 	it 'brush', ->
 		br = kit.require 'brush'
 		it.eq br.red('ok'), '\u001b[31mok\u001b[39m'
@@ -89,7 +91,7 @@ it.run [
 
 		createRandomServer (req, res) ->
 			res.end info
-		.then (port) ->
+		, (port) ->
 			kit.request {
 				url:
 					protocol: 'http:'
@@ -103,7 +105,7 @@ it.run [
 		createRandomServer (req, res) ->
 			kit.sleep(60).then ->
 				res.end()
-		.then (port) ->
+		, (port) ->
 			promise = kit.request {
 				url: '127.0.0.1:' + port
 				timeout: 50
@@ -123,7 +125,7 @@ it.run [
 			req.on 'data', (chunk) -> data += chunk
 			req.on 'end', ->
 				res.end data
-		.then (port) ->
+		, (port) ->
 			file = kit.fs.createReadStream path
 			{ size } = kit.fs.statSync path
 			kit.request {
@@ -143,7 +145,7 @@ it.run [
 			form.parse req, (err, fields, files) ->
 				res.end fields['f.md'].length.toString()
 
-		.then (port) ->
+		, (port) ->
 			form = new (require 'form-data')
 
 			buffer = kit.fs.readFileSync 'nofile.coffee'
@@ -405,7 +407,7 @@ it.run [
 	it 'proxy url', ->
 		proxy = kit.require 'proxy'
 
-		createRandomServer proxy.flow([
+		createRandomServer(proxy.flow([
 			proxy.select url: /\/site$/, ($) ->
 				$.body = 'site' + $.req.headers.proxy
 
@@ -421,13 +423,12 @@ it.run [
 				handleResBody: (body) ->
 					body + '-body'
 			}
-		])
-		.then (port) ->
+		]), (port) ->
 			kit.request {
 				url: "http://127.0.0.1:#{port}/proxy"
 				body: false
 			}
-		.then ({ headers, body }) ->
+		).then ({ headers, body }) ->
 			it.eq 'site-proxy-body-ok', body + headers.x
 
 	it 'proxy flow handler', ->
@@ -441,7 +442,7 @@ it.run [
 		]
 
 		createRandomServer proxy.flow(routes)
-		.then (port) ->
+		, (port) ->
 			kit.request {
 				url: "http://127.0.0.1:#{port}"
 				reqData: 'test'
@@ -453,7 +454,7 @@ it.run [
 		proxy = kit.require 'proxy'
 
 		createRandomServer proxy.flow(['string works'])
-		.then (port) ->
+		, (port) ->
 			kit.request {
 				url: "http://127.0.0.1:#{port}"
 			}
@@ -468,7 +469,7 @@ it.run [
 		]
 
 		createRandomServer proxy.flow(routes)
-		.then (port) ->
+		, (port) ->
 			kit.request "http://127.0.0.1:#{port}/items/123"
 			.then (body) ->
 				it.eq '123', body
@@ -481,7 +482,7 @@ it.run [
 		]
 
 		createRandomServer proxy.flow(routes)
-		.then (port) ->
+		, (port) ->
 			kit.request {
 				url: "http://127.0.0.1:#{port}"
 				headers: { x: 'ok' }
@@ -497,7 +498,7 @@ it.run [
 		]
 
 		createRandomServer proxy.flow(routes)
-		.then (port) ->
+		, (port) ->
 			kit.request {
 				url: "http://127.0.0.1:#{port}"
 				headers: { x: 'ok' }
@@ -514,7 +515,7 @@ it.run [
 		]
 
 		createRandomServer proxy.flow(routes)
-		.then (port) ->
+		, (port) ->
 			kit.request "http://127.0.0.1:#{port}/itemx"
 			.then (body) ->
 				it.eq 'Not Found', body
@@ -527,7 +528,7 @@ it.run [
 		]
 
 		createRandomServer proxy.flow(routes)
-		.then (port) ->
+		, (port) ->
 			kit.request "http://127.0.0.1:#{port}"
 			.then (body) ->
 				it.eq kit.readFileSync('.gitignore', 'utf8'), body
@@ -540,7 +541,7 @@ it.run [
 		]
 
 		createRandomServer proxy.flow(routes)
-		.then (port) ->
+		, (port) ->
 			kit.request "http://127.0.0.1:#{port}/items/123"
 			.then (body) ->
 				it.eq '123', body
@@ -553,7 +554,7 @@ it.run [
 		]
 
 		createRandomServer proxy.flow(routes)
-		.then (port) ->
+		, (port) ->
 			kit.request {
 				method: 'POST'
 				url: "http://127.0.0.1:#{port}"
@@ -569,7 +570,7 @@ it.run [
 		]
 
 		createRandomServer proxy.flow(routes)
-		.then (port) ->
+		, (port) ->
 			kit.request encodeURI "http://127.0.0.1:#{port}/st/ひまわり.txt"
 			.then (body) ->
 				str = kit.readFileSync 'test/fixtures/ひまわり.txt', 'utf8'
@@ -584,7 +585,7 @@ it.run [
 		]
 
 		createRandomServer proxy.flow(routes)
-		.then (port) ->
+		, (port) ->
 			kit.request { url: "http://127.0.0.1:#{port}", body: false }
 			.then (res) ->
 				it.eq '349o', res.headers.etag
@@ -600,7 +601,7 @@ it.run [
 		]
 
 		createRandomServer proxy.flow(routes)
-		.then (port) ->
+		, (port) ->
 			kit.request {
 				url: "http://127.0.0.1:#{port}/"
 				reqData: '{"a": 10}'
@@ -612,7 +613,4 @@ it.run [
 				console.log body
 				it.eq {a: 10}, JSON.parse(body)
 
-].filter ({ msg }) -> regPattern.test msg
-
-.then () ->
-	servers.forEach (s) -> s.close();
+]
