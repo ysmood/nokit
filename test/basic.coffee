@@ -461,6 +461,20 @@ module.exports = (it) -> [
 			.then (body) ->
 				it.eq 'string works', body
 
+	it 'proxy flow van', ->
+		proxy = kit.require 'proxy'
+
+		routes = [
+			proxy.van
+			({ van }) -> van('ok')
+		]
+
+		createRandomServer proxy.flow(routes)
+		, (port) ->
+			kit.request "http://127.0.0.1:#{port}"
+			.then (body) ->
+				it.eq body, 'ok'
+
 	it 'proxy flow url', ->
 		proxy = kit.require 'proxy'
 
@@ -472,7 +486,20 @@ module.exports = (it) -> [
 		, (port) ->
 			kit.request "http://127.0.0.1:#{port}/items/123"
 			.then (body) ->
-				it.eq '123', body
+				it.eq body, '123'
+
+	it 'proxy flow url string', ->
+		proxy = kit.require 'proxy'
+
+		routes = [proxy.select '/items', ($) ->
+			$.body = $.url
+		]
+
+		createRandomServer proxy.flow(routes)
+		, (port) ->
+			kit.request "http://127.0.0.1:#{port}/items/123"
+			.then (body) ->
+				it.eq body, '/123'
 
 	it 'proxy flow headers', ->
 		proxy = kit.require 'proxy'
