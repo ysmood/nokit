@@ -43,6 +43,22 @@ proxy = {
   },
 
   /**
+  	 * Add a `van` method to flow context object. It's a helper to set
+  	 * and get the context body.
+  	 * @param  {FlowContext} ctx
+   */
+  van: function(ctx) {
+    ctx.van = function() {
+      if (arguments.length === 0) {
+        return ctx.body;
+      } else {
+        return ctx.body = arguments[0];
+      }
+    };
+    return ctx.next();
+  },
+
+  /**
   	 * Http CONNECT method tunneling proxy helper.
   	 * Most times used with https proxing.
   	 * @param {http.IncomingMessage} req
@@ -203,6 +219,7 @@ proxy = {
   	 * 	headers: Object
   	 * }
   	 * ```
+  	 * When it's not an object, it will be convert via `sel = { url: sel }`.
   	 * The `url`, `method` and `headers` are act as selectors. If current
   	 * request matches the selector, the `middleware` will be called with the
   	 * captured result. If the selector is a function, it should return a
@@ -214,6 +231,11 @@ proxy = {
    */
   select: function(sel, middleware) {
     var matchHeaders, matchKey;
+    if (!_.isPlainObject(sel)) {
+      sel = {
+        url: sel
+      };
+    }
     matchKey = function(ctx, obj, key, pattern) {
       var ret, str;
       if (pattern === void 0) {

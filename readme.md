@@ -1727,7 +1727,14 @@ kit.warp 'src/**/*.coffee'
 
         `(ctx) -> Promise`
 
-- ## **[connect(req, sock, head, host, port, err)](lib/proxy.coffee?source#L54)**
+- ## **[van(ctx)](lib/proxy.coffee?source#L36)**
+
+    Add a `van` method to flow context object. It's a helper to set
+    and get the context body.
+
+    - **<u>param</u>**: `ctx` { _FlowContext_ }
+
+- ## **[connect(req, sock, head, host, port, err)](lib/proxy.coffee?source#L67)**
 
     Http CONNECT method tunneling proxy helper.
     Most times used with https proxing.
@@ -1765,18 +1772,18 @@ kit.warp 'src/**/*.coffee'
         server.listen 8123
         ```
 
-- ## **[etag()](lib/proxy.coffee?source#L83)**
+- ## **[etag()](lib/proxy.coffee?source#L96)**
 
     Create a etag middleware.
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[flow](lib/proxy.coffee?source#L106)**
+- ## **[flow](lib/proxy.coffee?source#L119)**
 
     A minimal middleware composer for the future.
     https://github.com/ysmood/noflow
 
-- ## **[match(pattern, opts)](lib/proxy.coffee?source#L121)**
+- ## **[match(pattern, opts)](lib/proxy.coffee?source#L134)**
 
     Generate an express like unix path selector. See the example of `proxy.flow`.
 
@@ -1799,7 +1806,7 @@ kit.warp 'src/**/*.coffee'
         kit.log match '/items/10' # output => { id: '10' }
         ```
 
-- ## **[midToFlow(h)](lib/proxy.coffee?source#L153)**
+- ## **[midToFlow(h)](lib/proxy.coffee?source#L166)**
 
     Convert a Express-like middleware to `proxy.flow` middleware.
 
@@ -1824,7 +1831,7 @@ kit.warp 'src/**/*.coffee'
         http.createServer(proxy.flow middlewares).listen 8123
         ```
 
-- ## **[select(sel, middleware)](lib/proxy.coffee?source#L183)**
+- ## **[select(sel, middleware)](lib/proxy.coffee?source#L197)**
 
     Create a conditional middleware that only works when the pattern matches.
 
@@ -1838,6 +1845,7 @@ kit.warp 'src/**/*.coffee'
         	headers: Object
         }
         ```
+        When it's not an object, it will be convert via `sel = { url: sel }`.
         The `url`, `method` and `headers` are act as selectors. If current
         request matches the selector, the `middleware` will be called with the
         captured result. If the selector is a function, it should return a
@@ -1849,7 +1857,7 @@ kit.warp 'src/**/*.coffee'
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[serverHelper(opts)](lib/proxy.coffee?source#L266)**
+- ## **[serverHelper(opts)](lib/proxy.coffee?source#L282)**
 
     Create a http request middleware.
 
@@ -1893,7 +1901,7 @@ kit.warp 'src/**/*.coffee'
         nokit.log { any: 'thing' }
         ```
 
-- ## **[static(opts)](lib/proxy.coffee?source#L329)**
+- ## **[static(opts)](lib/proxy.coffee?source#L345)**
 
     Create a static file middleware for `proxy.flow`.
 
@@ -1914,7 +1922,7 @@ kit.warp 'src/**/*.coffee'
         http.createServer(proxy.flow middlewares).listen 8123
         ```
 
-- ## **[url(opts)](lib/proxy.coffee?source#L425)**
+- ## **[url(opts)](lib/proxy.coffee?source#L441)**
 
     Use it to proxy one url to another.
 

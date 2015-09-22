@@ -139,7 +139,7 @@ module.exports = launch = function() {
   var cwd, nofilePath, tasks;
   cwd = process.cwd();
   nofilePath = loadNofile();
-  cmder.description('a nofile utility to run automation tasks' + br.grey("  # " + (kit.path.relative(cwd, nofilePath)))).option('--nofile <path>', 'force nofile path').usage('[options] [fuzzy task name]...');
+  cmder.option('--nofile <path>', 'force nofile path').usage('[options] [fuzzy task name]...' + br.grey("  # " + (kit.path.relative(cwd, nofilePath))));
   if (!kit.task.list) {
     return;
   }

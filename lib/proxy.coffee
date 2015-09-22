@@ -195,7 +195,7 @@ proxy =
 	 * @return {Function}
 	###
 	select: (sel, middleware) ->
-		sel = { url: sel } if not _.isObject(sel)
+		sel = { url: sel } if not _.isPlainObject(sel)
 
 		matchKey = (ctx, obj, key, pattern) ->
 			return true if pattern == undefined
