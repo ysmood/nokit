@@ -29,6 +29,19 @@ proxy =
 				ctx.next().then resolve, reject
 
 	###*
+	 * Add a `van` method to flow context object. It's a helper to set
+	 * and get the context body.
+	 * @param  {FlowContext} ctx
+	###
+	van: (ctx) ->
+		ctx.van = ->
+			if arguments.length == 0
+				ctx.body
+			else
+				ctx.body = arguments[0]
+		ctx.next()
+
+	###*
 	 * Http CONNECT method tunneling proxy helper.
 	 * Most times used with https proxing.
 	 * @param {http.IncomingMessage} req
