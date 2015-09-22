@@ -171,6 +171,7 @@ proxy =
 	 * 	headers: Object
 	 * }
 	 * ```
+	 * When it's not an object, it will be convert via `sel = { url: sel }`.
 	 * The `url`, `method` and `headers` are act as selectors. If current
 	 * request matches the selector, the `middleware` will be called with the
 	 * captured result. If the selector is a function, it should return a
@@ -181,6 +182,8 @@ proxy =
 	 * @return {Function}
 	###
 	select: (sel, middleware) ->
+		sel = { url: sel } if not _.isObject(sel)
+
 		matchKey = (ctx, obj, key, pattern) ->
 			return true if pattern == undefined
 
