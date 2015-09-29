@@ -1,39 +1,32 @@
 kit = require '../lib/kit'
-proxy = kit.require 'proxy'
-http = require 'http'
+{ flow, select, match, statics } = kit.require 'proxy'
 
 serverHelper = kit.serverHelper()
 
 root = 'test/fixtures/site'
 
-routes = [
+app = proxy.flow()
+
+app.push(
     serverHelper
 
-    {
-        url: proxy.match '/'
-        handler: (ctx) ->
-            path = root + '/index.html'
+    select match '/', (ctx) ->
+        path = root + '/index.html'
 
-            # Watch the `index.html`
-            serverHelper.watch path
+        # Watch the `index.html`
+        serverHelper.watch path
 
-            ctx.body = kit.readFile path
-                .then (buf) ->
-                    # Inject live reload browser helper to the page.
-                    buf + kit.browserHelper()
+        ctx.body = kit.readFile path
+            .then (buf) ->
+                # Inject live reload browser helper to the page.
+                buf + kit.browserHelper()
+
+    select '/st', statics {
+        root
+        onFile: (path, stats, ctx) ->
+            # Watch any static file.
+            serverHelper.watch path, ctx.req.originalUrl
     }
+)
 
-    {
-        url: '/st'
-        handler: proxy.static {
-            root
-            onFile: (path, stats, ctx) ->
-                # Watch any static file.
-                serverHelper.watch path, ctx.req.originalUrl
-        }
-    }
-]
-
-http.createServer proxy.flow(routes)
-
-.listen 8123
+app.listen 8123
