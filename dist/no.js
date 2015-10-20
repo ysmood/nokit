@@ -2,7 +2,7 @@
 /*
 	A simplified version of Make.
  */
-var _, br, cmder, error, kit, launch, loadNofile, searchTasks, task;
+var _, br, cmder, error, getOptions, kit, loadNofile, searchTasks, task;
 
 if (process.env.NODE_ENV == null) {
   process.env.NODE_ENV = 'development';
@@ -60,7 +60,7 @@ task = function() {
   return alias.forEach(function(name) {
     cmder.command(name).description(helpInfo);
     kit.task(name, args, function() {
-      return args.fn(cmder);
+      return args.fn(getOptions());
     });
     return helpInfo = br.cyan('-> ') + alias[0];
   });
@@ -135,7 +135,17 @@ searchTasks = function() {
   }).compact().value();
 };
 
-module.exports = launch = function() {
+getOptions = function() {
+  return _.pick(cmder, cmder.options.map(function(o) {
+    if (o.long.length === 2) {
+      return o.long[1].toUpperCase();
+    } else {
+      return _.camelCase(o.long);
+    }
+  }));
+};
+
+module.exports = function() {
   var cwd, nofilePath, tasks;
   cwd = process.cwd();
   nofilePath = loadNofile();
@@ -147,7 +157,7 @@ module.exports = launch = function() {
   if (cmder.args.length === 0) {
     if (kit.task.list['default']) {
       kit.task.run('default', {
-        init: cmder
+        init: getOptions()
       })["catch"](kit["throw"]);
     } else {
       cmder.outputHelp();
@@ -159,7 +169,7 @@ module.exports = launch = function() {
     error('No such tasks: ' + cmder.args);
   }
   return kit.task.run(tasks, {
-    init: cmder,
+    init: getOptions(),
     isSequential: true
   })["catch"](kit["throw"]);
 };

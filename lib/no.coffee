@@ -47,7 +47,7 @@ task = ->
 	alias.forEach (name) ->
 		cmder.command name
 		.description helpInfo
-		kit.task name, args, -> args.fn cmder
+		kit.task name, args, -> args.fn getOptions()
 
 		helpInfo = br.cyan('-> ') + alias[0]
 
@@ -106,7 +106,17 @@ searchTasks = ->
 	.compact()
 	.value()
 
-module.exports = launch = ->
+getOptions = ->
+	_.pick(
+		cmder,
+		cmder.options.map (o) ->
+			if (o.long.length == 2)
+				o.long[1].toUpperCase()
+			else
+				_.camelCase(o.long)
+	)
+
+module.exports = ->
 	cwd = process.cwd()
 
 	nofilePath = loadNofile()
@@ -123,7 +133,7 @@ module.exports = launch = ->
 
 	if cmder.args.length == 0
 		if kit.task.list['default']
-			kit.task.run 'default', { init: cmder }
+			kit.task.run 'default', { init: getOptions() }
 			.catch kit.throw
 		else
 			cmder.outputHelp()
@@ -134,5 +144,5 @@ module.exports = launch = ->
 	if tasks.length == 0
 		error 'No such tasks: ' + cmder.args
 
-	kit.task.run tasks, { init: cmder, isSequential: true }
+	kit.task.run tasks, { init: getOptions(), isSequential: true }
 	.catch kit.throw
