@@ -356,7 +356,7 @@ proxy = {
         if (!exists) {
           return;
         }
-        kit.logs(br.cyan('watch:'), path, br.magenta('|'), url);
+        kit.logs(br.cyan('watch:'), path, br.magenta('|'), url || '');
         watchList.push(path);
         return kit.watchPath(path, {
           handler: function() {

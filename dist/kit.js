@@ -1889,12 +1889,6 @@ _.extend(kit, fs, yutils, {
   semver: null,
 
   /**
-  	 * The 'yaku/lib/source'.
-  	 * @type {Function}
-   */
-  source: require('yaku/lib/source'),
-
-  /**
   	 * A safer version of `child_process.spawn` to cross-platform run
   	 * a process. In some conditions, it may be more convenient
   	 * to use the `kit.exec`.
@@ -2342,13 +2336,14 @@ _.extend(kit, fs, yutils, {
               to: to,
               list: list
             });
-            return kit.flow(function() {
-              var drive;
-              drive = info.drives.shift();
-              if (drive) {
-                return runDrive(drive);
-              } else {
-                return kit.end;
+            return kit.flow({
+              next: function() {
+                var drive;
+                drive = info.drives.shift();
+                return {
+                  value: drive && runDrive(drive),
+                  done: !drive
+                };
               }
             })(initInfo(info));
           }

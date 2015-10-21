@@ -1714,12 +1714,6 @@ _.extend kit, fs, yutils,
 	semver: null
 
 	###*
-	 * The 'yaku/lib/source'.
-	 * @type {Function}
-	###
-	source: require 'yaku/lib/source'
-
-	###*
 	 * A safer version of `child_process.spawn` to cross-platform run
 	 * a process. In some conditions, it may be more convenient
 	 * to use the `kit.exec`.
@@ -2110,10 +2104,14 @@ _.extend kit, fs, yutils,
 					info.baseDir = opts.baseDir if opts.baseDir
 					_.extend info, { drives: _.clone(driveList), to, list }
 
-					kit.flow(->
-						drive = info.drives.shift()
-						if drive then runDrive drive else kit.end
-					) initInfo info
+					kit.flow({
+						next: ->
+							drive = info.drives.shift()
+							{
+								value: drive && runDrive drive
+								done: !drive
+							}
+					}) initInfo info
 
 				kit.glob(from, globOpts)
 				.then (list) ->

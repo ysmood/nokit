@@ -1058,13 +1058,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>type</u>**: { _Object_ }
 
-- ## **[source](lib/kit.coffee?source#L1720)**
-
-    The 'yaku/lib/source'.
-
-    - **<u>type</u>**: { _Function_ }
-
-- ## **[spawn(cmd, args, opts)](lib/kit.coffee?source#L1751)**
+- ## **[spawn(cmd, args, opts)](lib/kit.coffee?source#L1745)**
 
     A safer version of `child_process.spawn` to cross-platform run
     a process. In some conditions, it may be more convenient
@@ -1108,13 +1102,13 @@ Goto [changelog](doc/changelog.md)
         .then ({code}) -> kit.log code
         ```
 
-- ## **[sse](lib/kit.coffee?source#L1809)**
+- ## **[sse](lib/kit.coffee?source#L1803)**
 
     The `sse` module.
     You must `kit.require 'sse'` before using it.
     For more information goto the `sse` section.
 
-- ## **[task(name, opts, fn)](lib/kit.coffee?source#L1870)**
+- ## **[task(name, opts, fn)](lib/kit.coffee?source#L1864)**
 
     Sequencing and executing tasks and dependencies concurrently.
 
@@ -1194,12 +1188,12 @@ Goto [changelog](doc/changelog.md)
         	kit.log 'All Done!'
         ```
 
-- ## **[url](lib/kit.coffee?source#L1942)**
+- ## **[url](lib/kit.coffee?source#L1936)**
 
     The `url` module of [io.js](iojs.org).
     You must `kit.require 'url'` before using it.
 
-- ## **[warp(from, opts)](lib/kit.coffee?source#L2057)**
+- ## **[warp(from, opts)](lib/kit.coffee?source#L2051)**
 
     Works much like `gulp.src`, but with Promise instead.
     The warp control and error handling is more pleasant.
@@ -1324,7 +1318,7 @@ Goto [changelog](doc/changelog.md)
         .run 'dist'
         ```
 
-- ## **[which(name)](lib/kit.coffee?source#L2130)**
+- ## **[which(name)](lib/kit.coffee?source#L2128)**
 
     Same as the unix `which` command.
     You must `kit.require 'which'` before using it.
@@ -1335,14 +1329,14 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Promise_ }
 
-- ## **[whichSync](lib/kit.coffee?source#L2137)**
+- ## **[whichSync](lib/kit.coffee?source#L2135)**
 
     Sync version of `which`.
     You must `kit.require 'whichSync'` before using it.
 
     - **<u>type</u>**: { _Function_ }
 
-- ## **[xinspect(obj, opts)](lib/kit.coffee?source#L2148)**
+- ## **[xinspect(obj, opts)](lib/kit.coffee?source#L2146)**
 
     For debugging. Dump a colorful object.
 
@@ -1359,7 +1353,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _String_ }
 
-- ## **[xopen(cmds, opts)](lib/kit.coffee?source#L2171)**
+- ## **[xopen(cmds, opts)](lib/kit.coffee?source#L2169)**
 
     Open a thing that your system can recognize.
     Now only support Windows, OSX or system that installed 'xdg-open'.

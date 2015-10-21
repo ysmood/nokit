@@ -1,8 +1,9 @@
 # Changelog
 
-- v0.14.8
+- v0.14.9
 
   - opt: the opt arg of no
+  - upd: deps
 
 - v0.14.7
 
