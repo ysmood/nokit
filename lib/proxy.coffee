@@ -101,7 +101,6 @@ proxy =
 			Promise.resolve(ctx.body).then (data) ->
 				return if data instanceof Stream
 
-				console.log '*****'
 				hash = jhash.hash data
 
 				if +ctx.req.headers['if-none-match'] == hash
