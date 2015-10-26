@@ -122,7 +122,6 @@ proxy = {
           if (data instanceof Stream) {
             return;
           }
-          console.log('*****');
           hash = jhash.hash(data);
           if (+ctx.req.headers['if-none-match'] === hash) {
             ctx.res.statusCode = 304;

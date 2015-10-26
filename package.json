@@ -1,6 +1,6 @@
 {
   "name": "nokit",
-  "version": "0.14.9",
+  "version": "0.14.10",
   "description": "A light weight set of handy tools for real world program.",
   "main": "dist/kit.js",
   "bin": {
@@ -39,10 +39,10 @@
   "dependencies": {
     "commander": "2.9.0",
     "jhash": "0.1.7",
-    "noflow": "0.5.5",
-    "nofs": "0.10.7",
+    "noflow": "0.5.6",
+    "nofs": "0.10.9",
     "semver": "5.0.3",
-    "yaku": "0.11.1"
+    "yaku": "0.11.4"
   },
   "devDependencies": {
     "LiveScript": "1.3.1",
@@ -54,7 +54,7 @@
     "formidable": "1.0.17",
     "iconv-lite": "0.4.13",
     "jshint": "2.8.0",
-    "junit": "0.6.1",
+    "junit": "0.8.1",
     "less": "2.5.3",
     "lodash-cli": "3.10.1",
     "path-to-regexp": "1.2.1",

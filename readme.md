@@ -1772,12 +1772,12 @@ kit.warp 'src/**/*.coffee'
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[flow](lib/proxy.coffee?source#L119)**
+- ## **[flow](lib/proxy.coffee?source#L118)**
 
     A minimal middleware composer for the future.
     https://github.com/ysmood/noflow
 
-- ## **[match(pattern, opts)](lib/proxy.coffee?source#L134)**
+- ## **[match(pattern, opts)](lib/proxy.coffee?source#L133)**
 
     Generate an express like unix path selector. See the example of `proxy.flow`.
 
@@ -1800,7 +1800,7 @@ kit.warp 'src/**/*.coffee'
         kit.log match '/items/10' # output => { id: '10' }
         ```
 
-- ## **[midToFlow(h)](lib/proxy.coffee?source#L166)**
+- ## **[midToFlow(h)](lib/proxy.coffee?source#L165)**
 
     Convert a Express-like middleware to `proxy.flow` middleware.
 
@@ -1825,7 +1825,7 @@ kit.warp 'src/**/*.coffee'
         http.createServer(proxy.flow middlewares).listen 8123
         ```
 
-- ## **[select(sel, middleware)](lib/proxy.coffee?source#L197)**
+- ## **[select(sel, middleware)](lib/proxy.coffee?source#L196)**
 
     Create a conditional middleware that only works when the pattern matches.
 
@@ -1851,7 +1851,7 @@ kit.warp 'src/**/*.coffee'
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[serverHelper(opts)](lib/proxy.coffee?source#L282)**
+- ## **[serverHelper(opts)](lib/proxy.coffee?source#L281)**
 
     Create a http request middleware.
 
@@ -1895,7 +1895,7 @@ kit.warp 'src/**/*.coffee'
         nokit.log { any: 'thing' }
         ```
 
-- ## **[static(opts)](lib/proxy.coffee?source#L345)**
+- ## **[static(opts)](lib/proxy.coffee?source#L344)**
 
     Create a static file middleware for `proxy.flow`.
 
@@ -1916,7 +1916,7 @@ kit.warp 'src/**/*.coffee'
         http.createServer(proxy.flow middlewares).listen 8123
         ```
 
-- ## **[url(opts)](lib/proxy.coffee?source#L441)**
+- ## **[url(opts)](lib/proxy.coffee?source#L440)**
 
     Use it to proxy one url to another.
 
