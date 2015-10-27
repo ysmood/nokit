@@ -1,5 +1,10 @@
 # Changelog
 
+- v0.15.0
+
+  - fix: a `proxy.connect` bug
+  - **API CHANGE** noflow
+
 - v0.14.10
 
   - opt: the opt arg of no

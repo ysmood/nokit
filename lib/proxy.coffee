@@ -46,7 +46,7 @@ proxy =
 
 	###*
 	 * Http CONNECT method tunneling proxy helper.
-	 * Most times used with https proxing.
+	 * Most times it is used to proxy https and websocket.
 	 * @param {Object} opts Defaults:
 	 * ```coffee
 	 * {
@@ -80,10 +80,10 @@ proxy =
 		}
 
 		(req, sock, head) ->
-			[nil, h, p] = req.url.match regConnectHost
+			ms = req.url.match regConnectHost
 
 			psock = new Socket
-			psock.connect p, h, ->
+			psock.connect opts.port or ms[2], opts.host or ms[1], ->
 				sock.write "
 					HTTP/#{req.httpVersion} 200 Connection established\r\n\r\n
 				"

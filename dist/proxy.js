@@ -4,7 +4,7 @@
  * A cross-platform programmable Fiddler alternative.
  * You can even replace express.js with it's `flow` function.
  */
-var Overview, Promise, _, flow, http, kit, proxy;
+var Overview, Promise, Socket, _, flow, http, kit, proxy, regConnectHost;
 
 Overview = 'proxy';
 
@@ -15,6 +15,10 @@ _ = kit._, Promise = kit.Promise;
 http = require('http');
 
 flow = require('noflow');
+
+Socket = kit.require('net', __dirname).Socket;
+
+regConnectHost = /([^:]+)(?::(\d+))?/;
 
 proxy = {
   agent: new http.Agent,
@@ -60,51 +64,60 @@ proxy = {
 
   /**
   	 * Http CONNECT method tunneling proxy helper.
-  	 * Most times used with https proxing.
-  	 * @param {http.IncomingMessage} req
-  	 * @param {net.Socket} sock
-  	 * @param {Buffer} head
-  	 * @param {String} host The host force to. It's optional.
-  	 * @param {Int} port The port force to. It's optional.
-  	 * @param {Function} err Custom error handler.
+  	 * Most times it is used to proxy https and websocket.
+  	 * @param {Object} opts Defaults:
+  	 * ```coffee
+  	 * {
+  	 * 	host: null # Optional. The target host force to.
+  	 * 	port: null # Optional. The target port force to.
+  	 * 	onError: (err, socket) ->
+  	 * }
+  	 * ```
+  	 * @return {Function} The connect request handler.
   	 * @example
   	 * ```coffee
   	 * kit = require 'nokit'
-  	 * kit.require 'proxy'
-  	 * http = require 'http'
+  	 * proxy = kit.require 'proxy'
   	 *
-  	 * server = http.createServer()
+  	 * app = proxy.flow()
   	 *
   	 * # Directly connect to the original site.
-  	 * server.on 'connect', kit.proxy.connect
+  	 * app.server.on 'connect', kit.proxy.connect()
   	 *
-  	 * server.listen 8123
+  	 * app.listen 8123
   	 * ```
    */
-  connect: function(req, sock, head, host, port, err) {
-    var error, h, net, p, psock;
-    net = kit.require('net', __dirname);
-    h = host || req.headers.host;
-    p = port || req.url.match(/:(\d+)$/)[1] || 443;
-    psock = new net.Socket;
-    psock.connect(p, h, function() {
-      psock.write(head);
-      return sock.write("HTTP/" + req.httpVersion + " 200 Connection established\r\n\r\n");
+  connect: function(opts) {
+    if (opts == null) {
+      opts = {};
+    }
+    _.defaults(opts, {
+      host: null,
+      port: null,
+      onError: function(err, req, socket) {
+        var br;
+        br = kit.require('brush');
+        kit.log(err.toString() + ' -> ' + br.red(req.url));
+        return socket.end();
+      }
     });
-    sock.pipe(psock);
-    psock.pipe(sock);
-    error = err || function(err, socket) {
-      var br;
-      br = kit.require('brush');
-      kit.log(err.toString() + ' -> ' + br.red(req.url));
-      return socket.end();
+    return function(req, sock, head) {
+      var ms, psock;
+      ms = req.url.match(regConnectHost);
+      psock = new Socket;
+      psock.connect(opts.port || ms[2], opts.host || ms[1], function() {
+        sock.write("HTTP/" + req.httpVersion + " 200 Connection established\r\n\r\n");
+        psock.write(head);
+        sock.pipe(psock);
+        return psock.pipe(sock);
+      });
+      sock.on('error', function(err) {
+        return opts.onError(err, req, sock);
+      });
+      return psock.on('error', function(err) {
+        return opts.onError(err, req, psock);
+      });
     };
-    sock.on('error', function(err) {
-      return error(err, sock);
-    });
-    return psock.on('error', function(err) {
-      return error(err, psock);
-    });
   },
 
   /**
@@ -330,12 +343,12 @@ proxy = {
             return data += chunk;
           });
           req.on('end', function() {
-            var e, error1;
+            var e, error;
             try {
               kit.log(br.cyan('client') + br.grey(' | ') + (data ? kit.xinspect(JSON.parse(data)) : data));
               return res.end();
-            } catch (error1) {
-              e = error1;
+            } catch (error) {
+              e = error;
               res.statusCode = 500;
               return res.end(e.stack);
             }
