@@ -9,6 +9,9 @@ kit = require './kit'
 { _, Promise } = kit
 http = require 'http'
 flow = require 'noflow'
+{ Socket } = kit.require 'net', __dirname
+
+regConnectHost = /([^:]+)(?::(\d+))?/
 
 proxy =
 
@@ -44,50 +47,54 @@ proxy =
 	###*
 	 * Http CONNECT method tunneling proxy helper.
 	 * Most times used with https proxing.
-	 * @param {http.IncomingMessage} req
-	 * @param {net.Socket} sock
-	 * @param {Buffer} head
-	 * @param {String} host The host force to. It's optional.
-	 * @param {Int} port The port force to. It's optional.
-	 * @param {Function} err Custom error handler.
+	 * @param {Object} opts Defaults:
+	 * ```coffee
+	 * {
+	 * 	host: null # Optional. The target host force to.
+	 * 	port: null # Optional. The target port force to.
+	 * 	onError: (err, socket) ->
+	 * }
+	 * ```
+	 * @return {Function} The connect request handler.
 	 * @example
 	 * ```coffee
 	 * kit = require 'nokit'
-	 * kit.require 'proxy'
-	 * http = require 'http'
+	 * proxy = kit.require 'proxy'
 	 *
-	 * server = http.createServer()
+	 * app = proxy.flow()
 	 *
 	 * # Directly connect to the original site.
-	 * server.on 'connect', kit.proxy.connect
+	 * app.server.on 'connect', kit.proxy.connect()
 	 *
-	 * server.listen 8123
+	 * app.listen 8123
 	 * ```
 	###
-	connect: (req, sock, head, host, port, err) ->
-		net = kit.require 'net', __dirname
-		h = host or req.headers.host
-		p = port or req.url.match(/:(\d+)$/)[1] or 443
+	connect: (opts = {}) ->
+		_.defaults opts, {
+			host: null
+			port: null
+			onError: (err, req, socket) ->
+				br = kit.require 'brush'
+				kit.log err.toString() + ' -> ' + br.red req.url
+				socket.end()
+		}
 
-		psock = new net.Socket
-		psock.connect p, h, ->
-			psock.write head
-			sock.write "
-				HTTP/#{req.httpVersion} 200 Connection established\r\n\r\n
-			"
+		(req, sock, head) ->
+			[nil, h, p] = req.url.match regConnectHost
 
-		sock.pipe psock
-		psock.pipe sock
+			psock = new Socket
+			psock.connect p, h, ->
+				sock.write "
+					HTTP/#{req.httpVersion} 200 Connection established\r\n\r\n
+				"
+				psock.write head
+				sock.pipe psock
+				psock.pipe sock
 
-		error = err or (err, socket) ->
-			br = kit.require 'brush'
-			kit.log err.toString() + ' -> ' + br.red req.url
-			socket.end()
-
-		sock.on 'error', (err) ->
-			error err, sock
-		psock.on 'error', (err) ->
-			error err, psock
+			sock.on 'error', (err) ->
+				opts.onError err, req, sock
+			psock.on 'error', (err) ->
+				opts.onError err, req, psock
 
 	###*
 	 * Create a etag middleware.
