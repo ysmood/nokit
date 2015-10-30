@@ -1,9 +1,10 @@
 # Changelog
 
-- v0.15.0
+- v0.15.1
 
   - fix: a `proxy.connect` bug
   - **API CHANGE** noflow
+  - fix: a `proxy.match` qs bug
 
 - v0.14.10
 

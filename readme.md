@@ -1796,7 +1796,7 @@ kit.warp 'src/**/*.coffee'
         kit.log match '/items/10' # output => { id: '10' }
         ```
 
-- ## **[midToFlow(h)](lib/proxy.coffee?source#L172)**
+- ## **[midToFlow(h)](lib/proxy.coffee?source#L178)**
 
     Convert a Express-like middleware to `proxy.flow` middleware.
 
@@ -1821,7 +1821,7 @@ kit.warp 'src/**/*.coffee'
         http.createServer(proxy.flow middlewares).listen 8123
         ```
 
-- ## **[select(sel, middleware)](lib/proxy.coffee?source#L203)**
+- ## **[select(sel, middleware)](lib/proxy.coffee?source#L209)**
 
     Create a conditional middleware that only works when the pattern matches.
 
@@ -1847,7 +1847,7 @@ kit.warp 'src/**/*.coffee'
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[serverHelper(opts)](lib/proxy.coffee?source#L288)**
+- ## **[serverHelper(opts)](lib/proxy.coffee?source#L294)**
 
     Create a http request middleware.
 
@@ -1891,7 +1891,7 @@ kit.warp 'src/**/*.coffee'
         nokit.log { any: 'thing' }
         ```
 
-- ## **[static(opts)](lib/proxy.coffee?source#L351)**
+- ## **[static(opts)](lib/proxy.coffee?source#L357)**
 
     Create a static file middleware for `proxy.flow`.
 
@@ -1912,7 +1912,7 @@ kit.warp 'src/**/*.coffee'
         http.createServer(proxy.flow middlewares).listen 8123
         ```
 
-- ## **[url(opts)](lib/proxy.coffee?source#L447)**
+- ## **[url(opts)](lib/proxy.coffee?source#L453)**
 
     Use it to proxy one url to another.
 

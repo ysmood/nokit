@@ -174,8 +174,9 @@ proxy = {
     keys = [];
     reg = parse(pattern, keys, opts);
     return function(url) {
-      var ms;
-      ms = url.match(reg);
+      var ms, qsIndex;
+      qsIndex = url.indexOf("?");
+      ms = qsIndex > -1 ? url.slice(0, qsIndex).match(reg) : ms = url.match(reg);
       if (ms === null) {
         return;
       }

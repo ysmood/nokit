@@ -563,15 +563,15 @@ module.exports = (it) -> [
 	it 'proxy flow url match', ->
 		proxy = kit.require 'proxy'
 
-		routes = [proxy.select url: proxy.match('/items/:id'), ($) ->
-			$.body = $.url.id
+		routes = [proxy.select url: proxy.match('/:page.html'), ($) ->
+			$.body = $.url.page
 		]
 
 		createRandomServer proxy.flow(routes)
 		, (port) ->
-			kit.request "http://127.0.0.1:#{port}/items/123"
+			kit.request "http://127.0.0.1:#{port}/index.html?a=10"
 			.then (body) ->
-				it.eq '123', body
+				it.eq 'index', body
 
 	it 'proxy flow post', ->
 		proxy = kit.require 'proxy'

@@ -143,7 +143,13 @@ proxy =
 		reg = parse pattern, keys, opts
 
 		(url) ->
-			ms = url.match reg
+			qsIndex = url.indexOf "?"
+
+			ms = if qsIndex > -1
+				url.slice(0, qsIndex).match reg
+			else
+				ms = url.match reg
+
 			return if ms == null
 			ms.reduce (ret, elem, i) ->
 				return {} if i == 0
