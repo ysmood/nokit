@@ -330,11 +330,11 @@ proxy =
 			kit.fileExists(path).then (exists) ->
 				return if not exists
 
-				kit.logs br.cyan('watch:'), path, br.magenta('|'), url or ''
+				kit.logs br.cyan('watch:'), path
 				watchList.push path
 				kit.watchPath path, {
 					handler: ->
-						kit.logs br.cyan('changed:'), url
+						kit.logs br.cyan('changed:'), path
 						handler.sse.emit 'fileModified', url
 				}
 

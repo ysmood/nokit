@@ -369,11 +369,11 @@ proxy = {
         if (!exists) {
           return;
         }
-        kit.logs(br.cyan('watch:'), path, br.magenta('|'), url || '');
+        kit.logs(br.cyan('watch:'), path);
         watchList.push(path);
         return kit.watchPath(path, {
           handler: function() {
-            kit.logs(br.cyan('changed:'), url);
+            kit.logs(br.cyan('changed:'), path);
             return handler.sse.emit('fileModified', url);
           }
         });
