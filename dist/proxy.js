@@ -4,7 +4,7 @@
  * A cross-platform programmable Fiddler alternative.
  * You can even replace express.js with it's `flow` function.
  */
-var Overview, Promise, Socket, _, flow, http, kit, proxy, regConnectHost;
+var Overview, Promise, Socket, _, flow, http, kit, proxy, regConnectHost, regTunnelBegin;
 
 Overview = 'proxy';
 
@@ -19,6 +19,8 @@ flow = require('noflow');
 Socket = kit.require('net', __dirname).Socket;
 
 regConnectHost = /([^:]+)(?::(\d+))?/;
+
+regTunnelBegin = /^\w+\:\/\//;
 
 proxy = {
   agent: new http.Agent,
@@ -68,6 +70,7 @@ proxy = {
   	 * @param {Object} opts Defaults:
   	 * ```coffee
   	 * {
+  	 * 	filter: (req) -> true # if it returns false, the proxy will be ignored
   	 * 	host: null # Optional. The target host force to.
   	 * 	port: null # Optional. The target port force to.
   	 * 	onError: (err, socket) ->
@@ -88,10 +91,14 @@ proxy = {
   	 * ```
    */
   connect: function(opts) {
+    var host, port, ref;
     if (opts == null) {
       opts = {};
     }
     _.defaults(opts, {
+      filter: function(req) {
+        return true;
+      },
       host: null,
       port: null,
       onError: function(err, req, socket) {
@@ -101,13 +108,38 @@ proxy = {
         return socket.end();
       }
     });
+    if (opts.host) {
+      if (opts.host.indexOf(':') > -1) {
+        ref = opts.host.split(':'), host = ref[0], port = ref[1];
+      } else {
+        host = opts.host, port = opts.port;
+      }
+    }
     return function(req, sock, head) {
-      var ms, psock;
-      ms = req.url.match(regConnectHost);
+      var isProxy, ms, psock;
+      if (!opts.filter(req)) {
+        return;
+      }
+      isProxy = req.headers['proxy-connection'];
+      ms = isProxy ? req.url.match(regConnectHost) : req.headers.host.match(regConnectHost);
       psock = new Socket;
-      psock.connect(opts.port || ms[2], opts.host || ms[1], function() {
-        sock.write("HTTP/" + req.httpVersion + " 200 Connection established\r\n\r\n");
-        psock.write(head);
+      psock.connect(port || ms[2] || 80, host || ms[1], function() {
+        var h, i, j, len, rawHeaders, ref1;
+        if (isProxy) {
+          sock.write("HTTP/" + req.httpVersion + " 200 Connection established\r\n\r\n");
+        } else {
+          rawHeaders = req.method + " " + req.url + " HTTP/" + req.httpVersion + "\r\n";
+          ref1 = req.rawHeaders;
+          for (i = j = 0, len = ref1.length; j < len; i = ++j) {
+            h = ref1[i];
+            rawHeaders += h + (i % 2 === 0 ? ': ' : '\r\n');
+          }
+          rawHeaders += '\r\n';
+          psock.write(rawHeaders);
+        }
+        if (head.length > 0) {
+          psock.write(head);
+        }
         sock.pipe(psock);
         return psock.pipe(sock);
       });
@@ -406,9 +438,10 @@ proxy = {
     }
     return function(ctx) {
       return new Promise(function(resolve, reject) {
-        var path, query, s;
-        query = ctx.url.indexOf('?');
-        path = query < 0 ? ctx.url : ctx.url.slice(0, query);
+        var path, query, s, url;
+        url = _.isString(ctx.url) ? ctx.url : ctx.req.url;
+        query = url.indexOf('?');
+        path = query < 0 ? url : url.slice(0, query);
         s = send(ctx.req, path, opts);
         if (opts.onFile) {
           s.on('file', function(path, stats) {

@@ -1,6 +1,6 @@
 # Changelog
 
-- v0.15.2
+- v0.15.3
 
   - fix: a `proxy.connect` bug
   - **API CHANGE** noflow
