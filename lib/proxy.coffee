@@ -12,6 +12,7 @@ flow = require 'noflow'
 { Socket } = kit.require 'net', __dirname
 
 regConnectHost = /([^:]+)(?::(\d+))?/
+regTunnelBegin = /^\w+\:\/\//
 
 proxy =
 
@@ -50,6 +51,7 @@ proxy =
 	 * @param {Object} opts Defaults:
 	 * ```coffee
 	 * {
+	 * 	filter: (req) -> true # if it returns false, the proxy will be ignored
 	 * 	host: null # Optional. The target host force to.
 	 * 	port: null # Optional. The target port force to.
 	 * 	onError: (err, socket) ->
@@ -71,6 +73,7 @@ proxy =
 	###
 	connect: (opts = {}) ->
 		_.defaults opts, {
+			filter: (req) -> true
 			host: null
 			port: null
 			onError: (err, req, socket) ->
@@ -79,15 +82,39 @@ proxy =
 				socket.end()
 		}
 
+		if opts.host
+			if opts.host.indexOf(':') > -1
+				[host, port] = opts.host.split ':'
+			else
+				{ host, port } = opts
+
 		(req, sock, head) ->
-			ms = req.url.match regConnectHost
+			return if not opts.filter req
+
+			isProxy = req.headers['proxy-connection']
+			ms = if isProxy
+				req.url.match regConnectHost
+			else
+				req.headers.host.match regConnectHost
 
 			psock = new Socket
-			psock.connect opts.port or ms[2], opts.host or ms[1], ->
-				sock.write "
-					HTTP/#{req.httpVersion} 200 Connection established\r\n\r\n
-				"
-				psock.write head
+			psock.connect port or ms[2] or 80, host or ms[1], ->
+				if isProxy
+					sock.write "
+						HTTP/#{req.httpVersion} 200 Connection established\r\n\r\n
+					"
+				else
+					rawHeaders = "#{req.method} #{req.url} HTTP/#{req.httpVersion}\r\n"
+					for h, i in req.rawHeaders
+						rawHeaders += h + (if i % 2 == 0 then ': ' else '\r\n')
+
+					rawHeaders += '\r\n'
+
+					psock.write rawHeaders
+
+				if head.length > 0
+					psock.write head
+
 				sock.pipe psock
 				psock.pipe sock
 
