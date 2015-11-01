@@ -361,8 +361,13 @@ proxy =
 			opts = { root: opts }
 
 		(ctx) -> new Promise (resolve, reject) ->
-			query = ctx.url.indexOf '?'
-			path = if query < 0 then ctx.url else ctx.url.slice 0, query
+			url = if _.isString ctx.url
+				ctx.url
+			else
+				ctx.req.url
+
+			query = url.indexOf '?'
+			path = if query < 0 then url else url.slice 0, query
 
 			s = send ctx.req, path, opts
 
