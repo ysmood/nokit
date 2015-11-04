@@ -3,6 +3,7 @@
 // Run program automatically
 
 var kit = require('../dist/kit');
+var br = kit.require('brush');
 var _ = kit._;
 var whichSync = kit.require('whichSync');
 var cmder = require('commander');
@@ -23,12 +24,17 @@ if (sepIndex > 0) {
 cmder
     .description('a dev tool to run / watch / reload program automatically')
     .usage('[options] [file] [-- [child process options]]...')
-    .option('-w <pattern>', 'watch file pattern list', function (p) {
+    .option('-w, --watch <pattern>', 'watch file pattern list [target file]', function (p) {
         if (!watchList) watchList = [];
         watchList.push(p);
     })
-    .option('-b <name>', 'bin to execute, default is babel-node or node', null)
-    .option('-n', 'disable parse & watch node dependencies automatically')
+    .option('-b, --bin <name>', 'bin to execute, default is [babel-node | node]', null)
+    .option('-r, --retry <time | auto>', 'auto restart program after it ends after some milliseconds [Infinity]', function (v) {
+        return v === 'auto' ? v : +v;
+    }, Infinity)
+    .option('--least <time>', 'the least milliseconds for the program to run to trigger a full restart [5000]', parseInt, 5000)
+    .option('--maxTry <count>', 'the max retry before the monitor stops retry [Infinity]', parseInt, Infinity)
+    .option('-n, --noNodeDeps', 'disable parse & watch node dependencies automatically')
     .on('--help', function () {
         console.log(
             '  Examples:\n\n' +
@@ -39,22 +45,58 @@ cmder
     })
 .parse(argv);
 
-if (cmder.B === null) {
-    cmder.B = 'node';
+if (cmder.bin === null) {
+    cmder.bin = 'node';
     try {
         require.resolve('babel');
-        cmder.B = 'babel-node';
+        cmder.bin = 'babel-node';
     } catch (err) {}
 
     try {
         whichSync('babel-node');
-        cmder.B = 'babel-node';
+        cmder.bin = 'babel-node';
     } catch (err) {}
 }
 
+function genRetry () {
+    var retryTmr, attempt = 0;
+
+    function runRetry (start) {
+        if (attempt < cmder.maxTry)
+            attempt++;
+        else
+            return process.exit(attempt);
+
+        start();
+        kit.logs(br.yellow('Retry'), attempt);
+
+        retryTmr = setTimeout(function () {
+            attempt = 0;
+        }, cmder.least);
+    }
+
+    if (cmder.retry === 'auto') {
+        return function (start) {
+            var r = Math.random() * Math.pow(2, attempt) * 500;
+            var t = Math.min(r, 1000 * 60 * 5);
+
+            clearTimeout(retryTmr);
+
+            return setTimeout(runRetry, t, start);
+       };
+    } else if (cmder.retry !== Infinity) {
+        return function (start) {
+            clearTimeout(retryTmr);
+
+            return setTimeout(runRetry, cmder.retry, start);
+       };
+    }
+}
+
 kit.monitorApp({
-    bin: cmder.B,
+    bin: cmder.bin,
+    retry: genRetry(),
     args: cmder.args.concat(childArgs),
     watchList: watchList,
-    isNodeDeps: !cmder.N
+    isNodeDeps: !cmder.noNodeDeps
 });

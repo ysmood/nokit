@@ -853,6 +853,7 @@ _.extend kit, fs, yutils,
 		_.defaults opts, {
 			bin: 'node'
 			args: ['index.js']
+			retry: ->
 			watchList: null
 			isNodeDeps: true
 			parseDependency: {}
@@ -882,7 +883,7 @@ _.extend kit, fs, yutils,
 
 		childPromise = null
 		childProcess = null
-		start = ->
+		start = (isFromWatch) ->
 			opts.sepLine()
 
 			childPromise = kit.spawn(
@@ -899,6 +900,9 @@ _.extend kit, fs, yutils,
 				if err.stack
 					return Promise.reject err.stack
 				opts.onErrorExit err
+			.then ->
+				return if isFromWatch
+				opts.retry start
 
 		watcher = _.debounce (path, curr, prev, isDelete) ->
 			return if isDelete
@@ -906,7 +910,7 @@ _.extend kit, fs, yutils,
 			if curr.mtime != prev.mtime
 				opts.onRestart path
 
-				childPromise.catch(->).then(start)
+				childPromise.catch(->).then -> start true
 				try
 					child_process
 					.execSync 'pkill -P ' + childPromise.process.pid, {
@@ -937,7 +941,7 @@ _.extend kit, fs, yutils,
 
 		opts.onStart()
 
-		start()
+		start true
 
 		{ process: childProcess, childPromise, watchPromise, stop }
 

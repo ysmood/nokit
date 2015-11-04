@@ -6,4 +6,6 @@ http = require 'http'
 { Promise } = kit
 # require '../lib/proxy'
 
-kit.parseDependency(['./test/t.js']).then kit.logs
+setInterval ->
+    kit.logs("OK")
+, 2000

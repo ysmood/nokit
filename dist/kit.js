@@ -949,6 +949,7 @@ _.extend(kit, fs, yutils, {
     _.defaults(opts, {
       bin: 'node',
       args: ['index.js'],
+      retry: function() {},
       watchList: null,
       isNodeDeps: true,
       parseDependency: {},
@@ -981,7 +982,7 @@ _.extend(kit, fs, yutils, {
     }
     childPromise = null;
     childProcess = null;
-    start = function() {
+    start = function(isFromWatch) {
       opts.sepLine();
       childPromise = kit.spawn(opts.bin, opts.args, opts.opts);
       childProcess = childPromise.process;
@@ -992,6 +993,11 @@ _.extend(kit, fs, yutils, {
           return Promise.reject(err.stack);
         }
         return opts.onErrorExit(err);
+      }).then(function() {
+        if (isFromWatch) {
+          return;
+        }
+        return opts.retry(start);
       });
     };
     watcher = _.debounce(function(path, curr, prev, isDelete) {
@@ -1000,7 +1006,9 @@ _.extend(kit, fs, yutils, {
       }
       if (curr.mtime !== prev.mtime) {
         opts.onRestart(path);
-        childPromise["catch"](function() {}).then(start);
+        childPromise["catch"](function() {}).then(function() {
+          return start(true);
+        });
         try {
           child_process.execSync('pkill -P ' + childPromise.process.pid, {
             stdio: 'ignore'
@@ -1038,7 +1046,7 @@ _.extend(kit, fs, yutils, {
       handler: watcher
     });
     opts.onStart();
-    start();
+    start(true);
     return {
       process: childProcess,
       childPromise: childPromise,
