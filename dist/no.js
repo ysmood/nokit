@@ -84,7 +84,7 @@ loadNofile = function() {
     }
   } else {
     try {
-      require('babel/register');
+      require('babel-core/register');
     } catch (undefined) {}
     try {
       require('coffee-script/register');

@@ -60,7 +60,7 @@ loadNofile = ->
 		for lang in process.env.nokitPreload.split ' '
 			try require lang
 	else
-		try require 'babel/register'
+		try require 'babel-core/register'
 		try require 'coffee-script/register'
 
 	exts = _(require.extensions).keys().filter (ext) ->
