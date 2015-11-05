@@ -898,6 +898,10 @@ _.extend(kit, fs, yutils, {
   	 * 	# The option of `kit.parseDependency`
   	 * 	parseDependency: {}
   	 *
+  	 * 	# A hook for restarting the program, run the function "start" to
+  	 * 	# restart.
+  	 * 	retry: (start) ->
+  	 *
   	 * 	onStart: ->
   	 * 		kit.log "Monitor: " + opts.watchList
   	 * 	onRestart: (path) ->

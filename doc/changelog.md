@@ -1,10 +1,11 @@
 # Changelog
 
-- v0.15.3
+- v0.15.4
 
   - fix: a `proxy.connect` bug
   - **API CHANGE** noflow
   - fix: a `proxy.match` qs bug
+  - add: auto restart api for `monitorApp` and `noe`
 
 - v0.14.10
 
