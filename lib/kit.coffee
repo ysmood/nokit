@@ -1896,6 +1896,8 @@ _.extend kit, fs, yutils,
 			if warp[name]
 				warp[name]
 			else
+				if not kit.task.list[name]
+					return Promise.reject new Error('task not found: ' + name)
 				warp[name] = kit.task.list[name](warp)(val)
 
 		kit.task.list[name] = (warp) -> (val) ->

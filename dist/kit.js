@@ -2094,6 +2094,9 @@ _.extend(kit, fs, yutils, {
           if (warp[name]) {
             return warp[name];
           } else {
+            if (!kit.task.list[name]) {
+              return Promise.reject(new Error('task not found:' + name));
+            }
             return warp[name] = kit.task.list[name](warp)(val);
           }
         };
