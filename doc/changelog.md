@@ -1,5 +1,9 @@
 # Changelog
 
+- v0.16.0
+
+  - **API CHANGE** `monitorApp`: the returned value is changed
+
 - v0.15.5
 
   - fix: a `proxy.connect` bug

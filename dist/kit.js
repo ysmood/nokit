@@ -923,8 +923,6 @@ _.extend(kit, fs, yutils, {
   	 * @return {Object} Properties:
   	 * ```coffee
   	 * {
-  	 * 	process: Object
-  	 *
   	 * 	# Call it to stop monitor.
   	 * 	stop: ->
   	 *
@@ -947,7 +945,7 @@ _.extend(kit, fs, yutils, {
   	 * ```
    */
   monitorApp: function(opts) {
-    var br, childProcess, childPromise, child_process, start, stop, watchPromise, watcher;
+    var br, childPromise, child_process, start, stop, watchPromise, watcher;
     br = kit.require('brush');
     child_process = require('child_process');
     _.defaults(opts, {
@@ -985,11 +983,9 @@ _.extend(kit, fs, yutils, {
       opts.watchList = opts.args;
     }
     childPromise = null;
-    childProcess = null;
     start = function(isFromWatch) {
       opts.sepLine();
       childPromise = kit.spawn(opts.bin, opts.args, opts.opts);
-      childProcess = childPromise.process;
       return childPromise.then(function(msg) {
         return opts.onNormalExit(msg);
       })["catch"](function(err) {
@@ -1022,6 +1018,12 @@ _.extend(kit, fs, yutils, {
       }
     }, 50);
     stop = function() {
+      try {
+        child_process.execSync('pkill -P ' + childPromise.process.pid, {
+          stdio: 'ignore'
+        });
+      } catch (undefined) {}
+      childPromise.process.kill('SIGINT');
       return watchPromise.then(function(list) {
         var j, len, results, w;
         results = [];
@@ -1033,12 +1035,7 @@ _.extend(kit, fs, yutils, {
       });
     };
     process.on('SIGINT', function() {
-      try {
-        child_process.execSync('pkill -P ' + childPromise.process.pid, {
-          stdio: 'ignore'
-        });
-      } catch (undefined) {}
-      childPromise.process.kill('SIGINT');
+      stop();
       return process.exit();
     });
     watchPromise = opts.isNodeDeps ? kit.parseDependency(opts.watchList, opts.parseDependency).then(function(paths) {
@@ -1052,8 +1049,6 @@ _.extend(kit, fs, yutils, {
     opts.onStart();
     start(true);
     return {
-      process: childProcess,
-      childPromise: childPromise,
       watchPromise: watchPromise,
       stop: stop
     };
@@ -2095,7 +2090,7 @@ _.extend(kit, fs, yutils, {
             return warp[name];
           } else {
             if (!kit.task.list[name]) {
-              return Promise.reject(new Error('task not found:' + name));
+              return Promise.reject(new Error('task not found: ' + name));
             }
             return warp[name] = kit.task.list[name](warp)(val);
           }

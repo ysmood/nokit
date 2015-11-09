@@ -828,8 +828,6 @@ _.extend kit, fs, yutils,
 	 * @return {Object} Properties:
 	 * ```coffee
 	 * {
-	 * 	process: Object
-	 *
 	 * 	# Call it to stop monitor.
 	 * 	stop: ->
 	 *
@@ -886,7 +884,6 @@ _.extend kit, fs, yutils,
 		opts.watchList ?= opts.args
 
 		childPromise = null
-		childProcess = null
 		start = (isFromWatch) ->
 			opts.sepLine()
 
@@ -895,8 +892,6 @@ _.extend kit, fs, yutils,
 				opts.args
 				opts.opts
 			)
-
-			childProcess = childPromise.process
 
 			childPromise.then (msg) ->
 				opts.onNormalExit msg
@@ -924,15 +919,17 @@ _.extend kit, fs, yutils,
 		, 50
 
 		stop = ->
-			watchPromise.then (list) ->
-				kit.unwatchFile w.path, w.handler for w in list
-
-		process.on 'SIGINT', ->
 			try
 				child_process.execSync 'pkill -P ' + childPromise.process.pid, {
 					stdio: 'ignore'
 				}
 			childPromise.process.kill 'SIGINT'
+
+			watchPromise.then (list) ->
+				kit.unwatchFile w.path, w.handler for w in list
+
+		process.on 'SIGINT', ->
+			stop()
 			process.exit()
 
 		watchPromise = if opts.isNodeDeps
@@ -947,7 +944,7 @@ _.extend kit, fs, yutils,
 
 		start true
 
-		{ process: childProcess, childPromise, watchPromise, stop }
+		{ watchPromise, stop }
 
 	###*
 	 * Node version. Such as `v0.10.23` is `0.1023`, `v0.10.1` is `0.1001`.
