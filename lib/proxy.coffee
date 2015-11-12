@@ -505,8 +505,6 @@ proxy =
 		if opts.handleResBody and not opts.handleResPipe
 			opts.handleResPipe = (res, resPipe) -> null
 
-		uppperCase = (m, p1, p2) -> p1.toUpperCase() + p2
-
 		normalizeUrl = (req, url) ->
 			if not url
 				url = req.url
