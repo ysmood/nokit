@@ -60,7 +60,9 @@ loadNofile = ->
 		for lang in process.env.nokitPreload.split ' '
 			try require lang
 	else
+		try require 'babel/register'
 		try require 'babel-core/register'
+		try require 'babel-polyfill'
 		try require 'coffee-script/register'
 
 	exts = _(require.extensions).keys().filter (ext) ->
@@ -70,6 +72,7 @@ loadNofile = ->
 		kit.Promise.enableLongStackTrace()
 
 		tasker = require path
+		tasker = tasker.default if tasker and tasker.default
 		if _.isFunction tasker
 			tasker task, cmder.option.bind(cmder)
 		else
