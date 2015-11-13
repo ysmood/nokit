@@ -37,10 +37,10 @@ By default nokit only supports js, if you want nokit to support coffee, you shou
 
 Same works with babeljs:
 
-`npm i -g nokit babel-core`
+`npm i -g nokit babel-core babel-polyfill`
 
 > Remarks: for the sake of boot performance, nokit will only try to load
-> `coffee-script/register` and `babel-core/register`
+> `coffee-script/register`, `babel-polyfill` and `babel-core/register`
 > by default. For livescript or other precompiler, you have to
 > set environment varialbe `nokitPreload` to what you want, such as on unix:
 > `export nokitPreload='livescript coffee-script/register'`. Different module

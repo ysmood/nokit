@@ -84,7 +84,13 @@ loadNofile = function() {
     }
   } else {
     try {
+      require('babel/register');
+    } catch (undefined) {}
+    try {
       require('babel-core/register');
+    } catch (undefined) {}
+    try {
+      require('babel-polyfill');
     } catch (undefined) {}
     try {
       require('coffee-script/register');
@@ -97,6 +103,9 @@ loadNofile = function() {
     var tasker;
     kit.Promise.enableLongStackTrace();
     tasker = require(path);
+    if (tasker && tasker["default"]) {
+      tasker = tasker["default"];
+    }
     if (_.isFunction(tasker)) {
       tasker(task, cmder.option.bind(cmder));
     } else {
