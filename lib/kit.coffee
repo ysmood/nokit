@@ -928,15 +928,18 @@ _.extend kit, fs, yutils,
 			watchPromise.then (list) ->
 				kit.unwatchFile w.path, w.handler for w in list
 
+		watch = (paths) ->
+			paths = [paths] if _.isString(paths)
+			opts.onWatchFiles paths
+			kit.watchFiles paths, { handler: watcher }
+
 		process.on 'SIGINT', ->
 			stop()
 			process.exit()
 
 		watchPromise = if opts.isNodeDeps
 			kit.parseDependency opts.watchList, opts.parseDependency
-			.then (paths) ->
-				opts.onWatchFiles paths
-				kit.watchFiles paths, { handler: watcher }
+			.then watch
 		else
 			kit.watchFiles opts.watchList, { handler: watcher }
 
@@ -944,7 +947,7 @@ _.extend kit, fs, yutils,
 
 		start true
 
-		{ watchPromise, stop }
+		{ watchPromise, stop, watch }
 
 	###*
 	 * Node version. Such as `v0.10.23` is `0.1023`, `v0.10.1` is `0.1001`.
