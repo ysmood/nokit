@@ -1,9 +1,10 @@
 # Changelog
 
-- v0.16.1
+- v0.16.2
 
   - **API CHANGE** `monitorApp`: the returned value is changed
   - add: support for babel 6
+  - opt: monitorApp watch api
 
 - v0.15.5
 

@@ -533,7 +533,7 @@ proxy = {
   	 * ```
    */
   url: function(opts) {
-    var br, normalizeStream, normalizeUrl, uppperCase;
+    var br, normalizeStream, normalizeUrl;
     kit.require('url');
     br = kit.require('brush');
     if (_.isString(opts)) {
@@ -566,9 +566,6 @@ proxy = {
         return null;
       };
     }
-    uppperCase = function(m, p1, p2) {
-      return p1.toUpperCase() + p2;
-    };
     normalizeUrl = function(req, url) {
       var sepIndex;
       if (!url) {

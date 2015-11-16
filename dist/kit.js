@@ -945,7 +945,7 @@ _.extend(kit, fs, yutils, {
   	 * ```
    */
   monitorApp: function(opts) {
-    var br, childPromise, child_process, start, stop, watchPromise, watcher;
+    var br, childPromise, child_process, start, stop, watch, watchPromise, watcher;
     br = kit.require('brush');
     child_process = require('child_process');
     _.defaults(opts, {
@@ -1034,23 +1034,28 @@ _.extend(kit, fs, yutils, {
         return results;
       });
     };
-    process.on('SIGINT', function() {
-      stop();
-      return process.exit();
-    });
-    watchPromise = opts.isNodeDeps ? kit.parseDependency(opts.watchList, opts.parseDependency).then(function(paths) {
+    watch = function(paths) {
+      if (_.isString(paths)) {
+        paths = [paths];
+      }
       opts.onWatchFiles(paths);
       return kit.watchFiles(paths, {
         handler: watcher
       });
-    }) : kit.watchFiles(opts.watchList, {
+    };
+    process.on('SIGINT', function() {
+      stop();
+      return process.exit();
+    });
+    watchPromise = opts.isNodeDeps ? kit.parseDependency(opts.watchList, opts.parseDependency).then(watch) : kit.watchFiles(opts.watchList, {
       handler: watcher
     });
     opts.onStart();
     start(true);
     return {
       watchPromise: watchPromise,
-      stop: stop
+      stop: stop,
+      watch: watch
     };
   },
 
