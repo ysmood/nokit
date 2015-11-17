@@ -22,7 +22,7 @@ createRandomServer = (handler, fn) ->
 
 unixSep = (p) -> p.replace /\\/g, '\/'
 
-module.exports = (it) -> [
+module.exports = (it) ->
 	it 'brush', ->
 		br = kit.require 'brush'
 		it.eq br.red('ok'), '\u001b[31mok\u001b[39m'
@@ -162,18 +162,18 @@ module.exports = (it) -> [
 			.then (body) ->
 				it.eq +body, buffer.length
 
-	it 'monitorApp', -> new Promise (resolve) ->
+	it 'monitorApp', (after) -> new Promise (resolve) ->
 		p = 'test/fixtures/monitorApp-test.coffee'
 		kit.copySync 'test/fixtures/monitorApp.coffee', p
-		promise = kit.monitorApp {
+		{ stop } = kit.monitorApp {
 			bin: 'coffee'
 			args: [p]
-			onErrorExit: ({ code, signal }) ->
-				resolve it.eq code, 10
-				promise.stop()
+			onRestart: (path) ->
+				resolve it.eq path, p
+				stop()
 		}
 		setTimeout ->
-			kit.outputFileSync p, 'process.exit 10'
+			kit.outputFileSync p, 'process.exit 0'
 		, 1000
 
 	it 'exec', ->
@@ -639,5 +639,3 @@ module.exports = (it) -> [
 			.then (body) ->
 				console.log body
 				it.eq {a: 10}, JSON.parse(body)
-
-]

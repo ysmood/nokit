@@ -903,6 +903,8 @@ _.extend kit, fs, yutils,
 				return if isFromWatch
 				opts.retry start
 
+		watchedList = []
+
 		watcher = _.debounce (path, curr, prev, isDelete) ->
 			return if isDelete
 
@@ -925,13 +927,15 @@ _.extend kit, fs, yutils,
 				}
 			childPromise.process.kill 'SIGINT'
 
-			watchPromise.then (list) ->
-				kit.unwatchFile w.path, w.handler for w in list
+			watchPromise.then ->
+				kit.unwatchFile w.path, w.handler for w in watchedList
 
 		watch = (paths) ->
 			paths = [paths] if _.isString(paths)
 			opts.onWatchFiles paths
 			kit.watchFiles paths, { handler: watcher }
+			.then (ws) ->
+				watchedList = watchedList.concat ws
 
 		process.on 'SIGINT', ->
 			stop()
