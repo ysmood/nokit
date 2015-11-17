@@ -945,7 +945,7 @@ _.extend(kit, fs, yutils, {
   	 * ```
    */
   monitorApp: function(opts) {
-    var br, childPromise, child_process, start, stop, watch, watchPromise, watcher;
+    var br, childPromise, child_process, start, stop, watch, watchPromise, watchedList, watcher;
     br = kit.require('brush');
     child_process = require('child_process');
     _.defaults(opts, {
@@ -963,7 +963,11 @@ _.extend(kit, fs, yutils, {
         return kit.log(br.yellow("Reload app, modified: ") + path);
       },
       onWatchFiles: function(paths) {
-        return kit.log(br.yellow('Watching: ') + paths.join(', '));
+        var cwd;
+        cwd = process.cwd();
+        return kit.log(br.yellow('Watching: ') + paths.map(function(p) {
+          return kit.path.relative(cwd, p);
+        }).join(', '));
       },
       onNormalExit: function(arg1) {
         var code, signal;
@@ -1000,6 +1004,7 @@ _.extend(kit, fs, yutils, {
         return opts.retry(start);
       });
     };
+    watchedList = [];
     watcher = _.debounce(function(path, curr, prev, isDelete) {
       if (isDelete) {
         return;
@@ -1024,11 +1029,11 @@ _.extend(kit, fs, yutils, {
         });
       } catch (undefined) {}
       childPromise.process.kill('SIGINT');
-      return watchPromise.then(function(list) {
+      return watchPromise.then(function() {
         var j, len, results, w;
         results = [];
-        for (j = 0, len = list.length; j < len; j++) {
-          w = list[j];
+        for (j = 0, len = watchedList.length; j < len; j++) {
+          w = watchedList[j];
           results.push(kit.unwatchFile(w.path, w.handler));
         }
         return results;
@@ -1038,9 +1043,18 @@ _.extend(kit, fs, yutils, {
       if (_.isString(paths)) {
         paths = [paths];
       }
-      opts.onWatchFiles(paths);
+      paths = _.difference(paths.map(function(p) {
+        return kit.path.resolve(p);
+      }), watchedList.map(function(w) {
+        return kit.path.resolve(w.path);
+      }));
+      if (paths.length > 0) {
+        opts.onWatchFiles(paths);
+      }
       return kit.watchFiles(paths, {
         handler: watcher
+      }).then(function(ws) {
+        return watchedList = watchedList.concat(ws);
       });
     };
     process.on('SIGINT', function() {

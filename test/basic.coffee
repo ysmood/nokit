@@ -169,7 +169,7 @@ module.exports = (it) ->
 			bin: 'coffee'
 			args: [p]
 			onRestart: (path) ->
-				resolve it.eq path, p
+				resolve it.eq path, kit.path.resolve(p)
 				stop()
 		}
 		setTimeout ->

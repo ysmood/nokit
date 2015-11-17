@@ -865,7 +865,9 @@ _.extend kit, fs, yutils,
 			onRestart: (path) ->
 				kit.log br.yellow("Reload app, modified: ") + path
 			onWatchFiles: (paths) ->
-				kit.log br.yellow('Watching: ') + paths.join(', ')
+				cwd = process.cwd()
+				kit.log br.yellow('Watching: ') +
+					paths.map((p) -> kit.path.relative cwd, p).join(', ')
 			onNormalExit: ({ code, signal }) ->
 				kit.log br.yellow('EXIT') +
 					" code: #{br.cyan code} signal: #{br.cyan signal}"
@@ -932,7 +934,11 @@ _.extend kit, fs, yutils,
 
 		watch = (paths) ->
 			paths = [paths] if _.isString(paths)
-			opts.onWatchFiles paths
+			paths = _.difference(
+				(paths.map (p) -> kit.path.resolve p),
+				(watchedList.map (w) -> kit.path.resolve w.path)
+			)
+			opts.onWatchFiles paths if paths.length > 0
 			kit.watchFiles paths, { handler: watcher }
 			.then (ws) ->
 				watchedList = watchedList.concat ws
