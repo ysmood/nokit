@@ -290,6 +290,8 @@ proxy =
 	 * It has some extra properties:
 	 * ```coffee
 	 * {
+	 * 	ssePrefix: '/nokit-sse'
+	 * 	logPrefix: '/nokit-log'
 	 * 	sse: kit.sse
 	 * 	watch: (filePath, reqUrl) ->
 	 * }
@@ -324,10 +326,10 @@ proxy =
 		handler = (ctx) ->
 			{ req, res } = ctx
 			switch req.url
-				when '/nokit-sse'
+				when opts.ssePrefix
 					handler.sse req, res
 					new Promise(->)
-				when '/nokit-log'
+				when opts.logPrefix
 					data = ''
 
 					req.on 'data', (chunk) ->
