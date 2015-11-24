@@ -1850,7 +1850,7 @@ kit.warp 'src/**/*.coffee'
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[serverHelper(opts)](lib/proxy.coffee?source#L321)**
+- ## **[serverHelper(opts)](lib/proxy.coffee?source#L323)**
 
     Create a http request middleware.
 
@@ -1864,6 +1864,8 @@ kit.warp 'src/**/*.coffee'
         It has some extra properties:
         ```coffee
         {
+        	ssePrefix: '/nokit-sse'
+        	logPrefix: '/nokit-log'
         	sse: kit.sse
         	watch: (filePath, reqUrl) ->
         }
@@ -1894,7 +1896,7 @@ kit.warp 'src/**/*.coffee'
         nokit.log { any: 'thing' }
         ```
 
-- ## **[static(opts)](lib/proxy.coffee?source#L384)**
+- ## **[static(opts)](lib/proxy.coffee?source#L386)**
 
     Create a static file middleware for `proxy.flow`.
 
@@ -1915,7 +1917,7 @@ kit.warp 'src/**/*.coffee'
         http.createServer(proxy.flow middlewares).listen 8123
         ```
 
-- ## **[url(opts)](lib/proxy.coffee?source#L485)**
+- ## **[url(opts)](lib/proxy.coffee?source#L487)**
 
     Use it to proxy one url to another.
 
