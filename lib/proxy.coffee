@@ -320,8 +320,13 @@ proxy =
 	 * nokit.log { any: 'thing' }
 	 * ```
 	###
-	serverHelper: (opts) ->
+	serverHelper: (opts = {}) ->
 		br = kit.require 'brush'
+
+		opts = _.defaults opts, {
+			ssePrefix: '/nokit-sse'
+			logPrefix: '/nokit-log'
+		}
 
 		handler = (ctx) ->
 			{ req, res } = ctx

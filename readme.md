@@ -1896,7 +1896,7 @@ kit.warp 'src/**/*.coffee'
         nokit.log { any: 'thing' }
         ```
 
-- ## **[static(opts)](lib/proxy.coffee?source#L386)**
+- ## **[static(opts)](lib/proxy.coffee?source#L391)**
 
     Create a static file middleware for `proxy.flow`.
 
@@ -1917,7 +1917,7 @@ kit.warp 'src/**/*.coffee'
         http.createServer(proxy.flow middlewares).listen 8123
         ```
 
-- ## **[url(opts)](lib/proxy.coffee?source#L487)**
+- ## **[url(opts)](lib/proxy.coffee?source#L492)**
 
     Use it to proxy one url to another.
 

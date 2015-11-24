@@ -364,7 +364,14 @@ proxy = {
    */
   serverHelper: function(opts) {
     var br, handler, watchList;
+    if (opts == null) {
+      opts = {};
+    }
     br = kit.require('brush');
+    opts = _.defaults(opts, {
+      ssePrefix: '/nokit-sse',
+      logPrefix: '/nokit-log'
+    });
     handler = function(ctx) {
       var data, req, res;
       req = ctx.req, res = ctx.res;
