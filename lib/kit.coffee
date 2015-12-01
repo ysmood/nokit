@@ -886,7 +886,7 @@ _.extend kit, fs, yutils,
 		opts.watchList ?= opts.args
 
 		childPromise = null
-		start = (isFromWatch) ->
+		start = ->
 			opts.sepLine()
 
 			childPromise = kit.spawn(
@@ -902,7 +902,6 @@ _.extend kit, fs, yutils,
 					return Promise.reject err.stack
 				opts.onErrorExit err
 			.then ->
-				return if isFromWatch
 				opts.retry start
 
 		watchedList = []
@@ -913,7 +912,7 @@ _.extend kit, fs, yutils,
 			if curr.mtime != prev.mtime
 				opts.onRestart path
 
-				childPromise.catch(->).then -> start true
+				childPromise.catch(->).then start
 				try
 					child_process
 					.execSync 'pkill -P ' + childPromise.process.pid, {
@@ -955,7 +954,7 @@ _.extend kit, fs, yutils,
 
 		opts.onStart()
 
-		start true
+		start()
 
 		{ watchPromise, stop, watch }
 
