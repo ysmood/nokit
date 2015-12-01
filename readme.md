@@ -51,33 +51,38 @@ or any of its parents directory. The syntax of `nofile` is almost the same as th
 
 Assume your file content is:
 
-```coffee
-module.exports = (task, option) ->
-    kit = require 'nokit'
+```js
+var kit = require('nokit');
 
-    option '-w, --hello [world]', 'Just a test option', ''
+module.exports = (task, option) => {
+    option('-w, --hello [world]', 'Just a test option');
 
-    # Define a default task, and it depends on the "clean" task.
-    task 'default', ['clean'], 'This is a comment info', (opts) ->
-        kit.log opts.hello
+    // Define a default task, and it depends on the "clean" task.
+    task('default', ['clean'], 'This is a comment info', (opts) => {
+        kit.log(opts.hello);
 
-        # Use brush.
-        kit.require 'brush'
-        kit.log 'print red words'.red
+        // Use brush.
+        kit.require('brush');
+        kit.log('print red words'.red);
+    });
 
-    task 'clean', ->
-        kit.remove 'dist'
+    task('clean', () => {
+        return kit.remove('dist');
+    });
 
-    # To add alias to a task, just use space to separate names.
-    # Here 'build' and 'b' are the same task.
-    task 'build b', ->
-        kit.require 'drives'
-        kit.warp 'src/**/*.js'
-        .load kit.drives.auto 'compile'
-        .run 'dist'
+    // To add alias to a task, just use space to separate names.
+    // Here 'build' and 'b' are the same task.
+    task('build b', () => {
+        kit.require('drives');
+        return kit.warp('src/**/*.js')
+        .load(kit.drives.auto 'compile')
+        .run('dist');
+    });
 
-    task 'sequential', ['clean', 'build'], true, ->
-        kit.log 'Run clean and build non-concurrently.'
+    task('sequential', ['clean', 'build'], true, () => {
+        kit.log('Run clean and build non-concurrently.');
+    });
+};
 ```
 
 Then you can run it in command line: `no`. Just that simple, without task
@@ -1389,19 +1394,18 @@ Goto [changelog](doc/changelog.md)
 Here it will automatically lint, compile, compress and cache files by their extensions. You can goto Drives section to see what extensions are supported,
 or write your own.
 
-```coffee
-kit = require 'nokit'
-drives = kit.require 'drives'
+```js
+let kit = require('nokit');
+let drives = kit.require('drives');
 
-kit.warp 'src/**/*.@(jade|less|coffee|ls)'
-    # # To disable cache.
-    # .load drives.reader isCache: false
-    .load drives.auto 'lint'
-    .load drives.auto 'compile', '.coffee': { bare: false }
-    .load drives.auto 'compress'
-    .load concat 'main.js'
-.run 'dist/path'
-
+kit.warp('src/**/*.@(jade|less|coffee|ls)')
+    // // To disable cache.
+    // .load drives.reader isCache: false
+    .load(drives.auto('lint'))
+    .load(drives.auto('compile', { '.coffee': { bare: false } }))
+    .load(drives.auto('compress'))
+    .load(concat('main.js'))
+.run('dist/path');
 ```
 
 ### Write your own drives
@@ -1410,49 +1414,55 @@ Nokit has already provided some handy example drives, you
 can check them in the Drives section. It's fairly easy to
 write your own.
 
-```coffee
-kit = require 'nokit'
-coffee = require 'coffee-script'
+```js
+let kit = require('nokit');
+let coffee = require('coffee-script');
 
-# A drive for coffee, a simple curried function.
-compiler = (opts) -> ->
-    # Change extension from '.coffee' to '.js'.
-    @dest.ext = '.js'
-    @set coffee.compile(@contents, opts)
+// A drive for coffee, a simple curried function.
+let compiler = (opts) => function () {
+    // Change extension from '.coffee' to '.js'.
+    this.dest.ext = '.js';
+    this.set(coffee.compile(this.contents, opts));
+};
 
-# A drive to prepend lisence to each file.
-# Here "fileInfo.set" is the same with the "@set".
-lisencer = (lisence) -> (fileInfo) ->
-    @set lisence + '\n' + @contents
+// A drive to prepend lisence to each file.
+// Here "fileInfo.set" is the same with the "@set".
+let lisencer = (lisence) => function (fileInfo) {
+    this.set(lisence + '\n' + this.contents)
+}
 
-# A drive to concat all files. It will override the default writer.
-concat = (outputFile) ->
-    all = ''
+// A drive to concat all files. It will override the default writer.
+let concat = (outputFile) => {
+    let all = '';
 
-    # Object.assign
-    kit._.assign ->
-        all += @contents
-    , isWriter: true, onEnd: ->
-        # This will enable the auto-cache.
-        @deps = kit._.pluck @list, 'path'
+    // Object.assign
+    return kit._.assign(function () {
+        all += this.contents;
+    }, { isWriter: true, onEnd: function () {
+        // This will enable the auto-cache.
+        this.deps = kit._.pluck(this.list, 'path');
 
-        @dest = @to + '/' + outputFile
-        @set all
+        this.dest = this.to + '/' + outputFile;
+        this.set(all);
 
-        # Call the overrided writer.
-        # Call two times and create two output files.
-        @super().then =>
-            @dest = @dest + '.info'
-            @set = '/* info */\n' + all
-            @super()
+        // Call the overrided writer.
+        // Call two times and create two output files.
+        this.super().then(() => {
+            this.dest = this.dest + '.info';
+            this.set = '/* info */\n' + all;
+            this.super();
+        });
+    } });
+};
 
-kit.warp 'src/**/*.coffee'
-    .load compiler bare: true
-    .load lisencer '/* MIT lisence */'
-    .load concat 'bundle.js'
-.run 'dist'
-.then ->
-    kit.log 'Build Done'
+kit.warp('src/**/*.coffee')
+    .load(compiler(bare: true))
+    .load(lisencer('/* MIT lisence */'))
+    .load(concat('bundle.js'))
+.run('dist')
+.then(() => {
+    kit.log('Build Done');
+});
 ```
 
 - ## **[Overview](lib/drives.coffee?source#L10)**
