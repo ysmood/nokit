@@ -209,7 +209,7 @@ proxy =
 					if err
 						reject err
 					else
-						ctx.next().then resolve
+						ctx.next().then resolve, reject
 
 					return
 
