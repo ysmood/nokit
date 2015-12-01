@@ -1,11 +1,12 @@
 # Changelog
 
-- v0.16.8
+- v0.16.9
 
   - **API CHANGE** `monitorApp`: the returned value is changed
   - add: support for babel 6
   - opt: monitorApp watch api
   - fix: a bug of `proxy.midToFlow`
+  - fix: a monitorApp bug
 
 - v0.15.5
 

@@ -987,7 +987,7 @@ _.extend(kit, fs, yutils, {
       opts.watchList = opts.args;
     }
     childPromise = null;
-    start = function(isFromWatch) {
+    start = function() {
       opts.sepLine();
       childPromise = kit.spawn(opts.bin, opts.args, opts.opts);
       return childPromise.then(function(msg) {
@@ -998,9 +998,6 @@ _.extend(kit, fs, yutils, {
         }
         return opts.onErrorExit(err);
       }).then(function() {
-        if (isFromWatch) {
-          return;
-        }
         return opts.retry(start);
       });
     };
@@ -1011,9 +1008,7 @@ _.extend(kit, fs, yutils, {
       }
       if (curr.mtime !== prev.mtime) {
         opts.onRestart(path);
-        childPromise["catch"](function() {}).then(function() {
-          return start(true);
-        });
+        childPromise["catch"](function() {}).then(start);
         try {
           child_process.execSync('pkill -P ' + childPromise.process.pid, {
             stdio: 'ignore'
@@ -1065,7 +1060,7 @@ _.extend(kit, fs, yutils, {
       handler: watcher
     });
     opts.onStart();
-    start(true);
+    start();
     return {
       watchPromise: watchPromise,
       stop: stop,
