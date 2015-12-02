@@ -1652,7 +1652,7 @@ kit.warp('src/**/*.coffee')
         Defaults:
         ```coffee
         {
-        	isCache: true
+        	isCache: false
         	encoding: 'utf8'
         	cacheDir: '.nokit/warp'
         }

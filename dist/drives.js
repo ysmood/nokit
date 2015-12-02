@@ -427,7 +427,7 @@ module.exports = {
     	 * @param  {Object} opts Defaults:
     	 * ```coffee
     	 * {
-    	 * 	isCache: true
+    	 * 	isCache: false
     	 * 	encoding: 'utf8'
     	 * 	cacheDir: '.nokit/warp'
     	 * }
@@ -441,7 +441,7 @@ module.exports = {
       opts = {};
     }
     _.defaults(opts, {
-      isCache: true,
+      isCache: false,
       encoding: 'utf8',
       cacheDir: '.nokit/warp'
     });
