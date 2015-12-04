@@ -1946,17 +1946,17 @@ _.extend(kit, fs, yutils, {
     if (opts == null) {
       opts = {};
     }
-    PATH = process.env.PATH || process.env.Path;
+    PATH = opts.env && opts.env.PATH ? opts.env.PATH : process.env.PATH || process.env.Path;
     [kit.path.normalize(__dirname + '/../node_modules/.bin'), kit.path.normalize(process.cwd() + '/node_modules/.bin')].forEach(function(path) {
       if (PATH.indexOf(path) < 0 && kit.fs.existsSync(path)) {
         return PATH = [path, PATH].join(kit.path.delimiter);
       }
     });
-    process.env.PATH = PATH;
-    process.env.Path = PATH;
-    _.defaults(opts, {
-      stdio: 'inherit'
+    _.defaultsDeep(opts, {
+      stdio: 'inherit',
+      env: process.env
     });
+    opts.env.PATH = PATH;
     if (process.platform === 'win32') {
       kit.require('whichSync');
       cmd = kit.whichSync(cmd);

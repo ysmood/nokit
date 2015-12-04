@@ -1760,19 +1760,24 @@ _.extend kit, fs, yutils,
 	 * ```
 	###
 	spawn: (cmd, args = [], opts = {}) ->
-		PATH = process.env.PATH or process.env.Path
+		PATH = if (opts.env && opts.env.PATH)
+			opts.env.PATH
+		else
+			process.env.PATH or process.env.Path
+
 		[
 			kit.path.normalize __dirname + '/../node_modules/.bin'
 			kit.path.normalize process.cwd() + '/node_modules/.bin'
 		].forEach (path) ->
 			if PATH.indexOf(path) < 0 and kit.fs.existsSync(path)
 				PATH = [path, PATH].join kit.path.delimiter
-		process.env.PATH = PATH
-		process.env.Path = PATH
 
-		_.defaults opts, {
+		_.defaultsDeep opts, {
 			stdio: 'inherit'
+			env: process.env
 		}
+
+		opts.env.PATH = PATH
 
 		if process.platform == 'win32'
 			kit.require 'whichSync'
