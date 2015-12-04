@@ -1952,8 +1952,10 @@ _.extend(kit, fs, yutils, {
         return PATH = [path, PATH].join(kit.path.delimiter);
       }
     });
+    _.defaults(opts, {
+      stdio: 'inherit'
+    });
     _.defaultsDeep(opts, {
-      stdio: 'inherit',
       env: process.env
     });
     opts.env.PATH = PATH;

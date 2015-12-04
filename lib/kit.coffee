@@ -1772,8 +1772,11 @@ _.extend kit, fs, yutils,
 			if PATH.indexOf(path) < 0 and kit.fs.existsSync(path)
 				PATH = [path, PATH].join kit.path.delimiter
 
-		_.defaultsDeep opts, {
+		_.defaults opts, {
 			stdio: 'inherit'
+		}
+
+		_.defaultsDeep opts, {
 			env: process.env
 		}
 

@@ -1109,13 +1109,13 @@ Goto [changelog](doc/changelog.md)
         .then ({code}) -> kit.log code
         ```
 
-- ## **[sse](lib/kit.coffee?source#L1825)**
+- ## **[sse](lib/kit.coffee?source#L1828)**
 
     The `sse` module.
     You must `kit.require 'sse'` before using it.
     For more information goto the `sse` section.
 
-- ## **[task(name, opts, fn)](lib/kit.coffee?source#L1886)**
+- ## **[task(name, opts, fn)](lib/kit.coffee?source#L1889)**
 
     Sequencing and executing tasks and dependencies concurrently.
 
@@ -1195,12 +1195,12 @@ Goto [changelog](doc/changelog.md)
         	kit.log 'All Done!'
         ```
 
-- ## **[url](lib/kit.coffee?source#L1960)**
+- ## **[url](lib/kit.coffee?source#L1963)**
 
     The `url` module of [io.js](iojs.org).
     You must `kit.require 'url'` before using it.
 
-- ## **[warp(from, opts)](lib/kit.coffee?source#L2075)**
+- ## **[warp(from, opts)](lib/kit.coffee?source#L2078)**
 
     Works much like `gulp.src`, but with Promise instead.
     The warp control and error handling is more pleasant.
@@ -1325,7 +1325,7 @@ Goto [changelog](doc/changelog.md)
         .run 'dist'
         ```
 
-- ## **[which(name)](lib/kit.coffee?source#L2152)**
+- ## **[which(name)](lib/kit.coffee?source#L2155)**
 
     Same as the unix `which` command.
     You must `kit.require 'which'` before using it.
@@ -1336,14 +1336,14 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Promise_ }
 
-- ## **[whichSync](lib/kit.coffee?source#L2159)**
+- ## **[whichSync](lib/kit.coffee?source#L2162)**
 
     Sync version of `which`.
     You must `kit.require 'whichSync'` before using it.
 
     - **<u>type</u>**: { _Function_ }
 
-- ## **[xinspect(obj, opts)](lib/kit.coffee?source#L2170)**
+- ## **[xinspect(obj, opts)](lib/kit.coffee?source#L2173)**
 
     For debugging. Dump a colorful object.
 
@@ -1360,7 +1360,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _String_ }
 
-- ## **[xopen(cmds, opts)](lib/kit.coffee?source#L2193)**
+- ## **[xopen(cmds, opts)](lib/kit.coffee?source#L2196)**
 
     Open a thing that your system can recognize.
     Now only support Windows, OSX or system that installed 'xdg-open'.
