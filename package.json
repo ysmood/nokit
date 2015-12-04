@@ -41,26 +41,26 @@
     "jhash": "0.1.7",
     "noflow": "0.6.0",
     "nofs": "0.10.9",
-    "semver": "5.0.3",
+    "semver": "5.1.0",
     "yaku": "0.11.4"
   },
   "devDependencies": {
     "LiveScript": "1.3.1",
     "body-parser": "1.14.1",
-    "clean-css": "3.4.6",
+    "clean-css": "3.4.8",
     "coffee-script": "1.10.0",
-    "coffeelint": "1.13.1",
+    "coffeelint": "1.14.1",
     "form-data": "1.0.0-rc3",
     "formidable": "1.0.17",
     "iconv-lite": "0.4.13",
-    "jshint": "2.8.0",
-    "junit": "0.9.5",
+    "jshint": "2.9.1-rc1",
+    "junit": "1.1.0",
     "less": "2.5.3",
     "lodash-cli": "3.10.1",
     "path-to-regexp": "1.2.1",
     "send": "0.13.0",
     "stylus": "0.52.4",
     "throttle": "1.0.3",
-    "uglify-js": "2.5.0"
+    "uglify-js": "2.6.1"
   }
 }
