@@ -25,10 +25,7 @@
   ],
   "files": [
     "bin",
-    "doc/changelog.md",
-    "lib/**/*.coffee",
-    "dist",
-    "global.js"
+    "dist"
   ],
   "author": "http://ysmood.org",
   "license": "MIT",
