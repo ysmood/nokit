@@ -36,10 +36,10 @@
   "dependencies": {
     "commander": "2.9.0",
     "jhash": "0.1.7",
-    "noflow": "0.6.0",
-    "nofs": "0.10.9",
+    "noflow": "0.6.1",
+    "nofs": "0.10.11",
     "semver": "5.1.0",
-    "yaku": "0.11.4"
+    "yaku": "0.11.6"
   },
   "devDependencies": {
     "LiveScript": "1.3.1",
@@ -51,7 +51,7 @@
     "formidable": "1.0.17",
     "iconv-lite": "0.4.13",
     "jshint": "2.9.1-rc1",
-    "junit": "1.0.0",
+    "junit": "1.1.1",
     "less": "2.5.3",
     "lodash-cli": "3.10.1",
     "path-to-regexp": "1.2.1",

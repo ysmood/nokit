@@ -24,7 +24,6 @@ module.exports = (task, option) ->
 
 		buildCoffee = ->
 			kit.warp 'lib/**/*.coffee'
-			.load kit.drives.coffeelint()
 			.load kit.drives.coffee()
 			.run 'dist'
 
