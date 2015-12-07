@@ -26,8 +26,8 @@ proxy = {
   agent: new http.Agent,
 
   /**
-  	 * A simple request body middleware.
-  	 * @return {Function} `(ctx) -> Promise`
+   * A simple request body middleware.
+   * @return {Function} `(ctx) -> Promise`
    */
   body: function(opts) {
     return function(ctx) {
@@ -49,9 +49,9 @@ proxy = {
   },
 
   /**
-  	 * Add a `van` method to flow context object. It's a helper to set
-  	 * and get the context body.
-  	 * @param  {FlowContext} ctx
+   * Add a `van` method to flow context object. It's a helper to set
+   * and get the context body.
+   * @param  {FlowContext} ctx
    */
   van: function(ctx) {
     ctx.van = function() {
@@ -65,30 +65,30 @@ proxy = {
   },
 
   /**
-  	 * Http CONNECT method tunneling proxy helper.
-  	 * Most times it is used to proxy https and websocket.
-  	 * @param {Object} opts Defaults:
-  	 * ```coffee
-  	 * {
-  	 * 	filter: (req) -> true # if it returns false, the proxy will be ignored
-  	 * 	host: null # Optional. The target host force to.
-  	 * 	port: null # Optional. The target port force to.
-  	 * 	onError: (err, socket) ->
-  	 * }
-  	 * ```
-  	 * @return {Function} The connect request handler.
-  	 * @example
-  	 * ```coffee
-  	 * kit = require 'nokit'
-  	 * proxy = kit.require 'proxy'
-  	 *
-  	 * app = proxy.flow()
-  	 *
-  	 * # Directly connect to the original site.
-  	 * app.server.on 'connect', kit.proxy.connect()
-  	 *
-  	 * app.listen 8123
-  	 * ```
+   * Http CONNECT method tunneling proxy helper.
+   * Most times it is used to proxy https and websocket.
+   * @param {Object} opts Defaults:
+   * ```js
+   * {
+   *  filter: (req) => true, // if it returns false, the proxy will be ignored
+   *  host: null, // Optional. The target host force to.
+   *  port: null, // Optional. The target port force to.
+   *  onError: (err, socket) => {}
+   * }
+   * ```
+   * @return {Function} The connect request handler.
+   * @example
+   * ```js
+   * let kit = require('nokit');
+   * let proxy = kit.require('proxy');
+   *
+   * let app = proxy.flow();
+   *
+   * // Directly connect to the original site.
+   * app.server.on('connect', kit.proxy.connect());
+   *
+   * app.listen(8123);
+   * ```
    */
   connect: function(opts) {
     var host, port, ref;
@@ -153,8 +153,8 @@ proxy = {
   },
 
   /**
-  	 * Create a etag middleware.
-  	 * @return {Function}
+   * Create a etag middleware.
+   * @return {Function}
    */
   etag: function() {
     var Stream, jhash;
@@ -182,23 +182,23 @@ proxy = {
   },
 
   /**
-  	 * A minimal middleware composer for the future.
-  	 * https://github.com/ysmood/noflow
+   * A minimal middleware composer for the future.
+   * https://github.com/ysmood/noflow
    */
-  flow: flow,
+  flow: flow["default"],
 
   /**
-  	 * Generate an express like unix path selector. See the example of `proxy.flow`.
-  	 * @param {String} pattern
-  	 * @param {Object} opts Same as the [path-to-regexp](https://github.com/pillarjs/path-to-regexp)'s
-  	 * options.
-  	 * @return {Function} `(String) -> Object`.
-  	 * @example
-  	 * ```coffee
-  	 * proxy = kit.require 'proxy'
-  	 * match = proxy.match '/items/:id'
-  	 * kit.log match '/items/10' # output => { id: '10' }
-  	 * ```
+   * Generate an express like unix path selector. See the example of `proxy.flow`.
+   * @param {String} pattern
+   * @param {Object} opts Same as the [path-to-regexp](https://github.com/pillarjs/path-to-regexp)'s
+   * options.
+   * @return {Function} `(String) -> Object`.
+   * @example
+   * ```js
+   * let proxy = kit.require('proxy');
+   * let match = proxy.match('/items/:id');
+   * kit.log(match('/items/10')) // output => { id: '10' }
+   * ```
    */
   match: function(pattern, opts) {
     var keys, parse, reg;
@@ -223,22 +223,22 @@ proxy = {
   },
 
   /**
-  	 * Convert a Express-like middleware to `proxy.flow` middleware.
-  	 * @param  {Function} h `(req, res, next) ->`
-  	 * @return {Function}   `(ctx) -> Promise`
-  	 * ```coffee
-  	 * proxy = kit.require 'proxy'
-  	 * http = require 'http'
-  	 * bodyParser = require('body-parser')
-  	 *
-  	 * middlewares = [
-  	 * 	proxy.midToFlow bodyParser.json()
-  	 *
-  	 * 	(ctx) -> ctx.body = ctx.req.body
-  	 * ]
-  	 *
-  	 * http.createServer(proxy.flow middlewares).listen 8123
-  	 * ```
+   * Convert a Express-like middleware to `proxy.flow` middleware.
+   * @param  {Function} h `(req, res, next) ->`
+   * @return {Function}   `(ctx) -> Promise`
+   * ```js
+   * let proxy = kit.require('proxy');
+   * let http = require('http');
+   * let bodyParser = require('body-parser');
+   *
+   * let middlewares = [
+   *     proxy.midToFlow(bodyParser.json()),
+   *
+   *     (ctx) => ctx.body = ctx.req.body
+   * ];
+   *
+   * http.createServer(proxy.flow(middlewares)).listen(8123);
+   * ```
    */
   midToFlow: function(h) {
     return function(ctx) {
@@ -255,24 +255,24 @@ proxy = {
   },
 
   /**
-  	 * Create a conditional middleware that only works when the pattern matches.
-  	 * @param  {Object} sel The selector. Members:
-  	 * ```coffee
-  	 * {
-  	 * 	url: String | Regex | Function
-  	 * 	method: String | Regex | Function
-  	 * 	headers: Object
-  	 * }
-  	 * ```
-  	 * When it's not an object, it will be convert via `sel = { url: sel }`.
-  	 * The `url`, `method` and `headers` are act as selectors. If current
-  	 * request matches the selector, the `middleware` will be called with the
-  	 * captured result. If the selector is a function, it should return a
-  	 * `non-undefined, non-null` value when matches, it will be assigned to the `ctx`.
-  	 * When the `url` is a string, if `req.url` starts with the `url`, the rest
-  	 * of the string will be captured.
-  	 * @param  {Function} middleware
-  	 * @return {Function}
+   * Create a conditional middleware that only works when the pattern matches.
+   * @param  {Object} sel The selector. Members:
+   * ```js
+   * {
+   *  url: String | Regex | Function,
+   *  method: String | Regex | Function,
+   *  headers: Object
+   * }
+   * ```
+   * When it's not an object, it will be convert via `sel = { url: sel }`.
+   * The `url`, `method` and `headers` are act as selectors. If current
+   * request matches the selector, the `middleware` will be called with the
+   * captured result. If the selector is a function, it should return a
+   * `non-undefined, non-null` value when matches, it will be assigned to the `ctx`.
+   * When the `url` is a string, if `req.url` starts with the `url`, the rest
+   * of the string will be captured.
+   * @param  {Function} middleware
+   * @return {Function}
    */
   select: function(sel, middleware) {
     var matchHeaders, matchKey;
@@ -326,41 +326,43 @@ proxy = {
   },
 
   /**
-  	 * Create a http request middleware.
-  	 * @param  {Object} opts Same as the sse.
-  	 * @return {Function} `(req, res, next) ->`.
-  	 * It has some extra properties:
-  	 * ```coffee
-  	 * {
-  	 * 	ssePrefix: '/nokit-sse'
-  	 * 	logPrefix: '/nokit-log'
-  	 * 	sse: kit.sse
-  	 * 	watch: (filePath, reqUrl) ->
-  	 * }
-  	 * ```
-  	 * @example
-  	 * Visit 'http://127.0.0.1:80123', every 3 sec, the page will be reloaded.
-  	 * If the `./static/default.css` is modified, the page will also be reloaded.
-  	 * ```coffee
-  	 * kit = require 'nokit'
-  	 * http = require 'http'
-  	 * proxy = kit.require 'proxy'
-  	 * handler = kit.browserHelper()
-  	 *
-  	 * http.createServer proxy.flow [handler]
-  	 * .listen 8123, ->
-  	 * 	kit.log 'listen ' + 8123
-  	 *
-  	 * 	handler.watch './static/default.css', '/st/default.css'
-  	 *
-  	 * 	setInterval ->
-  	 * 		handler.sse.emit 'fileModified', 'changed-file-path.js'
-  	 * 	, 3000
-  	 * ```
-  	 * You can also use the `nokit.log` on the browser to log to the remote server.
-  	 * ```coffee
-  	 * nokit.log { any: 'thing' }
-  	 * ```
+   * Create a http request middleware.
+   * @param  {Object} opts Same as the sse.
+   * @return {Function} `(req, res, next) ->`.
+   * It has some extra properties:
+   * ```js
+   * {
+   *  ssePrefix: '/nokit-sse',
+   *  logPrefix: '/nokit-log',
+   *  sse: kit.sse,
+   *  watch: (filePath, reqUrl) => {}
+   * }
+   * ```
+   * @example
+   * Visit 'http://127.0.0.1:80123', every 3 sec, the page will be reloaded.
+   * If the `./static/default.css` is modified, the page will also be reloaded.
+   * ```js
+   * let kit = require('nokit');
+   * let http = require('http');
+   * let proxy = kit.require('proxy');
+   * let handler = kit.browserHelper();
+   *
+   * http.createServer(proxy.flow([handler]))
+   * .listen(8123).then(() => {
+   *     kit.log('listen ' + 8123);
+   *
+   *     handler.watch('./static/default.css', '/st/default.css');
+   *
+   *     setInterval(() =>
+   *         handler.sse.emit('fileModified', 'changed-file-path.js')
+   *     ), 3000);
+   * });
+   *
+   * ```
+   * You can also use the `nokit.log` on the browser to log to the remote server.
+   * ```js
+   * nokit.log({ any: 'thing' });
+   * ```
    */
   serverHelper: function(opts) {
     var br, handler, watchList;
@@ -424,18 +426,18 @@ proxy = {
   },
 
   /**
-  	 * Create a static file middleware for `proxy.flow`.
-  	 * @param  {String | Object} opts Same as the [send](https://github.com/pillarjs/send)'s.
-  	 * It has an extra option `{ onFile: (path, stats, ctx) -> }`.
-  	 * @return {Function} The middleware handler of `porxy.flow`.
-  	 * ```coffee
-  	 * proxy = kit.require 'proxy'
-  	 * http = require 'http'
-  	 *
-  	 * middlewares = [proxy.select { url: '/st' }, proxy.static('static')]
-  	 *
-  	 * http.createServer(proxy.flow middlewares).listen 8123
-  	 * ```
+   * Create a static file middleware for `proxy.flow`.
+   * @param  {String | Object} opts Same as the [send](https://github.com/pillarjs/send)'s.
+   * It has an extra option `{ onFile: (path, stats, ctx) -> }`.
+   * @return {Function} The middleware handler of `porxy.flow`.
+   * ```js
+   * let proxy = kit.require('proxy');
+   * let http = require('http');
+   *
+   * let middlewares = [proxy.select({ url: '/st' }, proxy.static('static'))]
+   *
+   * http.createServer(proxy.flow(middlewares)).listen(8123);
+   * ```
    */
   "static": function(opts) {
     var send;
@@ -470,76 +472,77 @@ proxy = {
   },
 
   /**
-  	 * Use it to proxy one url to another.
-  	 * @param {Object | String} opts Other options, if it is a string, it will
-  	 * be converted to `{ url: opts }`. Default:
-  	 * ```coffee
-  	 * {
-  	 * 	# The target url forced to. Optional.
-  	 * 	# Such as proxy 'http://test.com/a' to 'http://test.com/b',
-  	 * 	# proxy 'http://test.com/a' to 'http://other.com/a',
-  	 * 	# proxy 'http://test.com' to 'other.com'.
-  	 * 	# It can also be an url object. Such as
-  	 * 	# `{ protocol: 'http:', host: 'test.com:8123', pathname: '/a/b', query: 's=1' }`.
-  	 * 	url: null
-  	 *
-  	 * 	# Limit the bandwidth byte per second.
-  	 * 	bps: Integer
-  	 *
-  	 * 	# if the bps is the global bps.
-  	 * 	globalBps: false
-  	 *
-  	 * 	agent: customHttpAgent
-  	 *
-  	 * 	# Force the header's host same as the url's.
-  	 * 	isForceHeaderHost: true
-  	 *
-  	 * 	# You can hack the headers before the proxy send it.
-  	 * 	handleReqHeaders: (headers, req) -> headers
-  	 * 	handleResHeaders: (headers, req, proxyRes) -> headers
-  	 *
-  	 * 	# Same option as the `kit.request`'s `handleResPipe`.
-  	 * 	handleResPipe: (res, stream) -> stream
-  	 *
-  	 * 	# Manipulate the response body content of the response here,
-  	 * 	# such as inject script into it. Its return type is same as the `ctx.body`.
-  	 * 	handleResBody: (body, req, proxyRes) -> body
-  	 *
-  	 * 	# It will log some basic error info.
-  	 * 	error: (e, req) ->
-  	 * }
-  	 * ```
-  	 * @return {Function} `(req, res) -> Promise` A middleware.
-  	 * @example
-  	 * ```coffee
-  	 * kit = require 'nokit'
-  	 * proxy = kit.require 'proxy'
-  	 * http = require 'http'
-  	 *
-  	 * http.createServer(proxy.flow [
-  	 * 	# Transparent proxy
-  	 * 	proxy.select { url: '/a' }, proxy.url()
-  	 *
-  	 * 	# Porxy to `a.com`
-  	 * 	proxy.select { url: '/b' }, proxy.url { url: 'a.com' }
-  	 *
-  	 *  # Porxy to a file
-  	 * 	proxy.select { url: '/c' }, proxy.url { url: 'c.com/s.js' }
-  	 *
-  	 * 	proxy.select(
-  	 * 		{ url: /\/$/, method: 'GET' }
-  	 * 		proxy.url {
-  	 * 			url: 'd.com'
-  	 * 			# Inject script to html page.
-  	 * 			handleResBody: (body, req, res) ->
-  	 * 				if res.headers['content-type'].indexOf('text/html') > -1
-  	 * 					body + '<script>alert("test")</script>'
-  	 * 				else
-  	 * 					body
-  	 * 		}
-  	 * 	)
-  	 * ]).listen 8123
-  	 * ```
+   * Use it to proxy one url to another.
+   * @param {Object | String} opts Other options, if it is a string, it will
+   * be converted to `{ url: opts }`. Default:
+   * ```js
+   * {
+   *  // The target url forced to. Optional.
+   *  // Such as proxy 'http://test.com/a' to 'http://test.com/b',
+   *  // proxy 'http://test.com/a' to 'http://other.com/a',
+   *  // proxy 'http://test.com' to 'other.com'.
+   *  // It can also be an url object. Such as
+   *  // `{ protocol: 'http:', host: 'test.com:8123', pathname: '/a/b', query: 's=1' }`.
+   *  url: null,
+   *
+   *  // Limit the bandwidth byte per second.
+   *  bps: Integer,
+   *
+   *  // if the bps is the global bps.
+   *  globalBps: false,
+   *
+   *  agent: customHttpAgent,
+   *
+   *  // Force the header's host same as the url's.
+   *  isForceHeaderHost: true,
+   *
+   *  // You can hack the headers before the proxy send it.
+   *  handleReqHeaders: (headers, req) => headers
+   *  handleResHeaders: (headers, req, proxyRes) => headers,
+   *
+   *  // Same option as the `kit.request`'s `handleResPipe`.
+   *  handleResPipe: (res, stream) => stream,
+   *
+   *  // Manipulate the response body content of the response here,
+   *  // such as inject script into it. Its return type is same as the `ctx.body`.
+   *  handleResBody: (body, req, proxyRes) => body,
+   *
+   *  // It will log some basic error info.
+   *  error: (e, req) => {}
+   * }
+   * ```
+   * @return {Function} `(req, res) => Promise` A middleware.
+   * @example
+   * ```js
+   * let kit = require('nokit');
+   * let proxy = kit.require('proxy');
+   * let http = require('http');
+   *
+   * http.createServer(proxy.flow [
+   *     // Transparent proxy
+   *     proxy.select({ url: '/a' }, proxy.url()),
+   *
+   *     // Porxy to `a.com`
+   *     proxy.select({ url: '/b' }, proxy.url({ url: 'a.com' })),
+   *
+   *     // Porxy to a file
+   *     proxy.select({ url: '/c' }, proxy.url({ url: 'c.com/s.js' })),
+   *
+   *     proxy.select(
+   *         { url: /\/$/, method: 'GET' },
+   *         proxy.url({
+   *             url: 'd.com',
+   *             // Inject script to html page.
+   *             handleResBody: (body, req, res) => {
+   *                 if (res.headers['content-type'].indexOf('text/html') > -1)
+   *                     return body + '<script>alert("test")</script>';
+   *                 else
+   *                     return body;
+   *             }
+   *         })
+   *     )
+   * ]).listen(8123);
+   * ```
    */
   url: function(opts) {
     var br, normalizeStream, normalizeUrl;

@@ -117,11 +117,11 @@ _.extend kit, fs, yutils,
      *     // The first item is the key path, others are
      *     // its dependencies.
      *     deps: Array,
-     *   
+     *
      *     // The path of the output file.
      *     // If it's undefined, depsCache will try to get cache.
      *     dests: Array,
-     *   
+     *
      *     cacheDir: '.nokit'
      * }
      * ```
@@ -135,7 +135,7 @@ _.extend kit, fs, yutils,
      *
      *     // { destPath: cachePath }
      *     dests: Object,
-     *   
+     *
      *     cacheError: undefined || Error
      * }
      * ```
@@ -1059,7 +1059,7 @@ _.extend kit, fs, yutils,
             splitReg: /^\s+\* @/m
             tagNameReg: /^([\w\.]+)\s*/
             typeReg: /^\{(.+?)\}\s*/
-            nameReg: /^\[?(.+?)\]?\s*/
+            nameReg: /^\[?(.+?)\]?\s+/
             nameTags: ['param', 'property']
             descriptionReg: /^([\s\S]*)/
         }

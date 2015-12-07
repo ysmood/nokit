@@ -21,18 +21,19 @@ kit = {};
  *
  * [Offline Documentation](?gotoDoc=nofs/readme.md)
  * @example
- * ```coffee
- * kit.readFile('test.txt', 'utf8').then (str) ->
- * 	console.log str
+ * ```js
+ * kit.readFile('test.txt', 'utf8').then((str) =>
+ *     console.log(str)
+ * );
  *
- * kit.outputFile 'a.txt', 'test'
- * .then -> kit.log 'done'
+ * kit.outputFile('a.txt', 'test')
+ * .then(() => kit.log('done'));
  *
- * kit.writeJSON 'b.json', { a: 10 }
- * .then -> kit.log 'done'
+ * kit.writeJSON('b.json', { a: 10 })
+ * .then(() => kit.log('done'))
  *
- * kit.mkdirs 'b.json', { a: 10 }
- * .then -> kit.log 'done'
+ * kit.mkdirs('b.json', { a: 10 })
+ * .then(() => kit.log('done'));
  * ```
  */
 
@@ -41,39 +42,40 @@ Overview = 'overview';
 _.extend(kit, fs, yutils, {
 
   /**
-  	 * The [lodash](https://lodash.com) lib.
-  	 * @type {Object}
-  	 * @example
-  	 * ```coffee
-  	 * kit._.map [1, 2, 3]
-  	 * ```
+   * The [lodash](https://lodash.com) lib.
+   * @type {Object}
+   * @example
+   * ```js
+   * kit._.map([1, 2, 3]);
+   * ```
    */
   _: _,
   requireCache: {},
 
   /**
-  	 * The browser helper. It helps you to live reload the page and log remotely.
-  	 * @static
-  	 * @param {Object} opts The options of the client, defaults:
-  	 * ```coffee
-  	 * {
-  	 * 	host: '' # The host of the event source.
-  	 * }
-  	 * ```
-  	 * @param {Boolean} useJs By default use html. Default is false.
-  	 * @return {String} The code of client helper.
-  	 * @example
-  	 * When the client code is loaded on the browser, you can use
-  	 * the `nb.log` to log anything to server's terminal.
-  	 * The server will auto-format and log the information to the terminal.
-  	 * It's convinient for mobile development when remote debug is not possible.
-  	 * ```coffee
-  	 * # The nb is assigned to the "window" object.
-  	 * nb.log { a: 10 }
-  	 * nb.log 10
-  	 * nb.es.addEventListener 'fileModified', ->
-  	 * 	console.log 'file changed'
-  	 * ```
+   * The browser helper. It helps you to live reload the page and log remotely.
+   * @static
+   * @param {Object} opts The options of the client, defaults:
+   * ```js
+   * {
+   *  host: '' // The host of the event source.
+   * }
+   * ```
+   * @param {Boolean} useJs By default use html. Default is false.
+   * @return {String} The code of client helper.
+   * @example
+   * When the client code is loaded on the browser, you can use
+   * the `nb.log` to log anything to server's terminal.
+   * The server will auto-format and log the information to the terminal.
+   * It's convinient for mobile development when remote debug is not possible.
+   * ```js
+   * // The nb is assigned to the "window" object.
+   * nb.log({ a: 10 });
+   * nb.log(10);
+   * nb.es.addEventListener('fileModified', () =>
+   *  console.log('file changed')
+   * );
+   * ```
    */
   browserHelper: function(opts, useJs) {
     var helper, js, optsStr;
@@ -96,68 +98,70 @@ _.extend(kit, fs, yutils, {
   },
 
   /**
-  	 * Generate styled string for terminal.
-  	 * It's disabled when `process.env.NODE_ENV == 'production'`.
-  	 * @example
-  	 * ```coffee
-  	 * br = kit.require 'brush'
-  	 * kit.log br.red 'error info'
-  	 *
-  	 * # Disable color globally.
-  	 * br.isEnabled = false
-  	 *
-  	 * # To see all the available brushes.
-  	 * kit.log Object.keys(br)
-  	 * ```
+   * Generate styled string for terminal.
+   * It's disabled when `process.env.NODE_ENV == 'production'`.
+   * @example
+   * ```js
+   * let br = kit.require('brush');
+   * kit.log(br.red('error info'));
+   *
+   * // Disable color globally.
+   * br.isEnabled = false;
+   *
+   * // To see all the available brushes.
+   * kit.log(Object.keys(br));
+   * ```
    */
   brush: null,
 
   /**
-  	 * A fast file cache helper. It uses hard link to cache files.
-  	 * @param  {Object} info Not optional.
-  	 * ```coffee
-  	 * {
-  	 * 	# The first item is the key path, others are
-  	 * 	# its dependencies.
-  	 * 	deps: Array
-  	 *
-  	 * 	# The path of the output file.
-  	 * 	# If it's undefined, depsCache will try to get cache.
-  	 * 	dests: Array
-  	 *
-  	 * 	cacheDir: '.nokit'
-  	 * }
-  	 * ```
-  	 * @return {Promise} Resolve a info object.
-  	 * ```coffee
-  	 * {
-  	 * 	isNewer: Boolean
-  	 *
-  	 * 	# { path: mtime }
-  	 * 	deps: Object
-  	 *
-  	 * 	# { destPath: cachePath }
-  	 * 	dests: Object
-  	 *
-  	 * 	cacheError: undefined | Error
-  	 * }
-  	 * ```
-  	 * @example
-  	 * ```coffee
-  	 * # Set cache
-  	 * kit.depsCache {
-  	 * 	dests: ['index.css']
-  	 * 	deps: ['index.less', 'b.less', 'c.less']
-  	 * }
-  	 *
-  	 * # Get cache
-  	 * # You don't have to sepecify 'b.less', 'c.less'.
-  	 * kit.depsCache { deps: ['index.less'] }
-  	 * .then (cache) ->
-  	 * 	if cache.isNewer
-  	 * 		kit.log 'cache is newer'.
-  	 * 		kit.log cache.dests
-  	 * ```
+   * A fast file cache helper. It uses hard link to cache files.
+   * @param  {Object} info Not optional.
+   * ```js
+   * {
+   *     // The first item is the key path, others are
+   *     // its dependencies.
+   *     deps: Array,
+   *
+   *     // The path of the output file.
+   *     // If it's undefined, depsCache will try to get cache.
+   *     dests: Array,
+   *
+   *     cacheDir: '.nokit'
+   * }
+   * ```
+   * @return {Promise} Resolve a info object.
+   * ```js
+   * {
+   *     isNewer: Boolean,
+   *
+   *     // { path: mtime }
+   *     deps: Object,
+   *
+   *     // { destPath: cachePath }
+   *     dests: Object,
+   *
+   *     cacheError: undefined || Error
+   * }
+   * ```
+   * @example
+   * ```js
+   * // Set cache
+   * kit.depsCache({
+   *  dests: ['index.css'],
+   *  deps: ['index.less', 'b.less', 'c.less']
+   * });
+   *
+   * // Get cache
+   * // You don't have to sepecify 'b.less', 'c.less'.
+   * kit.depsCache({ deps: ['index.less'] })
+   * .then((cache) => {
+   *     if (cache.isNewer) {
+   *         kit.log('cache is newer');
+   *         kit.log(cache.dests);
+   *     }
+   * });
+   * ```
    */
   depsCache: function(opts) {
     var base, hashPath, info, key, saveContents, saveInfo, saveLink;
@@ -243,17 +247,17 @@ _.extend(kit, fs, yutils, {
   },
 
   /**
-  	 * Daemonize a program. Just a shortcut usage of `kit.spawn`.
-  	 * @param  {Object} opts Defaults:
-  	 * ```coffee
-  	 * {
-  	 * 	bin: 'node'
-  	 * 	args: ['app.js']
-  	 * 	stdout: 'stdout.log' # Can also be a fd
-  	 * 	stderr: 'stderr.log' # Can also be a fd
-  	 * }
-  	 * ```
-  	 * @return {Porcess} The daemonized process.
+   * Daemonize a program. Just a shortcut usage of `kit.spawn`.
+   * @param  {Object} opts Defaults:
+   * ```js
+   * {
+   *  bin: 'node',
+   *  args: ['app.js'],
+   *  stdout: 'stdout.log', // Can also be a fd
+   *  stderr: 'stderr.log'  // Can also be a fd
+   * }
+   * ```
+   * @return {Porcess} The daemonized process.
    */
   daemonize: function(opts) {
     var errLog, outLog, p;
@@ -281,11 +285,11 @@ _.extend(kit, fs, yutils, {
   },
 
   /**
-  	 * A simple decrypt helper. Cross-version of node.
-  	 * @param  {Any} data
-  	 * @param  {String | Buffer} password
-  	 * @param  {String} algorithm Default is 'aes128'.
-  	 * @return {Buffer}
+   * A simple decrypt helper. Cross-version of node.
+   * @param  {Any} data
+   * @param  {String | Buffer} password
+   * @param  {String} algorithm Default is 'aes128'.
+   * @return {Buffer}
    */
   decrypt: function(data, password, algorithm) {
     var crypto, decipher;
@@ -308,19 +312,19 @@ _.extend(kit, fs, yutils, {
   },
 
   /**
-  	 * The warp drives.
-  	 * You must `kit.require 'drives'` before using it.
-  	 * For more information goto the `Drives` section.
-  	 * @type {Object}
+   * The warp drives.
+   * You must `kit.require 'drives'` before using it.
+   * For more information goto the `Drives` section.
+   * @type {Object}
    */
   drives: null,
 
   /**
-  	 * A simple encrypt helper. Cross-version of node.
-  	 * @param  {Any} data
-  	 * @param  {String | Buffer} password
-  	 * @param  {String} algorithm Default is 'aes128'.
-  	 * @return {Buffer}
+   * A simple encrypt helper. Cross-version of node.
+   * @param  {Any} data
+   * @param  {String | Buffer} password
+   * @param  {String} algorithm Default is 'aes128'.
+   * @return {Buffer}
    */
   encrypt: function(data, password, algorithm) {
     var cipher, crypto;
@@ -343,9 +347,9 @@ _.extend(kit, fs, yutils, {
   },
 
   /**
-  	 * A error log shortcut for `kit.log(msg, 'error', opts)`
-  	 * @param  {Any} msg
-  	 * @param  {Object} opts
+   * A error log shortcut for `kit.log(msg, 'error', opts)`
+   * @param  {Any} msg
+   * @param  {Object} opts
    */
   err: function(msg, opts) {
     if (opts == null) {
@@ -355,39 +359,41 @@ _.extend(kit, fs, yutils, {
   },
 
   /**
-  	 * A better `child_process.exec`. Supports multi-line shell script.
-  	 * For supporting old version of node, it will create 3 temp files,
-  	 * the temp files will be removed after the execution.
-  	 * @param  {String} cmd   Shell commands.
-  	 * @param  {String} shell Shell name. Such as `bash`, `zsh`. Optinal.
-  	 * @return {Promise} Resolves when the process's stdio is drained.
-  	 * The resolve value is like:
-  	 * ```coffee
-  	 * {
-  	 * 	code: 0
-  	 * 	signal: null
-  	 * 	stdout: 'hello world'
-  	 * 	stderr: ''
-  	 * }
-  	 * ```
-  	 * @example
-  	 * ```coffee
-  	 * kit.exec("""
-  	 * 	a='hello world'
-  	 *  echo $a
-  	 * """).then ({code, stdout}) ->
-  	 * 	kit.log code # output => 0
-  	 * 	kit.log stdout # output => "hello world"
-  	 *
-  	 * # Bash doesn't support "**" recusive match pattern.
-  	 * p = kit.exec """
-  	 * 	echo **\/*.css
-  	 * """, 'zsh'
-  	 *
-  	 * # Get the child process object.
-  	 * p.process.then (proc) ->
-  	 * 	kit.log proc.pid
-  	 * ```
+   * A better `child_process.exec`. Supports multi-line shell script.
+   * For supporting old version of node, it will create 3 temp files,
+   * the temp files will be removed after the execution.
+   * @param  {String} cmd   Shell commands.
+   * @param  {String} shell Shell name. Such as `bash`, `zsh`. Optinal.
+   * @return {Promise} Resolves when the process's stdio is drained.
+   * The resolve value is like:
+   * ```js
+   * {
+   *     code: 0,
+   *     signal: null,
+   *     stdout: 'hello world',
+   *     stderr: ''
+   * }
+   * ```
+   * @example
+   * ```js
+   * kit.exec(`
+   *     a='hello world'
+   *     echo $a
+   * `).then(({code, stdout}) => {
+   *     kit.log code # output => 0
+   *     kit.log stdout # output => "hello world"
+   * });
+   *
+   * // Bash doesn't support "**" recusive match pattern.
+   * let p = kit.exec(`
+   *  echo **\/*.css
+   * `, 'zsh');
+   *
+   * // Get the child process object.
+   * p.process.then((proc) =>
+   *  kit.log(proc.pid)
+   * );
+   * ```
    */
   exec: function(cmd, shell) {
     var clean, fileHandlers, os, paths, proc, processPromise, promise, randName, stderrPath, stdinPath, stdoutPath;
@@ -444,22 +450,17 @@ _.extend(kit, fs, yutils, {
   },
 
   /**
-  	 * Format the parsed comments array to a markdown string.
-  	 * @param  {Array}  comments
-  	 * @param  {Object} opts Defaults:
-  	 * ```coffee
-  	 * {
-  	 * 	indent: 0
-  	 * 	name: ({ name }) ->
-  	 * 		name = name.replace 'self.', ''
-  	 * 		"- \#\#\#\# #{name}\n\n"
-  	 * 	tag: ({ tagName, name, type }) ->
-  	 * 		tname = if name then " `#{name}`" else ''
-  	 * 		ttype = if type then " { _#{type}_ }" else ''
-  	 * 		"- **<u>#{tagName}</u>**:#{tname}#{ttype}"
-  	 * }
-  	 * ```
-  	 * @return {String}
+   * Format the parsed comments array to a markdown string.
+   * @param  {Array}  comments
+   * @param  {Object} opts Defaults:
+   * ```js
+   * {
+   *     indent: 0,
+   *     name: ({ name }) => String,
+   *     tag: ({ tagName, name, type }) => String
+   * }
+   * ```
+   * @return {String}
    */
   formatComment: function(comments, opts) {
     var all, cmt, cmtStr, j, l, len, len1, paramList, ref, tag;
@@ -522,50 +523,50 @@ _.extend(kit, fs, yutils, {
   },
 
   /**
-  	 * See my project [nofs](https://github.com/ysmood/nofs).
-  	 *
-  	 * [Offline Documentation](?gotoDoc=nofs/readme.md)
+   * See my project [nofs](https://github.com/ysmood/nofs).
+   *
+   * [Offline Documentation](?gotoDoc=nofs/readme.md)
    */
   fs: fs,
 
   /**
-  	 * Fuzzy search a string list by a key word.
-  	 * @param {String} keys The key word.
-  	 * @param {Array} list The list of string to search.
-  	 * @param {Object} opts Defaults:
-  	 * ```coffee
-  	 * {
-  	 * 	result: (wrappedList) ->
-  	 * 		wrappedList.min('distance').words
-  	 * 	threshold: (cOffset, keyLen, cIndex) ->
-  	 * 		Infinity
-  	 * 	notFound: (cOffset, keyLen, cIndex) ->
-  	 * 		Infinity
-  	 * 	span: (cOffset, keyLen, cIndex) ->
-  	 * 		cOffset
-  	 * 	found: (cOffset, keyLen, cIndex) ->
-  	 * 		(Math.exp(cOffset + 1) - 1) * (keyLen - cIndex)
-  	 * 	tail: (cOffset, keyLen, cIndex, tailLen) ->
-  	 * 		tailLen
-  	 * }
-  	 * ```
-  	 * @return {String} The best matched one. If not found,
-  	 * return undefined.
-  	 * @example
-  	 * ```coffee
-  	 * kit.fuzzySearch 'hw', ['test', 'hello world', 'hey world']
-  	 * # output => 'hey world'
-  	 *
-  	 * # To get a sortable weighted list.
-  	 * kit.fuzzySearch 'hw', ['test', 'hello world', 'hey world'], {
-  	 * 	result: (wrappedList) -> wrappedList.value()
-  	 * }
-  	 * # output => [
-  	 * #  { distance: Infinity }
-  	 * #  { words: 'hello world', distance: 1110.069 }
-  	 * #  { words: 'hey world', distance: 159.849 }
-  	 * # ]
-  	 * ```
+   * Fuzzy search a string list by a key word.
+   * @param {String} keys The key word.
+   * @param {Array} list The list of string to search.
+   * @param {Object} opts Defaults:
+   * ```js
+   * {
+   *     result: (wrappedList) =>
+   *         wrappedList.min('distance').words,
+   *     threshold: (cOffset, keyLen, cIndex) =>
+   *         Infinity,
+   *     notFound: (cOffset, keyLen, cIndex) =>
+   *         Infinity,
+   *     span: (cOffset, keyLen, cIndex) =>
+   *         cOffset,
+   *     found: (cOffset, keyLen, cIndex) =>
+   *         (Math.exp(cOffset + 1) - 1) * (keyLen - cIndex),
+   *     tail: (cOffset, keyLen, cIndex, tailLen) =>
+   *         tailLen
+   * }
+   * ```
+   * @return {String} The best matched one. If not found,
+   * return undefined.
+   * @example
+   * ```js
+   * kit.fuzzySearch('hw', ['test', 'hello world', 'hey world'])
+   * // output => 'hey world'
+   *
+   * // To get a sortable weighted list.
+   * kit.fuzzySearch('hw', ['test', 'hello world', 'hey world'], {
+   *  result: (wrappedList) => wrappedList.value()
+   * });
+   * // output => [
+   * //  { distance: Infinity }
+   * //  { words: 'hello world', distance: 1110.069 }
+   * //  { words: 'hey world', distance: 159.849 }
+   * // ]
+   * ```
    */
   fuzzySearch: function(key, list, opts) {
     var wrappedList;
@@ -622,17 +623,17 @@ _.extend(kit, fs, yutils, {
   },
 
   /**
-  	 * Generate a list of module paths from a name and a directory.
-  	 * @param  {String} moduleName The module name.
-  	 * @param  {String} dir        The root path. Default is current working dir.
-  	 * @param  {String} modDir     Default is 'node_modules'.
-  	 * @return {Array} Paths
-  	 * @example
-  	 * ```coffee
-  	 * # Suppose current working directory is '/home/a'
-  	 * kit.genModulePaths 'test'
-  	 * # output => ['/home/a/node_modules/test', '/home/node_modules/test', '/node_modules/test']
-  	 * ```
+   * Generate a list of module paths from a name and a directory.
+   * @param  {String} moduleName The module name.
+   * @param  {String} dir        The root path. Default is current working dir.
+   * @param  {String} modDir     Default is 'node_modules'.
+   * @return {Array} Paths
+   * @example
+   * ```js
+   * // Suppose current working directory is '/home/a'
+   * kit.genModulePaths('test')
+   * // output => ['/home/a/node_modules/test', '/home/node_modules/test', '/node_modules/test']
+   * ```
    */
   genModulePaths: function(moduleName, dir, modDir) {
     var names, pDir;
@@ -656,22 +657,22 @@ _.extend(kit, fs, yutils, {
   },
 
   /**
-  	 * Indent a text block.
-  	 * @param {String} text
-  	 * @param {Int} num
-  	 * @param {String} char
-  	 * @param {RegExp} reg Default is `/^/mg`.
-  	 * @return {String} The indented text block.
-  	 * @example
-  	 * ```coffee
-  	 * # Increase
-  	 * kit.indent "one\ntwo", 2
-  	 * # => "  one\n  two"
-  	 *
-  	 * # Decrease
-  	 * kit.indent "--one\n--two", 0, '', /^--/mg
-  	 * # => "one\ntwo"
-  	 * ```
+   * Indent a text block.
+   * @param {String} text
+   * @param {Int} num
+   * @param {String} char
+   * @param {RegExp} reg Default is `/^/mg`.
+   * @return {String} The indented text block.
+   * @example
+   * ```js
+   * // Increase
+   * kit.indent("one\ntwo", 2)
+   * // => "  one\n  two"
+   *
+   * // Decrease
+   * kit.indent("--one\n--two", 0, '', /^--/mg)
+   * // => "one\ntwo"
+   * ```
    */
   indent: function(text, num, char, reg) {
     var prefix;
@@ -689,85 +690,85 @@ _.extend(kit, fs, yutils, {
   },
 
   /**
-  	 * Nokit use it to check the running mode of the app.
-  	 * Overwrite it if you want to control the check logic.
-  	 * By default it returns the `rocess.env.NODE_ENV == 'development'`.
-  	 * @return {Boolean}
+   * Nokit use it to check the running mode of the app.
+   * Overwrite it if you want to control the check logic.
+   * By default it returns the `rocess.env.NODE_ENV == 'development'`.
+   * @return {Boolean}
    */
   isDevelopment: function() {
     return process.env.NODE_ENV === 'development';
   },
 
   /**
-  	 * Nokit use it to check the running mode of the app.
-  	 * Overwrite it if you want to control the check logic.
-  	 * By default it returns the `rocess.env.NODE_ENV == 'production'`.
-  	 * @return {Boolean}
+   * Nokit use it to check the running mode of the app.
+   * Overwrite it if you want to control the check logic.
+   * By default it returns the `rocess.env.NODE_ENV == 'production'`.
+   * @return {Boolean}
    */
   isProduction: function() {
     return process.env.NODE_ENV === 'production';
   },
 
   /**
-  	 * A fast helper to hash string or binary file.
-  	 * See my [jhash](https://github.com/ysmood/jhash) project.
-  	 * You must `kit.require 'jhash'` before using it.
-  	 *
-  	 * [Offline Documentation](?gotoDoc=jhash/readme.md)
-  	 * @example
-  	 * ```coffee
-  	 * kit.require 'jhash'
-  	 * kit.jhash.hash 'test' # output => '349o'
-  	 *
-  	 * jhash.hash kit.readFileSync('a.jpg')
-  	 *
-  	 * # Control the hash char set.
-  	 * kit.jhash.setSymbols 'abcdef'
-  	 * kit.jhash.hash 'test' # output => 'decfddfe'
-  	 *
-  	 * # Control the max length of the result hash value. Unit is bit.
-  	 * jhash.setMaskLen 10
-  	 * jhash.hash 'test' # output => 'ede'
-  	 * ```
+   * A fast helper to hash string or binary file.
+   * See my [jhash](https://github.com/ysmood/jhash) project.
+   * You must `kit.require 'jhash'` before using it.
+   *
+   * [Offline Documentation](?gotoDoc=jhash/readme.md)
+   * @example
+   * ```js
+   * kit.require('jhash');
+   * kit.jhash.hash('test'); // output => '349o'
+   *
+   * jhash.hash(kit.readFileSync('a.jpg'));
+   *
+   * // Control the hash char set.
+   * kit.jhash.setSymbols('abcdef');
+   * kit.jhash.hash('test'); // output => 'decfddfe'
+   *
+   * // Control the max length of the result hash value. Unit is bit.
+   * jhash.setMaskLen(10);
+   * jhash.hash('test'); // output => 'ede'
+   * ```
    */
   jhash: null,
 
   /**
-  	 * A better log for debugging, it uses the `kit.xinspect` to log.
-  	 *
-  	 * Use terminal command like `logReg='pattern' node app.js` to
-  	 * filter the log info.
-  	 *
-  	 * Use `logTrace='on' node app.js` to force each log end with a
-  	 * stack trace.
-  	 * @param  {Any} msg Your log message.
-  	 * @param  {String} action 'log', 'error', 'warn'.
-  	 * @param  {Object} opts Default is same with `kit.xinspect`,
-  	 * but with some extra options:
-  	 * ```coffee
-  	 * {
-  	 * 	isShowTime: true
-  	 * 	logReg: process.env.logReg and new RegExp process.env.logReg
-  	 * 	logTrace: process.env.logTrace == 'on'
-  	 *
-  	 * 	# Custom log method
-  	 * 	log: (str, action) -> console[action] str
-  	 * }
-  	 * ```
-  	 * @example
-  	 * ```coffee
-  	 * kit.log 'test'
-  	 * # => '[2015-02-07 08:31:49] test'
-  	 *
-  	 * kit.log 'test', { isShowTime: false }
-  	 * # => 'test'
-  	 *
-  	 * kit.log 'test', { logReg: /a/ }
-  	 * # => ''
-  	 *
-  	 * kit.log '%s %s %d', ['a', 'b', 10]
-  	 * # => '[2015-02-07 08:31:49] a b 10'
-  	 * ```
+   * A better log for debugging, it uses the `kit.xinspect` to log.
+   *
+   * Use terminal command like `logReg='pattern' node app.js` to
+   * filter the log info.
+   *
+   * Use `logTrace='on' node app.js` to force each log end with a
+   * stack trace.
+   * @param  {Any} msg Your log message.
+   * @param  {String} action 'log', 'error', 'warn'.
+   * @param  {Object} opts Default is same with `kit.xinspect`,
+   * but with some extra options:
+   * ```js
+   * {
+   *  isShowTime: true,
+   *  logReg: process.env.logReg && new RegExp(process.env.logReg),
+   *  logTrace: process.env.logTrace === 'on',
+   *
+   *  # Custom log method
+   *  log: (str, action) => console[action](str)
+   * }
+   * ```
+   * @example
+   * ```js
+   * kit.log('test');
+   * // => '[2015-02-07 08:31:49] test'
+   *
+   * kit.log('test', { isShowTime: false });
+   * // => 'test'
+   *
+   * kit.log('test', { logReg: /a/ });
+   * // => ''
+   *
+   * kit.log('%s %s %d', ['a', 'b', 10]);
+   * // => '[2015-02-07 08:31:49] a b 10'
+   * ```
    */
   log: function() {
     var action, args, br, formats, log, msg, opts, ref, time, timeDelta, util;
@@ -855,13 +856,13 @@ _.extend(kit, fs, yutils, {
   },
 
   /**
-  	 * Shortcut for logging multiple strings.
-  	 * @param  {Any} args...
-  	 * @example
-  	 * ```coffee
-  	 * kit.log 'test1', 'test2', test3'
-  	 * # => [2015-02-07 08:31:49] test1 test2 test3
-  	 * ```
+   * Shortcut for logging multiple strings.
+   * @param  {Any} args...
+   * @example
+   * ```js
+   * kit.log('test1', 'test2', test3');
+   * // => [2015-02-07 08:31:49] test1 test2 test3
+   * ```
    */
   logs: function() {
     var arg, args, i, j, last, len, out;
@@ -881,68 +882,68 @@ _.extend(kit, fs, yutils, {
   },
 
   /**
-  	 * Monitor an application and automatically restart it when file changed.
-  	 * Even when the monitored app exit with error, the monitor will still wait
-  	 * for your file change to restart the application. Not only nodejs, but also
-  	 * other programs like ruby or python.
-  	 * It will print useful infomation when it application unexceptedly.
-  	 * @param  {Object} opts Defaults:
-  	 * ```coffee
-  	 * {
-  	 * 	bin: 'node'
-  	 * 	args: ['index.js']
-  	 * 	watchList: [] # By default, the same with the "args".
-  	 * 	isNodeDeps: true
-  	 * 	opts: {} # Same as the opts of 'kit.spawn'.
-  	 *
-  	 * 	# The option of `kit.parseDependency`
-  	 * 	parseDependency: {}
-  	 *
-  	 * 	# A hook for restarting the program, run the function "start" to
-  	 * 	# restart.
-  	 * 	retry: (start) ->
-  	 *
-  	 * 	onStart: ->
-  	 * 		kit.log "Monitor: " + opts.watchList
-  	 * 	onRestart: (path) ->
-  	 * 		kit.log "Reload app, modified: " + path
-  	 * 	onWatchFiles: (paths) ->
-  	 * 		kit.log 'Watching:' + paths.join(', ')
-  	 * 	onNormalExit: ({ code, signal }) ->
-  	 * 		kit.log 'EXIT' +
-  	 * 			" code: #{code} signal: #{signal}"
-  	 * 	onErrorExit: ({ code, signal }) ->
-  	 * 		kit.err 'EXIT' +
-  	 * 		" code: #{code} signal: #{signal}\n" +
-  	 * 		'Process closed. Edit and save
-  	 * 			the watched file to restart.'
-  	 * 	sepLine: ->
-  	 * 		process.stdout.write _.repeat('*', process.stdout.columns)
-  	 * }
-  	 * ```
-  	 * @return {Object} Properties:
-  	 * ```coffee
-  	 * {
-  	 * 	# Call it to stop monitor.
-  	 * 	stop: ->
-  	 *
-  	 * 	# Resolve a list of watch handlers.
-  	 * 	watchPromise: Promise
-  	 * }
-  	 * ```
-  	 * @example
-  	 * ```coffee
-  	 * kit.monitorApp {
-  	 * 	bin: 'coffee'
-  	 * 	args: ['main.coffee']
-  	 * }
-  	 *
-  	 * kit.monitorApp {
-  	 * 	bin: 'ruby'
-  	 * 	args: ['app.rb', 'lib\/**\/*.rb']
-  	 * 	isNodeDeps: false
-  	 * }
-  	 * ```
+   * Monitor an application and automatically restart it when file changed.
+   * Even when the monitored app exit with error, the monitor will still wait
+   * for your file change to restart the application. Not only nodejs, but also
+   * other programs like ruby or python.
+   * It will print useful infomation when it application unexceptedly.
+   * @param  {Object} opts Defaults:
+   * ```js
+   * {
+   *  bin: 'node',
+   *  args: ['index.js'],
+   *  watchList: [], // By default, the same with the "args".
+   *  isNodeDeps: true,
+   *  opts: {}, // Same as the opts of 'kit.spawn'.
+   *
+   *  // The option of `kit.parseDependency`
+   *  parseDependency: {},
+   *
+   *  // A hook for restarting the program, run the function "start" to
+   *  // restart.
+   *  retry: (start) => {},
+   *
+   *  onStart: =>
+   *      kit.log("Monitor: " + opts.watchList),
+   *  onRestart: (path) =>
+   *      kit.log("Reload app, modified: " + path),
+   *  onWatchFiles: (paths) =>
+   *      kit.log('Watching:' + paths.join(', ')),
+   *  onNormalExit: ({ code, signal }) =>
+   *      kit.log('EXIT' +
+   *          " code: #{code} signal: #{signal}"),
+   *  onErrorExit: ({ code, signal }) =>
+   *      kit.err('EXIT' +
+   *      " code: #{code} signal: #{signal}\n" +
+   *      'Process closed. Edit and save
+   *          the watched file to restart.'),
+   *  sepLine: =>
+   *      process.stdout.write(_.repeat('*', process.stdout.columns))
+   * }
+   * ```
+   * @return {Object} Properties:
+   * ```js
+   * {
+   *  // Call it to stop monitor.
+   *  stop: => {},
+   *
+   *  // Resolve a list of watch handlers.
+   *  watchPromise: Promise
+   * }
+   * ```
+   * @example
+   * ```js
+   * kit.monitorApp({
+   *  bin: 'coffee',
+   *  args: ['main.coffee']
+   * });
+   *
+   * kit.monitorApp({
+   *  bin: 'ruby'
+   *  args: ['app.rb', 'lib\/**\/*.rb']
+   *  isNodeDeps: false
+   * });
+   * ```
    */
   monitorApp: function(opts) {
     var br, childPromise, child_process, start, stop, watch, watchPromise, watchedList, watcher;
@@ -1069,8 +1070,8 @@ _.extend(kit, fs, yutils, {
   },
 
   /**
-  	 * Node version. Such as `v0.10.23` is `0.1023`, `v0.10.1` is `0.1001`.
-  	 * @return {Float}
+   * Node version. Such as `v0.10.23` is `0.1023`, `v0.10.1` is `0.1001`.
+   * @return {Float}
    */
   nodeVersion: function() {
     var ms, str;
@@ -1083,28 +1084,29 @@ _.extend(kit, fs, yutils, {
   },
 
   /**
-  	 * A helper for arguments type based function override.
-  	 * @param  {Array | Object} args The arguments to set.
-  	 * @param  {Object} defaults The default argument settings.
-  	 * The key value of the setting is the argument name, the value
-  	 * is an object, and the key is the type of the argument, the
-  	 * value is the default value of the argument.
-  	 * @return {Object}
-  	 * @example
-  	 * ```coffee
-  	 * foo = ->
-  	 * 	args = kit.defaultArgs arguments, {
-  	 * 		name: { String: 'A' }
-  	 * 		brush: { Array: [] }
-  	 * 		family: { String: null }
-  	 * 		isReal: { Boolean: false }
-  	 * 		fn: { Function: -> 'callback' }
-  	 * 	}
-  	 *
-  	 * kit.log foo('test', false, ['red'], -> 'nothing')
-  	 * # Here the logged value will deeply equal:
-  	 * { name: 'test', brush: ['red'], family: null, fn: -> 'nothing' }
-  	 * ```
+   * A helper for arguments type based function override.
+   * @param  {Array | Object} args The arguments to set.
+   * @param  {Object} defaults The default argument settings.
+   * The key value of the setting is the argument name, the value
+   * is an object, and the key is the type of the argument, the
+   * value is the default value of the argument.
+   * @return {Object}
+   * @example
+   * ```js
+   * let foo = () => {
+   *     kit.defaultArgs(arguments, {
+   *         name: { String: 'A' },
+   *         brush: { Array: [] },
+   *         family: { String: null },
+   *         isReal: { Boolean: false },
+   *         fn: { Function: => 'callback' }
+   *     });
+   * };
+   *
+   * kit.log(foo('test', false, ['red'], -> 'nothing'));
+   * // Here the logged value will deeply equal:
+   * { name: 'test', brush: ['red'], family: null, fn: => 'nothing' }
+   * ```
    */
   defaultArgs: function(args, defaults) {
     var name, ref, ret, set, type, v, val;
@@ -1121,39 +1123,39 @@ _.extend(kit, fs, yutils, {
   },
 
   /**
-  	 * A comments parser for javascript and coffee-script.
-  	 * Used to generate documentation from source code automatically.
-  	 * It will traverse through all the comments of a coffee file.
-  	 * @param  {String} code Coffee source code.
-  	 * @param  {Object} opts Parser options:
-  	 * ```coffee
-  	 * {
-  	 * 	commentReg: RegExp
-  	 * 	splitReg: RegExp
-  	 * 	tagNameReg: RegExp
-  	 * 	typeReg: RegExp
-  	 * 	nameReg: RegExp
-  	 * 	nameTags: ['param', 'property']
-  	 * 	descriptionReg: RegExp
-  	 * }
-  	 * ```
-  	 * @return {Array} The parsed comments. Each item is something like:
-  	 * ```coffee
-  	 * {
-  	 * 	name: 'parseComment'
-  	 * 	description: 'A comments parser for coffee-script.'
-  	 * 	tags: [
-  	 * 		{
-  	 * 			tagName: 'param'
-  	 * 			type: 'string'
-  	 * 			name: 'code'
-  	 * 			description: 'The name of the module it belongs to.'
-  	 * 			index: 256 # The target char index in the file.
-  	 * 			line: 32 # The line number of the target in the file.
-  	 * 		}
-  	 * 	]
-  	 * }
-  	 * ```
+   * A comments parser for javascript and coffee-script.
+   * Used to generate documentation from source code automatically.
+   * It will traverse through all the comments of a coffee file.
+   * @param  {String} code Coffee source code.
+   * @param  {Object} opts Parser options:
+   * ```js
+   * {
+   *     commentReg: RegExp,
+   *     splitReg: RegExp,
+   *     tagNameReg: RegExp,
+   *     typeReg: RegExp,
+   *     nameReg: RegExp,
+   *     nameTags: ['param', 'property'],
+   *     descriptionReg: RegExp
+   * }
+   * ```
+   * @return {Array} The parsed comments. Each item is something like:
+   * ```js
+   * {
+   *     name: 'parseComment',
+   *     description: 'A comments parser for coffee-script.',
+   *     tags: [
+   *         {
+   *             tagName: 'param',
+   *             type: 'string',
+   *             name: 'code',
+   *             description: 'The name of the module it belongs to.',
+   *             index: 256, // The target char index in the file.
+   *             line: 32 // The line number of the target in the file.
+   *         }
+   *     ]
+   * }
+   * ```
    */
   parseComment: function(code, opts) {
     var comments, info, m, parseInfo;
@@ -1165,7 +1167,7 @@ _.extend(kit, fs, yutils, {
       splitReg: /^\s+\* @/m,
       tagNameReg: /^([\w\.]+)\s*/,
       typeReg: /^\{(.+?)\}\s*/,
-      nameReg: /^(\w+)\s*/,
+      nameReg: /^\[?(.+?)\]?\s+/,
       nameTags: ['param', 'property'],
       descriptionReg: /^([\s\S]*)/
     });
@@ -1226,35 +1228,37 @@ _.extend(kit, fs, yutils, {
   },
 
   /**
-  	 * Parse dependency tree by regex. The dependency relationships
-  	 * is not a tree, but a graph. To avoid dependency cycle, this
-  	 * function only return an linear array of the dependencies,
-  	 * from which you won't get the detail relationshops between files.
-  	 * @param  {String | Array} entryPaths The file to begin with.
-  	 * @param  {Object} opts Defaults:
-  	 * ```coffee
-  	 * {
-  	 * 	depReg: /require\s*\(?['"](.+)['"]\)?/gm
-  	 * 	depRoots: ['']
-  	 * 	extensions: ['.js', '.coffee', 'index.js', 'index.coffee']
-  	 *
-  	 * 	# It will handle all the matched paths.
-  	 * 	# Return false value if you don't want this match.
-  	 * 	handle: (path) ->
-  	 * 		path.replace(/^[\s'"]+/, '').replace(/[\s'";]+$/, '')
-  	 * }
-  	 * ```
-  	 * @return {Promise} It resolves the dependency path array.
-  	 * @example
-  	 * ```coffee
-  	 * kit.parseDependency 'main.', {
-  	 * 	depReg: /require\s*\(?['"](.+)['"]\)?/gm
-  	 * 	handle: (path) ->
-  	 * 		return path if path.match /^(?:\.|\/|[a-z]:)/i
-  	 * }
-  	 * .then (markdownStr) ->
-  	 * 	kit.log markdownStr
-  	 * ```
+   * Parse dependency tree by regex. The dependency relationships
+   * is not a tree, but a graph. To avoid dependency cycle, this
+   * function only return an linear array of the dependencies,
+   * from which you won't get the detail relationshops between files.
+   * @param  {String | Array} entryPaths The file to begin with.
+   * @param  {Object} opts Defaults:
+   * ```js
+   * {
+   *  depReg: /require\s*\(?['"](.+)['"]\)?/gm,
+   *  depRoots: [''],
+   *  extensions: ['.js', '.coffee', 'index.js', 'index.coffee'],
+   *
+   *  // It will handle all the matched paths.
+   *  // Return false value if you don't want this match.
+   *  handle: (path) =>
+   *      path.replace(/^[\s'"]+/, '').replace(/[\s'";]+$/, '')
+   * }
+   * ```
+   * @return {Promise} It resolves the dependency path array.
+   * @example
+   * ```js
+   * kit.parseDependency('main.', {
+   *  depReg: /require\s*\(?['"](.+)['"]\)?/gm,
+   *  handle: (path) => {
+   *      if (path.match(/^(?:\.|\/|[a-z]:)/i)) return path;
+   *  }
+   * })
+   * .then((markdownStr) =>
+   *  kit.log(markdownStr)
+   * );
+   * ```
    */
   parseDependency: function(entryPaths, opts, depPaths) {
     var winSep;
@@ -1332,41 +1336,41 @@ _.extend(kit, fs, yutils, {
   },
 
   /**
-  	 * io.js native module `path`. See `nofs` for more information.
+   * io.js native module `path`. See `nofs` for more information.
    */
   path: fs.path,
 
   /**
-  	 * The promise lib. Now, it uses Yaku as ES5 polyfill.
-  	 * In the future, the Yaku will be replaced with native
-  	 * ES6 Promise. Please don't use any API other than the ES6 spec.
-  	 * @type {Object}
+   * The promise lib. Now, it uses Yaku as ES5 polyfill.
+   * In the future, the Yaku will be replaced with native
+   * ES6 Promise. Please don't use any API other than the ES6 spec.
+   * @type {Object}
    */
   Promise: Promise,
 
   /**
-  	 * The `proxy` module.
-  	 * You must `kit.require 'proxy'` before using it.
-  	 * For more information goto the `Proxy` section.
+   * The `proxy` module.
+   * You must `kit.require 'proxy'` before using it.
+   * For more information goto the `Proxy` section.
    */
   proxy: null,
 
   /**
-  	 * Reduce a string via a regex.
-  	 * @param  {RegExp} reg
-  	 * @param  {String} str
-  	 * @param  {Function} iter `(init, matchGroup) -> init`, default is `_.iteratee`.
-  	 * @param  {Any} init
-  	 * @return {Any}
-  	 * @example
-  	 * ```coffee
-  	 * out = kit.regexReduce /\w(\d+)/g, 'a1, b10, c3', (ret, ms) ->
-  	 * 	ret.push ms[1]
-  	 * 	ret
-  	 * , []
-  	 *
-  	 * kit.log out # => [1, 10, 3]
-  	 * ```
+   * Reduce a string via a regex.
+   * @param  {RegExp} reg
+   * @param  {String} str
+   * @param  {Function} iter `(init, matchGroup) -> init`, default is `_.iteratee`.
+   * @param  {Any} init
+   * @return {Any}
+   * @example
+   * ```js
+   * let out = kit.regexReduce(/\w(\d+)/g, 'a1, b10, c3', (ret, ms) => {
+   *  ret.push(ms[1]);
+   *  return ret;
+   * }, []);
+   *
+   * kit.log(out); // => [1, 10, 3]
+   * ```
    */
   regexReduce: function(reg, str, iter, init) {
     var ms;
@@ -1383,17 +1387,17 @@ _.extend(kit, fs, yutils, {
   },
 
   /**
-  	 * Map a string via a regex.
-  	 * @param  {RegExp} reg
-  	 * @param  {String} str
-  	 * @param  {Function} iter `(matchGroup) ->`, default is `_.iteratee`.
-  	 * @return {Array}
-  	 * @example
-  	 * ```coffee
-  	 * out = kit.regexMap /\w(\d+)/g, 'a1, b10, c3', 1
-  	 *
-  	 * kit.log out # => [1, 10, 3]
-  	 * ```
+   * Map a string via a regex.
+   * @param  {RegExp} reg
+   * @param  {String} str
+   * @param  {Function} iter `(matchGroup) ->`, default is `_.iteratee`.
+   * @return {Array}
+   * @example
+   * ```js
+   * let out = kit.regexMap(/\w(\d+)/g, 'a1, b10, c3', 1);
+   *
+   * kit.log(out) // => [1, 10, 3]
+   * ```
    */
   regexMap: function(reg, str, iter) {
     var init, ms;
@@ -1411,30 +1415,30 @@ _.extend(kit, fs, yutils, {
   },
 
   /**
-  	 * Much faster than the native require of node, but you should
-  	 * follow some rules to use it safely.
-  	 * Use it to load nokit's internal module.
-  	 * @param {String} moduleName The module path or name.
-  	 * @param {String} dir Current absolute file path. Not optional, expect when
-  	 * requiring nokit's internal modules.
-  	 * On most times, just pass `__dirname` to it is enough.
-  	 * @param {Function} loaded Run only the first time after the module loaded.
-  	 * @return {Module} The module that you require.
-  	 * @example
-  	 * Use it to load nokit's internal module.
-  	 * ```coffee
-  	 * kit.require 'jhash'
-  	 * # Then you can use the module, or it will be null.
-  	 * kit.jhash.hash 'test'
-  	 * ```
-  	 * To load a relative path, or you own module,
-  	 * the second parameter 'dir' is required.
-  	 * ```coffee
-  	 * mod = kit.require './mod', __dirname
-  	 *
-  	 * # Or load your own 'jhash', rather than nokit's.
-  	 * jhash = kit.require 'jhash', __dirname
-  	 * ```
+   * Much faster than the native require of node, but you should
+   * follow some rules to use it safely.
+   * Use it to load nokit's internal module.
+   * @param {String} moduleName The module path or name.
+   * @param {String} dir Current absolute file path. Not optional, expect when
+   * requiring nokit's internal modules.
+   * On most times, just pass `__dirname` to it is enough.
+   * @param {Function} loaded Run only the first time after the module loaded.
+   * @return {Module} The module that you require.
+   * @example
+   * Use it to load nokit's internal module.
+   * ```js
+   * kit.require('jhash');
+   * // Then you can use the module, or it will be null.
+   * kit.jhash.hash('test');
+   * ```
+   * To load a relative path, or you own module,
+   * the second parameter 'dir' is required.
+   * ```js
+   * let mod = kit.require('./mod', __dirname);
+   *
+   * // Or load your own 'jhash', rather than nokit's.
+   * let jhash = kit.require('jhash', __dirname);
+   * ```
    */
   require: function(moduleName, dir, loaded) {
     var e, err, error, error1, j, key, len, modPath, name, names, p;
@@ -1509,14 +1513,14 @@ _.extend(kit, fs, yutils, {
   },
 
   /**
-  	 * Require an optional package. If not found, it will
-  	 * warn the user to npm install it, and exit the process.
-  	 * @param {String} name Package name
-  	 * @param {String} dir Current absolute file path. Not optional.
-  	 * On most times, just pass `__dirname` to it is enough.
-  	 * @param  {String} semver Specify what version you need,
-  	 * such as `^0.3.1` or `>=1.2.3`, ect.
-  	 * @return {Any} The required package.
+   * Require an optional package. If not found, it will
+   * warn the user to npm install it, and exit the process.
+   * @param {String} name Package name
+   * @param {String} dir Current absolute file path. Not optional.
+   * On most times, just pass `__dirname` to it is enough.
+   * @param  {String} semver Specify what version you need,
+   * such as `^0.3.1` or `>=1.2.3`, ect.
+   * @return {Any} The required package.
    */
   requireOptional: function(name, dir, semver) {
     var br, err, error, info, key, version;
@@ -1549,109 +1553,113 @@ _.extend(kit, fs, yutils, {
   },
 
   /**
-  	 * A handy extended combination of `http.request` and `https.request`.
-  	 * @param  {Object} opts The same as the [http.request](http://nodejs.org/api/http.html#httpHttpRequestOptionsCallback),
-  	 * but with some extra options:
-  	 * ```coffee
-  	 * {
-  	 * 	# String or Url Object.
-  	 * 	url: String | Object
-  	 *
-  	 * 	# Other than return `res` with `res.body`,return `body` directly.
-  	 * 	body: true
-  	 *
-  	 * 	# Max times of auto redirect. If 0, no auto redirect.
-  	 * 	redirect: 0
-  	 *
-  	 * 	# Timeout of the socket of the http connection.
-  	 * 	# If timeout happens, the promise will reject.
-  	 * 	# Zero means no timeout.
-  	 * 	timeout: 0
-  	 *
-  	 * 	# The key of headers should be lowercased.
-  	 * 	headers: {}
-  	 *
-  	 * 	protocol: 'http:' or 'https:'
-  	 *
-  	 * 	agent: null
-  	 *
-  	 * 	# Set "transfer-encoding" header to 'chunked'.
-  	 * 	setTE: false
-  	 *
-  	 * 	# Set null to use buffer, optional.
-  	 * 	# It supports GBK, ShiftJIS etc.
-  	 * 	# For more info, see https://github.com/ashtuchkin/iconv-lite
-  	 * 	resEncoding: 'auto'
-  	 *
-  	 * 	# It's string, object, stream or buffer, it's optional. When it's an object,
-  	 * 	# The request will be 'application/x-www-form-urlencoded'.
-  	 * 	reqData: null
-  	 *
-  	 * 	# auto end the request.
-  	 * 	autoEndReq: true
-  	 *
-  	 * 	# Writable stream.
-  	 * 	resPipe: null
-  	 *
-  	 * 	# Handle resPipe before it's piped.
-  	 * 	# Its returned value will be assigned to `opts.resPipe`. So you can return
-  	 * 	# null to make the request resolve the `body`.
-  	 * 	handleResPipe: (res, resPipe) -> resPipe
-  	 *
-  	 * 	# The progress of the request.
-  	 * 	reqProgress: (complete, total) ->
-  	 *
-  	 * 	# The progress of the response.
-  	 * 	resProgress: (complete, total) ->
-  	 *
-  	 * 	resPipeError: (res) -> res.end()
-  	 * }
-  	 * ```
-  	 * And if set opts as string, it will be treated as the url.
-  	 * @return {Promise} Contains the http response object,
-  	 * it has an extra `body` property.
-  	 * You can also get the request object by using `Promise.req`.
-  	 * @example
-  	 * ```coffee
-  	 * p = kit.request 'http://test.com'
-  	 * p.req.on 'response', (res) ->
-  	 * 	kit.log res.headers['content-length']
-  	 * p.then (body) ->
-  	 * 	kit.log body # html or buffer
-  	 *
-  	 * kit.request {
-  	 * 	url: {
-  	 * 		protocol: 'https', hostname: 'test.com'
-  	 * 		port: 8123, path: '/a.mp3?s=1'
-  	 * 	}
-  	 * 	body: false
-  	 * 	resProgress: (complete, total) ->
-  	 * 		kit.log "Progress: #{complete} / #{total}"
-  	 * }
-  	 * .then (res) ->
-  	 * 	kit.log res.body.length
-  	 * 	kit.log res.headers
-  	 *
-  	 * # Send form-data.
-  	 * form = new (require 'form-data')
-  	 * form.append 'image', new Buffer(0), {
-  	 * 	filename: 'a.jpg', contentType: 'image/jpg'
-  	 * }
-  	 * form.append 'key', 'value'
-  	 * kit.request {
-  	 * 	url: 'a.com'
-  	 * 	method: 'POST'
-  	 * 	headers: form.getHeaders()
-  	 *
-  	 * 	# Use chunked encoding, so that we don't have to calculate
-  	 * 	# the 'Content-Length'.
-  	 * 	setTE: true
-  	 *
-  	 * 	reqData: form
-  	 * }
-  	 * .then (body) ->
-  	 * 	kit.log body
-  	 * ```
+   * A handy extended combination of `http.request` and `https.request`.
+   * @param  {Object} opts The same as the [http.request](http://nodejs.org/api/http.html#httpHttpRequestOptionsCallback),
+   * but with some extra options:
+   * ```js
+   * {
+   *  // String or Url Object.
+   *  url: String | Object,
+   *
+   *  // Other than return `res` with `res.body`,return `body` directly.
+   *  body: true,
+   *
+   *  // Max times of auto redirect. If 0, no auto redirect.
+   *  redirect: 0,
+   *
+   *  // Timeout of the socket of the http connection.
+   *  // If timeout happens, the promise will reject.
+   *  // Zero means no timeout.
+   *  timeout: 0,
+   *
+   *  // The key of headers should be lowercased.
+   *  headers: {},
+   *
+   *  protocol: 'http:' or 'https:',
+   *
+   *  agent: null,
+   *
+   *  // Set "transfer-encoding" header to 'chunked'.
+   *  setTE: false,
+   *
+   *  // Set null to use buffer, optional.
+   *  // It supports GBK, ShiftJIS etc.
+   *  // For more info, see https://github.com/ashtuchkin/iconv-lite
+   *  resEncoding: 'auto',
+   *
+   *  // It's string, object, stream or buffer, it's optional. When it's an object,
+   *  // The request will be 'application/x-www-form-urlencoded'.
+   *  reqData: null,
+   *
+   *  // auto end the request.
+   *  autoEndReq: true,
+   *
+   *  // Writable stream.
+   *  resPipe: null,
+   *
+   *  // Handle resPipe before it's piped.
+   *  // Its returned value will be assigned to `opts.resPipe`. So you can return
+   *  // null to make the request resolve the `body`.
+   *  handleResPipe: (res, resPipe) => resPipe,
+   *
+   *  /// The progress of the request.
+   *  reqProgress: (complete, total) => {},
+   *
+   *  // The progress of the response.
+   *  resProgress: (complete, total) => {},
+   *
+   *  resPipeError: (res) => res.end()
+   * }
+   * ```
+   * And if set opts as string, it will be treated as the url.
+   * @return {Promise} Contains the http response object,
+   * it has an extra `body` property.
+   * You can also get the request object by using `Promise.req`.
+   * @example
+   * ```js
+   * let p = kit.request('http://test.com');
+   * p.req.on('response', (res) =>
+   *  kit.log res.headers['content-length']
+   * );
+   * p.then((body) =>
+   *  kit.log(body); // html or buffer
+   * );
+   *
+   * kit.request({
+   *  url: {
+   *      protocol: 'https', hostname: 'test.com',
+   *      port: 8123, path: '/a.mp3?s=1'
+   *  },
+   *  body: false,
+   *  resProgress: (complete, total) =>
+   *      kit.log(`Progress: ${complete} / ${total}`)
+   * })
+   * .then((res) => {
+   *  kit.log(res.body.length);
+   *  kit.log(res.headers);
+   * });
+   *
+   * // Send form-data.
+   * let form = new require('form-data');
+   * form.append('image', new Buffer(0), {
+   *  filename: 'a.jpg', contentType: 'image/jpg'
+   * });
+   * form.append('key', 'value');
+   * kit.request({
+   *  url: 'a.com',
+   *  method: 'POST',
+   *  headers: form.getHeaders(),
+   *
+   *  // Use chunked encoding, so that we don't have to calculate
+   *  // the 'Content-Length'.
+   *  setTE: true,
+   *
+   *  reqData: form
+   * })
+   * .then((body) =>
+   *  kit.log(body)
+   * );
+   * ```
    */
   request: function(opts) {
     var base, base1, hostSepIndex, promise, req, reqBuf, request, url;
@@ -1903,40 +1911,40 @@ _.extend(kit, fs, yutils, {
   },
 
   /**
-  	 * The semantic versioner for npm, known as [semver](https://github.com/npm/node-semver).
-  	 * You must `kit.require 'semver'` before using it.
-  	 * @type {Object}
+   * The semantic versioner for npm, known as [semver](https://github.com/npm/node-semver).
+   * You must `kit.require 'semver'` before using it.
+   * @type {Object}
    */
   semver: null,
 
   /**
-  	 * A safer version of `child_process.spawn` to cross-platform run
-  	 * a process. In some conditions, it may be more convenient
-  	 * to use the `kit.exec`.
-  	 * It will automatically add `node_modules/.bin` to the `PATH`
-  	 * environment variable.
-  	 * @param  {String} cmd Path or name of an executable program.
-  	 * @param  {Array} args CLI arguments. If any of the item is an object,
-  	 * it will be converted to string by `JSON.stringify`.
-  	 * @param  {Object} opts Process options.
-  	 * Same with the Node.js official documentation.
-  	 * Except that it will inherit the parent's stdio.
-  	 * @return {Promise} The `promise.process` is the spawned child
-  	 * process object.
-  	 * **Resolves** when the process's stdio is drained and the exit
-  	 * code is either `0` or `130`. The resolve value
-  	 * is like:
-  	 * ```coffee
-  	 * {
-  	 * 	code: 0
-  	 * 	signal: null
-  	 * }
-  	 * ```
-  	 * @example
-  	 * ```coffee
-  	 * kit.spawn 'git', ['commit', '-m', '42 is the answer to everything']
-  	 * .then ({code}) -> kit.log code
-  	 * ```
+   * A safer version of `child_process.spawn` to cross-platform run
+   * a process. In some conditions, it may be more convenient
+   * to use the `kit.exec`.
+   * It will automatically add `node_modules/.bin` to the `PATH`
+   * environment variable.
+   * @param  {String} cmd Path or name of an executable program.
+   * @param  {Array} args CLI arguments. If any of the item is an object,
+   * it will be converted to string by `JSON.stringify`.
+   * @param  {Object} opts Process options.
+   * Same with the Node.js official documentation.
+   * Except that it will inherit the parent's stdio.
+   * @return {Promise} The `promise.process` is the spawned child
+   * process object.
+   * **Resolves** when the process's stdio is drained and the exit
+   * code is either `0` or `130`. The resolve value
+   * is like:
+   * ```js
+   * {
+   *  code: 0,
+   *  signal: null
+   * }
+   * ```
+   * @example
+   * ```js
+   * kit.spawn('git', ['commit', '-m', '42 is the answer to everything'])
+   * .then(({code}) => kit.log code);
+   * ```
    */
   spawn: function(cmd, args, opts) {
     var PATH, cmdSrc, k, m, promise, ps, spawn, v;
@@ -2011,70 +2019,70 @@ _.extend(kit, fs, yutils, {
   },
 
   /**
-  	 * The `sse` module.
-  	 * You must `kit.require 'sse'` before using it.
-  	 * For more information goto the `sse` section.
+   * The `sse` module.
+   * You must `kit.require 'sse'` before using it.
+   * For more information goto the `sse` section.
    */
   sse: null,
 
   /**
-  	 * Sequencing and executing tasks and dependencies concurrently.
-  	 * @param  {String}   name The task name.
-  	 * @param  {Object}   opts Optional. Defaults:
-  	 * ```coffee
-  	 * {
-  	 * 	deps: String | Array
-  	 * 	description: String
-  	 * 	logStart: ->
-  	 * 	logEnd: ->
-  	 *
-  	 * 	# Whether to run dependency in a row.
-  	 * 	isSequential: false
-  	 * }
-  	 * ```
-  	 * @param  {Function} fn `(val) -> Promise | Any` The task function.
-  	 * If it is a async task, it should return a promise.
-  	 * It will get its dependency tasks' resolved values.
-  	 * @property {Function} run Use it to start tasks. Each task will only run once.
-  	 * `(names = 'default', opts) ->`. The `names` can be a string or array.
-  	 * The default opts:
-  	 * ```coffee
-  	 * {
-  	 * 	isSequential: false
-  	 *
-  	 * 	# Will be passed as the first task's argument.
-  	 * 	init: undefined
-  	 *
-  	 * 	# To stop the run currently in process. Set the `$stop`
-  	 * 	# reference to true. It will reject a "runStopped" error.
-  	 * 	warp: { $stop: false }
-  	 * }
-  	 * ```
-  	 * @property {Object} list The defined task functions.
-  	 * @return {Promise} Resolve with the last task's resolved value.
-  	 * When `isSequential == true`, it resolves a value, else it resolves
-  	 * an array.
-  	 * @example
-  	 * ```coffee
-  	 * kit.task 'default', { deps: 'build' }, ->
-  	 * 	kit.log 'run defaults...'
-  	 *
-  	 * kit.task 'build', { deps: ['clean'] }, (isFull) ->
-  	 * 	if isFull
-  	 * 		'do something'
-  	 * 	else
-  	 * 		'do something else'
-  	 *
-  	 * kit.task 'clean', (opts) ->
-  	 * 	if opts.isForce
-  	 * 		kit.remove 'dist/**', { isForce: true }
-  	 * 	else
-  	 * 		kit.remove 'dist/**'
-  	 *
-  	 * kit.task.run()
-  	 * .then ->
-  	 * 	kit.log 'All Done!'
-  	 * ```
+   * Sequencing and executing tasks and dependencies concurrently.
+   * @param  {String}   name The task name.
+   * @param  {Object}   opts Optional. Defaults:
+   * ```js
+   * {
+   *  deps: String | Array,
+   *  description: String,
+   *  logStart: () => (),
+   *  logEnd: () => (),
+   *
+   *  // Whether to run dependency in a row.
+   *  isSequential: false
+   * }
+   * ```
+   * @param  {Function} fn `(val) -> Promise | Any` The task function.
+   * If it is a async task, it should return a promise.
+   * It will get its dependency tasks' resolved values.
+   * @property {Function} run Use it to start tasks. Each task will only run once.
+   * `(names = 'default', opts) ->`. The `names` can be a string or array.
+   * The default opts:
+   * ```js
+   * {
+   *  isSequential: false,
+   *
+   *  // Will be passed as the first task's argument.
+   *  init: undefined,
+   *
+   *  // To stop the run currently in process. Set the `$stop`
+   *  // reference to true. It will reject a "runStopped" error.
+   *  warp: { $stop: false }
+   * }
+   * ```
+   * @property {Object} list The defined task functions.
+   * @return {Promise} Resolve with the last task's resolved value.
+   * When `isSequential == true`, it resolves a value, else it resolves
+   * an array.
+   * @example
+   * ```js
+   * kit.task('default', { deps: 'build' }, () =>
+   *  kit.log('run defaults...')
+   * );
+   *
+   * kit.task('build', { deps: ['clean'] }, (isFull) =>
+   *  isFull ? 'do something' : 'do something else'
+   * );
+   *
+   * kit.task('clean', (opts) =>
+   *  opts.isForce ?
+   *      kit.remove('dist/**', { isForce: true }) :
+   *      kit.remove('dist/**')
+   * );
+   *
+   * kit.task.run()
+   * .then(() =>
+   *  kit.log('All Done!')
+   * );
+   * ```
    */
   task: function(name, opts, fn) {
     var base, base1, br, runTask;
@@ -2158,123 +2166,123 @@ _.extend(kit, fs, yutils, {
   },
 
   /**
-  	 * The `url` module of [io.js](iojs.org).
-  	 * You must `kit.require 'url'` before using it.
+   * The `url` module of [io.js](iojs.org).
+   * You must `kit.require 'url'` before using it.
    */
   url: null,
 
   /**
-  	 * Works much like `gulp.src`, but with Promise instead.
-  	 * The warp control and error handling is more pleasant.
-  	 * @param  {String} from Glob pattern string.
-  	 * @param  {Object} opts It extends the options of `nofs.glob`, but
-  	 * with some extra proptereis. Defaults:
-  	 * ```coffee
-  	 * {
-  	 * 	# The base directory of the pattern.
-  	 * 	baseDir: String
-  	 * }
-  	 * ```
-  	 * @return {Object} The returned warp object has these members:
-  	 * ```coffee
-  	 * {
-  	 * 	# The drive can also be a promise that will resolve a drive.
-  	 * 	load: (drive) -> fileInfo | null
-  	 *
-  	 * 	run: (path) -> Promise
-  	 * }
-  	 * ```
-  	 * Each piped drive will recieve a
-  	 * object that extends `nofs`'s fileInfo object:
-  	 * ```coffee
-  	 * {
-  	 * 	# Set the contents and return self.
-  	 * 	set: (String | Buffer) -> fileInfo
-  	 *
-  	 * 	# The src file path.
-  	 * 	path: String
-  	 *
-  	 * 	# The dest root path.
-  	 * 	to: String
-  	 *
-  	 * 	baseDir: String
-  	 *
-  	 * 	# The destination path.
-  	 * 	# Alter it if you want to change the output file's location.
-  	 * 	# You can set it to string, warp will auto-convert it to object.
-  	 * 	# It's "valueOf" will return "kit.path.join dir, name + ext".
-  	 * 	dest: { root, dir, base, ext, name }
-  	 *
-  	 * 	# The file content.
-  	 * 	contents: String | Buffer
-  	 *
-  	 * 	isDir: Boolean
-  	 *
-  	 * 	stats: fs.Stats
-  	 *
-  	 * 	# Alter it to control the left drives dynamically.
-  	 * 	drives: [Function]
-  	 *
-  	 * 	# All the globbed files.
-  	 * 	list: Array
-  	 *
-  	 * 	driveList: Array
-  	 *
-  	 * 	# The opts you passed to "kit.warp", it will be extended.
-  	 * 	opts: Object
-  	 * }
-  	 * ```
-  	 *
-  	 * Each drive can have a `onEnd: (fileInfo) -> Any | Promise` function,
-  	 * which will be called after a file's whole warp is ended.
-  	 *
-  	 * The drive can have a `isReader` property, which will make the drive
-  	 * override the default file reader.
-  	 *
-  	 * The drive can have a `isWriter` property, which will make the drive
-  	 * override the default file writer.
-  	 *
-  	 * If a drive overrides another, it can call `fileInfo.super()` to use it again.
-  	 * @example
-  	 * ```coffee
-  	 * # Define a simple workflow.
-  	 * kit.warp 'src/**\/*.js'
-  	 * .load (fileInfo) ->
-  	 * 	fileInfo.set '/* Lisence Info *\/' + fileInfo.contents
-  	 * .load jslint()
-  	 * .load minify()
-  	 * .run 'build/minified'
-  	 *
-  	 * # Override warp's file reader with a custom one.
-  	 * myReader = kit._.extend (fileInfo) ->
-  	 * 	# Note that we can also use "@path",
-  	 * 	# its the same with "fileInfo.path" here.
-  	 * 	kit.readFile @path, 'hex'
-  	 * 	.then @set
-  	 * , {
-  	 * 	# This will tell warp you want use your own reader.
-  	 * 	isReader: true
-  	 * }
-  	 *
-  	 * # Override writer.
-  	 * myWriter = kit._.extend (fileInfo) ->
-  	 * 	return if @dest == 'a.js'
-  	 *
-  	 * 	# Call the overrided writer.
-  	 * 	@super()
-  	 * , isWriter: true, onEnd: -> @super()
-  	 * 	kit.log @list
-  	 *
-  	 * kit.warp 'src/**\/*.js'
-  	 * .load myWriter
-  	 * .run 'dist'
-  	 *
-  	 * # Use nokit's built-in warp drives.
-  	 * drives = kit.require 'drives'
-  	 * kit.warp src/**\/*.coffee'
-  	 * .load drives.coffee()
-  	 * .run 'dist'
-  	 * ```
+   * Works much like `gulp.src`, but with Promise instead.
+   * The warp control and error handling is more pleasant.
+   * @param  {String} from Glob pattern string.
+   * @param  {Object} opts It extends the options of `nofs.glob`, but
+   * with some extra proptereis. Defaults:
+   * ```js
+   * {
+   *  // The base directory of the pattern.
+   *  baseDir: String
+   * }
+   * ```
+   * @return {Object} The returned warp object has these members:
+   * ```js
+   * {
+   *  // The drive can also be a promise that will resolve a drive.
+   *  load: (drive) => fileInfo | null,
+   *
+   *  run: (path) => Promise
+   * }
+   * ```
+   * Each piped drive will recieve a
+   * object that extends `nofs`'s fileInfo object:
+   * ```js
+   * {
+   *  // Set the contents and return self.
+   *  set: (String | Buffer) => fileInfo,
+   *
+   *  // The src file path.
+   *  path: String,
+   *
+   *  // The dest root path.
+   *  to: String,
+   *
+   *  baseDir: String,
+   *
+   *  // The destination path.
+   *  // Alter it if you want to change the output file's location.
+   *  // You can set it to string, warp will auto-convert it to object.
+   *  // It's "valueOf" will return "kit.path.join dir, name + ext".
+   *  dest: { root, dir, base, ext, name },
+   *
+   *  // The file content.
+   *  contents: String | Buffer,
+   *
+   *  isDir: Boolean,
+   *
+   *  stats: fs.Stats,
+   *
+   *  // Alter it to control the left drives dynamically.
+   *  drives: [Function],
+   *
+   *  // All the globbed files.
+   *  list: Array,
+   *
+   *  driveList: Array,
+   *
+   *  // The opts you passed to "kit.warp", it will be extended.
+   *  opts: Object
+   * }
+   * ```
+   *
+   * Each drive can have a `onEnd: (fileInfo) -> Any | Promise` function,
+   * which will be called after a file's whole warp is ended.
+   *
+   * The drive can have a `isReader` property, which will make the drive
+   * override the default file reader.
+   *
+   * The drive can have a `isWriter` property, which will make the drive
+   * override the default file writer.
+   *
+   * If a drive overrides another, it can call `fileInfo.super()` to use it again.
+   * @example
+   * ```js
+   * // Define a simple workflow.
+   * kit.warp('src/**\/*.js')
+   * .load((fileInfo) =>
+   *     fileInfo.set('/* Lisence Info *\/' + fileInfo.contents)
+   * )
+   * .load(jslint())
+   * .load(minify())
+   * .run('build/minified');
+   *
+   * // Override warp's file reader with a custom one.
+   * let myReader = kit._.extend((f) =>
+   *     kit.readFile(f.path, 'hex').then(f.path)
+   * ), {
+   *  // This will tell warp you want use your own reader.
+   *  isReader: true
+   * });
+   *
+   * // Override writer.
+   * let myWriter = kit._.extend((f) => {
+   *  if (f.dest === 'a.js') return;
+   *
+   *  // Call the overrided writer.
+   *  f.super();
+   * }, { isWriter: true, onEnd: () => {
+   *    super();
+   *    kit.log(this.list);
+   * });
+   *
+   * kit.warp('src/**\/*.js')
+   * .load(myWriter)
+   * .run('dist');
+   *
+   * // Use nokit's built-in warp drives.
+   * let drives = kit.require('drives');
+   * kit.warp('src/**\/*.coffee')
+   * .load(drives.coffee());
+   * .run('dist');
+   * ```
    */
   warp: function(from, opts) {
     var driveList, drives, initInfo, reader, runDrive, warpper, writer;
@@ -2390,28 +2398,28 @@ _.extend(kit, fs, yutils, {
   },
 
   /**
-  	 * Same as the unix `which` command.
-  	 * You must `kit.require 'which'` before using it.
-  	 * @param {String} name The command.
-  	 * @return {Promise}
+   * Same as the unix `which` command.
+   * You must `kit.require 'which'` before using it.
+   * @param {String} name The command.
+   * @return {Promise}
    */
   which: null,
 
   /**
-  	 * Sync version of `which`.
-  	 * You must `kit.require 'whichSync'` before using it.
-  	 * @type {Function}
+   * Sync version of `which`.
+   * You must `kit.require 'whichSync'` before using it.
+   * @type {Function}
    */
   whichSync: null,
 
   /**
-  	 * For debugging. Dump a colorful object.
-  	 * @param  {Object} obj Your target object.
-  	 * @param  {Object} opts Options. Default:
-  	 * ```coffee
-  	 * { colors: true, depth: 7 }
-  	 * ```
-  	 * @return {String}
+   * For debugging. Dump a colorful object.
+   * @param  {Object} obj Your target object.
+   * @param  {Object} opts Options. Default:
+   * ```js
+   * { colors: true, depth: 7 }
+   * ```
+   * @return {String}
    */
   xinspect: function(obj, opts) {
     var str, util;
@@ -2427,17 +2435,17 @@ _.extend(kit, fs, yutils, {
   },
 
   /**
-  	 * Open a thing that your system can recognize.
-  	 * Now only support Windows, OSX or system that installed 'xdg-open'.
-  	 * @param  {String | Array} cmds  The thing you want to open.
-  	 * @param  {Object} opts The options of the node native
-  	 * `child_process.exec`.
-  	 * @return {Promise} When the child process exists.
-  	 * @example
-  	 * ```coffee
-  	 * # Open a webpage with the default browser.
-  	 * kit.open 'http://ysmood.org'
-  	 * ```
+   * Open a thing that your system can recognize.
+   * Now only support Windows, OSX or system that installed 'xdg-open'.
+   * @param  {String | Array} cmds  The thing you want to open.
+   * @param  {Object} opts The options of the node native
+   * `child_process.exec`.
+   * @return {Promise} When the child process exists.
+   * @example
+   * Open a webpage with the default browser.
+   * ```js
+   * kit.open('http://ysmood.org');
+   * ```
    */
   xopen: function(cmds, opts) {
     var child_process;

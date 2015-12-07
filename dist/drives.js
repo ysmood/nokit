@@ -19,9 +19,9 @@ Overview = 'drives';
 module.exports = {
 
   /**
-  	 * clean-css
-  	 * @param  {Object} opts
-  	 * @return {Function}
+   * clean-css
+   * @param  {Object} opts
+   * @return {Function}
    */
   cleanCss: _.extend(function(opts) {
     var clean;
@@ -38,9 +38,9 @@ module.exports = {
     compress: ['.css']
 
     /**
-    	 * coffee-script compiler
-    	 * @param  {Object} opts Default is `{ bare: true }`.
-    	 * @return {Function}
+     * coffee-script compiler
+     * @param  {Object} opts Default is `{ bare: true }`.
+     * @return {Function}
      */
   }),
   coffee: _.extend(function(opts) {
@@ -70,21 +70,21 @@ module.exports = {
     compile: ['.coffee']
 
     /**
-    	 * coffeelint processor
-    	 * @param  {Object} opts It extends the default config
-    	 * of coffeelint, properties:
-    	 * ```coffee
-    	 * {
-    	 * 	colorize: true
-    	 * 	reporter: 'default'
-    	 *
-    	 * 	# The json of the "coffeelint.json".
-    	 * 	# If it's null, coffeelint will try to find
-    	 * 	# "coffeelint.json" as its content.
-    	 * 	config: null | JSON | JsonFilePath
-    	 * }
-    	 * ```
-    	 * @return {Function}
+     * coffeelint processor
+     * @param  {Object} opts It extends the default config
+     * of coffeelint, properties:
+     * ```js
+     * {
+     *  colorize: true,
+     *  reporter: 'default',
+     *
+     *  // The json of the "coffeelint.json".
+     *  // If it's null, coffeelint will try to find
+     *  // "coffeelint.json" as its content.
+     *  config: null | JSON | JsonFilePath
+     * }
+     * ```
+     * @return {Function}
      */
   }),
   coffeelint: _.extend(function(opts) {
@@ -124,31 +124,31 @@ module.exports = {
     lint: ['.coffee']
 
     /**
-    	 * Parse commment from a js, coffee, or livescript file,
-    	 * and output a markdown string.
-    	 * @param  {String} path
-    	 * @param  {Object} opts Defaults:
-    	 * ```coffee
-    	 * {
-    	 * 	# Output doc path.
-    	 * 	out: 'readme.md'
-    	 *
-    	 * 	# jst template path.
-    	 * 	tpl: 'readme.jst.md'
-    	 *
-    	 * 	# Init doc info.
-    	 * 	doc: {}
-    	 *
-    	 * 	# Header size.
-    	 * 	h: 3
-    	 *
-    	 * 	parseComment: -> ...
-    	 * 	formatComment: -> ...
-    	 * }
-    	 * ```
-    	 * @return {Function}
-    	 * @example
-    	 * The nofile of nokit shows how to use it.
+     * Parse commment from a js, coffee, or livescript file,
+     * and output a markdown string.
+     * @param  {String} path
+     * @param  {Object} opts Defaults:
+     * ```js
+     * {
+     *  // Output doc path.
+     *  out: 'readme.md',
+     *
+     *  // jst template path.
+     *  tpl: 'readme.jst.md',
+     *
+     *  // Init doc info.
+     *  doc: {},
+     *
+     *  // Header size.
+     *  h: 3,
+     *
+     *  parseComment: () => {},
+     *  formatComment: () => {}
+     * }
+     * ```
+     * @return {Function}
+     * @example
+     * The nofile of nokit shows how to use it.
      */
   }),
   comment2md: function(opts) {
@@ -196,25 +196,25 @@ module.exports = {
   },
 
   /**
-  	 * Auto-compiler file by extension. It will search through
-  	 * `kit.drives`, and find proper drive to run the task.
-  	 * You can extend `kit.drives` to let it support more.
-  	 * For example:
-  	 * ```coffee
-  	 * kit.drives.myCompiler = kit._.extend ->
-  	 * 	# your compile logic
-  	 * , compiler: ['.jsx']
-  	 * ```
-  	 * @param {String} action By default, it can be
-  	 * 'compile' or 'compress' or 'lint'
-  	 * @param  {Object} opts
-  	 * ```coffee
-  	 * {
-  	 * 	# If no compiler match.
-  	 * 	onNotFound: (fileInfo) ->
-  	 * }
-  	 * ```
-  	 * @return {Function}
+   * Auto-compiler file by extension. It will search through
+   * `kit.drives`, and find proper drive to run the task.
+   * You can extend `kit.drives` to let it support more.
+   * For example:
+   * ```js
+   * kit.drives.myCompiler = kit._.extend(() => {
+   *     // your compile logic
+   * }), { compiler: ['.jsx'] })
+   * ```
+   * @param {String} action By default, it can be
+   * 'compile' or 'compress' or 'lint'
+   * @param  {Object} opts
+   * ```js
+   * {
+   *  // If no compiler match.
+   *  onNotFound: (fileInfo) => {}
+   * }
+   * ```
+   * @return {Function}
    */
   auto: function(action, opts) {
     var _str, auto, compilers, list;
@@ -252,10 +252,10 @@ module.exports = {
   },
 
   /**
-  	 * Change dest path with a filter.
-  	 * @param  {String} dir
-  	 * @param  {Function} filter `(fileInfo, dir) -> Boolean`
-  	 * @return {Function}
+   * Change dest path with a filter.
+   * @param  {String} dir
+   * @param  {Function} filter `(fileInfo, dir) -> Boolean`
+   * @return {Function}
    */
   changeDir: function(dir, filter) {
     return function(f) {
@@ -270,10 +270,10 @@ module.exports = {
   },
 
   /**
-  	 * a batch file concat helper
-  	 * @param {String} name The output file path.
-  	 * @param {String} dir Optional. Override the dest of warp's.
-  	 * @return {Function}
+   * a batch file concat helper
+   * @param {String} name The output file path.
+   * @param {String} dir Optional. Override the dest of warp's.
+   * @return {Function}
    */
   concat: function(name, dir) {
     var all;
@@ -299,9 +299,9 @@ module.exports = {
   },
 
   /**
-  	 * Suffix file name with the hash value of file content.
-  	 * @param  {String} hashMapPath The output file name hash map.
-  	 * @return {Function}
+   * Suffix file name with the hash value of file content.
+   * @param  {String} hashMapPath The output file name hash map.
+   * @return {Function}
    */
   hashSuffix: function(hashMapPath) {
     var map;
@@ -321,15 +321,15 @@ module.exports = {
   },
 
   /**
-  	 * Lint js via `jshint`.
-  	 * @param  {Object} opts Properties:
-  	 * ```coffee
-  	 * {
-  	 * 	global: null
-  	 * 	config: null | JSON | JsonFilePath
-  	 * }
-  	 * ```
-  	 * @return {Function}
+   * Lint js via `jshint`.
+   * @param  {Object} opts Properties:
+   * ```js
+   * {
+   *  global: null,
+   *  config: null | JSON | JsonFilePath
+   * }
+   * ```
+   * @return {Function}
    */
   jshint: _.extend(function(opts) {
     var JSHINT, jshint;
@@ -360,9 +360,9 @@ module.exports = {
     lint: ['.js']
 
     /**
-    	 * Compile less.
-    	 * @param  {Object}
-    	 * @return {Function}
+     * Compile less.
+     * @param  {Object}
+     * @return {Function}
      */
   }),
   less: _.extend(function(opts) {
@@ -391,9 +391,9 @@ module.exports = {
     compile: ['.less']
 
     /**
-    	 * LiveScript compiler.
-    	 * @param  {Object} opts Default is `{ bare: true }`.
-    	 * @return {Function}
+     * LiveScript compiler.
+     * @param  {Object} opts Default is `{ bare: true }`.
+     * @return {Function}
      */
   }),
   livescript: _.extend(function(opts) {
@@ -423,16 +423,16 @@ module.exports = {
     compile: ['.ls']
 
     /**
-    	 * read file and set `contents`
-    	 * @param  {Object} opts Defaults:
-    	 * ```coffee
-    	 * {
-    	 * 	isCache: false
-    	 * 	encoding: 'utf8'
-    	 * 	cacheDir: '.nokit/warp'
-    	 * }
-    	 * ```
-    	 * @return {Function}
+     * read file and set `contents`
+     * @param  {Object} opts Defaults:
+     * ```js
+     * {
+     *  isCache: false,
+     *  encoding: 'utf8',
+     *  cacheDir: '.nokit/warp'
+     * }
+     * ```
+     * @return {Function}
      */
   }),
   reader: function(opts) {
@@ -497,24 +497,24 @@ module.exports = {
   },
 
   /**
-  	 * Compile stylus.
-  	 * @param  {Object} opts It will use `stylus.set` to
-  	 * iterate `opts` and set the key-value, is the value is
-  	 * not a function.
-  	 * ```coffee
-  	 * {
-  	 * 	config: (styl) ->
-  	 * }
-  	 * ```
-  	 * @return {Function}
-  	 * @example
-  	 * ```coffee
-  	 * kit.drives.stylus {
-  	 * 	compress: true
-  	 * 	config: (styl) ->
-  	 * 		styl.define 'jack', 'a persion'
-  	 * }
-  	 * ```
+   * Compile stylus.
+   * @param  {Object} opts It will use `stylus.set` to
+   * iterate `opts` and set the key-value, is the value is
+   * not a function.
+   * ```js
+   * {
+   *  config: (styl) => {}
+   * }
+   * ```
+   * @return {Function}
+   * @example
+   * ```js
+   * kit.drives.stylus({
+   *  compress: true,
+   *  config: (styl) =>
+   *      styl.define('jack', 'a persion')
+   * });
+   * ```
    */
   stylus: _.extend(function(opts) {
     var stylus;
@@ -547,19 +547,21 @@ module.exports = {
     compile: ['.styl']
 
     /**
-    	 * uglify-js processor
-    	 * @param  {Object} opts Defaults:
-    	 * ```coffee
-    	 * {
-    	 * 	output:
-    	 * 		comments: (node, comment) ->
-    	 * 			text = comment.value
-    	 * 			type = comment.type
-    	 * 			if type == "comment2"
-    	 * 				return /@preserve|@license|@cc_on/i.test text
-    	 * }
-    	 * ```
-    	 * @return {Function}
+     * uglify-js processor
+     * @param  {Object} opts Defaults:
+     * ```js
+     * {
+     *     output: {
+     *         comments: (node, comment) => {
+     *             let text = comment.value;
+     *             let type = comment.type;
+     *             if (type === "comment2")
+     *                 return /@preserve|@license|@cc_on/i.test(text);
+     *         }
+     *     }
+     * }
+     * ```
+     * @return {Function}
      */
   }),
   uglifyjs: _.extend(function(opts) {
@@ -596,10 +598,10 @@ module.exports = {
     compress: ['.js']
 
     /**
-    	 * Output file by `contents` and `dest`.
-    	 * If the 'ext' or 'name' is not null,
-    	 * the 'base' will be override by the 'ext' and 'name'.
-    	 * @return {Function}
+     * Output file by `contents` and `dest`.
+     * If the 'ext' or 'name' is not null,
+     * the 'base' will be override by the 'ext' and 'name'.
+     * @return {Function}
      */
   }),
   writer: function() {
