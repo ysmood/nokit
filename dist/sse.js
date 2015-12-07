@@ -4,35 +4,39 @@
  * For more info see [Using server-sent events](https://developer.mozilla.org/en-US/docs/Server-sentEvents/UsingServer-sentEvents).
  * It is used to implement the live-reload of web assets.
  * @param {Object} opts Defaults:
- * ```coffee
+ * ```js
  * {
- * 	# The reconnection time to use when attempting to send the event, unit is ms.
- * 	retry: 1000
+ *  // The reconnection time to use when attempting to send the event, unit is ms.
+ *  retry: 1000
  * }
  * ```
  * @example
  * Your server side code may look like this:
- * ```coffee
- * http = require 'http'
- * kit = require 'nokit'
- * sse = kit.require 'sse'
- * sseHandler = sse()
- * http.createServer (req, res) ->
- * 	if req.url == '/sse'
- *  	sseHandler req, res
- *  else
- *  	res.end()
- * .listen 8080, ->
- * 	setTimeout ->
- * 		sseHandler.emit 'test', { test: 'ok' }
+ * ```js
+ * let http = require('http');
+ * let kit = require('nokit');
+ * let sse = kit.require('sse');
+ * let sseHandler = sse();
+ *
+ * http.createServer((req, res) => {
+ *     if (req.url === '/sse')
+ *         sseHandler(req, res);
+ *     else
+ *         res.end();
+ * }).listen(8080, () =>
+ *     setTimeout(() =>
+ *         sseHandler.emit('test', { test: 'ok' })
+ *     );
+ * );
  * ```
  *
  * You browser code should be something like this:
- * ```coffee
- * es = new EventSource('/sse')
- * es.addEventListener('test', (e) ->
- * 	msg = JSON.parse(e.data)
- *  console.log(msg) # => { test: 'ok' }
+ * ```js
+ * let es = new EventSource('/sse');
+ * es.addEventListener('test', (e) => {
+ *     let msg = JSON.parse(e.data);
+ *     console.log(msg); // => { test: 'ok' }
+ * });
  * ```
  */
 var sse;
@@ -44,9 +48,9 @@ sse = function(opts) {
   }
 
   /**
-  	 * The sse middleware for http handler.
-  	 * @param {http.IncomingMessage} req Also supports Express.js.
-  	 * @param {http.ServerResponse} res Also supports Express.js.
+   * The sse middleware for http handler.
+   * @param {http.IncomingMessage} req Also supports Express.js.
+   * @param {http.ServerResponse} res Also supports Express.js.
    */
   self = function(req, res) {
     var session;
@@ -58,17 +62,17 @@ sse = function(opts) {
   }
 
   /**
-  	 * The sessions of connected clients.
-  	 * @type {Array}
+   * The sessions of connected clients.
+   * @type {Array}
    */
   self.sessions = [];
 
   /**
-  	 * Broadcast a event to all clients.
-  	 * @param {String} event The event name.
-  	 * @param {Object | String} msg The data you want to emit to session.
-  	 * @param {String} [path] The namespace of target sessions. If not set,
-  	 * broadcast to all clients.
+   * Broadcast a event to all clients.
+   * @param {String} event The event name.
+   * @param {Object | String} msg The data you want to emit to session.
+   * @param {String} [path] The namespace of target sessions. If not set,
+   * broadcast to all clients.
    */
   self.emit = function(event, msg, path) {
     var el, i, len, ref, results;
@@ -91,21 +95,21 @@ sse = function(opts) {
   };
 
   /**
-  	 * Create a sse session.
-  	 * @param {http.IncomingMessage} req Also supports Express.js.
-  	 * @param {http.ServerResponse} res Also supports Express.js.
-  	 * @return {SSESession}
+   * Create a sse session.
+   * @param {http.IncomingMessage} req Also supports Express.js.
+   * @param {http.ServerResponse} res Also supports Express.js.
+   * @return {SSESession}
    */
   self.create = function(req, res) {
 
     /**
-    		 * A session object is something like:
-    		 * ```coffee
-    		 * {
-    		 * 	req  # The http req object.
-    		 *  res  # The http res object.
-    		 * }
-    		 * ```
+     * A session object is something like:
+     * ```js
+     * {
+     *  req,  // The http req object.
+     *  res   // The http res object.
+     * }
+     * ```
      */
     var session;
     session = {
@@ -120,9 +124,9 @@ sse = function(opts) {
     });
 
     /**
-    		 * Emit message to client.
-    		 * @param  {String} event The event name.
-    		 * @param  {Object | String} msg The message to send to the client.
+     * Emit message to client.
+     * @param  {String} event The event name.
+     * @param  {Object | String} msg The message to send to the client.
      */
     session.emit = function(event, msg) {
       if (msg == null) {

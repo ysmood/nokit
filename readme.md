@@ -2067,7 +2067,7 @@ kit.warp('src/**/*.coffee')
 
 # SSE
 
-- ## **[sse(opts)](lib/sse.coffee?source#L37)**
+- ## **[sse(opts)](lib/sse.coffee?source#L41)**
 
     A Server-Sent Event Manager.
     For more info see [Using server-sent events](https://developer.mozilla.org/en-US/docs/Server-sentEvents/UsingServer-sentEvents).
@@ -2076,40 +2076,44 @@ kit.warp('src/**/*.coffee')
     - **<u>param</u>**: `opts` { _Object_ }
 
         Defaults:
-        ```coffee
+        ```js
         {
-        	# The reconnection time to use when attempting to send the event, unit is ms.
-        	retry: 1000
+         // The reconnection time to use when attempting to send the event, unit is ms.
+         retry: 1000
         }
         ```
 
     - **<u>example</u>**:
 
         Your server side code may look like this:
-        ```coffee
-        http = require 'http'
-        kit = require 'nokit'
-        sse = kit.require 'sse'
-        sseHandler = sse()
-        http.createServer (req, res) ->
-        	if req.url == '/sse'
-         	sseHandler req, res
-         else
-         	res.end()
-        .listen 8080, ->
-        	setTimeout ->
-        		sseHandler.emit 'test', { test: 'ok' }
+        ```js
+        let http = require('http');
+        let kit = require('nokit');
+        let sse = kit.require('sse');
+        let sseHandler = sse();
+
+        http.createServer((req, res) => {
+            if (req.url === '/sse')
+                sseHandler(req, res);
+            else
+                res.end();
+        }).listen(8080, () =>
+            setTimeout(() =>
+                sseHandler.emit('test', { test: 'ok' })
+            );
+        );
         ```
 
         You browser code should be something like this:
-        ```coffee
-        es = new EventSource('/sse')
-        es.addEventListener('test', (e) ->
-        	msg = JSON.parse(e.data)
-         console.log(msg) # => { test: 'ok' }
+        ```js
+        let es = new EventSource('/sse');
+        es.addEventListener('test', (e) => {
+            let msg = JSON.parse(e.data);
+            console.log(msg); // => { test: 'ok' }
+        });
         ```
 
-- ## **[self(req, res)](lib/sse.coffee?source#L44)**
+- ## **[self(req, res)](lib/sse.coffee?source#L48)**
 
     The sse middleware for http handler.
 
@@ -2121,13 +2125,13 @@ kit.warp('src/**/*.coffee')
 
         Also supports Express.js.
 
-- ## **[sessions](lib/sse.coffee?source#L54)**
+- ## **[sessions](lib/sse.coffee?source#L58)**
 
     The sessions of connected clients.
 
     - **<u>type</u>**: { _Array_ }
 
-- ## **[emit(event, msg, path)](lib/sse.coffee?source#L63)**
+- ## **[emit(event, msg, path)](lib/sse.coffee?source#L67)**
 
     Broadcast a event to all clients.
 
@@ -2144,7 +2148,7 @@ kit.warp('src/**/*.coffee')
         The namespace of target sessions. If not set,
         broadcast to all clients.
 
-- ## **[create(req, res)](lib/sse.coffee?source#L76)**
+- ## **[create(req, res)](lib/sse.coffee?source#L80)**
 
     Create a sse session.
 
@@ -2158,17 +2162,17 @@ kit.warp('src/**/*.coffee')
 
     - **<u>return</u>**: { _SSESession_ }
 
-- ## **[session](lib/sse.coffee?source#L86)**
+- ## **[session](lib/sse.coffee?source#L90)**
 
     A session object is something like:
-    ```coffee
+    ```js
     {
-    	req  # The http req object.
-     res  # The http res object.
+     req,  // The http req object.
+     res   // The http res object.
     }
     ```
 
-- ## **[session.emit(event, msg)](lib/sse.coffee?source#L100)**
+- ## **[session.emit(event, msg)](lib/sse.coffee?source#L104)**
 
     Emit message to client.
 
