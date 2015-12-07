@@ -860,7 +860,7 @@ _.extend(kit, fs, yutils, {
    * @param  {Any} args...
    * @example
    * ```js
-   * kit.log('test1', 'test2', test3');
+   * kit.log('test1', 'test2', 'test3');
    * // => [2015-02-07 08:31:49] test1 test2 test3
    * ```
    */
@@ -915,8 +915,7 @@ _.extend(kit, fs, yutils, {
    *  onErrorExit: ({ code, signal }) =>
    *      kit.err('EXIT' +
    *      " code: #{code} signal: #{signal}\n" +
-   *      'Process closed. Edit and save
-   *          the watched file to restart.'),
+   *      'Process closed. Edit and save the watched file to restart.'),
    *  sepLine: =>
    *      process.stdout.write(_.repeat('*', process.stdout.columns))
    * }
