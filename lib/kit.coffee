@@ -1059,7 +1059,7 @@ _.extend kit, fs, yutils,
             splitReg: /^\s+\* @/m
             tagNameReg: /^([\w\.]+)\s*/
             typeReg: /^\{(.+?)\}\s*/
-			nameReg: /^(\w+)\s*/
+            nameReg: /^\[?(.+?)\]?\s*/
             nameTags: ['param', 'property']
             descriptionReg: /^([\s\S]*)/
         }
