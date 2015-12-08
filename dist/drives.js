@@ -170,7 +170,7 @@ module.exports = {
         var line, link, name, tocName;
         name = arg.name, line = arg.line;
         name = name.replace('self.', '');
-        tocName = name.toLowerCase().replace(/[\(\),]/g, '').replace(/\s/g, '-');
+        tocName = name.toLowerCase().replace(/\s/g, '-').replace(/[^\w-]/g, '');
         toc.push("  - [" + name + "](#" + tocName + ")");
         link = file.path + "?source#L" + line;
         return "- " + (_.repeat('#', opts.h)) + " **[" + name + "](" + link + ")**\n\n";

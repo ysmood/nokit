@@ -191,10 +191,10 @@ Goto [changelog](doc/changelog.md)
   - [sse(opts)](#sseopts)
   - [self(req, res)](#selfreq-res)
   - [sessions](#sessions)
-  - [emit(event, msg, [path])](#emitevent-msg-[path])
+  - [emit(event, msg, [path])](#emitevent-msg-path)
   - [create(req, res)](#createreq-res)
   - [session](#session)
-  - [session.emit(event, msg)](#session.emitevent-msg)
+  - [session.emit(event, msg)](#sessionemitevent-msg)
 
 - ## **[Overview](lib/kit.coffee?source#L32)**
 
@@ -1641,7 +1641,7 @@ kit.warp('src/**/*.coffee')
 
         The nofile of nokit shows how to use it.
 
-- ## **[auto(action, opts)](lib/drives.coffee?source#L186)**
+- ## **[auto(action, opts)](lib/drives.coffee?source#L187)**
 
     Auto-compiler file by extension. It will search through
     `kit.drives`, and find proper drive to run the task.
@@ -1669,7 +1669,7 @@ kit.warp('src/**/*.coffee')
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[changeDir(dir, filter)](lib/drives.coffee?source#L222)**
+- ## **[changeDir(dir, filter)](lib/drives.coffee?source#L223)**
 
     Change dest path with a filter.
 
@@ -1681,7 +1681,7 @@ kit.warp('src/**/*.coffee')
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[concat(name, dir)](lib/drives.coffee?source#L237)**
+- ## **[concat(name, dir)](lib/drives.coffee?source#L238)**
 
     a batch file concat helper
 
@@ -1695,7 +1695,7 @@ kit.warp('src/**/*.coffee')
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[hashSuffix(hashMapPath)](lib/drives.coffee?source#L257)**
+- ## **[hashSuffix(hashMapPath)](lib/drives.coffee?source#L258)**
 
     Suffix file name with the hash value of file content.
 
@@ -1705,7 +1705,7 @@ kit.warp('src/**/*.coffee')
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[jshint(opts)](lib/drives.coffee?source#L282)**
+- ## **[jshint(opts)](lib/drives.coffee?source#L283)**
 
     Lint js via `jshint`.
 
@@ -1721,7 +1721,7 @@ kit.warp('src/**/*.coffee')
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[less()](lib/drives.coffee?source#L315)**
+- ## **[less()](lib/drives.coffee?source#L316)**
 
     Compile less.
 
@@ -1729,7 +1729,7 @@ kit.warp('src/**/*.coffee')
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[livescript(opts)](lib/drives.coffee?source#L342)**
+- ## **[livescript(opts)](lib/drives.coffee?source#L343)**
 
     LiveScript compiler.
 
@@ -1739,7 +1739,7 @@ kit.warp('src/**/*.coffee')
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[reader(opts)](lib/drives.coffee?source#L373)**
+- ## **[reader(opts)](lib/drives.coffee?source#L374)**
 
     read file and set `contents`
 
@@ -1756,7 +1756,7 @@ kit.warp('src/**/*.coffee')
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[stylus(opts)](lib/drives.coffee?source#L442)**
+- ## **[stylus(opts)](lib/drives.coffee?source#L443)**
 
     Compile stylus.
 
@@ -1783,7 +1783,7 @@ kit.warp('src/**/*.coffee')
         });
         ```
 
-- ## **[uglifyjs(opts)](lib/drives.coffee?source#L484)**
+- ## **[uglifyjs(opts)](lib/drives.coffee?source#L485)**
 
     uglify-js processor
 
@@ -1805,7 +1805,7 @@ kit.warp('src/**/*.coffee')
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[writer()](lib/drives.coffee?source#L509)**
+- ## **[writer()](lib/drives.coffee?source#L510)**
 
     Output file by `contents` and `dest`.
     If the 'ext' or 'name' is not null,

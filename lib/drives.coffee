@@ -135,8 +135,9 @@ module.exports =
                 name = name.replace 'self.', ''
 
                 tocName = name.toLowerCase()
-                    .replace(/[\(\),]/g, '')
-                    .replace(/\s/g, '-');
+                    .replace(/\s/g, '-')
+                    .replace(/[^\w-]/g, '')
+
                 toc.push "  - [#{name}](##{tocName})"
 
                 link = "#{file.path}?source#L#{line}"
