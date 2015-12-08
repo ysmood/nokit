@@ -278,17 +278,13 @@ Goto [changelog](doc/changelog.md)
 
         The daemonized process.
 
-- ## **[decrypt(, , algorithm)](lib/kit.coffee?source#L270)**
+- ## **[decrypt(data, password, algorithm)](lib/kit.coffee?source#L270)**
 
     A simple decrypt helper. Cross-version of node.
 
-    - **<u>param</u>**: { _Any_ }
+    - **<u>param</u>**: `data` { _Any_ }
 
-        data
-
-    - **<u>param</u>**: { _String | Buffer_ }
-
-        password
+    - **<u>param</u>**: `password` { _String | Buffer_ }
 
     - **<u>param</u>**: `algorithm` { _String_ }
 
@@ -304,17 +300,13 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>type</u>**: { _Object_ }
 
-- ## **[encrypt(, , algorithm)](lib/kit.coffee?source#L301)**
+- ## **[encrypt(data, password, algorithm)](lib/kit.coffee?source#L301)**
 
     A simple encrypt helper. Cross-version of node.
 
-    - **<u>param</u>**: { _Any_ }
+    - **<u>param</u>**: `data` { _Any_ }
 
-        data
-
-    - **<u>param</u>**: { _String | Buffer_ }
-
-        password
+    - **<u>param</u>**: `password` { _String | Buffer_ }
 
     - **<u>param</u>**: `algorithm` { _String_ }
 
@@ -322,17 +314,13 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Buffer_ }
 
-- ## **[err(, )](lib/kit.coffee?source#L322)**
+- ## **[err(msg, opts)](lib/kit.coffee?source#L322)**
 
     A error log shortcut for `kit.log(msg, 'error', opts)`
 
-    - **<u>param</u>**: { _Any_ }
+    - **<u>param</u>**: `msg` { _Any_ }
 
-        msg
-
-    - **<u>param</u>**: { _Object_ }
-
-        opts
+    - **<u>param</u>**: `opts` { _Object_ }
 
 - ## **[exec(cmd, shell)](lib/kit.coffee?source#L362)**
 
@@ -383,13 +371,11 @@ Goto [changelog](doc/changelog.md)
         );
         ```
 
-- ## **[formatComment(, opts)](lib/kit.coffee?source#L427)**
+- ## **[formatComment(comments, opts)](lib/kit.coffee?source#L427)**
 
     Format the parsed comments array to a markdown string.
 
-    - **<u>param</u>**: { _Array_ }
-
-        comments
+    - **<u>param</u>**: `comments` { _Array_ }
 
     - **<u>param</u>**: `opts` { _Object_ }
 
@@ -492,21 +478,15 @@ Goto [changelog](doc/changelog.md)
         // output => ['/home/a/node_modules/test', '/home/node_modules/test', '/node_modules/test']
         ```
 
-- ## **[indent(, , , reg)](lib/kit.coffee?source#L605)**
+- ## **[indent(text, num, char, reg)](lib/kit.coffee?source#L605)**
 
     Indent a text block.
 
-    - **<u>param</u>**: { _String_ }
+    - **<u>param</u>**: `text` { _String_ }
 
-        text
+    - **<u>param</u>**: `num` { _Int_ }
 
-    - **<u>param</u>**: { _Int_ }
-
-        num
-
-    - **<u>param</u>**: { _String_ }
-
-        char
+    - **<u>param</u>**: `char` { _String_ }
 
     - **<u>param</u>**: `reg` { _RegExp_ }
 
@@ -618,13 +598,13 @@ Goto [changelog](doc/changelog.md)
         // => '[2015-02-07 08:31:49] a b 10'
         ```
 
-- ## **[logs()](lib/kit.coffee?source#L778)**
+- ## **[logs(args)](lib/kit.coffee?source#L778)**
 
     Shortcut for logging multiple strings.
 
-    - **<u>param</u>**: { _Any_ }
+    - **<u>param</u>**: `args` { _Any_ }
 
-        args...
+        ...
 
     - **<u>example</u>**:
 
@@ -854,25 +834,19 @@ Goto [changelog](doc/changelog.md)
     You must `kit.require 'proxy'` before using it.
     For more information goto the `Proxy` section.
 
-- ## **[regexReduce(, , iter, )](lib/kit.coffee?source#L1253)**
+- ## **[regexReduce(reg, str, iter, init)](lib/kit.coffee?source#L1253)**
 
     Reduce a string via a regex.
 
-    - **<u>param</u>**: { _RegExp_ }
+    - **<u>param</u>**: `reg` { _RegExp_ }
 
-        reg
-
-    - **<u>param</u>**: { _String_ }
-
-        str
+    - **<u>param</u>**: `str` { _String_ }
 
     - **<u>param</u>**: `iter` { _Function_ }
 
         `(init, matchGroup) -> init`, default is `_.iteratee`.
 
-    - **<u>param</u>**: { _Any_ }
-
-        init
+    - **<u>param</u>**: `init` { _Any_ }
 
     - **<u>return</u>**: { _Any_ }
 
@@ -887,17 +861,13 @@ Goto [changelog](doc/changelog.md)
         kit.log(out); // => [1, 10, 3]
         ```
 
-- ## **[regexMap(, , iter)](lib/kit.coffee?source#L1277)**
+- ## **[regexMap(reg, str, iter)](lib/kit.coffee?source#L1277)**
 
     Map a string via a regex.
 
-    - **<u>param</u>**: { _RegExp_ }
+    - **<u>param</u>**: `reg` { _RegExp_ }
 
-        reg
-
-    - **<u>param</u>**: { _String_ }
-
-        str
+    - **<u>param</u>**: `str` { _String_ }
 
     - **<u>param</u>**: `iter` { _Function_ }
 
@@ -1507,13 +1477,11 @@ kit.warp('src/**/*.coffee')
     The built-in plguins for warp. It's more like examples
     to show how to use nokit efficiently.
 
-- ## **[cleanCss()](lib/drives.coffee?source#L19)**
+- ## **[cleanCss(opts)](lib/drives.coffee?source#L19)**
 
     clean-css
 
-    - **<u>param</u>**: { _Object_ }
-
-        opts
+    - **<u>param</u>**: `opts` { _Object_ }
 
     - **<u>return</u>**: { _Function_ }
 
@@ -1549,14 +1517,12 @@ kit.warp('src/**/*.coffee')
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[comment2md(, opts)](lib/drives.coffee?source#L123)**
+- ## **[comment2md(path, opts)](lib/drives.coffee?source#L123)**
 
     Parse commment from a js, coffee, or livescript file,
     and output a markdown string.
 
-    - **<u>param</u>**: { _String_ }
-
-        path
+    - **<u>param</u>**: `path` { _String_ }
 
     - **<u>param</u>**: `opts` { _Object_ }
 
@@ -1614,13 +1580,11 @@ kit.warp('src/**/*.coffee')
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[changeDir(, filter)](lib/drives.coffee?source#L214)**
+- ## **[changeDir(dir, filter)](lib/drives.coffee?source#L214)**
 
     Change dest path with a filter.
 
-    - **<u>param</u>**: { _String_ }
-
-        dir
+    - **<u>param</u>**: `dir` { _String_ }
 
     - **<u>param</u>**: `filter` { _Function_ }
 
@@ -1778,14 +1742,12 @@ kit.warp('src/**/*.coffee')
 
         `(ctx) -> Promise`
 
-- ## **[van()](lib/proxy.coffee?source#L40)**
+- ## **[van(ctx)](lib/proxy.coffee?source#L40)**
 
     Add a `van` method to flow context object. It's a helper to set
     and get the context body.
 
-    - **<u>param</u>**: { _FlowContext_ }
-
-        ctx
+    - **<u>param</u>**: `ctx` { _FlowContext_ }
 
 - ## **[connect(opts)](lib/proxy.coffee?source#L74)**
 
@@ -1833,13 +1795,11 @@ kit.warp('src/**/*.coffee')
     A minimal middleware composer for the future.
     https://github.com/ysmood/noflow
 
-- ## **[match(, opts)](lib/proxy.coffee?source#L167)**
+- ## **[match(pattern, opts)](lib/proxy.coffee?source#L167)**
 
     Generate an express like unix path selector. See the example of `proxy.flow`.
 
-    - **<u>param</u>**: { _String_ }
-
-        pattern
+    - **<u>param</u>**: `pattern` { _String_ }
 
     - **<u>param</u>**: `opts` { _Object_ }
 
@@ -1883,7 +1843,7 @@ kit.warp('src/**/*.coffee')
         http.createServer(proxy.flow(middlewares)).listen(8123);
         ```
 
-- ## **[select(sel, )](lib/proxy.coffee?source#L236)**
+- ## **[select(sel, middleware)](lib/proxy.coffee?source#L236)**
 
     Create a conditional middleware that only works when the pattern matches.
 
@@ -1905,9 +1865,7 @@ kit.warp('src/**/*.coffee')
         When the `url` is a string, if `req.url` starts with the `url`, the rest
         of the string will be captured.
 
-    - **<u>param</u>**: { _Function_ }
-
-        middleware
+    - **<u>param</u>**: `middleware` { _Function_ }
 
     - **<u>return</u>**: { _Function_ }
 
@@ -2130,7 +2088,7 @@ kit.warp('src/**/*.coffee')
 
     - **<u>type</u>**: { _Array_ }
 
-- ## **[emit(event, msg, path)](lib/sse.coffee?source#L67)**
+- ## **[emit(event, msg, [path])](lib/sse.coffee?source#L67)**
 
     Broadcast a event to all clients.
 
@@ -2142,7 +2100,7 @@ kit.warp('src/**/*.coffee')
 
         The data you want to emit to session.
 
-    - **<u>param</u>**: `path` { _String_ }
+    - **<u>param</u>**: `[path]` { _String_ }
 
         The namespace of target sessions. If not set,
         broadcast to all clients.
