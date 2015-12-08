@@ -380,8 +380,8 @@ _.extend(kit, fs, yutils, {
    *     a='hello world'
    *     echo $a
    * `).then(({code, stdout}) => {
-   *     kit.log code # output => 0
-   *     kit.log stdout # output => "hello world"
+   *     kit.log code   // output => 0
+   *     kit.log stdout // output => "hello world"
    * });
    *
    * // Bash doesn't support "**" recusive match pattern.
@@ -751,7 +751,7 @@ _.extend(kit, fs, yutils, {
    *  logReg: process.env.logReg && new RegExp(process.env.logReg),
    *  logTrace: process.env.logTrace === 'on',
    *
-   *  # Custom log method
+   *  // Custom log method
    *  log: (str, action) => console[action](str)
    * }
    * ```
@@ -911,10 +911,10 @@ _.extend(kit, fs, yutils, {
    *      kit.log('Watching:' + paths.join(', ')),
    *  onNormalExit: ({ code, signal }) =>
    *      kit.log('EXIT' +
-   *          " code: #{code} signal: #{signal}"),
+   *          ` code: ${code} signal: ${signal}`),
    *  onErrorExit: ({ code, signal }) =>
    *      kit.err('EXIT' +
-   *      " code: #{code} signal: #{signal}\n" +
+   *      ` code: ${code} signal: ${signal}\n` +
    *      'Process closed. Edit and save the watched file to restart.'),
    *  sepLine: =>
    *      process.stdout.write(_.repeat('*', process.stdout.columns))

@@ -107,9 +107,23 @@ Goto [changelog](doc/changelog.md)
 
 # API
 
+### Table of Content
+
+- #### kit
+<%= doc['lib/kit.coffee-toc'] %>
+
+- #### proxy
+<%= doc['lib/proxy.coffee-toc'] %>
+
+- #### drives
+<%= doc['lib/drives.coffee-toc'] %>
+
+- #### sse
+<%= doc['lib/sse.coffee-toc'] %>
+
 <%= doc['lib/kit.coffee'] %>
 
-# Drives
+# drives
 
 ## Quick Start
 
@@ -189,11 +203,11 @@ kit.warp('src/**/*.coffee')
 
 <%= doc['lib/drives.coffee'] %>
 
-# Proxy
+# proxy
 
 <%= doc['lib/proxy.coffee'] %>
 
-# SSE
+# sse
 
 <%= doc['lib/sse.coffee'] %>
 

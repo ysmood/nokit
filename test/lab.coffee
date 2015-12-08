@@ -4,8 +4,10 @@ proxy = kit.require 'proxy'
 kit.require 'url'
 http = require 'http'
 { Promise } = kit
-# require '../lib/proxy'
 
-setInterval ->
-    kit.logs("OK")
-, 2000
+
+kit.warp('test/fixtures/comment.coffee')
+.load(kit.require('drives').comment2md({
+    tpl: 'doc/readme.jst.md'
+}))
+.run('out');

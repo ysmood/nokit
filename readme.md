@@ -107,6 +107,95 @@ Goto [changelog](doc/changelog.md)
 
 # API
 
+### Table of Content
+
+- #### kit
+  - [Overview](#overview)
+  - [_](#_)
+  - [browserHelper(opts, useJs)](#browserhelperopts-usejs)
+  - [brush](#brush)
+  - [depsCache(info)](#depscacheinfo)
+  - [daemonize(opts)](#daemonizeopts)
+  - [decrypt(data, password, algorithm)](#decryptdata-password-algorithm)
+  - [drives](#drives)
+  - [encrypt(data, password, algorithm)](#encryptdata-password-algorithm)
+  - [err(msg, opts)](#errmsg-opts)
+  - [exec(cmd, shell)](#execcmd-shell)
+  - [formatComment(comments, opts)](#formatcommentcomments-opts)
+  - [fs](#fs)
+  - [fuzzySearch(keys, list, opts)](#fuzzysearchkeys-list-opts)
+  - [genModulePaths(moduleName, dir, modDir)](#genmodulepathsmodulename-dir-moddir)
+  - [indent(text, num, char, reg)](#indenttext-num-char-reg)
+  - [isDevelopment()](#isdevelopment)
+  - [isProduction()](#isproduction)
+  - [jhash](#jhash)
+  - [log(msg, action, opts)](#logmsg-action-opts)
+  - [logs(args)](#logsargs)
+  - [monitorApp(opts)](#monitorappopts)
+  - [nodeVersion()](#nodeversion)
+  - [defaultArgs(args, defaults)](#defaultargsargs-defaults)
+  - [parseComment(code, opts)](#parsecommentcode-opts)
+  - [parseDependency(entryPaths, opts)](#parsedependencyentrypaths-opts)
+  - [path](#path)
+  - [Promise](#promise)
+  - [proxy](#proxy)
+  - [regexReduce(reg, str, iter, init)](#regexreducereg-str-iter-init)
+  - [regexMap(reg, str, iter)](#regexmapreg-str-iter)
+  - [require(moduleName, dir, loaded)](#requiremodulename-dir-loaded)
+  - [requireOptional(name, dir, semver)](#requireoptionalname-dir-semver)
+  - [request(opts)](#requestopts)
+  - [semver](#semver)
+  - [spawn(cmd, args, opts)](#spawncmd-args-opts)
+  - [sse](#sse)
+  - [task(name, opts, fn)](#taskname-opts-fn)
+  - [url](#url)
+  - [warp(from, opts)](#warpfrom-opts)
+  - [which(name)](#whichname)
+  - [whichSync](#whichsync)
+  - [xinspect(obj, opts)](#xinspectobj-opts)
+  - [xopen(cmds, opts)](#xopencmds-opts)
+
+- #### proxy
+  - [Overview](#overview)
+  - [body()](#body)
+  - [van(ctx)](#vanctx)
+  - [connect(opts)](#connectopts)
+  - [etag()](#etag)
+  - [flow](#flow)
+  - [match(pattern, opts)](#matchpattern-opts)
+  - [midToFlow(h)](#midtoflowh)
+  - [select(sel, middleware)](#selectsel-middleware)
+  - [serverHelper(opts)](#serverhelperopts)
+  - [static(opts)](#staticopts)
+  - [url(opts)](#urlopts)
+
+- #### drives
+  - [Overview](#overview)
+  - [cleanCss(opts)](#cleancssopts)
+  - [coffee(opts)](#coffeeopts)
+  - [coffeelint(opts)](#coffeelintopts)
+  - [comment2md(path, opts)](#comment2mdpath-opts)
+  - [auto(action, opts)](#autoaction-opts)
+  - [changeDir(dir, filter)](#changedirdir-filter)
+  - [concat(name, dir)](#concatname-dir)
+  - [hashSuffix(hashMapPath)](#hashsuffixhashmappath)
+  - [jshint(opts)](#jshintopts)
+  - [less()](#less)
+  - [livescript(opts)](#livescriptopts)
+  - [reader(opts)](#readeropts)
+  - [stylus(opts)](#stylusopts)
+  - [uglifyjs(opts)](#uglifyjsopts)
+  - [writer()](#writer)
+
+- #### sse
+  - [sse(opts)](#sseopts)
+  - [self(req, res)](#selfreq-res)
+  - [sessions](#sessions)
+  - [emit(event, msg, [path])](#emitevent-msg-[path])
+  - [create(req, res)](#createreq-res)
+  - [session](#session)
+  - [session.emit(event, msg)](#session.emitevent-msg)
+
 - ## **[Overview](lib/kit.coffee?source#L32)**
 
     Nokit extends all the functions of [nofs](https://github.com/ysmood/nofs)
@@ -356,8 +445,8 @@ Goto [changelog](doc/changelog.md)
             a='hello world'
             echo $a
         `).then(({code, stdout}) => {
-            kit.log code # output => 0
-            kit.log stdout # output => "hello world"
+            kit.log code   // output => 0
+            kit.log stdout // output => "hello world"
         });
 
         // Bash doesn't support "**" recusive match pattern.
@@ -577,7 +666,7 @@ Goto [changelog](doc/changelog.md)
          logReg: process.env.logReg && new RegExp(process.env.logReg),
          logTrace: process.env.logTrace === 'on',
 
-         # Custom log method
+         // Custom log method
          log: (str, action) => console[action](str)
         }
         ```
@@ -647,10 +736,10 @@ Goto [changelog](doc/changelog.md)
              kit.log('Watching:' + paths.join(', ')),
          onNormalExit: ({ code, signal }) =>
              kit.log('EXIT' +
-                 " code: #{code} signal: #{signal}"),
+                 ` code: ${code} signal: ${signal}`),
          onErrorExit: ({ code, signal }) =>
              kit.err('EXIT' +
-             " code: #{code} signal: #{signal}\n" +
+             ` code: ${code} signal: ${signal}\n` +
              'Process closed. Edit and save the watched file to restart.'),
          sepLine: =>
              process.stdout.write(_.repeat('*', process.stdout.columns))
@@ -1394,7 +1483,7 @@ Goto [changelog](doc/changelog.md)
 
 
 
-# Drives
+# drives
 
 ## Quick Start
 
@@ -1552,7 +1641,7 @@ kit.warp('src/**/*.coffee')
 
         The nofile of nokit shows how to use it.
 
-- ## **[auto(action, opts)](lib/drives.coffee?source#L178)**
+- ## **[auto(action, opts)](lib/drives.coffee?source#L186)**
 
     Auto-compiler file by extension. It will search through
     `kit.drives`, and find proper drive to run the task.
@@ -1580,7 +1669,7 @@ kit.warp('src/**/*.coffee')
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[changeDir(dir, filter)](lib/drives.coffee?source#L214)**
+- ## **[changeDir(dir, filter)](lib/drives.coffee?source#L222)**
 
     Change dest path with a filter.
 
@@ -1592,7 +1681,7 @@ kit.warp('src/**/*.coffee')
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[concat(name, dir)](lib/drives.coffee?source#L229)**
+- ## **[concat(name, dir)](lib/drives.coffee?source#L237)**
 
     a batch file concat helper
 
@@ -1606,7 +1695,7 @@ kit.warp('src/**/*.coffee')
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[hashSuffix(hashMapPath)](lib/drives.coffee?source#L249)**
+- ## **[hashSuffix(hashMapPath)](lib/drives.coffee?source#L257)**
 
     Suffix file name with the hash value of file content.
 
@@ -1616,7 +1705,7 @@ kit.warp('src/**/*.coffee')
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[jshint(opts)](lib/drives.coffee?source#L274)**
+- ## **[jshint(opts)](lib/drives.coffee?source#L282)**
 
     Lint js via `jshint`.
 
@@ -1632,7 +1721,7 @@ kit.warp('src/**/*.coffee')
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[less()](lib/drives.coffee?source#L307)**
+- ## **[less()](lib/drives.coffee?source#L315)**
 
     Compile less.
 
@@ -1640,7 +1729,7 @@ kit.warp('src/**/*.coffee')
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[livescript(opts)](lib/drives.coffee?source#L334)**
+- ## **[livescript(opts)](lib/drives.coffee?source#L342)**
 
     LiveScript compiler.
 
@@ -1650,7 +1739,7 @@ kit.warp('src/**/*.coffee')
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[reader(opts)](lib/drives.coffee?source#L365)**
+- ## **[reader(opts)](lib/drives.coffee?source#L373)**
 
     read file and set `contents`
 
@@ -1667,7 +1756,7 @@ kit.warp('src/**/*.coffee')
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[stylus(opts)](lib/drives.coffee?source#L434)**
+- ## **[stylus(opts)](lib/drives.coffee?source#L442)**
 
     Compile stylus.
 
@@ -1694,7 +1783,7 @@ kit.warp('src/**/*.coffee')
         });
         ```
 
-- ## **[uglifyjs(opts)](lib/drives.coffee?source#L476)**
+- ## **[uglifyjs(opts)](lib/drives.coffee?source#L484)**
 
     uglify-js processor
 
@@ -1716,7 +1805,7 @@ kit.warp('src/**/*.coffee')
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[writer()](lib/drives.coffee?source#L501)**
+- ## **[writer()](lib/drives.coffee?source#L509)**
 
     Output file by `contents` and `dest`.
     If the 'ext' or 'name' is not null,
@@ -1726,7 +1815,7 @@ kit.warp('src/**/*.coffee')
 
 
 
-# Proxy
+# proxy
 
 - ## **[Overview](lib/proxy.coffee?source#L6)**
 
@@ -2022,7 +2111,7 @@ kit.warp('src/**/*.coffee')
 
 
 
-# SSE
+# sse
 
 - ## **[sse(opts)](lib/sse.coffee?source#L41)**
 

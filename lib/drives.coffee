@@ -130,13 +130,21 @@ module.exports =
             formatComment: {}
 
         _.extend (file) ->
+            toc = []
             opts.formatComment.name = ({ name, line }) ->
                 name = name.replace 'self.', ''
+
+                tocName = name.toLowerCase()
+                    .replace(/[\(\),]/g, '')
+                    .replace(/\s/g, '-');
+                toc.push "  - [#{name}](##{tocName})"
+
                 link = "#{file.path}?source#L#{line}"
                 "- #{_.repeat '#', opts.h} **[#{name}](#{link})**\n\n"
 
             comments = kit.parseComment @contents + '', opts.parseComment
             opts.doc[@path] = kit.formatComment comments, opts.formatComment
+            opts.doc[@path + '-toc'] = toc.join '\n'
 
         , isWriter: true, onEnd: (file) ->
             return if _.keys(opts.doc).length < @list.length

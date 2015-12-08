@@ -164,16 +164,20 @@ module.exports = {
       formatComment: {}
     });
     return _.extend(function(file) {
-      var comments;
+      var comments, toc;
+      toc = [];
       opts.formatComment.name = function(arg) {
-        var line, link, name;
+        var line, link, name, tocName;
         name = arg.name, line = arg.line;
         name = name.replace('self.', '');
+        tocName = name.toLowerCase().replace(/[\(\),]/g, '').replace(/\s/g, '-');
+        toc.push("  - [" + name + "](#" + tocName + ")");
         link = file.path + "?source#L" + line;
         return "- " + (_.repeat('#', opts.h)) + " **[" + name + "](" + link + ")**\n\n";
       };
       comments = kit.parseComment(this.contents + '', opts.parseComment);
-      return opts.doc[this.path] = kit.formatComment(comments, opts.formatComment);
+      opts.doc[this.path] = kit.formatComment(comments, opts.formatComment);
+      return opts.doc[this.path + '-toc'] = toc.join('\n');
     }, {
       isWriter: true,
       onEnd: function(file) {
