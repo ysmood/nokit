@@ -953,6 +953,7 @@ _.extend(kit, fs, yutils, {
       args: ['index.js'],
       retry: function() {},
       watchList: null,
+      watchRoot: null,
       isNodeDeps: true,
       parseDependency: {},
       opts: {},
@@ -1002,20 +1003,15 @@ _.extend(kit, fs, yutils, {
       });
     };
     watchedList = [];
-    watcher = _.debounce(function(path, curr, prev, isDelete) {
-      if (isDelete) {
-        return;
-      }
-      if (curr.mtime !== prev.mtime) {
-        opts.onRestart(path);
-        childPromise["catch"](function() {}).then(start);
-        try {
-          child_process.execSync('pkill -P ' + childPromise.process.pid, {
-            stdio: 'ignore'
-          });
-        } catch (undefined) {}
-        return childPromise.process.kill('SIGINT');
-      }
+    watcher = _.debounce(function(path) {
+      opts.onRestart(path);
+      childPromise["catch"](function() {}).then(start);
+      try {
+        child_process.execSync('pkill -P ' + childPromise.process.pid, {
+          stdio: 'ignore'
+        });
+      } catch (undefined) {}
+      return childPromise.process.kill('SIGINT');
     }, 50);
     stop = function() {
       try {
@@ -1056,7 +1052,12 @@ _.extend(kit, fs, yutils, {
       stop();
       return process.exit();
     });
-    watchPromise = opts.isNodeDeps ? kit.parseDependency(opts.watchList, opts.parseDependency).then(watch) : kit.watchFiles(opts.watchList, {
+    watchPromise = opts.watchRoot ? kit.watchDir(opts.watchRoot, {
+      patterns: opts.watchList,
+      handler: function(type, path) {
+        return watcher(path);
+      }
+    }) : opts.isNodeDeps ? kit.parseDependency(opts.watchList, opts.parseDependency).then(watch) : kit.watchFiles(opts.watchList, {
       handler: watcher
     });
     opts.onStart();
