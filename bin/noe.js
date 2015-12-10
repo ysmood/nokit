@@ -28,6 +28,7 @@ cmder
         if (!watchList) watchList = [];
         watchList.push(p);
     })
+    .option('--root <str>', 'watch directory, treat -w as pattern under the root path', null)
     .option('-b, --bin <name>', 'bin to execute, default is [babel-node | node]', null)
     .option('-r, --retry <time | auto>', 'auto restart program after it ends after some milliseconds [Infinity]', function (v) {
         return v === 'auto' ? v : +v;
@@ -98,5 +99,6 @@ kit.monitorApp({
     retry: genRetry(),
     args: cmder.args.concat(childArgs),
     watchList: watchList,
+    watchRoot: cmder.root,
     isNodeDeps: !cmder.noNodeDeps
 });

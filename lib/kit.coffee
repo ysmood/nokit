@@ -857,6 +857,7 @@ _.extend kit, fs, yutils,
             args: ['index.js']
             retry: ->
             watchList: null
+            watchRoot: null
             isNodeDeps: true
             parseDependency: {}
             opts: {}
@@ -906,19 +907,16 @@ _.extend kit, fs, yutils,
 
         watchedList = []
 
-        watcher = _.debounce (path, curr, prev, isDelete) ->
-            return if isDelete
+        watcher = _.debounce (path) ->
+            opts.onRestart path
 
-            if curr.mtime != prev.mtime
-                opts.onRestart path
-
-                childPromise.catch(->).then start
-                try
-                    child_process
-                    .execSync 'pkill -P ' + childPromise.process.pid, {
-                        stdio: 'ignore'
-                    }
-                childPromise.process.kill 'SIGINT'
+            childPromise.catch(->).then start
+            try
+                child_process
+                .execSync 'pkill -P ' + childPromise.process.pid, {
+                    stdio: 'ignore'
+                }
+            childPromise.process.kill 'SIGINT'
         , 50
 
         stop = ->
@@ -946,7 +944,12 @@ _.extend kit, fs, yutils,
             stop()
             process.exit()
 
-        watchPromise = if opts.isNodeDeps
+        watchPromise = if opts.watchRoot
+            kit.watchDir opts.watchRoot, {
+                patterns: opts.watchList
+                handler: (type, path) -> watcher path
+            }
+        else if opts.isNodeDeps
             kit.parseDependency opts.watchList, opts.parseDependency
             .then watch
         else
