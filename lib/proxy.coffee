@@ -9,10 +9,51 @@ kit = require './kit'
 { _, Promise } = kit
 http = require 'http'
 flow = require 'noflow'
-{ Socket } = kit.require 'net', __dirname
+net = kit.require 'net', __dirname
+{ Socket } = net
 
 regConnectHost = /([^:]+)(?::(\d+))?/
 regTunnelBegin = /^\w+\:\/\//
+
+
+boxBufferFrame = (data) ->
+    if not Buffer.isBuffer(data)
+        data = new Buffer data
+
+    len = data.length
+    sizeBuf = new Buffer [0, 0, 0, 0]
+    digit = 0
+    i = 0
+
+    while len > 0
+        digit = len % 256
+        len = (len - digit) / 256
+        sizeBuf[i++] = digit
+
+    Buffer.concat [sizeBuf, data]
+
+unboxBufferFrame = (sock, opts, head) ->
+    buf = new Buffer 0
+    len = null
+
+    check = (chunk) ->
+        if len == null
+            len = chunk[0] + chunk[1] * 256 +
+                chunk[2] * 65536 + chunk[3] * 16777216
+
+            buf = chunk.slice 4
+
+        if buf.length >= len
+            opts.data? buf.slice(0, len)
+            buf = buf.slice len
+            len = null
+        else
+            buf = Buffer.concat [buf, chunk]
+
+    if head && head.length > 0
+        check head
+
+    sock.on 'data', check
 
 proxy =
 
@@ -122,6 +163,73 @@ proxy =
                 opts.onError err, req, sock
             psock.on 'error', (err) ->
                 opts.onError err, req, psock
+
+    ###*
+     * A socket p2p middleware on http CONNECT.
+     * @param  {Object} opts
+     * ```js
+     * {
+     *     filter: (req) => true,
+     *     onError: (err, req, sock) => {}
+     * }
+     * ```
+     * @return {Function}
+    ###
+    connectServant: (opts = {}) ->
+        _.defaults opts, {
+            filter: (req) -> true
+            onError: (err, req, sock) ->
+                br = kit.require 'brush'
+                kit.log err.toString() + ' -> ' + br.red req.url
+                sock.end()
+        }
+
+        (req, sock, head) ->
+            return if not opts.filter req
+
+            unboxBufferFrame sock, opts, head
+
+            opts.onConnect? req, (data) ->
+                sock.write boxBufferFrame data
+
+            sock.on 'error', (err) ->
+                opts.onError err, req, sock
+
+    ###*
+     * A socket p2p client to http CONNECT.
+     * @param  {Object} opts
+     * ```js
+     * {
+     *     retry: 0,
+     *     host: '127.0.0.1',
+     *     port: 80
+     * }
+     * ```
+    ###
+    connectClient: (opts) ->
+        _.defaults opts, {
+            retry: 0
+            host: '127.0.0.1'
+            port: 80
+        }
+
+        connect = ->
+            client = net.connect opts.port, opts.host, ->
+
+                client.write "CONNECT #{opts.url or '/'} HTTP/1.1\r\n\r\n"
+
+                opts.onConnect? client, (data) ->
+                    client.write boxBufferFrame data
+
+                unboxBufferFrame client, opts
+
+                if opts.retry
+                    client.on 'error', ->
+                        setTimeout connect, opts.retry
+                else if opts.onError
+                    client.on 'error', opts.onError
+
+        connect()
 
     ###*
      * Create a etag middleware.

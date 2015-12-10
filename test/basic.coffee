@@ -639,3 +639,44 @@ module.exports = (it) ->
 			.then (body) ->
 				console.log body
 				it.eq {a: 10}, JSON.parse(body)
+
+	it 'proxy connectServant', (after) ->
+		proxy = kit.require 'proxy'
+
+		app = proxy.flow()
+
+		after -> app.close()
+
+		new Promise (resolve) ->
+			app.server.on 'connect', proxy.connectServant({
+				data: (c) -> resolve it.eq(c + '', 'client')
+			})
+
+			app.listen(0).then ->
+				app.server.setTimeout 1000
+				proxy.connectClient {
+					port: app.server.address().port
+					host: '127.0.0.1'
+					onConnect: (c, w) -> w('client')
+				}
+
+	it 'proxy connectClient', (after) ->
+		proxy = kit.require 'proxy'
+
+		app = proxy.flow()
+
+		after -> app.close()
+
+		new Promise (resolve) ->
+			app.server.on 'connect', proxy.connectServant({
+				onConnect: (req, w) ->
+					w(new Buffer(10001))
+			})
+
+			app.listen(0).then ->
+				app.server.setTimeout 1000
+				proxy.connectClient {
+					port: app.server.address().port
+					host: '127.0.0.1'
+					data: (c) -> resolve it.eq(c.length, 10001)
+				}

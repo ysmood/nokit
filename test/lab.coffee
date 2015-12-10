@@ -5,9 +5,21 @@ kit.require 'url'
 http = require 'http'
 { Promise } = kit
 
+proxy = kit.require 'proxy'
 
-kit.warp('test/fixtures/comment.coffee')
-.load(kit.require('drives').comment2md({
-    tpl: 'doc/readme.jst.md'
-}))
-.run('out');
+app = proxy.flow()
+
+new Promise (resolve) ->
+	app.server.on 'connect', proxy.connectServant({
+		onConnect: (req, w) ->
+			setInterval ->
+				w(new Buffer(10001))
+			, 1000
+	})
+
+	app.listen(0).then ->
+		proxy.connectClient {
+			port: app.server.address().port
+			host: '127.0.0.1'
+			data: (c) -> console.log(c.length)
+		}
