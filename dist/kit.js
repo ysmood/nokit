@@ -1545,7 +1545,7 @@ _.extend(kit, fs, yutils, {
         throw err;
       }
       br = kit.require('brush');
-      kit.err((br.red("Optional module required.\n" + br.red("If current module is installed globally, run " + br.green(("'npm install -g " + name + "'") + br.red(" first, else run " + br.green(("'npm install -S " + name + "'") + br.red(" first.\n"))))))) + err.stack, {
+      kit.err((br.red("Optional module required. Please " + br.green(("'npm install -S " + name + "'") + br.red(" first.\n")))) + err.stack, {
         isShowTime: false
       });
       return process.exit(1);

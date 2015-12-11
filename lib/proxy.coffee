@@ -551,12 +551,6 @@ proxy =
      *  // `{ protocol: 'http:', host: 'test.com:8123', pathname: '/a/b', query: 's=1' }`.
      *  url: null,
      *
-     *  // Limit the bandwidth byte per second.
-     *  bps: Integer,
-     *
-     *  // if the bps is the global bps.
-     *  globalBps: false,
-     *
      *  agent: customHttpAgent,
      *
      *  // Force the header's host same as the url's.

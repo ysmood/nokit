@@ -14,7 +14,7 @@ It's one of the core lib of [nobone](https://github.com/ysmood/nobone).
 
 - All async functions will return promise.
 - All functions are highly lazy designed, minimum boot time.
-- Test on Node 0.8 - 0.12 on Mac, Linux and Windows.
+- Test on Node v0.10+ on Mac, Linux and Windows.
 - Light weight and self-reference.
 
 # Installation
@@ -1038,7 +1038,7 @@ Goto [changelog](doc/changelog.md)
 
         The required package.
 
-- ## **[request(opts)](lib/kit.coffee?source#L1531)**
+- ## **[request(opts)](lib/kit.coffee?source#L1528)**
 
     A handy extended combination of `http.request` and `https.request`.
 
@@ -1156,14 +1156,14 @@ Goto [changelog](doc/changelog.md)
         );
         ```
 
-- ## **[semver](lib/kit.coffee?source#L1741)**
+- ## **[semver](lib/kit.coffee?source#L1738)**
 
     The semantic versioner for npm, known as [semver](https://github.com/npm/node-semver).
     You must `kit.require 'semver'` before using it.
 
     - **<u>type</u>**: { _Object_ }
 
-- ## **[spawn(cmd, args, opts)](lib/kit.coffee?source#L1772)**
+- ## **[spawn(cmd, args, opts)](lib/kit.coffee?source#L1769)**
 
     A safer version of `child_process.spawn` to cross-platform run
     a process. In some conditions, it may be more convenient
@@ -1207,13 +1207,13 @@ Goto [changelog](doc/changelog.md)
         .then(({code}) => kit.log code);
         ```
 
-- ## **[sse](lib/kit.coffee?source#L1838)**
+- ## **[sse](lib/kit.coffee?source#L1835)**
 
     The `sse` module.
     You must `kit.require 'sse'` before using it.
     For more information goto the `sse` section.
 
-- ## **[task(name, opts, fn)](lib/kit.coffee?source#L1899)**
+- ## **[task(name, opts, fn)](lib/kit.coffee?source#L1896)**
 
     Sequencing and executing tasks and dependencies concurrently.
 
@@ -1293,12 +1293,12 @@ Goto [changelog](doc/changelog.md)
         );
         ```
 
-- ## **[url](lib/kit.coffee?source#L1973)**
+- ## **[url](lib/kit.coffee?source#L1970)**
 
     The `url` module of [io.js](iojs.org).
     You must `kit.require 'url'` before using it.
 
-- ## **[warp(from, opts)](lib/kit.coffee?source#L2088)**
+- ## **[warp(from, opts)](lib/kit.coffee?source#L2085)**
 
     Works much like `gulp.src`, but with Promise instead.
     The warp control and error handling is more pleasant.
@@ -1423,7 +1423,7 @@ Goto [changelog](doc/changelog.md)
         .run('dist');
         ```
 
-- ## **[which(name)](lib/kit.coffee?source#L2165)**
+- ## **[which(name)](lib/kit.coffee?source#L2162)**
 
     Same as the unix `which` command.
     You must `kit.require 'which'` before using it.
@@ -1434,14 +1434,14 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Promise_ }
 
-- ## **[whichSync](lib/kit.coffee?source#L2172)**
+- ## **[whichSync](lib/kit.coffee?source#L2169)**
 
     Sync version of `which`.
     You must `kit.require 'whichSync'` before using it.
 
     - **<u>type</u>**: { _Function_ }
 
-- ## **[xinspect(obj, opts)](lib/kit.coffee?source#L2183)**
+- ## **[xinspect(obj, opts)](lib/kit.coffee?source#L2180)**
 
     For debugging. Dump a colorful object.
 
@@ -1458,7 +1458,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _String_ }
 
-- ## **[xopen(cmds, opts)](lib/kit.coffee?source#L2206)**
+- ## **[xopen(cmds, opts)](lib/kit.coffee?source#L2203)**
 
     Open a thing that your system can recognize.
     Now only support Windows, OSX or system that installed 'xdg-open'.
@@ -1825,7 +1825,7 @@ kit.warp('src/**/*.coffee')
     A cross-platform programmable Fiddler alternative.
     You can even replace express.js with it's `flow` function.
 
-- ## **[body()](lib/proxy.coffee?source#L66)**
+- ## **[body()](lib/proxy.coffee?source#L76)**
 
     A simple request body middleware.
 
@@ -1833,14 +1833,14 @@ kit.warp('src/**/*.coffee')
 
         `(ctx) -> Promise`
 
-- ## **[van(ctx)](lib/proxy.coffee?source#L81)**
+- ## **[van(ctx)](lib/proxy.coffee?source#L91)**
 
     Add a `van` method to flow context object. It's a helper to set
     and get the context body.
 
     - **<u>param</u>**: `ctx` { _FlowContext_ }
 
-- ## **[connect(opts)](lib/proxy.coffee?source#L115)**
+- ## **[connect(opts)](lib/proxy.coffee?source#L125)**
 
     Http CONNECT method tunneling proxy helper.
     Most times it is used to proxy https and websocket.
@@ -1875,7 +1875,7 @@ kit.warp('src/**/*.coffee')
         app.listen(8123);
         ```
 
-- ## **[connectServant(opts)](lib/proxy.coffee?source#L178)**
+- ## **[connectServant(opts)](lib/proxy.coffee?source#L188)**
 
     A socket p2p middleware on http CONNECT.
 
@@ -1890,7 +1890,7 @@ kit.warp('src/**/*.coffee')
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[connectClient(opts)](lib/proxy.coffee?source#L209)**
+- ## **[connectClient(opts)](lib/proxy.coffee?source#L219)**
 
     A socket p2p client to http CONNECT.
 
@@ -1904,18 +1904,18 @@ kit.warp('src/**/*.coffee')
         }
         ```
 
-- ## **[etag()](lib/proxy.coffee?source#L238)**
+- ## **[etag()](lib/proxy.coffee?source#L248)**
 
     Create a etag middleware.
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[flow](lib/proxy.coffee?source#L260)**
+- ## **[flow](lib/proxy.coffee?source#L270)**
 
     A minimal middleware composer for the future.
     https://github.com/ysmood/noflow
 
-- ## **[match(pattern, opts)](lib/proxy.coffee?source#L275)**
+- ## **[match(pattern, opts)](lib/proxy.coffee?source#L285)**
 
     Generate an express like unix path selector. See the example of `proxy.flow`.
 
@@ -1938,7 +1938,7 @@ kit.warp('src/**/*.coffee')
         kit.log(match('/items/10')) // output => { id: '10' }
         ```
 
-- ## **[midToFlow(h)](lib/proxy.coffee?source#L313)**
+- ## **[midToFlow(h)](lib/proxy.coffee?source#L323)**
 
     Convert a Express-like middleware to `proxy.flow` middleware.
 
@@ -1963,7 +1963,7 @@ kit.warp('src/**/*.coffee')
         http.createServer(proxy.flow(middlewares)).listen(8123);
         ```
 
-- ## **[select(sel, middleware)](lib/proxy.coffee?source#L344)**
+- ## **[select(sel, middleware)](lib/proxy.coffee?source#L354)**
 
     Create a conditional middleware that only works when the pattern matches.
 
@@ -1989,7 +1989,7 @@ kit.warp('src/**/*.coffee')
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[serverHelper(opts)](lib/proxy.coffee?source#L433)**
+- ## **[serverHelper(opts)](lib/proxy.coffee?source#L443)**
 
     Create a http request middleware.
 
@@ -2037,7 +2037,7 @@ kit.warp('src/**/*.coffee')
         nokit.log({ any: 'thing' });
         ```
 
-- ## **[static(opts)](lib/proxy.coffee?source#L501)**
+- ## **[static(opts)](lib/proxy.coffee?source#L511)**
 
     Create a static file middleware for `proxy.flow`.
 
@@ -2058,7 +2058,7 @@ kit.warp('src/**/*.coffee')
         http.createServer(proxy.flow(middlewares)).listen(8123);
         ```
 
-- ## **[url(opts)](lib/proxy.coffee?source#L603)**
+- ## **[url(opts)](lib/proxy.coffee?source#L607)**
 
     Use it to proxy one url to another.
 
@@ -2075,12 +2075,6 @@ kit.warp('src/**/*.coffee')
          // It can also be an url object. Such as
          // `{ protocol: 'http:', host: 'test.com:8123', pathname: '/a/b', query: 's=1' }`.
          url: null,
-
-         // Limit the bandwidth byte per second.
-         bps: Integer,
-
-         // if the bps is the global bps.
-         globalBps: false,
 
          agent: customHttpAgent,
 

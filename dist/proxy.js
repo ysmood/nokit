@@ -46,19 +46,25 @@ unboxBufferFrame = function(sock, opts, head) {
   buf = new Buffer(0);
   len = null;
   check = function(chunk) {
-    if (len === null) {
-      len = chunk[0] + chunk[1] * 256 + chunk[2] * 65536 + chunk[3] * 16777216;
-      buf = chunk.slice(4);
-    }
-    if (buf.length >= len) {
-      if (typeof opts.data === "function") {
-        opts.data(buf.slice(0, len));
+    var results;
+    buf = Buffer.concat([buf, chunk]);
+    results = [];
+    while (true) {
+      if (len === null) {
+        len = buf[0] + buf[1] * 256 + buf[2] * 65536 + buf[3] * 16777216;
+        buf = buf.slice(4);
       }
-      buf = buf.slice(len);
-      return len = null;
-    } else {
-      return buf = Buffer.concat([buf, chunk]);
+      if (len !== null && buf.length >= len) {
+        if (typeof opts.data === "function") {
+          opts.data(buf.slice(0, len));
+        }
+        buf = buf.slice(len);
+        results.push(len = null);
+      } else {
+        break;
+      }
     }
+    return results;
   };
   if (head && head.length > 0) {
     check(head);
@@ -610,12 +616,6 @@ proxy = {
    *  // It can also be an url object. Such as
    *  // `{ protocol: 'http:', host: 'test.com:8123', pathname: '/a/b', query: 's=1' }`.
    *  url: null,
-   *
-   *  // Limit the bandwidth byte per second.
-   *  bps: Integer,
-   *
-   *  // if the bps is the global bps.
-   *  globalBps: false,
    *
    *  agent: customHttpAgent,
    *
