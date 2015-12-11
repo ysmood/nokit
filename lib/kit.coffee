@@ -1410,10 +1410,7 @@ _.extend kit, fs, yutils,
 
             br = kit.require 'brush'
             kit.err(
-                (br.red "Optional module required.\n" +
-                br.red "If current module is installed globally, run " +
-                br.green "'npm install -g #{name}'" +
-                br.red " first, else run " +
+                (br.red "Optional module required. Please " +
                 br.green "'npm install -S #{name}'" + br.red " first.\n") +
                 err.stack
             , { isShowTime: false })
