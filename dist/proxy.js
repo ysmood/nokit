@@ -207,6 +207,7 @@ proxy = {
    * @param  {Object} opts
    * ```js
    * {
+   *     onConnect: (req, write) => {},
    *     filter: (req) => true,
    *     onError: (err, req, sock) => {}
    * }
@@ -249,6 +250,7 @@ proxy = {
    * @param  {Object} opts
    * ```js
    * {
+   *     onConnect: (req, write) => {},
    *     retry: 0,
    *     host: '127.0.0.1',
    *     port: 80

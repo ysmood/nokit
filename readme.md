@@ -1875,7 +1875,7 @@ kit.warp('src/**/*.coffee')
         app.listen(8123);
         ```
 
-- ## **[connectServant(opts)](lib/proxy.coffee?source#L188)**
+- ## **[connectServant(opts)](lib/proxy.coffee?source#L189)**
 
     A socket p2p middleware on http CONNECT.
 
@@ -1883,6 +1883,7 @@ kit.warp('src/**/*.coffee')
 
         ```js
         {
+            onConnect: (req, write) => {},
             filter: (req) => true,
             onError: (err, req, sock) => {}
         }
@@ -1890,7 +1891,7 @@ kit.warp('src/**/*.coffee')
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[connectClient(opts)](lib/proxy.coffee?source#L219)**
+- ## **[connectClient(opts)](lib/proxy.coffee?source#L221)**
 
     A socket p2p client to http CONNECT.
 
@@ -1898,24 +1899,25 @@ kit.warp('src/**/*.coffee')
 
         ```js
         {
+            onConnect: (req, write) => {},
             retry: 0,
             host: '127.0.0.1',
             port: 80
         }
         ```
 
-- ## **[etag()](lib/proxy.coffee?source#L248)**
+- ## **[etag()](lib/proxy.coffee?source#L250)**
 
     Create a etag middleware.
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[flow](lib/proxy.coffee?source#L270)**
+- ## **[flow](lib/proxy.coffee?source#L272)**
 
     A minimal middleware composer for the future.
     https://github.com/ysmood/noflow
 
-- ## **[match(pattern, opts)](lib/proxy.coffee?source#L285)**
+- ## **[match(pattern, opts)](lib/proxy.coffee?source#L287)**
 
     Generate an express like unix path selector. See the example of `proxy.flow`.
 
@@ -1938,7 +1940,7 @@ kit.warp('src/**/*.coffee')
         kit.log(match('/items/10')) // output => { id: '10' }
         ```
 
-- ## **[midToFlow(h)](lib/proxy.coffee?source#L323)**
+- ## **[midToFlow(h)](lib/proxy.coffee?source#L325)**
 
     Convert a Express-like middleware to `proxy.flow` middleware.
 
@@ -1963,7 +1965,7 @@ kit.warp('src/**/*.coffee')
         http.createServer(proxy.flow(middlewares)).listen(8123);
         ```
 
-- ## **[select(sel, middleware)](lib/proxy.coffee?source#L354)**
+- ## **[select(sel, middleware)](lib/proxy.coffee?source#L356)**
 
     Create a conditional middleware that only works when the pattern matches.
 
@@ -1989,7 +1991,7 @@ kit.warp('src/**/*.coffee')
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[serverHelper(opts)](lib/proxy.coffee?source#L443)**
+- ## **[serverHelper(opts)](lib/proxy.coffee?source#L445)**
 
     Create a http request middleware.
 
@@ -2037,7 +2039,7 @@ kit.warp('src/**/*.coffee')
         nokit.log({ any: 'thing' });
         ```
 
-- ## **[static(opts)](lib/proxy.coffee?source#L511)**
+- ## **[static(opts)](lib/proxy.coffee?source#L513)**
 
     Create a static file middleware for `proxy.flow`.
 
@@ -2058,7 +2060,7 @@ kit.warp('src/**/*.coffee')
         http.createServer(proxy.flow(middlewares)).listen(8123);
         ```
 
-- ## **[url(opts)](lib/proxy.coffee?source#L607)**
+- ## **[url(opts)](lib/proxy.coffee?source#L609)**
 
     Use it to proxy one url to another.
 
