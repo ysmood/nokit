@@ -4,7 +4,7 @@
  * A cross-platform programmable Fiddler alternative.
  * You can even replace express.js with it's `flow` function.
  */
-var Overview, Promise, Socket, _, flow, http, kit, proxy, regConnectHost, regTunnelBegin;
+var Overview, Promise, Socket, _, boxBufferFrame, flow, http, kit, net, proxy, regConnectHost, regTunnelBegin, unboxBufferFrame;
 
 Overview = 'proxy';
 
@@ -16,11 +16,55 @@ http = require('http');
 
 flow = require('noflow');
 
-Socket = kit.require('net', __dirname).Socket;
+net = kit.require('net', __dirname);
+
+Socket = net.Socket;
 
 regConnectHost = /([^:]+)(?::(\d+))?/;
 
 regTunnelBegin = /^\w+\:\/\//;
+
+boxBufferFrame = function(data) {
+  var digit, i, len, sizeBuf;
+  if (!Buffer.isBuffer(data)) {
+    data = new Buffer(data);
+  }
+  len = data.length;
+  sizeBuf = new Buffer([0, 0, 0, 0]);
+  digit = 0;
+  i = 0;
+  while (len > 0) {
+    digit = len % 256;
+    len = (len - digit) / 256;
+    sizeBuf[i++] = digit;
+  }
+  return Buffer.concat([sizeBuf, data]);
+};
+
+unboxBufferFrame = function(sock, opts, head) {
+  var buf, check, len;
+  buf = new Buffer(0);
+  len = null;
+  check = function(chunk) {
+    if (len === null) {
+      len = chunk[0] + chunk[1] * 256 + chunk[2] * 65536 + chunk[3] * 16777216;
+      buf = chunk.slice(4);
+    }
+    if (buf.length >= len) {
+      if (typeof opts.data === "function") {
+        opts.data(buf.slice(0, len));
+      }
+      buf = buf.slice(len);
+      return len = null;
+    } else {
+      return buf = Buffer.concat([buf, chunk]);
+    }
+  };
+  if (head && head.length > 0) {
+    check(head);
+  }
+  return sock.on('data', check);
+};
 
 proxy = {
   agent: new http.Agent,
@@ -124,13 +168,13 @@ proxy = {
       ms = isProxy ? req.url.match(regConnectHost) : req.headers.host.match(regConnectHost);
       psock = new Socket;
       psock.connect(port || ms[2] || 80, host || ms[1], function() {
-        var h, i, j, len, rawHeaders, ref1;
+        var h, i, j, len1, rawHeaders, ref1;
         if (isProxy) {
           sock.write("HTTP/" + req.httpVersion + " 200 Connection established\r\n\r\n");
         } else {
           rawHeaders = req.method + " " + req.url + " HTTP/" + req.httpVersion + "\r\n";
           ref1 = req.rawHeaders;
-          for (i = j = 0, len = ref1.length; j < len; i = ++j) {
+          for (i = j = 0, len1 = ref1.length; j < len1; i = ++j) {
             h = ref1[i];
             rawHeaders += h + (i % 2 === 0 ? ': ' : '\r\n');
           }
@@ -150,6 +194,88 @@ proxy = {
         return opts.onError(err, req, psock);
       });
     };
+  },
+
+  /**
+   * A socket p2p middleware on http CONNECT.
+   * @param  {Object} opts
+   * ```js
+   * {
+   *     filter: (req) => true,
+   *     onError: (err, req, sock) => {}
+   * }
+   * ```
+   * @return {Function}
+   */
+  connectServant: function(opts) {
+    if (opts == null) {
+      opts = {};
+    }
+    _.defaults(opts, {
+      filter: function(req) {
+        return true;
+      },
+      onError: function(err, req, sock) {
+        var br;
+        br = kit.require('brush');
+        kit.log(err.toString() + ' -> ' + br.red(req.url));
+        return sock.end();
+      }
+    });
+    return function(req, sock, head) {
+      if (!opts.filter(req)) {
+        return;
+      }
+      unboxBufferFrame(sock, opts, head);
+      if (typeof opts.onConnect === "function") {
+        opts.onConnect(req, function(data) {
+          return sock.write(boxBufferFrame(data));
+        });
+      }
+      return sock.on('error', function(err) {
+        return opts.onError(err, req, sock);
+      });
+    };
+  },
+
+  /**
+   * A socket p2p client to http CONNECT.
+   * @param  {Object} opts
+   * ```js
+   * {
+   *     retry: 0,
+   *     host: '127.0.0.1',
+   *     port: 80
+   * }
+   * ```
+   */
+  connectClient: function(opts) {
+    var connect;
+    _.defaults(opts, {
+      retry: 0,
+      host: '127.0.0.1',
+      port: 80
+    });
+    connect = function() {
+      var client;
+      return client = net.connect(opts.port, opts.host, function() {
+        client.write("CONNECT " + (opts.url || '/') + " HTTP/1.1\r\n\r\n");
+        if (typeof opts.onConnect === "function") {
+          opts.onConnect(client, function(data) {
+            return client.write(boxBufferFrame(data));
+          });
+        }
+        unboxBufferFrame(client, opts);
+        if (opts.retry) {
+          return client.on('error', function() {
+            return setTimeout(connect, opts.retry);
+          });
+        } else if (opts.onError) {
+          return client.on('error', opts.onError);
+        }
+      });
+    };
+    return connect();
   },
 
   /**

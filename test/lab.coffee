@@ -12,9 +12,7 @@ app = proxy.flow()
 new Promise (resolve) ->
 	app.server.on 'connect', proxy.connectServant({
 		onConnect: (req, w) ->
-			setInterval ->
-				w(new Buffer(10001))
-			, 1000
+			w(new Buffer(1000000))
 	})
 
 	app.listen(0).then ->

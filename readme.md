@@ -160,6 +160,8 @@ Goto [changelog](doc/changelog.md)
   - [body()](#body)
   - [van(ctx)](#vanctx)
   - [connect(opts)](#connectopts)
+  - [connectServant(opts)](#connectservantopts)
+  - [connectClient(opts)](#connectclientopts)
   - [etag()](#etag)
   - [flow](#flow)
   - [match(pattern, opts)](#matchpattern-opts)
@@ -1823,7 +1825,7 @@ kit.warp('src/**/*.coffee')
     A cross-platform programmable Fiddler alternative.
     You can even replace express.js with it's `flow` function.
 
-- ## **[body()](lib/proxy.coffee?source#L25)**
+- ## **[body()](lib/proxy.coffee?source#L66)**
 
     A simple request body middleware.
 
@@ -1831,14 +1833,14 @@ kit.warp('src/**/*.coffee')
 
         `(ctx) -> Promise`
 
-- ## **[van(ctx)](lib/proxy.coffee?source#L40)**
+- ## **[van(ctx)](lib/proxy.coffee?source#L81)**
 
     Add a `van` method to flow context object. It's a helper to set
     and get the context body.
 
     - **<u>param</u>**: `ctx` { _FlowContext_ }
 
-- ## **[connect(opts)](lib/proxy.coffee?source#L74)**
+- ## **[connect(opts)](lib/proxy.coffee?source#L115)**
 
     Http CONNECT method tunneling proxy helper.
     Most times it is used to proxy https and websocket.
@@ -1873,18 +1875,47 @@ kit.warp('src/**/*.coffee')
         app.listen(8123);
         ```
 
-- ## **[etag()](lib/proxy.coffee?source#L130)**
+- ## **[connectServant(opts)](lib/proxy.coffee?source#L178)**
+
+    A socket p2p middleware on http CONNECT.
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+        ```js
+        {
+            filter: (req) => true,
+            onError: (err, req, sock) => {}
+        }
+        ```
+
+    - **<u>return</u>**: { _Function_ }
+
+- ## **[connectClient(opts)](lib/proxy.coffee?source#L209)**
+
+    A socket p2p client to http CONNECT.
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+        ```js
+        {
+            retry: 0,
+            host: '127.0.0.1',
+            port: 80
+        }
+        ```
+
+- ## **[etag()](lib/proxy.coffee?source#L238)**
 
     Create a etag middleware.
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[flow](lib/proxy.coffee?source#L152)**
+- ## **[flow](lib/proxy.coffee?source#L260)**
 
     A minimal middleware composer for the future.
     https://github.com/ysmood/noflow
 
-- ## **[match(pattern, opts)](lib/proxy.coffee?source#L167)**
+- ## **[match(pattern, opts)](lib/proxy.coffee?source#L275)**
 
     Generate an express like unix path selector. See the example of `proxy.flow`.
 
@@ -1907,7 +1938,7 @@ kit.warp('src/**/*.coffee')
         kit.log(match('/items/10')) // output => { id: '10' }
         ```
 
-- ## **[midToFlow(h)](lib/proxy.coffee?source#L205)**
+- ## **[midToFlow(h)](lib/proxy.coffee?source#L313)**
 
     Convert a Express-like middleware to `proxy.flow` middleware.
 
@@ -1932,7 +1963,7 @@ kit.warp('src/**/*.coffee')
         http.createServer(proxy.flow(middlewares)).listen(8123);
         ```
 
-- ## **[select(sel, middleware)](lib/proxy.coffee?source#L236)**
+- ## **[select(sel, middleware)](lib/proxy.coffee?source#L344)**
 
     Create a conditional middleware that only works when the pattern matches.
 
@@ -1958,7 +1989,7 @@ kit.warp('src/**/*.coffee')
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[serverHelper(opts)](lib/proxy.coffee?source#L325)**
+- ## **[serverHelper(opts)](lib/proxy.coffee?source#L433)**
 
     Create a http request middleware.
 
@@ -2006,7 +2037,7 @@ kit.warp('src/**/*.coffee')
         nokit.log({ any: 'thing' });
         ```
 
-- ## **[static(opts)](lib/proxy.coffee?source#L393)**
+- ## **[static(opts)](lib/proxy.coffee?source#L501)**
 
     Create a static file middleware for `proxy.flow`.
 
@@ -2027,7 +2058,7 @@ kit.warp('src/**/*.coffee')
         http.createServer(proxy.flow(middlewares)).listen(8123);
         ```
 
-- ## **[url(opts)](lib/proxy.coffee?source#L495)**
+- ## **[url(opts)](lib/proxy.coffee?source#L603)**
 
     Use it to proxy one url to another.
 

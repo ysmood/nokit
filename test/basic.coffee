@@ -671,6 +671,7 @@ module.exports = (it) ->
 			app.server.on 'connect', proxy.connectServant({
 				onConnect: (req, w) ->
 					w(new Buffer(10001))
+					w(new Buffer(10001))
 			})
 
 			app.listen(0).then ->

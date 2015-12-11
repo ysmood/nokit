@@ -36,19 +36,29 @@ unboxBufferFrame = (sock, opts, head) ->
     buf = new Buffer 0
     len = null
 
+    # cases
+    # [x x 0 0 0 0 | x x 0 0 0]
+    # [ | x x 0 0 0 0 x x 0 0 0]
+    # [x x 0 0 | 0 0 x x 0 0 0]
+    # [x x 0 0 0 0 x | x 0 0 0]
+    # [x x 0 0 0 0 x x 0 0 0]
     check = (chunk) ->
-        if len == null
-            len = chunk[0] + chunk[1] * 256 +
-                chunk[2] * 65536 + chunk[3] * 16777216
+        buf = Buffer.concat [buf, chunk]
 
-            buf = chunk.slice 4
+        while true
+            # get head length
+            if len == null
+                len = buf[0] + buf[1] * 256 +
+                    buf[2] * 65536 + buf[3] * 16777216
 
-        if buf.length >= len
-            opts.data? buf.slice(0, len)
-            buf = buf.slice len
-            len = null
-        else
-            buf = Buffer.concat [buf, chunk]
+                buf = buf.slice 4
+
+            if len != null and buf.length >= len
+                opts.data? buf.slice(0, len)
+                buf = buf.slice len
+                len = null
+            else
+                break
 
     if head && head.length > 0
         check head
