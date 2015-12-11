@@ -14,7 +14,7 @@ It's one of the core lib of [nobone](https://github.com/ysmood/nobone).
 
 - All async functions will return promise.
 - All functions are highly lazy designed, minimum boot time.
-- Test on Node 0.8 - 0.12 on Mac, Linux and Windows.
+- Test on Node v0.10+ on Mac, Linux and Windows.
 - Light weight and self-reference.
 
 # Installation
