@@ -2081,7 +2081,7 @@ kit.warp('src/**/*.coffee')
          agent: customHttpAgent,
 
          // Force the header's host same as the url's.
-         isForceHeaderHost: true,
+         isForceHeaderHost: false,
 
          // You can hack the headers before the proxy send it.
          handleReqHeaders: (headers, req) => headers

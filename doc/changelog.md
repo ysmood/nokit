@@ -1,8 +1,9 @@
 # Changelog
 
-- v0.16.16
+- v0.16.17
 
   - add: `noe` now support watch directory
+  - opt: `proxy.url` default option
 
 - v0.16.12
 

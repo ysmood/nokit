@@ -622,7 +622,7 @@ proxy = {
    *  agent: customHttpAgent,
    *
    *  // Force the header's host same as the url's.
-   *  isForceHeaderHost: true,
+   *  isForceHeaderHost: false,
    *
    *  // You can hack the headers before the proxy send it.
    *  handleReqHeaders: (headers, req) => headers
@@ -687,7 +687,7 @@ proxy = {
     _.defaults(opts, {
       globalBps: false,
       agent: proxy.agent,
-      isForceHeaderHost: true,
+      isForceHeaderHost: false,
       handleReqHeaders: function(headers) {
         return headers;
       },
