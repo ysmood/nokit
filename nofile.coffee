@@ -69,7 +69,8 @@ module.exports = (task, option) ->
 		clean().then ->
 			kit.spawn('junit', [
 				'-r', 'coffee-script/register'
-				'test/basic.coffee', '-g', opts.grep
+				'-g', opts.grep
+				'test/basic.coffee'
 			])
 		.then -> clean()
 		.catch (err) ->

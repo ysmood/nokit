@@ -266,6 +266,195 @@ proxy =
                     ctx.res.setHeader 'ETag', hash
 
     ###*
+     * A simple protocol to read, write, chmod, delete file via http.
+     * The protocol is very simple
+     * ```
+     * POST / HTTP/1.1
+     * file-action: ${action}
+     *
+     * ${body}
+     * ```
+     * The `action` is somethine like `{ type: 'create', path: '/home/u/a/b.js', mode: 0o777 }`
+     * The `body` is the binary of the file content.
+     * Both the `action` and the `body` are encrypt with the password and algorithm specified
+     * in the opts.
+     * @param {Object} opts defaults
+     * ```js
+     * {
+     *     password: 'nokit',
+     *     algorithm: 'aes128',
+     *     rootAllowed: '/',
+     *     actionKey: 'file-action'
+     * }
+     * ```
+     * @return {Function} noflow middleware
+    ###
+    file: (opts = {}) ->
+        crypto = require 'crypto';
+
+        _.defaults opts, {
+            password: 'nokit'
+            algorithm: 'aes128'
+            rootAllowed: '/',
+            actionKey: 'file-action'
+            typeKey: 'file-type'
+        }
+
+        absRoot = kit.path.normalize(kit.path.resolve(opts.rootAllowed));
+
+        genCipher = -> crypto.createCipher opts.algorithm, opts.password
+        genDecipher = -> crypto.createDecipher opts.algorithm, opts.password
+
+        encrypt = (val, isBase64) ->
+            if (isBase64)
+                (kit.encrypt val, opts.password, opts.algorithm).toString 'base64'
+            else
+                kit.encrypt val, opts.password, opts.algorithm
+
+        decrypt = (val, isBase64) ->
+            if isBase64
+                (kit.decrypt new Buffer(val, 'base64'), opts.password, opts.algorithm) + ''
+            else
+                kit.decrypt val, opts.password, opts.algorithm
+
+        ($) ->
+            error = (status, msg) ->
+                $.res.statusCode = status
+                $.body = encrypt msg
+
+            try
+                data = decrypt $.req.headers[opts.actionKey], true
+            catch err
+                return error 400, 'password wrong'
+
+            try
+                action = JSON.parse data + ''
+            catch err
+                return error 400, 'action is not a valid json'
+
+            absPath = kit.path.normalize(kit.path.resolve(action.path));
+            if absPath.indexOf(absRoot) != 0
+                return error 400, 'the root of this path is not allow'
+
+            switch action.type
+                when 'read'
+                    kit.stat(action.path).then (stats) ->
+                        if stats.isDirectory()
+                            kit.readdir(action.path).then (list) ->
+                                $.res.setHeader opts.typeKey, encrypt(
+                                    'directory', true
+                                )
+                                $.body = encrypt JSON.stringify(list)
+                            , ->
+                                error 500, 'read directory error: ' + action.path
+                        else
+                            $.res.setHeader opts.typeKey, encrypt(
+                                'file', true
+                            )
+                            file = kit.createReadStream action.path
+                            file.pipe(genCipher()).pipe($.res);
+                            return new Promise (resolve) ->
+                                $.res.on 'close', resolve
+                                $.res.on 'error', ->
+                                    resolve()
+                                    error 500, 'read file error: ' + action.path
+
+                when 'write'
+                    return kit.mkdirs(kit.path.dirname(action.path)).then ->
+                        file = kit.createWriteStream action.path, {
+                            mode: action.mode
+                        }
+                        $.req.pipe(genDecipher()).pipe(file)
+
+                        new Promise (resolve) ->
+                            file.on 'close', resolve
+                            file.on 'error', ->
+                                error 500, 'write error: ' + action.path
+                                resolve()
+                    , ->
+                        error 500, 'write error: ' + action.path
+
+                when 'chmod'
+                    return kit.chmod(action.path, action.mode).then ->
+                        $.body = encrypt http.STATUS_CODES[200]
+                    , ->
+                        error 500, 'chmod error: ' + action.path
+
+                when 'remove'
+                    return kit.remove(action.path).then ->
+                        $.body = encrypt http.STATUS_CODES[200]
+                    , ->
+                        error 500, 'remove error: ' + action.path
+
+                else
+                    error 400, 'action.type is unknown'
+
+    fileRequest: (opts = {}) ->
+        crypto = require 'crypto';
+
+        _.defaults opts, {
+            action: 'read'
+            url: '127.0.0.1'
+            password: 'nokit'
+            algorithm: 'aes128'
+            actionKey: 'file-action'
+            typeKey: 'file-type'
+        }
+
+        if 'path' not of opts
+            throw new Error('path option is not defined')
+
+        genCipher = -> crypto.createCipher opts.algorithm, opts.password
+        genDecipher = -> crypto.createDecipher opts.algorithm, opts.password
+
+        encrypt = (val, isBase64) ->
+            if (isBase64)
+                (kit.encrypt val, opts.password, opts.algorithm).toString 'base64'
+            else
+                kit.encrypt val, opts.password, opts.algorithm
+
+        decrypt = (val, isBase64) ->
+            if isBase64
+                (kit.decrypt new Buffer(val, 'base64'), opts.password, opts.algorithm) + ''
+            else
+                kit.decrypt val, opts.password, opts.algorithm
+
+        if opts.data
+            if _.isFunction(opts.data.pipe)
+                data = opts.data.pipe genCipher()
+            else
+                data = encrypt opts.data
+
+        kit.request({
+            url: opts.url
+            body: false
+            resEncoding: null
+            headers: {
+                "#{opts.actionKey}": encrypt JSON.stringify({
+                    type: opts.type
+                    mode: opts.mode
+                    path: opts.path
+                }), true
+            }
+            reqData: data
+        }).then (res) ->
+            body = res.body and res.body.length && decrypt(res.body)
+
+            if res.statusCode >= 300
+                return Promise.reject new Error(res.statusCode + ':' + body)
+
+            type = res.headers[opts.typeKey]
+            type = type && decrypt(type, true)
+
+            {
+                type: type
+                data: if type == 'directory'
+                    JSON.parse(body)
+                else
+                    body
+            }
+
+    ###*
      * A minimal middleware composer for the future.
      * https://github.com/ysmood/noflow
     ###

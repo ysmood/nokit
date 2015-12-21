@@ -3,3 +3,5 @@ node_modules
 .nobone
 .coffee
 .nokit
+*.log
+/test/fixtures/proxy.file.*.txt

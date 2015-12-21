@@ -681,3 +681,97 @@ module.exports = (it) ->
 					host: '127.0.0.1'
 					data: (c) -> resolve it.eq(c.length, 10001)
 				}
+
+	it 'proxy file write', (after) ->
+		proxy = kit.require 'proxy'
+		path = 'test/fixtures/proxy.file.write.txt'
+
+		app = proxy.flow()
+
+		app.push proxy.file()
+
+		after ->
+			app.close()
+
+		app.listen(0).then ->
+			kit.remove path
+		.then ->
+			proxy.fileRequest {
+				url: '127.0.0.1:' + app.server.address().port
+				type: 'write'
+				path: path
+				data: 'test'
+			}
+		.then ->
+			it.eq kit.readFile(path, 'utf8'), 'test'
+
+	it 'proxy file read file', (after) ->
+		proxy = kit.require 'proxy'
+		path = 'test/fixtures/proxy.file.read.file.txt'
+		kit.outputFileSync path, 'ok'
+
+		app = proxy.flow()
+
+		app.push proxy.file()
+
+		after ->
+			app.close()
+
+		app.listen(0).then ->
+			proxy.fileRequest {
+				url: '127.0.0.1:' + app.server.address().port
+				type: 'read'
+				path: path
+			}
+		.then (data) ->
+			it.eq data, {
+				type: 'file'
+				data: new Buffer('ok')
+			}
+
+	it 'proxy file read dir', (after) ->
+		proxy = kit.require 'proxy'
+		path = 'test/fixtures/site'
+
+		app = proxy.flow()
+
+		app.push proxy.file()
+
+		after -> app.close()
+
+		app.listen(0).then ->
+			proxy.fileRequest {
+				url: '127.0.0.1:' + app.server.address().port
+				type: 'read'
+				path: path
+			}
+		.then (data) ->
+			it.eq data, {
+				type: 'directory'
+				data: [
+					'a.js'
+					'b.css'
+					'index.html'
+				]
+			}
+
+	it 'proxy file remove file', (after) ->
+		proxy = kit.require 'proxy'
+		path = 'test/fixtures/proxy.file.remove.file.txt'
+
+		kit.outputFileSync path, 'test'
+
+		app = proxy.flow()
+
+		app.push proxy.file()
+
+		after -> app.close()
+
+		app.listen(0).then ->
+			proxy.fileRequest {
+				url: '127.0.0.1:' + app.server.address().port
+				type: 'remove'
+				path: path
+			}
+		.then (data) ->
+			it.eq kit.fileExists(path), false
