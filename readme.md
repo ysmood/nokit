@@ -163,11 +163,14 @@ Goto [changelog](doc/changelog.md)
   - [connectServant(opts)](#connectservantopts)
   - [connectClient(opts)](#connectclientopts)
   - [etag()](#etag)
+  - [file(opts)](#fileopts)
   - [flow](#flow)
   - [match(pattern, opts)](#matchpattern-opts)
   - [midToFlow(h)](#midtoflowh)
   - [select(sel, middleware)](#selectsel-middleware)
   - [serverHelper(opts)](#serverhelperopts)
+  - [relayConnect(opts)](#relayconnectopts)
+  - [relayClient(opts)](#relayclientopts)
   - [static(opts)](#staticopts)
   - [url(opts)](#urlopts)
 
@@ -1038,7 +1041,7 @@ Goto [changelog](doc/changelog.md)
 
         The required package.
 
-- ## **[request(opts)](lib/kit.coffee?source#L1528)**
+- ## **[request(opts)](lib/kit.coffee?source#L1525)**
 
     A handy extended combination of `http.request` and `https.request`.
 
@@ -1069,8 +1072,9 @@ Goto [changelog](doc/changelog.md)
 
          agent: null,
 
-         // Set "transfer-encoding" header to 'chunked'.
-         setTE: false,
+         // Auto set "transfer-encoding" header to 'chunked' if the `reqData` is
+         // stream and the 'Content-Length' header is not set.
+         autoTE: true,
 
          // Set null to use buffer, optional.
          // It supports GBK, ShiftJIS etc.
@@ -1145,10 +1149,6 @@ Goto [changelog](doc/changelog.md)
          method: 'POST',
          headers: form.getHeaders(),
 
-         // Use chunked encoding, so that we don't have to calculate
-         // the 'Content-Length'.
-         setTE: true,
-
          reqData: form
         })
         .then((body) =>
@@ -1156,14 +1156,14 @@ Goto [changelog](doc/changelog.md)
         );
         ```
 
-- ## **[semver](lib/kit.coffee?source#L1738)**
+- ## **[semver](lib/kit.coffee?source#L1737)**
 
     The semantic versioner for npm, known as [semver](https://github.com/npm/node-semver).
     You must `kit.require 'semver'` before using it.
 
     - **<u>type</u>**: { _Object_ }
 
-- ## **[spawn(cmd, args, opts)](lib/kit.coffee?source#L1769)**
+- ## **[spawn(cmd, args, opts)](lib/kit.coffee?source#L1768)**
 
     A safer version of `child_process.spawn` to cross-platform run
     a process. In some conditions, it may be more convenient
@@ -1207,13 +1207,13 @@ Goto [changelog](doc/changelog.md)
         .then(({code}) => kit.log code);
         ```
 
-- ## **[sse](lib/kit.coffee?source#L1835)**
+- ## **[sse](lib/kit.coffee?source#L1834)**
 
     The `sse` module.
     You must `kit.require 'sse'` before using it.
     For more information goto the `sse` section.
 
-- ## **[task(name, opts, fn)](lib/kit.coffee?source#L1896)**
+- ## **[task(name, opts, fn)](lib/kit.coffee?source#L1895)**
 
     Sequencing and executing tasks and dependencies concurrently.
 
@@ -1293,12 +1293,12 @@ Goto [changelog](doc/changelog.md)
         );
         ```
 
-- ## **[url](lib/kit.coffee?source#L1970)**
+- ## **[url](lib/kit.coffee?source#L1969)**
 
     The `url` module of [io.js](iojs.org).
     You must `kit.require 'url'` before using it.
 
-- ## **[warp(from, opts)](lib/kit.coffee?source#L2085)**
+- ## **[warp(from, opts)](lib/kit.coffee?source#L2084)**
 
     Works much like `gulp.src`, but with Promise instead.
     The warp control and error handling is more pleasant.
@@ -1423,7 +1423,7 @@ Goto [changelog](doc/changelog.md)
         .run('dist');
         ```
 
-- ## **[which(name)](lib/kit.coffee?source#L2162)**
+- ## **[which(name)](lib/kit.coffee?source#L2161)**
 
     Same as the unix `which` command.
     You must `kit.require 'which'` before using it.
@@ -1434,14 +1434,14 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Promise_ }
 
-- ## **[whichSync](lib/kit.coffee?source#L2169)**
+- ## **[whichSync](lib/kit.coffee?source#L2168)**
 
     Sync version of `which`.
     You must `kit.require 'whichSync'` before using it.
 
     - **<u>type</u>**: { _Function_ }
 
-- ## **[xinspect(obj, opts)](lib/kit.coffee?source#L2180)**
+- ## **[xinspect(obj, opts)](lib/kit.coffee?source#L2179)**
 
     For debugging. Dump a colorful object.
 
@@ -1458,7 +1458,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _String_ }
 
-- ## **[xopen(cmds, opts)](lib/kit.coffee?source#L2203)**
+- ## **[xopen(cmds, opts)](lib/kit.coffee?source#L2202)**
 
     Open a thing that your system can recognize.
     Now only support Windows, OSX or system that installed 'xdg-open'.
@@ -1912,12 +1912,43 @@ kit.warp('src/**/*.coffee')
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[flow](lib/proxy.coffee?source#L272)**
+- ## **[file(opts)](lib/proxy.coffee?source#L292)**
+
+    A simple protocol to read, write, chmod, delete file via http.
+    The protocol is very simple
+    ```
+    POST / HTTP/1.1
+    file-action: ${action}
+
+    ${body}
+    ```
+    The `action` is somethine like `{ type: 'create', path: '/home/u/a/b.js', mode: 0o777 }`
+    The `body` is the binary of the file content.
+    Both the `action` and the `body` are encrypt with the password and algorithm specified
+    in the opts.
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+        defaults
+        ```js
+        {
+            password: 'nokit',
+            algorithm: 'aes128',
+            rootAllowed: '/',
+            actionKey: 'file-action'
+        }
+        ```
+
+    - **<u>return</u>**: { _Function_ }
+
+        noflow middleware
+
+- ## **[flow](lib/proxy.coffee?source#L461)**
 
     A minimal middleware composer for the future.
     https://github.com/ysmood/noflow
 
-- ## **[match(pattern, opts)](lib/proxy.coffee?source#L287)**
+- ## **[match(pattern, opts)](lib/proxy.coffee?source#L476)**
 
     Generate an express like unix path selector. See the example of `proxy.flow`.
 
@@ -1940,7 +1971,7 @@ kit.warp('src/**/*.coffee')
         kit.log(match('/items/10')) // output => { id: '10' }
         ```
 
-- ## **[midToFlow(h)](lib/proxy.coffee?source#L325)**
+- ## **[midToFlow(h)](lib/proxy.coffee?source#L514)**
 
     Convert a Express-like middleware to `proxy.flow` middleware.
 
@@ -1965,7 +1996,7 @@ kit.warp('src/**/*.coffee')
         http.createServer(proxy.flow(middlewares)).listen(8123);
         ```
 
-- ## **[select(sel, middleware)](lib/proxy.coffee?source#L356)**
+- ## **[select(sel, middleware)](lib/proxy.coffee?source#L545)**
 
     Create a conditional middleware that only works when the pattern matches.
 
@@ -1991,7 +2022,7 @@ kit.warp('src/**/*.coffee')
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[serverHelper(opts)](lib/proxy.coffee?source#L445)**
+- ## **[serverHelper(opts)](lib/proxy.coffee?source#L634)**
 
     Create a http request middleware.
 
@@ -2039,7 +2070,45 @@ kit.warp('src/**/*.coffee')
         nokit.log({ any: 'thing' });
         ```
 
-- ## **[static(opts)](lib/proxy.coffee?source#L513)**
+- ## **[relayConnect(opts)](lib/proxy.coffee?source#L700)**
+
+    A helper for http server port tunneling.
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+        ```js
+        {
+            allowedHosts: [],
+            onSocketError: () => {},
+            onRelayError: () => {}
+        }
+        ```
+
+    - **<u>return</u>**: { _Function_ }
+
+        A http connect method helper.
+
+- ## **[relayClient(opts)](lib/proxy.coffee?source#L738)**
+
+    A helper for http server port tunneling.
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+        ```js
+        {
+            host: '0.0.0.0:9970',
+            relayHost: '127.0.0.1:9971',
+            hostTo: '127.0.0.1:8080',
+            onSocketError: () => {},
+            onRelayError: () => {}
+        }
+        ```
+
+    - **<u>return</u>**: { _Promise_ }
+
+        Resolve a tcp server object.
+
+- ## **[static(opts)](lib/proxy.coffee?source#L785)**
 
     Create a static file middleware for `proxy.flow`.
 
@@ -2060,7 +2129,7 @@ kit.warp('src/**/*.coffee')
         http.createServer(proxy.flow(middlewares)).listen(8123);
         ```
 
-- ## **[url(opts)](lib/proxy.coffee?source#L609)**
+- ## **[url(opts)](lib/proxy.coffee?source#L881)**
 
     Use it to proxy one url to another.
 

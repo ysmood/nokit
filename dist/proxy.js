@@ -316,6 +316,217 @@ proxy = {
   },
 
   /**
+   * A simple protocol to read, write, chmod, delete file via http.
+   * The protocol is very simple
+   * ```
+   * POST / HTTP/1.1
+   * file-action: ${action}
+   *
+   * ${body}
+   * ```
+   * The `action` is somethine like `{ type: 'create', path: '/home/u/a/b.js', mode: 0o777 }`
+   * The `body` is the binary of the file content.
+   * Both the `action` and the `body` are encrypt with the password and algorithm specified
+   * in the opts.
+   * @param {Object} opts defaults
+   * ```js
+   * {
+   *     password: 'nokit',
+   *     algorithm: 'aes128',
+   *     rootAllowed: '/',
+   *     actionKey: 'file-action'
+   * }
+   * ```
+   * @return {Function} noflow middleware
+   */
+  file: function(opts) {
+    var absRoot, crypto, decrypt, encrypt, genCipher, genDecipher;
+    if (opts == null) {
+      opts = {};
+    }
+    crypto = require('crypto');
+    _.defaults(opts, {
+      password: 'nokit',
+      algorithm: 'aes128',
+      rootAllowed: '/',
+      actionKey: 'file-action',
+      typeKey: 'file-type'
+    });
+    absRoot = kit.path.normalize(kit.path.resolve(opts.rootAllowed));
+    genCipher = function() {
+      return crypto.createCipher(opts.algorithm, opts.password);
+    };
+    genDecipher = function() {
+      return crypto.createDecipher(opts.algorithm, opts.password);
+    };
+    encrypt = function(val, isBase64) {
+      if (isBase64) {
+        return (kit.encrypt(val, opts.password, opts.algorithm)).toString('base64');
+      } else {
+        return kit.encrypt(val, opts.password, opts.algorithm);
+      }
+    };
+    decrypt = function(val, isBase64) {
+      if (isBase64) {
+        return (kit.decrypt(new Buffer(val, 'base64'), opts.password, opts.algorithm)) + '';
+      } else {
+        return kit.decrypt(val, opts.password, opts.algorithm);
+      }
+    };
+    return function($) {
+      var absPath, action, data, err, error, error1, error2;
+      error = function(status, msg) {
+        $.res.statusCode = status;
+        return $.body = encrypt(msg);
+      };
+      try {
+        data = decrypt($.req.headers[opts.actionKey], true);
+      } catch (error1) {
+        err = error1;
+        return error(400, 'password wrong');
+      }
+      try {
+        action = JSON.parse(data + '');
+      } catch (error2) {
+        err = error2;
+        return error(400, 'action is not a valid json');
+      }
+      absPath = kit.path.normalize(kit.path.resolve(action.path));
+      if (absPath.indexOf(absRoot) !== 0) {
+        return error(400, 'the root of this path is not allow');
+      }
+      switch (action.type) {
+        case 'read':
+          return kit.stat(action.path).then(function(stats) {
+            var file;
+            if (stats.isDirectory()) {
+              return kit.readdir(action.path).then(function(list) {
+                $.res.setHeader(opts.typeKey, encrypt('directory', true));
+                return $.body = encrypt(JSON.stringify(list));
+              }, function() {
+                return error(500, 'read directory error: ' + action.path);
+              });
+            } else {
+              $.res.setHeader(opts.typeKey, encrypt('file', true));
+              file = kit.createReadStream(action.path);
+              file.pipe(genCipher()).pipe($.res);
+              return new Promise(function(resolve) {
+                $.res.on('close', resolve);
+                return $.res.on('error', function() {
+                  resolve();
+                  return error(500, 'read file error: ' + action.path);
+                });
+              });
+            }
+          });
+        case 'write':
+          return kit.mkdirs(kit.path.dirname(action.path)).then(function() {
+            var file;
+            file = kit.createWriteStream(action.path, {
+              mode: action.mode
+            });
+            $.req.pipe(genDecipher()).pipe(file);
+            return new Promise(function(resolve) {
+              file.on('close', resolve);
+              return file.on('error', function() {
+                error(500, 'write error: ' + action.path);
+                return resolve();
+              });
+            });
+          }, function() {
+            return error(500, 'write error: ' + action.path);
+          });
+        case 'chmod':
+          return kit.chmod(action.path, action.mode).then(function() {
+            return $.body = encrypt(http.STATUS_CODES[200]);
+          }, function() {
+            return error(500, 'chmod error: ' + action.path);
+          });
+        case 'remove':
+          return kit.remove(action.path).then(function() {
+            return $.body = encrypt(http.STATUS_CODES[200]);
+          }, function() {
+            return error(500, 'remove error: ' + action.path);
+          });
+        default:
+          return error(400, 'action.type is unknown');
+      }
+    };
+  },
+  fileRequest: function(opts) {
+    var crypto, data, decrypt, encrypt, genCipher, genDecipher, obj1;
+    if (opts == null) {
+      opts = {};
+    }
+    crypto = require('crypto');
+    _.defaults(opts, {
+      action: 'read',
+      url: '127.0.0.1',
+      password: 'nokit',
+      algorithm: 'aes128',
+      actionKey: 'file-action',
+      typeKey: 'file-type'
+    });
+    if (!('path' in opts)) {
+      throw new Error('path option is not defined');
+    }
+    genCipher = function() {
+      return crypto.createCipher(opts.algorithm, opts.password);
+    };
+    genDecipher = function() {
+      return crypto.createDecipher(opts.algorithm, opts.password);
+    };
+    encrypt = function(val, isBase64) {
+      if (isBase64) {
+        return (kit.encrypt(val, opts.password, opts.algorithm)).toString('base64');
+      } else {
+        return kit.encrypt(val, opts.password, opts.algorithm);
+      }
+    };
+    decrypt = function(val, isBase64) {
+      if (isBase64) {
+        return (kit.decrypt(new Buffer(val, 'base64'), opts.password, opts.algorithm)) + '';
+      } else {
+        return kit.decrypt(val, opts.password, opts.algorithm);
+      }
+    };
+    if (opts.data) {
+      if (_.isFunction(opts.data.pipe)) {
+        data = opts.data.pipe(genCipher());
+      } else {
+        data = encrypt(opts.data);
+      }
+    }
+    return kit.request({
+      url: opts.url,
+      body: false,
+      resEncoding: null,
+      headers: (
+        obj1 = {},
+        obj1["" + opts.actionKey] = encrypt(JSON.stringify({
+          type: opts.type,
+          mode: opts.mode,
+          path: opts.path
+        }), true),
+        obj1
+      ),
+      reqData: data
+    }).then(function(res) {
+      var body, type;
+      body = res.body && res.body.length && decrypt(res.body);
+      if (res.statusCode >= 300) {
+        return Promise.reject(new Error(res.statusCode + ':' + body));
+      }
+      type = res.headers[opts.typeKey];
+      type = type && decrypt(type, true);
+      return {
+        type: type,
+        data: type === 'directory' ? JSON.parse(body) : body
+      };
+    });
+  },
+
+  /**
    * A minimal middleware composer for the future.
    * https://github.com/ysmood/noflow
    */
@@ -521,12 +732,12 @@ proxy = {
             return data += chunk;
           });
           req.on('end', function() {
-            var e, error;
+            var e, error1;
             try {
               kit.log(br.cyan('client') + br.grey(' | ') + (data ? kit.xinspect(JSON.parse(data)) : data));
               return res.end();
-            } catch (error) {
-              e = error;
+            } catch (error1) {
+              e = error1;
               res.statusCode = 500;
               return res.end(e.stack);
             }
@@ -557,6 +768,99 @@ proxy = {
       });
     };
     return handler;
+  },
+
+  /**
+   * A helper for http server port tunneling.
+   * @param  {Object} opts
+   * ```js
+   * {
+   *     allowedHosts: [],
+   *     onSocketError: () => {},
+   *     onRelayError: () => {}
+   * }
+   * ```
+   * @return {Function} A http connect method helper.
+   */
+  relayConnect: function(opts) {
+    if (opts == null) {
+      opts = {};
+    }
+    _.defaults(opts, {
+      allowedHosts: [],
+      onSocketError: function(err) {
+        return kit.logs(err);
+      },
+      onRelayError: function(err) {
+        return kit.logs(err);
+      }
+    });
+    return function(req, relay, head) {
+      var host, hostTo, port, ref, sock;
+      hostTo = req.headers['host-to'];
+      if (hostTo) {
+        if (opts.allowedHosts.indexOf(hostTo) > -1) {
+          ref = hostTo.split(':'), host = ref[0], port = ref[1];
+          sock = net.connect(port, host, function() {
+            sock.write(head);
+            sock.pipe(relay);
+            return relay.pipe(sock);
+          });
+          sock.on('error', opts.onSocketError);
+          return relay.on('error', opts.onRelayError);
+        } else {
+          return relay.end();
+        }
+      }
+    };
+  },
+
+  /**
+   * A helper for http server port tunneling.
+   * @param  {Object} opts
+   * ```js
+   * {
+   *     host: '0.0.0.0:9970',
+   *     relayHost: '127.0.0.1:9971',
+   *     hostTo: '127.0.0.1:8080',
+   *     onSocketError: () => {},
+   *     onRelayError: () => {}
+   * }
+   * ```
+   * @return {Promise} Resolve a tcp server object.
+   */
+  relayClient: function(opts) {
+    var hostHost, hostPort, ref, ref1, relayHost, relayPort, server;
+    if (opts == null) {
+      opts = {};
+    }
+    net = require('net');
+    _.defaults(opts, {
+      host: '0.0.0.0:9970',
+      relayHost: '127.0.0.1:9971',
+      hostTo: '127.0.0.1:8080',
+      onSocketError: function(err) {
+        return kit.logs(err);
+      },
+      onRelayError: function(err) {
+        return kit.logs(err);
+      }
+    });
+    ref = opts.host.split(':'), hostHost = ref[0], hostPort = ref[1];
+    ref1 = opts.relayHost.split(':'), relayHost = ref1[0], relayPort = ref1[1];
+    server = net.createServer(function(sock) {
+      var relay;
+      relay = net.connect(relayPort, relayHost, function() {
+        relay.write('CONNECT / HTTP/1.1\r\n' + 'Connection: close\r\n' + ("Host-To: " + opts.hostTo + "\r\n\r\n"));
+        sock.pipe(relay);
+        return relay.pipe(sock);
+      });
+      sock.on('error', opts.onSocketError);
+      return relay.on('error', opts.onRelayError);
+    });
+    return kit.promisify(server.listen, server)(hostPort, hostHost).then(function() {
+      return server;
+    });
   },
 
   /**

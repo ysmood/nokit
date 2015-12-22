@@ -1579,8 +1579,9 @@ _.extend(kit, fs, yutils, {
    *
    *  agent: null,
    *
-   *  // Set "transfer-encoding" header to 'chunked'.
-   *  setTE: false,
+   *  // Auto set "transfer-encoding" header to 'chunked' if the `reqData` is
+   *  // stream and the 'Content-Length' header is not set.
+   *  autoTE: true,
    *
    *  // Set null to use buffer, optional.
    *  // It supports GBK, ShiftJIS etc.
@@ -1650,10 +1651,6 @@ _.extend(kit, fs, yutils, {
    *  method: 'POST',
    *  headers: form.getHeaders(),
    *
-   *  // Use chunked encoding, so that we don't have to calculate
-   *  // the 'Content-Length'.
-   *  setTE: true,
-   *
    *  reqData: form
    * })
    * .then((body) =>
@@ -1707,7 +1704,8 @@ _.extend(kit, fs, yutils, {
       autoEndReq: true,
       autoUnzip: true,
       reqProgress: null,
-      resProgress: null
+      resProgress: null,
+      autoTE: true
     });
     if (opts.headers == null) {
       opts.headers = {};
@@ -1735,7 +1733,7 @@ _.extend(kit, fs, yutils, {
         base1['content-length'] = reqBuf.length;
       }
     }
-    if (opts.setTE) {
+    if ((!('content-length' in opts.headers)) && (!('Content-Length' in opts.headers)) && opts.reqPipe) {
       opts.headers['transfer-encoding'] = 'chunked';
     }
     req = null;

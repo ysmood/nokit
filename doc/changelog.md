@@ -1,5 +1,10 @@
 # Changelog
 
+- v0.17.0
+
+  - **API CHANGE** `kit.request` the `setTE` option changed to `autoTE`
+  - add: some proxy helpers
+
 - v0.16.17
 
   - add: `noe` now support watch directory
