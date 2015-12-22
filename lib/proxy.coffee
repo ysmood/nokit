@@ -686,6 +686,89 @@ proxy =
         handler
 
     ###*
+     * A helper for http server port tunneling.
+     * @param  {Object} opts
+     * ```js
+     * {
+     *     allowedHosts: [],
+     *     onSocketError: () => {},
+     *     onRelayError: () => {}
+     * }
+     * ```
+     * @return {Function} A http connect method helper.
+    ###
+    relayConnect: (opts = {}) ->
+        _.defaults opts, {
+            allowedHosts: []
+            onSocketError: (err) ->
+                kit.logs err
+            onRelayError: (err) ->
+                kit.logs err
+        }
+
+        (req, relay, head) ->
+            hostTo = req.headers['host-to']
+            if hostTo
+                if opts.allowedHosts.indexOf(hostTo) > -1
+                    [host, port] = hostTo.split ':'
+                    sock = net.connect port, host, ->
+                        sock.write head
+                        sock.pipe relay
+                        relay.pipe sock
+                    sock.on 'error', opts.onSocketError
+                    relay.on 'error', opts.onRelayError
+
+                else
+                    relay.end()
+
+    ###*
+     * A helper for http server port tunneling.
+     * @param  {Object} opts
+     * ```js
+     * {
+     *     host: '0.0.0.0:9970',
+     *     relayHost: '127.0.0.1:9971',
+     *     hostTo: '127.0.0.1:8080',
+     *     onSocketError: () => {},
+     *     onRelayError: () => {}
+     * }
+     * ```
+     * @return {Promise} Resolve a tcp server object.
+    ###
+    relayClient: (opts = {}) ->
+        net = require 'net'
+
+        _.defaults opts, {
+            host: '0.0.0.0:9970'
+            relayHost: '127.0.0.1:9971'
+            hostTo: '127.0.0.1:8080'
+            onSocketError: (err) ->
+                kit.logs err
+            onRelayError: (err) ->
+                kit.logs err
+        }
+
+        [hostHost, hostPort] = opts.host.split ':'
+        [relayHost, relayPort] = opts.relayHost.split ':'
+
+        server = net.createServer (sock) ->
+            relay = net.connect relayPort, relayHost, ->
+                relay.write(
+                    'CONNECT / HTTP/1.1\r\n' +
+                    'Connection: close\r\n' +
+                    "Host-To: #{opts.hostTo}\r\n\r\n"
+                )
+
+                sock.pipe(relay);
+                relay.pipe(sock);
+
+            sock.on 'error', opts.onSocketError
+            relay.on 'error', opts.onRelayError
+
+        kit.promisify(server.listen, server)(hostPort, hostHost)
+        .then -> server
+
+    ###*
      * Create a static file middleware for `proxy.flow`.
      * @param  {String | Object} opts Same as the [send](https://github.com/pillarjs/send)'s.
      * It has an extra option `{ onFile: (path, stats, ctx) -> }`.

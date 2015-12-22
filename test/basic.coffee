@@ -775,3 +775,34 @@ module.exports = (it) ->
 			}
 		.then (data) ->
 			it.eq kit.fileExists(path), false
+
+	it 'proxy port', (after) ->
+		proxy = kit.require 'proxy'
+
+		app = proxy.flow()
+		relay = proxy.flow()
+		client = null
+		app.push('ok')
+
+		after ->
+			app.close()
+			relay.close()
+			client.close()
+
+		app.listen(0).then ->
+			relay.server.on 'connect', proxy.relayConnect({
+				allowedHosts: ['127.0.0.1:' + app.server.address().port]
+			})
+
+			relay.listen(0)
+		.then ->
+			proxy.relayClient({
+				host: '0.0.0.0:0'
+				relayHost: '127.0.0.1:' + relay.server.address().port
+				hostTo: '127.0.0.1:' + app.server.address().port
+			})
+		.then (c) ->
+			client = c
+			kit.request 'http://127.0.0.1:' + c.address().port
+		.then (data) ->
+			it.eq data, 'ok'
