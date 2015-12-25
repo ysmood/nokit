@@ -720,7 +720,7 @@ proxy =
                     relay.on 'error', opts.onRelayError
 
                 else
-                    relay.end()
+                    relay.end('host not allowed')
 
     ###*
      * A helper for http server port tunneling.
