@@ -776,7 +776,7 @@ module.exports = (it) ->
 		.then (data) ->
 			it.eq kit.fileExists(path), false
 
-	it 'proxy port', (after) ->
+	it 'proxy relay', (after) ->
 		proxy = kit.require 'proxy'
 
 		app = proxy.flow()

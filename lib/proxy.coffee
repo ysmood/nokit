@@ -711,6 +711,7 @@ proxy =
             if hostTo
                 if opts.allowedHosts.indexOf(hostTo) > -1
                     [host, port] = hostTo.split ':'
+                    relay.setTimeout 0
                     sock = net.connect port, host, ->
                         sock.write head
                         sock.pipe relay
