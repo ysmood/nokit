@@ -1290,6 +1290,76 @@ _.extend kit, fs, yutils,
         init
 
     ###*
+     * An async string replace function.
+     * @param  {String} str     The string to replace
+     * @param  {String | Regex} pattern
+     * @param  {Function} iter It can return a promise
+     * @return {Promise}
+    ###
+    replace: (str, pattern, iter) ->
+        promises = []
+
+        iter ?= (p, m) -> m
+
+        str.replace pattern, ->
+            offset = arguments[arguments.length - 2]
+            start = offset + arguments[0].length
+
+            promises.push(
+                Promise.resolve(iter.apply null, arguments)
+                .then (res) ->
+                    [offset, start, res]
+            )
+
+            return
+
+        Promise.all(promises).then (list) ->
+            out = ''
+            start = 0
+            end = 0
+
+            for item in list
+                end = item[0]
+                out += str.slice(start, end) + item[2]
+                start = item[1]
+
+            out += str.slice start
+            out
+
+    ###*
+     * An async string replace function, each replacement process will run in line.
+     * @param  {String} str     The string to replace
+     * @param  {String | Regex} pattern
+     * @param  {Function} iter It can return a promise
+     * @return {Promise}
+    ###
+    replaceSync: (str, pattern, iter) ->
+        out = ''
+        promise = Promise.resolve()
+        start = 0
+        end = 0
+
+        iter ?= (p, m) -> m
+
+        str.replace pattern, ->
+            arr = _.toArray arguments
+            offset = arr[arr.length - 2]
+
+            promise = promise.then ->
+                iter.apply null, arr
+            .then (res) ->
+                end = offset
+                out += str.slice(start, end) + res
+                start = offset + arr[0].length
+                return
+
+            return
+
+        promise.then ->
+            out += str.slice start
+            out
+
+    ###*
      * Much faster than the native require of node, but you should
      * follow some rules to use it safely.
      * Use it to load nokit's internal module.

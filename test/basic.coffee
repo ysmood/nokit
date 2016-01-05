@@ -86,6 +86,40 @@ module.exports = (it) ->
 		out = kit.regexMap /\w(\d+)/g, 'a1, b10, c3', 1
 		it.eq ['1', '10', '3'], out
 
+	it 'replace async 01', ->
+		out = kit.replace 'test', /t/g, () ->
+			kit.sleep(100).then -> 'x'
+
+		it.eq out, 'xesx'
+
+	it 'replace async 02', ->
+		out = kit.replace 'test', /^t/g, (m) ->
+			kit.sleep(_.random(0, 100)).then -> 'x' + m + 'x'
+
+		it.eq out, 'xtxest'
+
+	it 'replace async 03', ->
+		out = kit.replace 'test', /e(s)/g, (m, p1) -> p1
+
+		it.eq out, 'tst'
+
+	it 'replaceSync async 01', ->
+		out = kit.replaceSync 'test', /t/g, () ->
+			kit.sleep(100).then -> 'x'
+
+		it.eq out, 'xesx'
+
+	it 'replaceSync async 02', ->
+		out = kit.replace 'test', /^t/g, (m) ->
+			kit.sleep(_.random(0, 100)).then -> 'x' + m + 'x'
+
+		it.eq out, 'xtxest'
+
+	it 'replaceSync async 03', ->
+		out = kit.replaceSync 'test', /e(s)/g, (m, p1) -> p1
+
+		it.eq out, 'tst'
+
 	it 'request', ->
 		info = 'ok'
 
