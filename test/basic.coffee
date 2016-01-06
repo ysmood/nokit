@@ -1,5 +1,6 @@
 kit = require '../lib/kit'
 http = require 'http'
+net = require 'net'
 { _, Promise } = kit
 kit.require 'drives'
 regPattern = new RegExp process.argv[2]
@@ -674,47 +675,113 @@ module.exports = (it) ->
 				console.log body
 				it.eq {a: 10}, JSON.parse(body)
 
-	it 'proxy connectServant', (after) ->
+	it 'proxy tcpFrame string', (after) ->
 		proxy = kit.require 'proxy'
 
-		app = proxy.flow()
-
-		after -> app.close()
+		frame = 'ok'
 
 		new Promise (resolve) ->
-			app.server.on 'connect', proxy.connectServant({
-				data: (c) -> resolve it.eq(c + '', 'client')
-			})
+			server = net.createServer (sock) ->
+				proxy.tcpFrame sock
 
-			app.listen(0).then ->
-				app.server.setTimeout 1000
-				proxy.connectClient {
-					port: app.server.address().port
-					host: '127.0.0.1'
-					onConnect: (c, w) -> w('client')
-				}
+				sock.setEncoding 'utf8'
+				sock.on 'frame', (data) ->
+					resolve it.eq data, frame
+					sock.end()
 
-	it 'proxy connectClient', (after) ->
+			after -> server.close()
+
+			server.listen 0, ->
+				sock = net.connect server.address().port, '127.0.0.1', ->
+					proxy.tcpFrame sock
+					sock.setDefaultEncoding 'utf8'
+					sock.writeFrame frame
+
+	it 'proxy tcpFrame large frame', (after) ->
 		proxy = kit.require 'proxy'
 
-		app = proxy.flow()
-
-		after -> app.close()
+		frame = new Buffer 1000000
 
 		new Promise (resolve) ->
-			app.server.on 'connect', proxy.connectServant({
-				onConnect: (req, w) ->
-					w(new Buffer(10001))
-					w(new Buffer(10001))
-			})
+			server = net.createServer (sock) ->
+				proxy.tcpFrame sock
 
-			app.listen(0).then ->
-				app.server.setTimeout 1000
-				proxy.connectClient {
-					port: app.server.address().port
-					host: '127.0.0.1'
-					data: (c) -> resolve it.eq(c.length, 10001)
-				}
+				sock.on 'frame', (data) ->
+					resolve it.eq data, frame
+					sock.end()
+
+			after -> server.close()
+
+			server.listen 0, ->
+				sock = net.connect server.address().port, '127.0.0.1', ->
+					proxy.tcpFrame sock
+
+					sock.writeFrame frame
+
+	it 'proxy tcpFrame multiple write', (after) ->
+		proxy = kit.require 'proxy'
+
+		frame = 'test'
+
+		new Promise (resolve) ->
+			server = net.createServer (sock) ->
+				proxy.tcpFrame sock
+
+				list = []
+				sock.on 'frame', (data) ->
+					list.push data.toString()
+
+					if list.length == 2
+						resolve it.eq list, [frame, frame]
+						sock.end()
+
+			after -> server.close()
+
+			server.listen 0, ->
+				sock = net.connect server.address().port, '127.0.0.1', ->
+					proxy.tcpFrame sock
+
+					sock.writeFrame frame
+					sock.writeFrame frame
+
+	it 'proxy tcpFrame frames', (after) ->
+		proxy = kit.require 'proxy'
+
+		frames = []
+		frames.push new Buffer(1024 * 67)
+		frames.push new Buffer(1024 * 128)
+		frames.push new Buffer(37)
+		frames.push new Buffer(10)
+		frames.push new Buffer(0)
+		frames.push new Buffer(1024 * 64) # The max tcp package size
+		frames.push new Buffer(0)
+
+		new Promise (resolve, reject) ->
+			server = net.createServer (sock) ->
+				proxy.tcpFrame sock
+
+				sock.on 'frame', (data) ->
+					it.eq(data, frames.pop())
+					.then ->
+						if frames.length == 0
+							sock.end()
+							resolve()
+						else
+							sock.writeFrame 'ok'
+					.catch ->
+						sock.end()
+						reject()
+
+			after -> server.close()
+
+			server.listen 0, ->
+				sock = net.connect server.address().port, '127.0.0.1', ->
+					proxy.tcpFrame sock
+
+					sock.on 'frame', ->
+						sock.writeFrame _.last(frames)
+
+					sock.writeFrame _.last(frames)
 
 	it 'proxy file write', (after) ->
 		proxy = kit.require 'proxy'
