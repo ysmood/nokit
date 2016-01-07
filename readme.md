@@ -141,6 +141,8 @@ Goto [changelog](doc/changelog.md)
   - [proxy](#proxy)
   - [regexReduce(reg, str, iter, init)](#regexreducereg-str-iter-init)
   - [regexMap(reg, str, iter)](#regexmapreg-str-iter)
+  - [replace(str, pattern, iter)](#replacestr-pattern-iter)
+  - [replaceSync(str, pattern, iter)](#replacesyncstr-pattern-iter)
   - [require(moduleName, dir, loaded)](#requiremodulename-dir-loaded)
   - [requireOptional(name, dir, semver)](#requireoptionalname-dir-semver)
   - [request(opts)](#requestopts)
@@ -160,10 +162,9 @@ Goto [changelog](doc/changelog.md)
   - [body()](#body)
   - [van(ctx)](#vanctx)
   - [connect(opts)](#connectopts)
-  - [connectServant(opts)](#connectservantopts)
-  - [connectClient(opts)](#connectclientopts)
   - [etag()](#etag)
   - [file(opts)](#fileopts)
+  - [fileRequest(opts)](#filerequestopts)
   - [flow](#flow)
   - [match(pattern, opts)](#matchpattern-opts)
   - [midToFlow(h)](#midtoflowh)
@@ -172,6 +173,7 @@ Goto [changelog](doc/changelog.md)
   - [relayConnect(opts)](#relayconnectopts)
   - [relayClient(opts)](#relayclientopts)
   - [static(opts)](#staticopts)
+  - [tcpFrame(socket, opts)](#tcpframesocket-opts)
   - [url(opts)](#urlopts)
 
 - #### drives
@@ -977,7 +979,39 @@ Goto [changelog](doc/changelog.md)
         kit.log(out) // => [1, 10, 3]
         ```
 
-- ## **[require(moduleName, dir, loaded)](lib/kit.coffee?source#L1318)**
+- ## **[replace(str, pattern, iter)](lib/kit.coffee?source#L1299)**
+
+    An async string replace function.
+
+    - **<u>param</u>**: `str` { _String_ }
+
+        The string to replace
+
+    - **<u>param</u>**: `pattern` { _String | Regex_ }
+
+    - **<u>param</u>**: `iter` { _Function_ }
+
+        It can return a promise
+
+    - **<u>return</u>**: { _Promise_ }
+
+- ## **[replaceSync(str, pattern, iter)](lib/kit.coffee?source#L1336)**
+
+    An async string replace function, each replacement process will run in line.
+
+    - **<u>param</u>**: `str` { _String_ }
+
+        The string to replace
+
+    - **<u>param</u>**: `pattern` { _String | Regex_ }
+
+    - **<u>param</u>**: `iter` { _Function_ }
+
+        It can return a promise
+
+    - **<u>return</u>**: { _Promise_ }
+
+- ## **[require(moduleName, dir, loaded)](lib/kit.coffee?source#L1388)**
 
     Much faster than the native require of node, but you should
     follow some rules to use it safely.
@@ -1018,7 +1052,7 @@ Goto [changelog](doc/changelog.md)
         let jhash = kit.require('jhash', __dirname);
         ```
 
-- ## **[requireOptional(name, dir, semver)](lib/kit.coffee?source#L1393)**
+- ## **[requireOptional(name, dir, semver)](lib/kit.coffee?source#L1463)**
 
     Require an optional package. If not found, it will
     warn the user to npm install it, and exit the process.
@@ -1041,7 +1075,7 @@ Goto [changelog](doc/changelog.md)
 
         The required package.
 
-- ## **[request(opts)](lib/kit.coffee?source#L1525)**
+- ## **[request(opts)](lib/kit.coffee?source#L1595)**
 
     A handy extended combination of `http.request` and `https.request`.
 
@@ -1156,14 +1190,14 @@ Goto [changelog](doc/changelog.md)
         );
         ```
 
-- ## **[semver](lib/kit.coffee?source#L1737)**
+- ## **[semver](lib/kit.coffee?source#L1807)**
 
     The semantic versioner for npm, known as [semver](https://github.com/npm/node-semver).
     You must `kit.require 'semver'` before using it.
 
     - **<u>type</u>**: { _Object_ }
 
-- ## **[spawn(cmd, args, opts)](lib/kit.coffee?source#L1768)**
+- ## **[spawn(cmd, args, opts)](lib/kit.coffee?source#L1838)**
 
     A safer version of `child_process.spawn` to cross-platform run
     a process. In some conditions, it may be more convenient
@@ -1207,13 +1241,13 @@ Goto [changelog](doc/changelog.md)
         .then(({code}) => kit.log code);
         ```
 
-- ## **[sse](lib/kit.coffee?source#L1834)**
+- ## **[sse](lib/kit.coffee?source#L1904)**
 
     The `sse` module.
     You must `kit.require 'sse'` before using it.
     For more information goto the `sse` section.
 
-- ## **[task(name, opts, fn)](lib/kit.coffee?source#L1895)**
+- ## **[task(name, opts, fn)](lib/kit.coffee?source#L1965)**
 
     Sequencing and executing tasks and dependencies concurrently.
 
@@ -1293,12 +1327,12 @@ Goto [changelog](doc/changelog.md)
         );
         ```
 
-- ## **[url](lib/kit.coffee?source#L1969)**
+- ## **[url](lib/kit.coffee?source#L2039)**
 
     The `url` module of [io.js](iojs.org).
     You must `kit.require 'url'` before using it.
 
-- ## **[warp(from, opts)](lib/kit.coffee?source#L2084)**
+- ## **[warp(from, opts)](lib/kit.coffee?source#L2154)**
 
     Works much like `gulp.src`, but with Promise instead.
     The warp control and error handling is more pleasant.
@@ -1423,7 +1457,7 @@ Goto [changelog](doc/changelog.md)
         .run('dist');
         ```
 
-- ## **[which(name)](lib/kit.coffee?source#L2161)**
+- ## **[which(name)](lib/kit.coffee?source#L2231)**
 
     Same as the unix `which` command.
     You must `kit.require 'which'` before using it.
@@ -1434,14 +1468,14 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Promise_ }
 
-- ## **[whichSync](lib/kit.coffee?source#L2168)**
+- ## **[whichSync](lib/kit.coffee?source#L2238)**
 
     Sync version of `which`.
     You must `kit.require 'whichSync'` before using it.
 
     - **<u>type</u>**: { _Function_ }
 
-- ## **[xinspect(obj, opts)](lib/kit.coffee?source#L2179)**
+- ## **[xinspect(obj, opts)](lib/kit.coffee?source#L2249)**
 
     For debugging. Dump a colorful object.
 
@@ -1458,7 +1492,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _String_ }
 
-- ## **[xopen(cmds, opts)](lib/kit.coffee?source#L2202)**
+- ## **[xopen(cmds, opts)](lib/kit.coffee?source#L2272)**
 
     Open a thing that your system can recognize.
     Now only support Windows, OSX or system that installed 'xdg-open'.
@@ -1825,7 +1859,7 @@ kit.warp('src/**/*.coffee')
     A cross-platform programmable Fiddler alternative.
     You can even replace express.js with it's `flow` function.
 
-- ## **[body()](lib/proxy.coffee?source#L76)**
+- ## **[body()](lib/proxy.coffee?source#L27)**
 
     A simple request body middleware.
 
@@ -1833,14 +1867,14 @@ kit.warp('src/**/*.coffee')
 
         `(ctx) -> Promise`
 
-- ## **[van(ctx)](lib/proxy.coffee?source#L91)**
+- ## **[van(ctx)](lib/proxy.coffee?source#L42)**
 
     Add a `van` method to flow context object. It's a helper to set
     and get the context body.
 
     - **<u>param</u>**: `ctx` { _FlowContext_ }
 
-- ## **[connect(opts)](lib/proxy.coffee?source#L125)**
+- ## **[connect(opts)](lib/proxy.coffee?source#L76)**
 
     Http CONNECT method tunneling proxy helper.
     Most times it is used to proxy https and websocket.
@@ -1875,44 +1909,13 @@ kit.warp('src/**/*.coffee')
         app.listen(8123);
         ```
 
-- ## **[connectServant(opts)](lib/proxy.coffee?source#L189)**
-
-    A socket p2p middleware on http CONNECT.
-
-    - **<u>param</u>**: `opts` { _Object_ }
-
-        ```js
-        {
-            onConnect: (req, write) => {},
-            filter: (req) => true,
-            onError: (err, req, sock) => {}
-        }
-        ```
-
-    - **<u>return</u>**: { _Function_ }
-
-- ## **[connectClient(opts)](lib/proxy.coffee?source#L221)**
-
-    A socket p2p client to http CONNECT.
-
-    - **<u>param</u>**: `opts` { _Object_ }
-
-        ```js
-        {
-            onConnect: (req, write) => {},
-            retry: 0,
-            host: '127.0.0.1',
-            port: 80
-        }
-        ```
-
-- ## **[etag()](lib/proxy.coffee?source#L250)**
+- ## **[etag()](lib/proxy.coffee?source#L132)**
 
     Create a etag middleware.
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[file(opts)](lib/proxy.coffee?source#L292)**
+- ## **[file(opts)](lib/proxy.coffee?source#L174)**
 
     A simple protocol to read, write, chmod, delete file via http.
     The protocol is very simple
@@ -1943,12 +1946,34 @@ kit.warp('src/**/*.coffee')
 
         noflow middleware
 
-- ## **[flow](lib/proxy.coffee?source#L461)**
+- ## **[fileRequest(opts)](lib/proxy.coffee?source#L291)**
+
+    Make a file create request to `proxy.file`.
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+        Defaults
+        ```js
+        {
+           action: 'read',
+           url: '127.0.0.1',
+           path: String,
+           data: Any,
+           password: 'nokit',
+           algorithm: 'aes128',
+           actionKey: 'file-action',
+           typeKey: 'file-type'
+        }
+        ```
+
+    - **<u>return</u>**: { _Promise_ }
+
+- ## **[flow](lib/proxy.coffee?source#L360)**
 
     A minimal middleware composer for the future.
     https://github.com/ysmood/noflow
 
-- ## **[match(pattern, opts)](lib/proxy.coffee?source#L476)**
+- ## **[match(pattern, opts)](lib/proxy.coffee?source#L375)**
 
     Generate an express like unix path selector. See the example of `proxy.flow`.
 
@@ -1971,7 +1996,7 @@ kit.warp('src/**/*.coffee')
         kit.log(match('/items/10')) // output => { id: '10' }
         ```
 
-- ## **[midToFlow(h)](lib/proxy.coffee?source#L514)**
+- ## **[midToFlow(h)](lib/proxy.coffee?source#L413)**
 
     Convert a Express-like middleware to `proxy.flow` middleware.
 
@@ -1996,7 +2021,7 @@ kit.warp('src/**/*.coffee')
         http.createServer(proxy.flow(middlewares)).listen(8123);
         ```
 
-- ## **[select(sel, middleware)](lib/proxy.coffee?source#L545)**
+- ## **[select(sel, middleware)](lib/proxy.coffee?source#L444)**
 
     Create a conditional middleware that only works when the pattern matches.
 
@@ -2022,7 +2047,7 @@ kit.warp('src/**/*.coffee')
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[serverHelper(opts)](lib/proxy.coffee?source#L634)**
+- ## **[serverHelper(opts)](lib/proxy.coffee?source#L533)**
 
     Create a http request middleware.
 
@@ -2070,7 +2095,7 @@ kit.warp('src/**/*.coffee')
         nokit.log({ any: 'thing' });
         ```
 
-- ## **[relayConnect(opts)](lib/proxy.coffee?source#L700)**
+- ## **[relayConnect(opts)](lib/proxy.coffee?source#L599)**
 
     A helper for http server port tunneling.
 
@@ -2088,7 +2113,7 @@ kit.warp('src/**/*.coffee')
 
         A http connect method helper.
 
-- ## **[relayClient(opts)](lib/proxy.coffee?source#L738)**
+- ## **[relayClient(opts)](lib/proxy.coffee?source#L638)**
 
     A helper for http server port tunneling.
 
@@ -2108,7 +2133,7 @@ kit.warp('src/**/*.coffee')
 
         Resolve a tcp server object.
 
-- ## **[static(opts)](lib/proxy.coffee?source#L785)**
+- ## **[static(opts)](lib/proxy.coffee?source#L685)**
 
     Create a static file middleware for `proxy.flow`.
 
@@ -2129,7 +2154,29 @@ kit.warp('src/**/*.coffee')
         http.createServer(proxy.flow(middlewares)).listen(8123);
         ```
 
-- ## **[url(opts)](lib/proxy.coffee?source#L881)**
+- ## **[tcpFrame(socket, opts)](lib/proxy.coffee?source#L729)**
+
+    Send any size of package as you with a socket.
+    Add a `writeFrame` method and a `frame` event to `net.Socket` object.
+    The `writeFrame`'s signature is the same with the `net.Socket.write`,
+    the max package size is 4GB. The `frame` event is the same with the native
+    `data` event.
+
+    - **<u>param</u>**: `socket` { _net.Socket_ }
+
+        The nodejs native `net.Socket`.
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+        Defaults
+        ```js
+        {
+            // The extra first chunk to be used as part of a frame
+            head: Buffer
+        }
+        ```
+
+- ## **[url(opts)](lib/proxy.coffee?source#L798)**
 
     Use it to proxy one url to another.
 

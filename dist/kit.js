@@ -1415,6 +1415,81 @@ _.extend(kit, fs, yutils, {
   },
 
   /**
+   * An async string replace function.
+   * @param  {String} str     The string to replace
+   * @param  {String | Regex} pattern
+   * @param  {Function} iter It can return a promise
+   * @return {Promise}
+   */
+  replace: function(str, pattern, iter) {
+    var promises;
+    promises = [];
+    if (iter == null) {
+      iter = function(p, m) {
+        return m;
+      };
+    }
+    str.replace(pattern, function() {
+      var offset, start;
+      offset = arguments[arguments.length - 2];
+      start = offset + arguments[0].length;
+      promises.push(Promise.resolve(iter.apply(null, arguments)).then(function(res) {
+        return [offset, start, res];
+      }));
+    });
+    return Promise.all(promises).then(function(list) {
+      var end, item, j, len, out, start;
+      out = '';
+      start = 0;
+      end = 0;
+      for (j = 0, len = list.length; j < len; j++) {
+        item = list[j];
+        end = item[0];
+        out += str.slice(start, end) + item[2];
+        start = item[1];
+      }
+      out += str.slice(start);
+      return out;
+    });
+  },
+
+  /**
+   * An async string replace function, each replacement process will run in line.
+   * @param  {String} str     The string to replace
+   * @param  {String | Regex} pattern
+   * @param  {Function} iter It can return a promise
+   * @return {Promise}
+   */
+  replaceSync: function(str, pattern, iter) {
+    var end, out, promise, start;
+    out = '';
+    promise = Promise.resolve();
+    start = 0;
+    end = 0;
+    if (iter == null) {
+      iter = function(p, m) {
+        return m;
+      };
+    }
+    str.replace(pattern, function() {
+      var arr, offset;
+      arr = _.toArray(arguments);
+      offset = arr[arr.length - 2];
+      promise = promise.then(function() {
+        return iter.apply(null, arr);
+      }).then(function(res) {
+        end = offset;
+        out += str.slice(start, end) + res;
+        start = offset + arr[0].length;
+      });
+    });
+    return promise.then(function() {
+      out += str.slice(start);
+      return out;
+    });
+  },
+
+  /**
    * Much faster than the native require of node, but you should
    * follow some rules to use it safely.
    * Use it to load nokit's internal module.
