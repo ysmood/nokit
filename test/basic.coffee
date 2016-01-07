@@ -39,6 +39,22 @@ module.exports = (it) ->
 		kit.logs 'a', 'b', 'c'
 		kit.log '%s + %s + %s', ['red'.red, 'green'.green, 'blue'.blue]
 
+	it 'monitorApp', (after) -> new Promise (resolve) ->
+		p = 'test/fixtures/monitorApp-test.coffee'
+		kit.copySync 'test/fixtures/monitorApp.coffee', p
+		{ stop } = kit.monitorApp {
+			bin: 'coffee'
+			args: [p]
+			onRestart: (path) ->
+				resolve it.eq path, kit.path.resolve(p)
+				stop()
+		}
+		tmr = setInterval ->
+			kit.outputFileSync p, 'process.exit 0'
+		, 1000
+
+		after -> clearInterval tmr
+
 	it 'parseComment coffee', ->
 		path = 'test/fixtures/comment.coffee'
 		kit.readFile path, 'utf8'
@@ -196,20 +212,6 @@ module.exports = (it) ->
 			}
 			.then (body) ->
 				it.eq +body, buffer.length
-
-	it 'monitorApp', (after) -> new Promise (resolve) ->
-		p = 'test/fixtures/monitorApp-test.coffee'
-		kit.copySync 'test/fixtures/monitorApp.coffee', p
-		{ stop } = kit.monitorApp {
-			bin: 'coffee'
-			args: [p]
-			onRestart: (path) ->
-				resolve it.eq path, kit.path.resolve(p)
-				stop()
-		}
-		setTimeout ->
-			kit.outputFileSync p, 'process.exit 0'
-		, 1000
 
 	it 'exec', ->
 		p = kit.exec 'echo exec_ok'
