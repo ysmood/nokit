@@ -1,9 +1,12 @@
 # Changelog
 
-- v0.17.0
+- v0.17
 
   - **API CHANGE** `kit.request` the `setTE` option changed to `autoTE`
   - add: some proxy helpers
+  - add: `proxy.tcpFrame`
+  - add: `kit.replace`
+  - add: `kit.replaceSync`
 
 - v0.16.17
 
