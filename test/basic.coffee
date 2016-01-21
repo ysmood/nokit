@@ -5,8 +5,6 @@ net = require 'net'
 kit.require 'drives'
 regPattern = new RegExp process.argv[2]
 
-cacheDir = 'test/fixtures/cacheDir'
-
 createRandomServer = (handler, fn) ->
 	server = http.createServer handler
 
@@ -22,6 +20,12 @@ createRandomServer = (handler, fn) ->
 		Promise.reject err
 
 unixSep = (p) -> p.replace /\\/g, '\/'
+
+tempPath = ->
+    'test/temp/' + Date.now() + (Math.random() + '').slice(2);
+
+kit.removeSync('test/temp');
+kit.mkdirsSync('test/temp');
 
 module.exports = (it) ->
 	it 'brush', ->
@@ -40,7 +44,7 @@ module.exports = (it) ->
 		kit.log '%s + %s + %s', ['red'.red, 'green'.green, 'blue'.blue]
 
 	it 'monitorApp', (after) -> new Promise (resolve) ->
-		p = 'test/fixtures/monitorApp-test.coffee'
+		p = tempPath() + '/monitorApp-test.coffee'
 		kit.copySync 'test/fixtures/monitorApp.coffee', p
 		{ stop } = kit.monitorApp {
 			bin: 'coffee'
@@ -242,9 +246,10 @@ module.exports = (it) ->
 		it.eq kit.indent('a\nb', 2), '  a\n  b'
 
 	it 'depsCache cache newer', ->
+		cacheDir = tempPath()
 		file = 'test/fixtures/depsCache.txt'
-		cacheFile = 'test/fixtures/cacheDir/1345816117-depsCache.txt'
-		dest = file + '.dest'
+		cacheFile = cacheDir + '/1345816117-depsCache.txt'
+		dest = tempPath() + '/' + file + '.dest'
 		kit.outputFileSync dest, 'out'
 		kit.depsCache {
 			deps: [file]
@@ -259,49 +264,9 @@ module.exports = (it) ->
 			.then (cache) ->
 				it.eq cache.isNewer, true
 
-	it 'depsCache file newer', ->
-		file = 'test/fixtures/depsCacheFileNewer.txt'
-		file1 = 'test/fixtures/depsCacheFileNewer1.txt'
-		cacheDir = 'test/fixtures/cacheDir'
-		dest = file + '.dest'
-		dest1 = file + '.dest1'
-		cacheFile = 'test/fixtures/cacheDir/1862933060-depsCacheFileNewer.txt'
-
-		kit.outputFileSync file1, 'test'
-		kit.outputFileSync dest, 'out'
-		kit.outputFileSync dest1, 'out1'
-
-		kit.depsCache {
-			deps: [file, file1]
-			dests: [dest, dest1]
-			cacheDir
-		}
-		.then -> kit.sleep(1000)
-		.then ->
-			kit.outputFileSync file1, 'txt'
-
-			kit.depsCache {
-				deps: [file1]
-				cacheDir
-			}
-			.then (cache) ->
-				cache.contents = kit.readFileSync cache.dests[dest1], 'utf8'
-
-				delete cache.deps
-				out =
-					dests: {}
-					isNewer: false
-					contents: 'out1'
-
-				cache.dests[dest] = unixSep cache.dests[dest]
-				cache.dests[dest1] = unixSep cache.dests[dest1]
-
-				out.dests[dest] ='test/fixtures/cacheDir/3779283019-depsCacheFileNewer.txt.dest'
-				out.dests[dest1] ='test/fixtures/cacheDir/3263598758-depsCacheFileNewer.txt.dest1'
-				it.eq cache, out
-
 	it 'warp map', ->
-		tmp = 'test/fixtures/warp'
+		tmp = tempPath()
+		cacheDir = tempPath()
 
 		counter = (info) ->
 			info.dest.ext = '.coffee'
@@ -315,12 +280,13 @@ module.exports = (it) ->
 			kit.glob tmp + '/**/*.coffee'
 		.then (paths) ->
 			it.eq paths.map(unixSep) , [
-				"test/fixtures/warp/dep4.coffee"
-				"test/fixtures/warp/lib/index.coffee"
+				"#{tmp}/dep4.coffee"
+				"#{tmp}/lib/index.coffee"
 			]
 
 	it 'warp custom reader', ->
-		tmp = 'test/fixtures/warp-custom-reader'
+		tmp = tempPath()
+		cacheDir = tempPath()
 
 		myReader = _.extend (info) ->
 			kit.readFile @path, 'utf8'
@@ -337,26 +303,31 @@ module.exports = (it) ->
 			it.eq str[0..10], "/**\n\t * An "
 
 	it 'warp concat', ->
-		tmp = 'test/fixtures/warp_all.coffee'
+		out = tempPath()
+		file = 'warp_all.coffee'
+		cacheDir = tempPath()
 
 		kit.warp 'test/fixtures/depDir/**/*.coffee'
 		.load kit.drives.reader { cacheDir }
-		.load kit.drives.concat 'warp_all.coffee'
-		.run 'test/fixtures'
+		.load kit.drives.concat file
+		.run out
 		.then ->
-			kit.readFile tmp, 'utf8'
+			kit.readFile(out + '/' + file, 'utf8')
 		.then (str) ->
 			it.eq str.indexOf("require './lib'") > 0, true
 
 	it 'warp auto', ->
-		path = 'test/fixtures/compiler.all'
+		dir = tempPath()
+		path = dir + '/compiler.all'
+		cacheDir = tempPath()
+
 		kit.warp 'test/fixtures/compiler/*'
 			.load kit.drives.reader { cacheDir }
 			.load kit.drives.auto 'lint'
 			.load kit.drives.auto 'compile'
 			.load kit.drives.auto 'compress'
 			.load kit.drives.concat 'compiler.all'
-		.run 'test/fixtures'
+		.run dir
 		.then ->
 			str = kit.readFileSync path, 'utf8'
 			it.eq _.trim(str).split('\n').sort(), [
@@ -787,7 +758,7 @@ module.exports = (it) ->
 
 	it 'proxy file write', (after) ->
 		proxy = kit.require 'proxy'
-		path = 'test/fixtures/proxy.file.write.txt'
+		path = tempPath() + '/proxy.file.write.txt'
 
 		app = proxy.flow()
 
@@ -810,7 +781,7 @@ module.exports = (it) ->
 
 	it 'proxy file read file', (after) ->
 		proxy = kit.require 'proxy'
-		path = 'test/fixtures/proxy.file.read.file.txt'
+		path = tempPath() + '/proxy.file.read.file.txt'
 		kit.outputFileSync path, 'ok'
 
 		app = proxy.flow()

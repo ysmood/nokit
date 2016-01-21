@@ -4,4 +4,4 @@ node_modules
 .coffee
 .nokit
 *.log
-/test/fixtures/proxy.file.*.txt
+test/temp

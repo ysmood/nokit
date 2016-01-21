@@ -63,19 +63,9 @@ module.exports = (task, option) ->
 
 	option '-g, --grep <pattern>', 'test pattern', ''
 	task 'test t', 'unit tests', (opts) ->
-		clean = ->
-			kit.spawn 'git', ['clean', '-fd', 'test/fixtures']
-
-		clean().then ->
-			kit.spawn('junit', [
-				'-r', 'coffee-script/register'
-				'-g', opts.grep
-				'-t', 1000 * 20
-				'test/basic.coffee'
-			])
-		.then -> clean()
-		.catch (err) ->
-			if err.code
-				process.exit err.code
-			else
-				kit.Promise.reject err
+		kit.spawn('junit', [
+			'-r', 'coffee-script/register'
+			'-g', opts.grep
+			'-t', 1000 * 20
+			'test/basic.coffee'
+		])

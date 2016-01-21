@@ -357,7 +357,7 @@ proxy =
      * A minimal middleware composer for the future.
      * https://github.com/ysmood/noflow
     ###
-    flow: flow.default
+    flow: flow
 
     ###*
      * Generate an express like unix path selector. See the example of `proxy.flow`.
