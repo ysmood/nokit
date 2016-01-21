@@ -884,6 +884,7 @@ proxy =
                 headers
                 reqPipe: req
                 resPipe: stream
+                autoTE: false
                 handleResPipe: opts.handleResPipe
                 autoUnzip: false
                 agent: opts.agent

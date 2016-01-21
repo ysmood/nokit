@@ -1655,7 +1655,7 @@ _.extend kit, fs, yutils,
         if reqBuf != undefined
             opts.headers['content-length'] ?= reqBuf.length
 
-        if ('content-length' not of opts.headers) and
+        if opts.autoTE and ('content-length' not of opts.headers) and
         ('Content-Length' not of opts.headers) and opts.reqPipe
             opts.headers['transfer-encoding'] = 'chunked'
 
