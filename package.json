@@ -1,6 +1,6 @@
 {
   "name": "nokit",
-  "version": "0.17.1",
+  "version": "0.17.2",
   "description": "A light weight set of handy tools for real world program.",
   "main": "dist/kit.js",
   "bin": {
@@ -53,7 +53,7 @@
     "jshint": "2.9.1",
     "junit": "1.1.1",
     "less": "2.5.3",
-    "lodash-cli": "4.0.0",
+    "lodash-cli": "3.10.1",
     "path-to-regexp": "1.2.1",
     "send": "0.13.1",
     "stylus": "0.53.0",

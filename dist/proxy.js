@@ -74,10 +74,14 @@ proxy = {
    * @param {Object} opts Defaults:
    * ```js
    * {
-   *  filter: (req) => true, // if it returns false, the proxy will be ignored
-   *  host: null, // Optional. The target host force to.
-   *  port: null, // Optional. The target port force to.
-   *  onError: (err, socket) => {}
+   *     // If it returns false, the proxy will be ignored.
+   *     filter: (req) => true,
+   *
+   *     handleReqHeaders: (headers) => headers,
+   *
+   *     host: null, // Optional. The target host force to.
+   *     port: null, // Optional. The target port force to.
+   *     onError: (err, socket) => {}
    * }
    * ```
    * @return {Function} The connect request handler.
@@ -100,8 +104,11 @@ proxy = {
       opts = {};
     }
     _.defaults(opts, {
-      filter: function(req) {
+      filter: function() {
         return true;
+      },
+      handleReqHeaders: function(h) {
+        return h;
       },
       host: null,
       port: null,
@@ -120,23 +127,23 @@ proxy = {
       }
     }
     return function(req, sock, head) {
-      var isProxy, ms, psock;
+      var isTransparentProxy, ms, psock;
       if (!opts.filter(req)) {
         return;
       }
-      isProxy = req.headers['proxy-connection'];
-      ms = isProxy ? req.url.match(regConnectHost) : req.headers.host.match(regConnectHost);
+      isTransparentProxy = req.headers['proxy-connection'];
+      ms = isTransparentProxy ? req.url.match(regConnectHost) : req.headers.host.match(regConnectHost);
       psock = new Socket;
       psock.connect(port || ms[2] || 80, host || ms[1], function() {
-        var h, i, j, len, rawHeaders, ref1;
-        if (isProxy) {
+        var headers, j, k, len, rawHeaders, v;
+        if (isTransparentProxy) {
           sock.write("HTTP/" + req.httpVersion + " 200 Connection established\r\n\r\n");
         } else {
           rawHeaders = req.method + " " + req.url + " HTTP/" + req.httpVersion + "\r\n";
-          ref1 = req.rawHeaders;
-          for (i = j = 0, len = ref1.length; j < len; i = ++j) {
-            h = ref1[i];
-            rawHeaders += h + (i % 2 === 0 ? ': ' : '\r\n');
+          headers = opts.handleReqHeaders(req.headers);
+          for (v = j = 0, len = headers.length; j < len; v = ++j) {
+            k = headers[v];
+            rawHeaders += k + ": " + v + "\r\n";
           }
           rawHeaders += '\r\n';
           psock.write(rawHeaders);
@@ -418,7 +425,7 @@ proxy = {
    * A minimal middleware composer for the future.
    * https://github.com/ysmood/noflow
    */
-  flow: flow["default"],
+  flow: flow,
 
   /**
    * Generate an express like unix path selector. See the example of `proxy.flow`.
@@ -976,6 +983,7 @@ proxy = {
         headers: headers,
         reqPipe: req,
         resPipe: stream,
+        autoTE: false,
         handleResPipe: opts.handleResPipe,
         autoUnzip: false,
         agent: opts.agent,

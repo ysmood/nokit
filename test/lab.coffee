@@ -8,23 +8,12 @@ http = require 'http'
 app = proxy.flow()
 
 
-# app.push ($) ->
-#     kit.logs $.req.url
-#     return kit.never()
+h = proxy.url()
 
-# app.listen 8123, ->
-#     kit.request {
-#         url: '127.0.0.1:8123'
-#         reqPipe: kit.createReadStream(__filename)
-#     }
+app.push ($) ->
+    h($)
 
-http.createServer (req, res) ->
-    req.on 'data', (c) ->
-        kit.logs c.length
-.listen 8123, ->
-    req = http.request {
-        host: '127.0.0.1'
-        port: 8123
-    }
 
-    kit.createReadStream(__filename).pipe req
+app.server.on('connect', proxy.connect())
+
+app.listen(8123)

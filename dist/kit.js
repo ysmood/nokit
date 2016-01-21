@@ -1808,7 +1808,7 @@ _.extend(kit, fs, yutils, {
         base1['content-length'] = reqBuf.length;
       }
     }
-    if ((!('content-length' in opts.headers)) && (!('Content-Length' in opts.headers)) && opts.reqPipe) {
+    if (opts.autoTE && (!('content-length' in opts.headers)) && (!('Content-Length' in opts.headers)) && opts.reqPipe) {
       opts.headers['transfer-encoding'] = 'chunked';
     }
     req = null;
