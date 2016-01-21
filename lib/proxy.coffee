@@ -53,10 +53,14 @@ proxy =
      * @param {Object} opts Defaults:
      * ```js
      * {
-     *  filter: (req) => true, // if it returns false, the proxy will be ignored
-     *  host: null, // Optional. The target host force to.
-     *  port: null, // Optional. The target port force to.
-     *  onError: (err, socket) => {}
+     *     // If it returns false, the proxy will be ignored.
+     *     filter: (req) => true,
+     *
+     *     handleReqHeaders: (headers) => headers,
+     *
+     *     host: null, // Optional. The target host force to.
+     *     port: null, // Optional. The target port force to.
+     *     onError: (err, socket) => {}
      * }
      * ```
      * @return {Function} The connect request handler.
@@ -75,7 +79,8 @@ proxy =
     ###
     connect: (opts = {}) ->
         _.defaults opts, {
-            filter: (req) -> true
+            filter: -> true
+            handleReqHeaders: (h) -> h
             host: null
             port: null
             onError: (err, req, socket) ->
@@ -93,22 +98,23 @@ proxy =
         (req, sock, head) ->
             return if not opts.filter req
 
-            isProxy = req.headers['proxy-connection']
-            ms = if isProxy
+            isTransparentProxy = req.headers['proxy-connection']
+            ms = if isTransparentProxy
                 req.url.match regConnectHost
             else
                 req.headers.host.match regConnectHost
 
             psock = new Socket
             psock.connect port or ms[2] or 80, host or ms[1], ->
-                if isProxy
+                if isTransparentProxy
                     sock.write "
                         HTTP/#{req.httpVersion} 200 Connection established\r\n\r\n
                     "
-                else
+                else # https or websocket
                     rawHeaders = "#{req.method} #{req.url} HTTP/#{req.httpVersion}\r\n"
-                    for h, i in req.rawHeaders
-                        rawHeaders += h + (if i % 2 == 0 then ': ' else '\r\n')
+                    headers = opts.handleReqHeaders(req.headers)
+                    for k, v in headers
+                        rawHeaders += "#{k}: #{v}\r\n"
 
                     rawHeaders += '\r\n'
 
