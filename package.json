@@ -51,7 +51,7 @@
     "formidable": "1.0.17",
     "iconv-lite": "0.4.13",
     "jshint": "2.9.1",
-    "junit": "1.1.1",
+    "junit": "1.1.2",
     "less": "2.5.3",
     "lodash-cli": "3.10.1",
     "path-to-regexp": "1.2.1",
