@@ -59,12 +59,15 @@ module.exports = (task, option) => {
 
     // Define a default task, and it depends on the "clean" task.
     task('default', ['clean'], 'This is a comment info', (opts) => {
-        kit.log(opts.hello);
+        // Compose a task inside another.
+        printOpts(opts);
 
         // Use brush.
         kit.require('brush');
         kit.log('print red words'.red);
     });
+
+    let printOpts = task('print-opts', (opts) => { kit.logs(opts); });
 
     task('clean', () => {
         return kit.remove('dist');
@@ -1329,7 +1332,7 @@ Goto [changelog](doc/changelog.md)
 
 - ## **[url](lib/kit.coffee?source#L2039)**
 
-    The `url` module of [io.js](iojs.org).
+    The `url` module of node.
     You must `kit.require 'url'` before using it.
 
 - ## **[warp(from, opts)](lib/kit.coffee?source#L2154)**

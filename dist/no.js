@@ -31,7 +31,7 @@ error = function(msg) {
  * @param  {String}   description
  * @param  {Boolean}  isSequential
  * @param  {Function} fn
- * @return {Promise}
+ * @return {Function} fn
  */
 
 task = function() {
@@ -57,13 +57,14 @@ task = function() {
   sep = args.description ? ' ' : '';
   helpInfo = args.description + sep + depsInfo;
   alias = args.name.split(' ');
-  return alias.forEach(function(name) {
+  alias.forEach(function(name) {
     cmder.command(name).description(helpInfo);
     kit.task(name, args, function() {
       return args.fn(getOptions());
     });
     return helpInfo = br.cyan('-> ') + alias[0];
   });
+  return args.fn;
 };
 
 

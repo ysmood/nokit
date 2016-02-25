@@ -2239,7 +2239,7 @@ _.extend(kit, fs, yutils, {
   },
 
   /**
-   * The `url` module of [io.js](iojs.org).
+   * The `url` module of node.
    * You must `kit.require 'url'` before using it.
    */
   url: null,

@@ -2033,7 +2033,7 @@ _.extend kit, fs, yutils,
                     task(name) opts.init
 
     ###*
-     * The `url` module of [io.js](iojs.org).
+     * The `url` module of node.
      * You must `kit.require 'url'` before using it.
     ###
     url: null
