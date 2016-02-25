@@ -22,7 +22,7 @@ error = (msg) ->
  * @param  {String}   description
  * @param  {Boolean}  isSequential
  * @param  {Function} fn
- * @return {Promise}
+ * @return {Function} fn
 ###
 task = ->
 	args = kit.defaultArgs arguments, {
@@ -50,6 +50,8 @@ task = ->
 		kit.task name, args, -> args.fn getOptions()
 
 		helpInfo = br.cyan('-> ') + alias[0]
+
+	args.fn
 
 ###*
  * Load nofile.
