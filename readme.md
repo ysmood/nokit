@@ -513,7 +513,7 @@ Goto [changelog](doc/changelog.md)
         ```js
         {
             result: (wrappedList) =>
-                wrappedList.min('distance').words,
+                wrappedList.minBy('distance').words,
             threshold: (cOffset, keyLen, cIndex) =>
                 Infinity,
             notFound: (cOffset, keyLen, cIndex) =>

@@ -1,5 +1,10 @@
 # Changelog
 
+- v0.18
+
+  - **API CHANGE** lodash upgraded from 3.0 to 4.0
+  - upd: deps
+
 - v0.17
 
   - **API CHANGE** `kit.request` the `setTE` option changed to `autoTE`

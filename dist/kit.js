@@ -237,7 +237,7 @@ _.extend(kit, fs, yutils, {
         }).value());
       }).then(function(latestList) {
         info.deps = _.keys(info.deps);
-        return info.isNewer = _.all(latestList);
+        return info.isNewer = _.every(latestList);
       })["catch"](function(err) {
         return info.cacheError = err;
       }).then(function() {
@@ -486,7 +486,7 @@ _.extend(kit, fs, yutils, {
     all = '';
     for (j = 0, len = comments.length; j < len; j++) {
       cmt = comments[j];
-      if (_.any(cmt.tags, {
+      if (_.some(cmt.tags, {
         tagName: 'private'
       })) {
         continue;
@@ -537,7 +537,7 @@ _.extend(kit, fs, yutils, {
    * ```js
    * {
    *     result: (wrappedList) =>
-   *         wrappedList.min('distance').words,
+   *         wrappedList.minBy('distance').words,
    *     threshold: (cOffset, keyLen, cIndex) =>
    *         Infinity,
    *     notFound: (cOffset, keyLen, cIndex) =>
@@ -575,7 +575,7 @@ _.extend(kit, fs, yutils, {
     }
     _.defaults(opts, {
       result: function(list) {
-        return list.min('distance').words;
+        return list.minBy('distance').words;
       },
       threshold: function(cOffset, keyLen, cIndex) {
         return Infinity;
@@ -808,9 +808,9 @@ _.extend(kit, fs, yutils, {
       kit.lastLogTime = time;
       time = br.grey([
         [[time.getFullYear(), 4, '0'], [time.getMonth() + 1, 2, '0'], [time.getDate(), 2, '0']].map(function(e) {
-          return _.padLeft.apply(0, e);
+          return _.padStart.apply(0, e);
         }).join('-'), [[time.getHours(), 2, '0'], [time.getMinutes(), 2, '0'], [time.getSeconds(), 2, '0']].map(function(e) {
-          return _.padLeft.apply(0, e);
+          return _.padStart.apply(0, e);
         }).join(':')
       ].join(' '));
     }
@@ -1079,7 +1079,7 @@ _.extend(kit, fs, yutils, {
       return kit.nodeVersion.ver;
     }
     ms = process.versions.node.match(/(\d+)\.(\d+)\.(\d+)/);
-    str = ms[1] + '.' + _.padLeft(ms[2], 2, '0') + _.padLeft(ms[3], 2, '0');
+    str = ms[1] + '.' + _.padStart(ms[2], 2, '0') + _.padStart(ms[3], 2, '0');
     return kit.nodeVersion.ver = +str;
   },
 

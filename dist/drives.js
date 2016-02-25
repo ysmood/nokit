@@ -184,7 +184,7 @@ module.exports = {
         if (_.keys(opts.doc).length < this.list.length) {
           return;
         }
-        this.deps = _.pluck(this.list, 'path');
+        this.deps = _.map(this.list, 'path');
         this.deps.push(opts.tpl);
         this.dest = kit.path.join(this.to, opts.out);
         return kit.readFile(opts.tpl, 'utf8').then(function(tpl) {
@@ -295,7 +295,7 @@ module.exports = {
           dir = this.to;
         }
         this.dest = kit.path.join(dir, name);
-        this.deps = _.pluck(this.list, 'path');
+        this.deps = _.map(this.list, 'path');
         this.set(all.join('\n'));
         return this["super"]();
       }

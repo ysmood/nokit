@@ -223,7 +223,7 @@ _.extend kit, fs, yutils,
                 ).value()
             .then (latestList) ->
                 info.deps = _.keys info.deps
-                info.isNewer = _.all latestList
+                info.isNewer = _.every latestList
             .catch (err) -> info.cacheError = err
             .then -> info
 
@@ -438,7 +438,7 @@ _.extend kit, fs, yutils,
 
         all = ''
         for cmt in comments
-            if _.any(cmt.tags, { tagName: 'private' })
+            if _.some(cmt.tags, { tagName: 'private' })
                 continue
 
             paramList = _(cmt.tags)
@@ -487,7 +487,7 @@ _.extend kit, fs, yutils,
      * ```js
      * {
      *     result: (wrappedList) =>
-     *         wrappedList.min('distance').words,
+     *         wrappedList.minBy('distance').words,
      *     threshold: (cOffset, keyLen, cIndex) =>
      *         Infinity,
      *     notFound: (cOffset, keyLen, cIndex) =>
@@ -521,7 +521,7 @@ _.extend kit, fs, yutils,
     fuzzySearch: (key, list, opts = {}) ->
         _.defaults opts,
             result: (list) ->
-                list.min('distance').words
+                list.minBy('distance').words
             threshold: (cOffset, keyLen, cIndex) ->
                 Infinity
             notFound: (cOffset, keyLen, cIndex) ->
@@ -720,12 +720,12 @@ _.extend kit, fs, yutils,
                     [time.getFullYear(), 4, '0']
                     [time.getMonth() + 1, 2, '0']
                     [time.getDate(), 2, '0']
-                ].map((e) -> _.padLeft.apply 0, e).join('-')
+                ].map((e) -> _.padStart.apply 0, e).join('-')
                 [
                     [time.getHours(), 2, '0']
                     [time.getMinutes(), 2, '0']
                     [time.getSeconds(), 2, '0']
-                ].map((e) -> _.padLeft.apply 0, e).join(':')
+                ].map((e) -> _.padStart.apply 0, e).join(':')
             ].join(' ')
 
         log = (str, time) ->
@@ -968,7 +968,7 @@ _.extend kit, fs, yutils,
     nodeVersion: ->
         return kit.nodeVersion.ver if kit.nodeVersion.ver
         ms = process.versions.node.match /(\d+)\.(\d+)\.(\d+)/
-        str = ms[1] + '.' + _.padLeft(ms[2], 2, '0') + _.padLeft(ms[3], 2, '0')
+        str = ms[1] + '.' + _.padStart(ms[2], 2, '0') + _.padStart(ms[3], 2, '0')
         kit.nodeVersion.ver = +str
 
     ###*

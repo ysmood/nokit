@@ -150,7 +150,7 @@ module.exports =
         , isWriter: true, onEnd: (file) ->
             return if _.keys(opts.doc).length < @list.length
 
-            @deps = _.pluck @list, 'path'
+            @deps = _.map @list, 'path'
             @deps.push opts.tpl
 
             @dest = kit.path.join @to, opts.out
@@ -246,7 +246,7 @@ module.exports =
 
             dir ?= @to
             @dest = kit.path.join dir, name
-            @deps = _.pluck @list, 'path'
+            @deps = _.map @list, 'path'
             @set all.join '\n'
             @super()
 

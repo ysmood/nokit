@@ -13,7 +13,7 @@ module.exports = (task, option) ->
 		buildLodash = ->
 			if opts.all
 				kit.spawn 'lodash', [
-					'strict',
+					'strict', '-p'
 					'-o', 'lib/lodash.js'
 				]
 
