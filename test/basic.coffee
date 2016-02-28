@@ -43,6 +43,10 @@ module.exports = (it) ->
 		kit.logs 'a', 'b', 'c'
 		kit.log '%s + %s + %s', ['red'.red, 'green'.green, 'blue'.blue]
 
+	it 'log err', ->
+		kit.errs 'a', 'b', 'c'
+		kit.err '%s + %s + %s', ['red'.red, 'green'.green, 'blue'.blue]
+
 	it 'monitorApp', (after) -> new Promise (resolve) ->
 		p = tempPath() + '/monitorApp-test.coffee'
 		kit.copySync 'test/fixtures/monitorApp.coffee', p

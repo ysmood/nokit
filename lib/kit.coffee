@@ -323,6 +323,26 @@ _.extend kit, fs, yutils,
         kit.log msg, 'error', opts
 
     ###*
+     * Shortcut for logging multiple error infos.
+     * @param  {Any} args...
+     * @example
+     * ```js
+     * kit.errs('test1', 'test2', 'test3');
+     * // => [2015-02-07 08:31:49] test1 test2 test3
+     * ```
+    ###
+    errs: (args...) ->
+        out = ''
+        last = args.length - 1
+        for arg, i in args
+            kit.log arg, {
+                isShowTime: false
+                log: (str) ->
+                    out += str + (if i == last then '' else ' ')
+            }
+        kit.log out, 'error'
+
+    ###*
      * A better `child_process.exec`. Supports multi-line shell script.
      * For supporting old version of node, it will create 3 temp files,
      * the temp files will be removed after the execution.
@@ -767,11 +787,11 @@ _.extend kit, fs, yutils,
         return
 
     ###*
-     * Shortcut for logging multiple strings.
+     * Shortcut for logging multiple infos.
      * @param  {Any} args...
      * @example
      * ```js
-     * kit.log('test1', 'test2', 'test3');
+     * kit.logs('test1', 'test2', 'test3');
      * // => [2015-02-07 08:31:49] test1 test2 test3
      * ```
     ###
