@@ -575,7 +575,7 @@ proxy =
 
         watchList = []
         handler.watch = (path, url) ->
-            return if _.contains watchList, path
+            return if _.includes watchList, path
 
             kit.fileExists(path).then (exists) ->
                 return if not exists
