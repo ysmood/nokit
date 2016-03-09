@@ -391,7 +391,7 @@ module.exports = (it) ->
 
 	it 'defaultArgs2', ->
 		fn = ->
-		it.eq (kit.defaultArgs ['c', fn, 'd'], {
+		it.eq (kit.defaultArgs ['c', fn, 'd', undefined], {
 			str1: { String: '0' }
 			fn: { Function: -> 'test' }
 			str2: { String: '1' }

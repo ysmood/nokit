@@ -1018,7 +1018,7 @@ _.extend kit, fs, yutils,
     ###
     defaultArgs: (args, defaults) ->
         set = _(args).toArray().groupBy (e) ->
-            e.constructor.name
+            e?.constructor.name
         .value()
 
         ret = {}
