@@ -85,13 +85,7 @@ loadNofile = function() {
     }
   } else {
     try {
-      require('babel/register');
-    } catch (undefined) {}
-    try {
-      require('babel-core/register');
-    } catch (undefined) {}
-    try {
-      require('babel-polyfill');
+      require('babel-register');
     } catch (undefined) {}
     try {
       require('coffee-script/register');
