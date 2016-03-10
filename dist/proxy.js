@@ -645,7 +645,7 @@ proxy = {
     handler.sse = kit.require('sse')(opts);
     watchList = [];
     handler.watch = function(path, url) {
-      if (_.contains(watchList, path)) {
+      if (_.includes(watchList, path)) {
         return;
       }
       return kit.fileExists(path).then(function(exists) {

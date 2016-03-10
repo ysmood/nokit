@@ -88,6 +88,9 @@ loadNofile = function() {
       require('babel-register');
     } catch (undefined) {}
     try {
+      require('ts-node/register');
+    } catch (undefined) {}
+    try {
       require('coffee-script/register');
     } catch (undefined) {}
   }

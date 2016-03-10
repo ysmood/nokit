@@ -1297,7 +1297,7 @@ _.extend(kit, fs, yutils, {
     _.defaults(opts, {
       depReg: /require\s*\(?['"](.+)['"]\)?|^\s*import.+?from\s+['"](.+)['"]|^\s*import\s+['"](.+)['"]+\s+as|^\s*import\s+['"](.+)['"][;\s]*$/mg,
       depRoots: [''],
-      extensions: ['.js', '.es', '.jsx', '.coffee', '/index.js', '/index.coffee'],
+      extensions: ['.js', '.es', '.ts', '.tsx', '.jsx', '.coffee', '/index.js', '/index.coffee'],
       handle: function(path) {
         if (path.match(/^(?:\.|\/|[a-z]:)/i)) {
           return path;
