@@ -1180,7 +1180,7 @@ _.extend kit, fs, yutils,
                 | ^\s*import\s+['"](.+)['"][;\s]*$
                 ///mg
             depRoots: ['']
-            extensions: ['.js', '.es', '.jsx', '.coffee', '/index.js', '/index.coffee']
+            extensions: ['.js', '.es', '.ts', '.tsx', '.jsx', '.coffee', '/index.js', '/index.coffee']
             handle: (path) ->
                 return path if path.match /^(?:\.|\/|[a-z]:)/i
         }

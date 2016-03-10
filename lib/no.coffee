@@ -63,6 +63,7 @@ loadNofile = ->
 			try require lang
 	else
 		try require 'babel-register'
+		try require 'ts-node/register'
 		try require 'coffee-script/register'
 
 	exts = _(require.extensions).keys().filter (ext) ->
