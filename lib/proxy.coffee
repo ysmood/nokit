@@ -25,14 +25,18 @@ proxy =
      * @return {Function} `(ctx) -> Promise`
     ###
     body: (opts) ->
-        (ctx) -> new Promise (resolve, reject) ->
-            buf = new Buffer 0
-            ctx.req.on 'data', (chunk) ->
-                buf = Buffer.concat [buf, chunk]
-            ctx.req.on 'error', reject
-            ctx.req.on 'end', ->
-                ctx.reqBody = buf if buf.length > 0
-                ctx.next().then resolve, reject
+        (ctx) ->
+            if (!ctx.req.readable)
+                return ctx.next()
+
+            new Promise (resolve, reject) ->
+                buf = new Buffer 0
+                ctx.req.on 'data', (chunk) ->
+                    buf = Buffer.concat [buf, chunk]
+                ctx.req.on 'error', reject
+                ctx.req.on 'end', ->
+                    ctx.reqBody = buf if buf.length > 0
+                    ctx.next().then resolve, reject
 
     ###*
      * Add a `van` method to flow context object. It's a helper to set

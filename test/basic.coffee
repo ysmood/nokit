@@ -473,6 +473,24 @@ module.exports = (it) ->
 			.then (body) ->
 				it.eq 'string works', body
 
+	it 'proxy flow body', ->
+		proxy = kit.require 'proxy'
+
+		routes = [
+			proxy.body(),
+			proxy.body(),
+			($) -> $.body = $.reqBody + 'ok'
+		]
+
+		createRandomServer proxy.flow(routes)
+		, (port) ->
+			kit.request {
+				url: "http://127.0.0.1:#{port}"
+				reqData: 'ok'
+			}
+			.then (body) ->
+				it.eq body, 'okok'
+
 	it 'proxy flow van', ->
 		proxy = kit.require 'proxy'
 
