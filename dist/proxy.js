@@ -35,6 +35,9 @@ proxy = {
    */
   body: function(opts) {
     return function(ctx) {
+      if (!ctx.req.readable) {
+        return ctx.next();
+      }
       return new Promise(function(resolve, reject) {
         var buf;
         buf = new Buffer(0);

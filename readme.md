@@ -1886,14 +1886,14 @@ kit.warp('src/**/*.coffee')
 
         `(ctx) -> Promise`
 
-- ## **[van(ctx)](lib/proxy.coffee?source#L42)**
+- ## **[van(ctx)](lib/proxy.coffee?source#L46)**
 
     Add a `van` method to flow context object. It's a helper to set
     and get the context body.
 
     - **<u>param</u>**: `ctx` { _FlowContext_ }
 
-- ## **[connect(opts)](lib/proxy.coffee?source#L80)**
+- ## **[connect(opts)](lib/proxy.coffee?source#L84)**
 
     Http CONNECT method tunneling proxy helper.
     Most times it is used to proxy https and websocket.
@@ -1932,13 +1932,13 @@ kit.warp('src/**/*.coffee')
         app.listen(8123);
         ```
 
-- ## **[etag()](lib/proxy.coffee?source#L138)**
+- ## **[etag()](lib/proxy.coffee?source#L142)**
 
     Create a etag middleware.
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[file(opts)](lib/proxy.coffee?source#L180)**
+- ## **[file(opts)](lib/proxy.coffee?source#L184)**
 
     A simple protocol to read, write, chmod, delete file via http.
     The protocol is very simple
@@ -1969,7 +1969,7 @@ kit.warp('src/**/*.coffee')
 
         noflow middleware
 
-- ## **[fileRequest(opts)](lib/proxy.coffee?source#L297)**
+- ## **[fileRequest(opts)](lib/proxy.coffee?source#L301)**
 
     Make a file create request to `proxy.file`.
 
@@ -1991,12 +1991,12 @@ kit.warp('src/**/*.coffee')
 
     - **<u>return</u>**: { _Promise_ }
 
-- ## **[flow](lib/proxy.coffee?source#L366)**
+- ## **[flow](lib/proxy.coffee?source#L370)**
 
     A minimal middleware composer for the future.
     https://github.com/ysmood/noflow
 
-- ## **[match(pattern, opts)](lib/proxy.coffee?source#L381)**
+- ## **[match(pattern, opts)](lib/proxy.coffee?source#L385)**
 
     Generate an express like unix path selector. See the example of `proxy.flow`.
 
@@ -2019,7 +2019,7 @@ kit.warp('src/**/*.coffee')
         kit.log(match('/items/10')) // output => { id: '10' }
         ```
 
-- ## **[midToFlow(h)](lib/proxy.coffee?source#L419)**
+- ## **[midToFlow(h)](lib/proxy.coffee?source#L423)**
 
     Convert a Express-like middleware to `proxy.flow` middleware.
 
@@ -2044,7 +2044,7 @@ kit.warp('src/**/*.coffee')
         http.createServer(proxy.flow(middlewares)).listen(8123);
         ```
 
-- ## **[select(sel, middleware)](lib/proxy.coffee?source#L450)**
+- ## **[select(sel, middleware)](lib/proxy.coffee?source#L454)**
 
     Create a conditional middleware that only works when the pattern matches.
 
@@ -2070,7 +2070,7 @@ kit.warp('src/**/*.coffee')
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[serverHelper(opts)](lib/proxy.coffee?source#L539)**
+- ## **[serverHelper(opts)](lib/proxy.coffee?source#L543)**
 
     Create a http request middleware.
 
@@ -2118,7 +2118,7 @@ kit.warp('src/**/*.coffee')
         nokit.log({ any: 'thing' });
         ```
 
-- ## **[relayConnect(opts)](lib/proxy.coffee?source#L605)**
+- ## **[relayConnect(opts)](lib/proxy.coffee?source#L609)**
 
     A helper for http server port tunneling.
 
@@ -2136,7 +2136,7 @@ kit.warp('src/**/*.coffee')
 
         A http connect method helper.
 
-- ## **[relayClient(opts)](lib/proxy.coffee?source#L644)**
+- ## **[relayClient(opts)](lib/proxy.coffee?source#L648)**
 
     A helper for http server port tunneling.
 
@@ -2156,7 +2156,7 @@ kit.warp('src/**/*.coffee')
 
         Resolve a tcp server object.
 
-- ## **[static(opts)](lib/proxy.coffee?source#L691)**
+- ## **[static(opts)](lib/proxy.coffee?source#L695)**
 
     Create a static file middleware for `proxy.flow`.
 
@@ -2177,7 +2177,7 @@ kit.warp('src/**/*.coffee')
         http.createServer(proxy.flow(middlewares)).listen(8123);
         ```
 
-- ## **[tcpFrame(socket, opts)](lib/proxy.coffee?source#L735)**
+- ## **[tcpFrame(socket, opts)](lib/proxy.coffee?source#L739)**
 
     Send any size of package as you with a socket.
     Add a `writeFrame` method and a `frame` event to `net.Socket` object.
@@ -2199,7 +2199,7 @@ kit.warp('src/**/*.coffee')
         }
         ```
 
-- ## **[url(opts)](lib/proxy.coffee?source#L804)**
+- ## **[url(opts)](lib/proxy.coffee?source#L808)**
 
     Use it to proxy one url to another.
 

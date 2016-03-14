@@ -1,6 +1,6 @@
 {
   "name": "nokit",
-  "version": "0.18.5",
+  "version": "0.18.6",
   "description": "A light weight set of handy tools for real world program.",
   "main": "dist/kit.js",
   "bin": {
