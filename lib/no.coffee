@@ -63,6 +63,8 @@ loadNofile = ->
 			try require lang
 	else
 		try require 'babel-register'
+		try require 'babel-core/register'
+		try require 'babel-polyfill'
 		try require 'ts-node/register'
 		try require 'coffee-script/register'
 

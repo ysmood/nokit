@@ -88,6 +88,12 @@ loadNofile = function() {
       require('babel-register');
     } catch (undefined) {}
     try {
+      require('babel-core/register');
+    } catch (undefined) {}
+    try {
+      require('babel-polyfill');
+    } catch (undefined) {}
+    try {
       require('ts-node/register');
     } catch (undefined) {}
     try {
