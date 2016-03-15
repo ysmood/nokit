@@ -670,6 +670,99 @@ module.exports = (it) ->
 				console.log body
 				it.eq {a: 10}, JSON.parse(body)
 
+	it 'proxy flow flowToMid', (after) ->
+		proxy = kit.require 'proxy'
+		express = require 'express'
+
+		app = express()
+		server = http.createServer app
+
+		after ->
+			server.close();
+
+		fn = ($) ->
+			kit.sleep(200).then ->
+				$.body = "ok"
+
+		app.use proxy.flowToMid(fn)
+		app.use (req, res) -> res.end 'no'
+
+		kit.promisify(server.listen, server)(0)
+		.then ->
+			kit.request("http://127.0.0.1:#{server.address().port}")
+		.then (data) ->
+			it.eq data, 'ok'
+
+	it 'proxy flow flowToMid next', (after) ->
+		proxy = kit.require 'proxy'
+		express = require 'express'
+
+		app = express()
+		server = http.createServer app
+
+		after ->
+			server.close();
+
+		fn = ($) ->
+			return $.next()
+
+		app.use proxy.flowToMid(fn)
+		app.use (req, res) ->
+			res.end 'ok'
+
+		kit.promisify(server.listen, server)(0)
+		.then ->
+			kit.request("http://127.0.0.1:#{server.address().port}")
+		.then (data) ->
+			it.eq data, 'ok'
+
+	it 'proxy flow flowToMid error', (after) ->
+		proxy = kit.require 'proxy'
+		express = require 'express'
+
+		app = express()
+		server = http.createServer app
+
+		after ->
+			server.close();
+
+		fn = ($) ->
+			throw 'err'
+
+		app.use proxy.flowToMid(fn)
+		app.use (err, req, res, next) ->
+			res.end err
+
+		kit.promisify(server.listen, server)(0)
+		.then ->
+			kit.request("http://127.0.0.1:#{server.address().port}")
+		.then (data) ->
+			it.eq data, 'err'
+
+	it 'proxy flow flowToMid error #2', (after) ->
+		proxy = kit.require 'proxy'
+		express = require 'express'
+
+		app = express()
+		server = http.createServer app
+
+		after ->
+			server.close();
+
+		fn = ($) ->
+			kit.sleep(200).then ->
+				Promise.reject 'err'
+
+		app.use proxy.flowToMid(fn)
+		app.use (err, req, res, next) ->
+			res.end err
+
+		kit.promisify(server.listen, server)(0)
+		.then ->
+			kit.request("http://127.0.0.1:#{server.address().port}")
+		.then (data) ->
+			it.eq data, 'err'
+
 	it 'proxy tcpFrame string', (after) ->
 		proxy = kit.require 'proxy'
 

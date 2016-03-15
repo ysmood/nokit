@@ -47,6 +47,7 @@
     "clean-css": "3.4.9",
     "coffee-script": "1.10.0",
     "coffeelint": "1.14.2",
+    "express": "4.13.4",
     "form-data": "1.0.0-rc3",
     "formidable": "1.0.17",
     "iconv-lite": "0.4.13",
