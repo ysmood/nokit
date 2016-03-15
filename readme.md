@@ -170,6 +170,7 @@ Goto [changelog](doc/changelog.md)
   - [file(opts)](#fileopts)
   - [fileRequest(opts)](#filerequestopts)
   - [flow](#flow)
+  - [flowToMid(fn)](#flowtomidfn)
   - [match(pattern, opts)](#matchpattern-opts)
   - [midToFlow(h)](#midtoflowh)
   - [select(sel, middleware)](#selectsel-middleware)
@@ -1996,7 +1997,19 @@ kit.warp('src/**/*.coffee')
     A minimal middleware composer for the future.
     https://github.com/ysmood/noflow
 
-- ## **[match(pattern, opts)](lib/proxy.coffee?source#L385)**
+- ## **[flowToMid(fn)](lib/proxy.coffee?source#L377)**
+
+    Convert noflow middleware express middleware.
+
+    - **<u>param</u>**: `fn` { _Function_ }
+
+        noflow middleware
+
+    - **<u>return</u>**: { _FUnction_ }
+
+        express middleware
+
+- ## **[match(pattern, opts)](lib/proxy.coffee?source#L397)**
 
     Generate an express like unix path selector. See the example of `proxy.flow`.
 
@@ -2019,7 +2032,7 @@ kit.warp('src/**/*.coffee')
         kit.log(match('/items/10')) // output => { id: '10' }
         ```
 
-- ## **[midToFlow(h)](lib/proxy.coffee?source#L423)**
+- ## **[midToFlow(h)](lib/proxy.coffee?source#L435)**
 
     Convert a Express-like middleware to `proxy.flow` middleware.
 
@@ -2044,7 +2057,7 @@ kit.warp('src/**/*.coffee')
         http.createServer(proxy.flow(middlewares)).listen(8123);
         ```
 
-- ## **[select(sel, middleware)](lib/proxy.coffee?source#L454)**
+- ## **[select(sel, middleware)](lib/proxy.coffee?source#L466)**
 
     Create a conditional middleware that only works when the pattern matches.
 
@@ -2070,7 +2083,7 @@ kit.warp('src/**/*.coffee')
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[serverHelper(opts)](lib/proxy.coffee?source#L543)**
+- ## **[serverHelper(opts)](lib/proxy.coffee?source#L555)**
 
     Create a http request middleware.
 
@@ -2118,7 +2131,7 @@ kit.warp('src/**/*.coffee')
         nokit.log({ any: 'thing' });
         ```
 
-- ## **[relayConnect(opts)](lib/proxy.coffee?source#L609)**
+- ## **[relayConnect(opts)](lib/proxy.coffee?source#L621)**
 
     A helper for http server port tunneling.
 
@@ -2136,7 +2149,7 @@ kit.warp('src/**/*.coffee')
 
         A http connect method helper.
 
-- ## **[relayClient(opts)](lib/proxy.coffee?source#L648)**
+- ## **[relayClient(opts)](lib/proxy.coffee?source#L660)**
 
     A helper for http server port tunneling.
 
@@ -2156,7 +2169,7 @@ kit.warp('src/**/*.coffee')
 
         Resolve a tcp server object.
 
-- ## **[static(opts)](lib/proxy.coffee?source#L695)**
+- ## **[static(opts)](lib/proxy.coffee?source#L707)**
 
     Create a static file middleware for `proxy.flow`.
 
@@ -2177,7 +2190,7 @@ kit.warp('src/**/*.coffee')
         http.createServer(proxy.flow(middlewares)).listen(8123);
         ```
 
-- ## **[tcpFrame(socket, opts)](lib/proxy.coffee?source#L739)**
+- ## **[tcpFrame(socket, opts)](lib/proxy.coffee?source#L751)**
 
     Send any size of package as you with a socket.
     Add a `writeFrame` method and a `frame` event to `net.Socket` object.
@@ -2199,7 +2212,7 @@ kit.warp('src/**/*.coffee')
         }
         ```
 
-- ## **[url(opts)](lib/proxy.coffee?source#L808)**
+- ## **[url(opts)](lib/proxy.coffee?source#L820)**
 
     Use it to proxy one url to another.
 

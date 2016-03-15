@@ -431,6 +431,19 @@ proxy = {
   flow: flow,
 
   /**
+   * Convert noflow middleware express middleware.
+   * @param  {Function} fn noflow middleware
+   * @return {FUnction} express middleware
+   */
+  flowToMid: function(fn) {
+    return function(req, res, next) {
+      return flow(fn, function() {
+        return next();
+      })(req, res)["catch"](next);
+    };
+  },
+
+  /**
    * Generate an express like unix path selector. See the example of `proxy.flow`.
    * @param {String} pattern
    * @param {Object} opts Same as the [path-to-regexp](https://github.com/pillarjs/path-to-regexp)'s
