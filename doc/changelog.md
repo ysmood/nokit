@@ -1,5 +1,10 @@
 # Changelog
 
+- v0.19
+
+  - **API CHANGE** nofile will not auto-require any register any more
+    You have to use `// nofile-pre-require: module-path` in the future.
+
 - v0.18
 
   - **API CHANGE** lodash upgraded from 3.0 to 4.0
