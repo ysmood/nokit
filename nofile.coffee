@@ -1,3 +1,5 @@
+# nofile-pre-require: coffee-script/register
+
 ###
 	For help info run "npm run no -- -h"
 ###

@@ -74,38 +74,30 @@ task = function() {
  */
 
 loadNofile = function() {
-  var dir, exts, i, j, lang, len, len1, load, nofileIndex, path, paths, rdir, ref;
-  if (process.env.nokitPreload) {
-    ref = process.env.nokitPreload.split(' ');
-    for (i = 0, len = ref.length; i < len; i++) {
-      lang = ref[i];
-      try {
-        require(lang);
-      } catch (undefined) {}
+  var dir, findPath, load, nofileIndex, nofileReg, path, preRequire, rdir;
+  preRequire = function(path) {
+    var code, err, error1, i, len, r, requires, results;
+    code = kit.readFileSync(path, 'utf8');
+    requires = code.match(/nofile-pre-require:\s*[^\s]+/g);
+    if (requires) {
+      results = [];
+      for (i = 0, len = requires.length; i < len; i++) {
+        r = requires[i];
+        try {
+          results.push(require(_.trim(r.replace('nofile-pre-require:', ''))));
+        } catch (error1) {
+          err = error1;
+          console.error("nofile-pre-require error in file " + path);
+          throw err;
+        }
+      }
+      return results;
     }
-  } else {
-    try {
-      require('babel-register');
-    } catch (undefined) {}
-    try {
-      require('babel-core/register');
-    } catch (undefined) {}
-    try {
-      require('babel-polyfill');
-    } catch (undefined) {}
-    try {
-      require('ts-node/register');
-    } catch (undefined) {}
-    try {
-      require('coffee-script/register');
-    } catch (undefined) {}
-  }
-  exts = _(require.extensions).keys().filter(function(ext) {
-    return ['.json', '.node', '.litcoffee', '.coffee.md'].indexOf(ext) === -1;
-  });
+  };
   load = function(path) {
     var tasker;
     kit.Promise.enableLongStackTrace();
+    preRequire(path);
     tasker = require(path);
     if (tasker && tasker["default"]) {
       tasker = tasker["default"];
@@ -120,22 +112,27 @@ loadNofile = function() {
   if ((nofileIndex = process.argv.indexOf('--nofile')) > -1) {
     return load(kit.path.resolve(process.argv[nofileIndex + 1]));
   }
-  paths = kit.genModulePaths('nofile', process.cwd(), '').reduce(function(s, p) {
-    return s.concat(exts.map(function(ext) {
-      return p + ext;
-    }).value());
-  }, []);
-  for (j = 0, len1 = paths.length; j < len1; j++) {
-    path = paths[j];
-    if (kit.existsSync(path)) {
-      dir = kit.path.dirname(path);
-      rdir = kit.path.relative('.', dir);
-      if (rdir) {
-        kit.log(br.cyan('Change Working Direcoty: ') + br.green(rdir));
-      }
-      process.chdir(dir);
-      return load(path);
+  nofileReg = /^nofile\.\w+$/i;
+  findPath = function(dir) {
+    var name;
+    name = _.find(kit.readdirSync(dir), function(n) {
+      return nofileReg.test(n);
+    });
+    if (name) {
+      return kit.path.join(dir, name);
+    } else {
+      return findPath(kit.path.dirname(dir));
     }
+  };
+  path = findPath(process.cwd());
+  if (path) {
+    dir = kit.path.dirname(path);
+    rdir = kit.path.relative('.', dir);
+    if (rdir) {
+      console.log(br.cyan('change working direcoty to: ') + br.green(rdir));
+    }
+    process.chdir(dir);
+    return load(path);
   }
   return error('Cannot find nofile');
 };

@@ -58,21 +58,21 @@ task = ->
  * @return {String} The path of found nofile.
 ###
 loadNofile = ->
-	if process.env.nokitPreload
-		for lang in process.env.nokitPreload.split ' '
-			try require lang
-	else
-		try require 'babel-register'
-		try require 'babel-core/register'
-		try require 'babel-polyfill'
-		try require 'ts-node/register'
-		try require 'coffee-script/register'
-
-	exts = _(require.extensions).keys().filter (ext) ->
-		['.json', '.node', '.litcoffee', '.coffee.md'].indexOf(ext) == -1
+	preRequire = (path) ->
+		code = kit.readFileSync path, 'utf8'
+		requires = code.match /nofile-pre-require:\s*[^\s]+/g
+		if requires
+			for r in requires
+				try
+					require _.trim r.replace('nofile-pre-require:', '')
+				catch err
+					console.error "nofile-pre-require error in file #{path}"
+					throw err
 
 	load = (path) ->
 		kit.Promise.enableLongStackTrace()
+
+		preRequire path
 
 		tasker = require path
 		tasker = tasker.default if tasker and tasker.default
@@ -85,22 +85,28 @@ loadNofile = ->
 	if (nofileIndex = process.argv.indexOf('--nofile')) > -1
 		return load kit.path.resolve process.argv[nofileIndex + 1]
 
-	paths = kit.genModulePaths 'nofile', process.cwd(), ''
-		.reduce (s, p) ->
-			s.concat exts.map((ext) -> p + ext).value()
-		, []
 
-	for path in paths
-		if kit.existsSync path
-			dir = kit.path.dirname path
+	nofileReg = /^nofile\.\w+$/i
+	findPath = (dir) ->
+		name = _.find kit.readdirSync(dir), (n) -> nofileReg.test n
 
-			rdir = kit.path.relative '.', dir
-			if rdir
-				kit.log br.cyan('Change Working Direcoty: ') + br.green rdir
+		if name
+			return kit.path.join dir, name
+		else
+			return findPath kit.path.dirname(dir)
 
-			process.chdir dir
+	path = findPath process.cwd()
 
-			return load path
+	if path
+		dir = kit.path.dirname path
+
+		rdir = kit.path.relative '.', dir
+		if rdir
+			console.log br.cyan('change working direcoty to: ') + br.green rdir
+
+		process.chdir dir
+
+		return load path
 
 	error 'Cannot find nofile'
 

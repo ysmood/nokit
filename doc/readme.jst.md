@@ -29,29 +29,16 @@ Nokit has provided a cli tool like GNU Make. If you install it globally like thi
 
 ## CLI
 
-### The `no` Comamnd
+### The `no` Comamnd & nofile
 
-By default nokit only supports js, if you want nokit to support coffee, you should install nokit like this:
-
-`npm i -g nokit coffee-script`
-
-Same works with babeljs:
-
-`npm i -g nokit babel-core babel-polyfill`
-
-> Remarks: for the sake of boot performance, nokit will only try to load
-> `babel-register`, `ts-node/register` and `coffee-script/register`
-> by default. For livescript or other precompiler, you have to
-> set environment varialbe `nokitPreload` to what you want, such as on unix:
-> `export nokitPreload='livescript coffee-script/register'`. Different module
-> names are separated by spaces.
-
-Create a `nofile.coffee` (or `.js`, `.ls`) at your current working directory
+Create a `nofile.js` (or `.coffee`, `.ts`, etc) at your current working directory
 or any of its parents directory. The syntax of `nofile` is almost the same as the Cakefile, only the `option`'s first argument is slightly changed.
 
 Assume your file content is:
 
 ```js
+// nofile-pre-require: babel-register
+
 var kit = require('nokit');
 
 module.exports = (task, option) => {
@@ -98,6 +85,29 @@ Call `no build` or `no b` to run the `build` task.
 For real world example, just see the [nofile](nofile.coffee?source) that nokit is using.
 
 For more doc for the `option` goto [commander.js](https://github.com/tj/commander.js).
+
+By default nofile only supports js, if you want nokit to support babel, you should install nokit like this:
+
+`npm i -g nokit babel-register`
+
+Then you should add a comment in the nofile:
+
+```js
+// nofile-pre-require: babel-register
+
+// You can also add any others at the same time.
+// nofile-pre-require: babel-polyfill
+```
+
+Same works with coffee or any other languages:
+
+`npm i -g nokit coffee-script`
+
+Then add comment:
+
+```coffee
+# nofile-pre-require: coffee-script/register
+```
 
 ### The `noe` Comamnd
 
