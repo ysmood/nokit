@@ -14,7 +14,7 @@ _ = kit._, Promise = kit.Promise;
 
 http = require('http');
 
-flow = require('noflow');
+flow = require('noflow')["default"];
 
 tcpFrame = require('./tcpFrame');
 
