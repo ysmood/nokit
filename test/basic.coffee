@@ -667,8 +667,42 @@ module.exports = (it) ->
 				}
 			}
 			.then (body) ->
-				console.log body
 				it.eq {a: 10}, JSON.parse(body)
+
+	it 'proxy flow midToFlow no next', ->
+		proxy = kit.require 'proxy'
+
+		routes = [
+			proxy.midToFlow (req, res) ->
+				res.end req.url
+
+			($) ->
+				$.body = 'no'
+		]
+
+		createRandomServer proxy.flow(routes)
+		, (port) ->
+			kit.request "http://127.0.0.1:#{port}/ok"
+			.then (body) ->
+				it.eq body, '/ok'
+
+	it 'proxy flow midToFlow error', ->
+		proxy = kit.require 'proxy'
+
+		routes = [
+			($) ->
+				$.next().catch ->
+					$.body = 'ok'
+
+			proxy.midToFlow () ->
+				a()
+		]
+
+		createRandomServer proxy.flow(routes)
+		, (port) ->
+			kit.request "http://127.0.0.1:#{port}/"
+			.then (body) ->
+				it.eq body, 'ok'
 
 	it 'proxy flow flowToMid', (after) ->
 		proxy = kit.require 'proxy'
