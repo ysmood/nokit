@@ -36,10 +36,10 @@
   "dependencies": {
     "commander": "2.9.0",
     "jhash": "0.1.7",
-    "noflow": "0.7.6",
-    "nofs": "0.11.2",
+    "noflow": "0.7.8",
+    "nofs": "0.11.3",
     "semver": "5.1.0",
-    "yaku": "0.13.7"
+    "yaku": "0.14.0"
   },
   "devDependencies": {
     "LiveScript": "1.3.1",

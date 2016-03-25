@@ -1,8 +1,8 @@
 ###*
- * This is a example of how to use `kit.async` to deal with the
+ * This is a example of how to use `kit.all` to deal with the
  * classic producer-consumer problem.
  *
- * Of cause, most times `kit.async` is used with a fixed array, this is a complex
+ * Of cause, most times `kit.all` is used with a fixed array, this is a complex
  * usage of it.
 ###
 
@@ -17,9 +17,9 @@ regexUrl = /<a[\w\s]+href="(http.+?)"/g
 launch = ->
 	# The producer and the comsumer will create
 	# an infinity life circle.
-	kit.async [
-		kit.async maxProducer, producer, false
-		kit.async maxConsumer, consumer, false
+	kit.all [
+		kit.all maxProducer, producer, false
+		kit.all maxConsumer, consumer, false
 	]
 	.catch (err) ->
 		kit.err err.message

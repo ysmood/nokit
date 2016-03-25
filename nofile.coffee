@@ -58,7 +58,7 @@ module.exports = (task, option) ->
 
 	task 'clean', 'clean dist & cache', (opts) ->
 		if opts.all
-			kit.async [
+			kit.all [
 				kit.remove 'dist'
 				kit.remove '.nokit'
 			]
