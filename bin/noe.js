@@ -29,7 +29,7 @@ cmder
         watchList.push(p);
     })
     .option('--root <str>', 'watch directory, treat -w as pattern under the root path', null)
-    .option('-b, --bin <name>', 'bin to execute, default is [babel-node | node]', null)
+    .option('-b, --bin <name>', 'bin to execute, default is [node]', 'node')
     .option('-r, --retry <time | auto>', 'auto restart program after it ends after some milliseconds [Infinity]', function (v) {
         return v === 'auto' ? v : +v;
     }, Infinity)
@@ -45,19 +45,6 @@ cmder
         );
     })
 .parse(argv);
-
-if (cmder.bin === null) {
-    cmder.bin = 'node';
-    try {
-        require.resolve('babel');
-        cmder.bin = 'babel-node';
-    } catch (err) {}
-
-    try {
-        whichSync('babel-node');
-        cmder.bin = 'babel-node';
-    } catch (err) {}
-}
 
 function genRetry () {
     var retryTmr, attempt = 0;

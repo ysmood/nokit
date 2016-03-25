@@ -1,5 +1,10 @@
 # Changelog
 
+- v0.20
+
+  - **API CHANGE** `kit.async` now renamed to `kit.all`
+  - **API CHANGE** `noe` now doesn't require babel by default
+
 - v0.19
 
   - **API CHANGE** nofile will not auto-require any register any more
