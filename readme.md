@@ -1271,13 +1271,13 @@ Goto [changelog](doc/changelog.md)
         .then(({code}) => kit.log code);
         ```
 
-- ## **[sse](lib/kit.coffee?source#L1924)**
+- ## **[sse](lib/kit.coffee?source#L1921)**
 
     The `sse` module.
     You must `kit.require 'sse'` before using it.
     For more information goto the `sse` section.
 
-- ## **[task(name, opts, fn)](lib/kit.coffee?source#L1985)**
+- ## **[task(name, opts, fn)](lib/kit.coffee?source#L1982)**
 
     Sequencing and executing tasks and dependencies concurrently.
 
@@ -1357,12 +1357,12 @@ Goto [changelog](doc/changelog.md)
         );
         ```
 
-- ## **[url](lib/kit.coffee?source#L2059)**
+- ## **[url](lib/kit.coffee?source#L2056)**
 
     The `url` module of node.
     You must `kit.require 'url'` before using it.
 
-- ## **[warp(from, opts)](lib/kit.coffee?source#L2174)**
+- ## **[warp(from, opts)](lib/kit.coffee?source#L2171)**
 
     Works much like `gulp.src`, but with Promise instead.
     The warp control and error handling is more pleasant.
@@ -1487,7 +1487,7 @@ Goto [changelog](doc/changelog.md)
         .run('dist');
         ```
 
-- ## **[which(name)](lib/kit.coffee?source#L2251)**
+- ## **[which(name)](lib/kit.coffee?source#L2248)**
 
     Same as the unix `which` command.
     You must `kit.require 'which'` before using it.
@@ -1498,14 +1498,14 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Promise_ }
 
-- ## **[whichSync](lib/kit.coffee?source#L2258)**
+- ## **[whichSync](lib/kit.coffee?source#L2255)**
 
     Sync version of `which`.
     You must `kit.require 'whichSync'` before using it.
 
     - **<u>type</u>**: { _Function_ }
 
-- ## **[xinspect(obj, opts)](lib/kit.coffee?source#L2269)**
+- ## **[xinspect(obj, opts)](lib/kit.coffee?source#L2266)**
 
     For debugging. Dump a colorful object.
 
@@ -1522,7 +1522,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _String_ }
 
-- ## **[xopen(cmds, opts)](lib/kit.coffee?source#L2292)**
+- ## **[xopen(cmds, opts)](lib/kit.coffee?source#L2289)**
 
     Open a thing that your system can recognize.
     Now only support Windows, OSX or system that installed 'xdg-open'.
@@ -1889,22 +1889,24 @@ kit.warp('src/**/*.coffee')
     A cross-platform programmable Fiddler alternative.
     You can even replace express.js with it's `flow` function.
 
-- ## **[body()](lib/proxy.coffee?source#L27)**
+- ## **[body()](lib/proxy.coffee?source#L29)**
 
     A simple request body middleware.
+    It will append a property `reqBody` to `ctx`.
+    It will append a property `body` to `ctx.req`.
 
     - **<u>return</u>**: { _Function_ }
 
         `(ctx) -> Promise`
 
-- ## **[van(ctx)](lib/proxy.coffee?source#L46)**
+- ## **[van(ctx)](lib/proxy.coffee?source#L50)**
 
     Add a `van` method to flow context object. It's a helper to set
     and get the context body.
 
     - **<u>param</u>**: `ctx` { _FlowContext_ }
 
-- ## **[connect(opts)](lib/proxy.coffee?source#L84)**
+- ## **[connect(opts)](lib/proxy.coffee?source#L88)**
 
     Http CONNECT method tunneling proxy helper.
     Most times it is used to proxy https and websocket.
@@ -1943,13 +1945,13 @@ kit.warp('src/**/*.coffee')
         app.listen(8123);
         ```
 
-- ## **[etag()](lib/proxy.coffee?source#L142)**
+- ## **[etag()](lib/proxy.coffee?source#L146)**
 
     Create a etag middleware.
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[file(opts)](lib/proxy.coffee?source#L184)**
+- ## **[file(opts)](lib/proxy.coffee?source#L188)**
 
     A simple protocol to read, write, chmod, delete file via http.
     The protocol is very simple
@@ -1980,7 +1982,7 @@ kit.warp('src/**/*.coffee')
 
         noflow middleware
 
-- ## **[fileRequest(opts)](lib/proxy.coffee?source#L301)**
+- ## **[fileRequest(opts)](lib/proxy.coffee?source#L305)**
 
     Make a file create request to `proxy.file`.
 
@@ -2002,12 +2004,12 @@ kit.warp('src/**/*.coffee')
 
     - **<u>return</u>**: { _Promise_ }
 
-- ## **[flow](lib/proxy.coffee?source#L370)**
+- ## **[flow](lib/proxy.coffee?source#L374)**
 
     A minimal middleware composer for the future.
     https://github.com/ysmood/noflow
 
-- ## **[flowToMid(fn)](lib/proxy.coffee?source#L377)**
+- ## **[flowToMid(fn)](lib/proxy.coffee?source#L381)**
 
     Convert noflow middleware express middleware.
 
@@ -2019,7 +2021,7 @@ kit.warp('src/**/*.coffee')
 
         express middleware
 
-- ## **[match(pattern, opts)](lib/proxy.coffee?source#L397)**
+- ## **[match(pattern, opts)](lib/proxy.coffee?source#L401)**
 
     Generate an express like unix path selector. See the example of `proxy.flow`.
 
@@ -2042,7 +2044,7 @@ kit.warp('src/**/*.coffee')
         kit.log(match('/items/10')) // output => { id: '10' }
         ```
 
-- ## **[midToFlow(h)](lib/proxy.coffee?source#L435)**
+- ## **[midToFlow(h)](lib/proxy.coffee?source#L439)**
 
     Convert a Express-like middleware to `proxy.flow` middleware.
 
@@ -2067,7 +2069,7 @@ kit.warp('src/**/*.coffee')
         http.createServer(proxy.flow(middlewares)).listen(8123);
         ```
 
-- ## **[select(sel, middleware)](lib/proxy.coffee?source#L466)**
+- ## **[select(sel, middleware)](lib/proxy.coffee?source#L470)**
 
     Create a conditional middleware that only works when the pattern matches.
 
@@ -2093,7 +2095,7 @@ kit.warp('src/**/*.coffee')
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[serverHelper(opts)](lib/proxy.coffee?source#L555)**
+- ## **[serverHelper(opts)](lib/proxy.coffee?source#L559)**
 
     Create a http request middleware.
 
@@ -2141,7 +2143,7 @@ kit.warp('src/**/*.coffee')
         nokit.log({ any: 'thing' });
         ```
 
-- ## **[relayConnect(opts)](lib/proxy.coffee?source#L621)**
+- ## **[relayConnect(opts)](lib/proxy.coffee?source#L625)**
 
     A helper for http server port tunneling.
 
@@ -2159,7 +2161,7 @@ kit.warp('src/**/*.coffee')
 
         A http connect method helper.
 
-- ## **[relayClient(opts)](lib/proxy.coffee?source#L660)**
+- ## **[relayClient(opts)](lib/proxy.coffee?source#L664)**
 
     A helper for http server port tunneling.
 
@@ -2179,7 +2181,7 @@ kit.warp('src/**/*.coffee')
 
         Resolve a tcp server object.
 
-- ## **[static(opts)](lib/proxy.coffee?source#L707)**
+- ## **[static(opts)](lib/proxy.coffee?source#L711)**
 
     Create a static file middleware for `proxy.flow`.
 
@@ -2200,7 +2202,7 @@ kit.warp('src/**/*.coffee')
         http.createServer(proxy.flow(middlewares)).listen(8123);
         ```
 
-- ## **[tcpFrame(socket, opts)](lib/proxy.coffee?source#L751)**
+- ## **[tcpFrame(socket, opts)](lib/proxy.coffee?source#L755)**
 
     Send any size of package as you with a socket.
     Add a `writeFrame` method and a `frame` event to `net.Socket` object.
@@ -2222,7 +2224,7 @@ kit.warp('src/**/*.coffee')
         }
         ```
 
-- ## **[url(opts)](lib/proxy.coffee?source#L820)**
+- ## **[url(opts)](lib/proxy.coffee?source#L827)**
 
     Use it to proxy one url to another.
 
@@ -2244,6 +2246,9 @@ kit.warp('src/**/*.coffee')
 
          // Force the header's host same as the url's.
          isForceHeaderHost: false,
+
+         // The request data to use. The return value should be stream, buffer or string.
+         handleReqData: (req) => req
 
          // You can hack the headers before the proxy send it.
          handleReqHeaders: (headers, req) => headers

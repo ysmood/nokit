@@ -31,6 +31,8 @@ proxy = {
 
   /**
    * A simple request body middleware.
+   * It will append a property `reqBody` to `ctx`.
+   * It will append a property `body` to `ctx.req`.
    * @return {Function} `(ctx) -> Promise`
    */
   body: function(opts) {
@@ -48,6 +50,7 @@ proxy = {
         return ctx.req.on('end', function() {
           if (buf.length > 0) {
             ctx.reqBody = buf;
+            ctx.req.body = buf;
           }
           return ctx.next().then(resolve, reject);
         });
@@ -857,6 +860,9 @@ proxy = {
    *  // Force the header's host same as the url's.
    *  isForceHeaderHost: false,
    *
+   *  // The request data to use. The return value should be stream, buffer or string.
+   *  handleReqData: (req) => req
+   *
    *  // You can hack the headers before the proxy send it.
    *  handleReqHeaders: (headers, req) => headers
    *  handleResHeaders: (headers, req, proxyRes) => headers,
@@ -921,6 +927,9 @@ proxy = {
       globalBps: false,
       agent: proxy.agent,
       isForceHeaderHost: false,
+      handleReqData: function(req) {
+        return req;
+      },
       handleReqHeaders: function(headers) {
         return headers;
       },
@@ -985,11 +994,10 @@ proxy = {
       }
     };
     return function(ctx) {
-      var headers, p, req, res, stream, url;
+      var headers, p, req, res, url;
       req = ctx.req, res = ctx.res;
       url = normalizeUrl(req, opts.url);
       headers = opts.handleReqHeaders(req.headers, req);
-      stream = normalizeStream(res);
       if (opts.isForceHeaderHost && opts.url) {
         headers['Host'] = url.host;
       }
@@ -997,8 +1005,8 @@ proxy = {
         method: req.method,
         url: url,
         headers: headers,
-        reqPipe: req,
-        resPipe: stream,
+        resPipe: normalizeStream(res),
+        reqData: opts.handleReqData(req),
         autoTE: false,
         handleResPipe: opts.handleResPipe,
         autoUnzip: false,
