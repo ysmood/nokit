@@ -54,7 +54,7 @@ module.exports = (task, option) ->
 		if opts.debug
 			args.splice 0, 0, '--nodejs', '--debug-brk=' + opts.port
 
-		kit.monitorApp { bin: 'coffee', args }
+		kit.monitorApp { bin: 'coffee', args, watchList: ['test/*', 'lib/**'] }
 
 	task 'clean', 'clean dist & cache', (opts) ->
 		if opts.all
