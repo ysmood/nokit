@@ -861,7 +861,7 @@ proxy = {
    *  isForceHeaderHost: false,
    *
    *  // The request data to use. The return value should be stream, buffer or string.
-   *  handleReqData: (req) => req
+   *  handleReqData: (req) -> req.body || req
    *
    *  // You can hack the headers before the proxy send it.
    *  handleReqHeaders: (headers, req) => headers
@@ -928,7 +928,7 @@ proxy = {
       agent: proxy.agent,
       isForceHeaderHost: false,
       handleReqData: function(req) {
-        return req;
+        return req.body || req;
       },
       handleReqHeaders: function(headers) {
         return headers;

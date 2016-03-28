@@ -2248,7 +2248,7 @@ kit.warp('src/**/*.coffee')
          isForceHeaderHost: false,
 
          // The request data to use. The return value should be stream, buffer or string.
-         handleReqData: (req) => req
+         handleReqData: (req) -> req.body || req
 
          // You can hack the headers before the proxy send it.
          handleReqHeaders: (headers, req) => headers
