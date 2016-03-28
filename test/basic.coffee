@@ -420,10 +420,10 @@ module.exports = (it) ->
 		proxy = kit.require 'proxy'
 
 		createRandomServer(proxy.flow([
-			proxy.select url: /\/site$/, ($) ->
+			proxy.select /\/site$/, ($) ->
 				$.body = 'site' + $.req.headers.proxy
 
-			proxy.select url: /\/proxy$/, proxy.url {
+			proxy.select /\/proxy$/, proxy.url {
 				url: '/site'
 				bps: 1024 * 10
 				handleReqHeaders: (headers) ->
@@ -442,6 +442,27 @@ module.exports = (it) ->
 			}
 		).then ({ headers, body }) ->
 			it.eq 'site-proxy-body-ok', body + headers.x
+
+	it 'proxy url handleReqBody', ->
+		proxy = kit.require 'proxy'
+		now = Date.now() + ''
+
+		createRandomServer(proxy.flow([
+			proxy.body()
+
+			proxy.select '/site', ($) -> $.body = $.reqBody
+
+			proxy.select '/proxy', proxy.url({
+				url: '/site'
+				handleReqData: (req) -> req.body
+			})
+		]), (port) ->
+			kit.request {
+				url: "http://127.0.0.1:#{port}/proxy"
+				reqData: now
+			}
+		).then (body) ->
+			it.eq body, now
 
 	it 'proxy flow handler', ->
 		proxy = kit.require 'proxy'
