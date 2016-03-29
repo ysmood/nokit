@@ -74,14 +74,14 @@ loadNofile = ->
 
 		preRequire path
 
-		console.log br.grey("# #{kit.path.relative('.', path)}")
+		console.log br.grey("# #{path}")
 
 		tasker = require path
 		tasker = tasker.default if tasker and tasker.default
 		if _.isFunction tasker
 			tasker task, cmder.option.bind(cmder)
 		else
-			kit.errs 'No task found:'
+			error 'no task defined'
 		return path
 
 	if (nofileIndex = process.argv.indexOf('--nofile')) > -1

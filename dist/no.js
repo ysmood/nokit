@@ -98,7 +98,7 @@ loadNofile = function() {
     var tasker;
     kit.Promise.enableLongStackTrace();
     preRequire(path);
-    console.log(br.grey("# " + (kit.path.relative('.', path))));
+    console.log(br.grey("# " + path));
     tasker = require(path);
     if (tasker && tasker["default"]) {
       tasker = tasker["default"];
@@ -106,7 +106,7 @@ loadNofile = function() {
     if (_.isFunction(tasker)) {
       tasker(task, cmder.option.bind(cmder));
     } else {
-      kit.errs('No task found:');
+      error('no task defined');
     }
     return path;
   };
