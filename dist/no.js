@@ -98,6 +98,7 @@ loadNofile = function() {
     var tasker;
     kit.Promise.enableLongStackTrace();
     preRequire(path);
+    console.log(br.grey("# " + (kit.path.relative('.', path))));
     tasker = require(path);
     if (tasker && tasker["default"]) {
       tasker = tasker["default"];
@@ -105,7 +106,7 @@ loadNofile = function() {
     if (_.isFunction(tasker)) {
       tasker(task, cmder.option.bind(cmder));
     } else {
-      kit.err('No task found.');
+      kit.errs('No task found:');
     }
     return path;
   };
@@ -159,7 +160,7 @@ module.exports = function() {
   var cwd, nofilePath, tasks;
   cwd = process.cwd();
   nofilePath = loadNofile();
-  cmder.option('--nofile <path>', 'force nofile path').usage('[options] [fuzzy task name]...' + br.grey("  # " + (kit.path.relative(cwd, nofilePath))));
+  cmder.option('--nofile <path>', 'force nofile path').usage('[options] [fuzzy task name]...');
   if (!kit.task.list) {
     return;
   }
