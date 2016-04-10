@@ -1147,14 +1147,12 @@ _.extend kit, fs, yutils,
      * @param  {Object} opts Defaults:
      * ```js
      * {
-     *  depReg: /require\s*\(?['"](.+)['"]\)?/gm,
-     *  depRoots: [''],
-     *  extensions: ['.js', '.coffee', 'index.js', 'index.coffee'],
+     *  // It will match `require`, `import` statements.
+     *  depReg: RegExp,
      *
      *  // It will handle all the matched paths.
      *  // Return false value if you don't want this match.
-     *  handle: (path) =>
-     *      path.replace(/^[\s'"]+/, '').replace(/[\s'";]+$/, '')
+     *  handle: (path) => path
      * }
      * ```
      * @return {Promise} It resolves the dependency path array.
@@ -1173,16 +1171,9 @@ _.extend kit, fs, yutils,
     ###
     parseDependency: (entryPaths, opts = {}, depPaths = {}) ->
         _.defaults opts, {
-            depReg: ///
-                require\s*\(?['"](.+)['"]\)?
-                | ^\s*import.+?from\s+['"](.+)['"]
-                | ^\s*import\s+['"](.+)['"]+\s+as
-                | ^\s*import\s+['"](.+)['"][;\s]*$
-                ///mg
-            depRoots: ['']
-            extensions: ['.js', '.es', '.ts', '.tsx', '.jsx', '.coffee', '/index.js', '/index.coffee']
-            handle: (path) ->
-                return path if path.match /^(?:\.|\/|[a-z]:)/i
+            depReg: kit.parseDependencyReg
+            handle: _.identity
+            visitedPaths: {}
         }
 
         winSep = /\\/g
@@ -1191,50 +1182,47 @@ _.extend kit, fs, yutils,
             entryPaths = [entryPaths]
 
         entryPaths = entryPaths.reduce (s, p) ->
-            if kit.path.extname p
-                s.concat [p]
+            if opts.visitedPaths[p]
+                return s
             else
-                s.concat opts.extensions.map (ext) ->
-                    p + ext
-        , []
+                opts.visitedPaths[p] = true
 
-        if opts.depRoots.indexOf('') == -1
-            opts.depRoots.push ''
+            if kit.path.extname p
+                s.push p
+            else
+                s.push p + '{/index,}.*'
 
-        entryPaths = entryPaths.reduce (s, p) ->
-            s.concat opts.depRoots.map (root) ->
-                kit.path.join root, p
+            s
         , []
 
         # Parse file.
-        Promise.all entryPaths.map (entryPath) ->
-            (if entryPath.indexOf('*') > -1
-                kit.glob entryPaths
-            else
-                kit.fileExists entryPath
-                .then (exists) ->
-                    if exists then [entryPath] else []
-            ).then (paths) ->
-                Promise.all paths.map (path) ->
-                    # Prevent the recycle dependencies.
-                    return if depPaths[path]
+        kit.glob(entryPaths).then (paths) ->
+            Promise.all paths.map (path) ->
+                # Prevent the recycle dependencies.
+                return if depPaths[path]
 
-                    kit.readFile path, 'utf8'
-                    .then (str) ->
-                        # The point to add path to watch list.
-                        depPaths[path.replace winSep, '/'] = true
-                        dir = kit.path.dirname path
+                kit.readFile path, 'utf8'
+                .then (str) ->
+                    # The point to add path to watch list.
+                    depPaths[path.replace winSep, '/'] = true
+                    dir = kit.path.dirname path
 
-                        entryPaths = []
-                        str.replace opts.depReg, (n0, ms..., n1, n2) ->
-                            p = opts.handle _.find(ms, _.isString)
-                            return if not p
-                            entryPaths.push p
-                            entryPaths.push kit.path.join(dir, p)
+                    entryPaths = []
+                    str.replace opts.depReg, (n0, ms..., n1, n2) ->
+                        p = opts.handle _.find(ms, _.isString)
+                        return if not p
+                        entryPaths.push kit.path.join(dir, p)
 
-                        kit.parseDependency entryPaths, opts, depPaths
+                    kit.parseDependency entryPaths, opts, depPaths
         .then ->
             _.keys depPaths
+
+    parseDependencyReg: ///
+        require\s*\(?['"](.+)['"]\)?
+        | ^\s*import.+?from\s+['"](.+)['"]
+        | ^\s*import\s+['"](.+)['"]+\s+as
+        | ^\s*import\s+['"](.+)['"][;\s]*$
+        ///mg
 
     ###*
      * io.js native module `path`. See `nofs` for more information.

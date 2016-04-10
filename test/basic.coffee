@@ -231,9 +231,7 @@ module.exports = (it) ->
 				]
 
 	it 'parseDependency', ->
-		kit.parseDependency 'test/fixtures/depMain.coffee', {
-			depRoots: ['test/fixtures/depDir']
-		}
+		kit.parseDependency 'test/fixtures/depMain.coffee'
 		.then (paths) ->
 			it.eq paths.sort(), [
 				'test/fixtures/dep1.coffee'
