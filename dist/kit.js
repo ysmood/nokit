@@ -1262,14 +1262,12 @@ _.extend(kit, fs, yutils, {
    * @param  {Object} opts Defaults:
    * ```js
    * {
-   *  depReg: /require\s*\(?['"](.+)['"]\)?/gm,
-   *  depRoots: [''],
-   *  extensions: ['.js', '.coffee', 'index.js', 'index.coffee'],
+   *  // It will match `require`, `import` statements.
+   *  depReg: RegExp,
    *
    *  // It will handle all the matched paths.
    *  // Return false value if you don't want this match.
-   *  handle: (path) =>
-   *      path.replace(/^[\s'"]+/, '').replace(/[\s'";]+$/, '')
+   *  handle: (path) => path
    * }
    * ```
    * @return {Promise} It resolves the dependency path array.
@@ -1295,71 +1293,54 @@ _.extend(kit, fs, yutils, {
       depPaths = {};
     }
     _.defaults(opts, {
-      depReg: /require\s*\(?['"](.+)['"]\)?|^\s*import.+?from\s+['"](.+)['"]|^\s*import\s+['"](.+)['"]+\s+as|^\s*import\s+['"](.+)['"][;\s]*$/mg,
-      depRoots: [''],
-      extensions: ['.js', '.es', '.ts', '.tsx', '.jsx', '.coffee', '/index.js', '/index.coffee'],
-      handle: function(path) {
-        if (path.match(/^(?:\.|\/|[a-z]:)/i)) {
-          return path;
-        }
-      }
+      depReg: kit.parseDependencyReg,
+      handle: _.identity,
+      visitedPaths: {}
     });
     winSep = /\\/g;
     if (_.isString(entryPaths)) {
       entryPaths = [entryPaths];
     }
     entryPaths = entryPaths.reduce(function(s, p) {
-      if (kit.path.extname(p)) {
-        return s.concat([p]);
+      if (opts.visitedPaths[p]) {
+        return s;
       } else {
-        return s.concat(opts.extensions.map(function(ext) {
-          return p + ext;
-        }));
+        opts.visitedPaths[p] = true;
       }
+      if (kit.path.extname(p)) {
+        s.push(p);
+      } else {
+        s.push(p + '{/index,}.*');
+      }
+      return s;
     }, []);
-    if (opts.depRoots.indexOf('') === -1) {
-      opts.depRoots.push('');
-    }
-    entryPaths = entryPaths.reduce(function(s, p) {
-      return s.concat(opts.depRoots.map(function(root) {
-        return kit.path.join(root, p);
-      }));
-    }, []);
-    return Promise.all(entryPaths.map(function(entryPath) {
-      return (entryPath.indexOf('*') > -1 ? kit.glob(entryPaths) : kit.fileExists(entryPath).then(function(exists) {
-        if (exists) {
-          return [entryPath];
-        } else {
-          return [];
+    return kit.glob(entryPaths).then(function(paths) {
+      return Promise.all(paths.map(function(path) {
+        if (depPaths[path]) {
+          return;
         }
-      })).then(function(paths) {
-        return Promise.all(paths.map(function(path) {
-          if (depPaths[path]) {
-            return;
-          }
-          return kit.readFile(path, 'utf8').then(function(str) {
-            var dir;
-            depPaths[path.replace(winSep, '/')] = true;
-            dir = kit.path.dirname(path);
-            entryPaths = [];
-            str.replace(opts.depReg, function() {
-              var j, ms, n0, n1, n2, p;
-              n0 = arguments[0], ms = 4 <= arguments.length ? slice.call(arguments, 1, j = arguments.length - 2) : (j = 1, []), n1 = arguments[j++], n2 = arguments[j++];
-              p = opts.handle(_.find(ms, _.isString));
-              if (!p) {
-                return;
-              }
-              entryPaths.push(p);
-              return entryPaths.push(kit.path.join(dir, p));
-            });
-            return kit.parseDependency(entryPaths, opts, depPaths);
+        return kit.readFile(path, 'utf8').then(function(str) {
+          var dir;
+          depPaths[path.replace(winSep, '/')] = true;
+          dir = kit.path.dirname(path);
+          entryPaths = [];
+          str.replace(opts.depReg, function() {
+            var j, ms, n0, n1, n2, p;
+            n0 = arguments[0], ms = 4 <= arguments.length ? slice.call(arguments, 1, j = arguments.length - 2) : (j = 1, []), n1 = arguments[j++], n2 = arguments[j++];
+            p = opts.handle(_.find(ms, _.isString));
+            if (!p) {
+              return;
+            }
+            return entryPaths.push(kit.path.join(dir, p));
           });
-        }));
-      });
-    })).then(function() {
+          return kit.parseDependency(entryPaths, opts, depPaths);
+        });
+      }));
+    }).then(function() {
       return _.keys(depPaths);
     });
   },
+  parseDependencyReg: /require\s*\(?['"](.+)['"]\)?|^\s*import.+?from\s+['"](.+)['"]|^\s*import\s+['"](.+)['"]+\s+as|^\s*import\s+['"](.+)['"][;\s]*$/mg,
 
   /**
    * io.js native module `path`. See `nofs` for more information.
