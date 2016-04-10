@@ -23,7 +23,7 @@ if (sepIndex > 0) {
 
 cmder
     .description('a dev tool to run / watch / reload program automatically')
-    .usage('[options] [file] [-- [child process options]]...')
+    .usage('[options] [args...] [-- [child process options]...]')
     .option('-w, --watch <pattern>', 'watch file pattern list [target file]', function (p) {
         if (!watchList) watchList = [];
         watchList.push(p);
@@ -39,8 +39,8 @@ cmder
     .on('--help', function () {
         console.log(
             '  Examples:\n\n' +
-            '    noe es7.js\n' +
-            '    noe -b coffee test.coffee\n' +
+            '    noe app.js\n' +
+            '    noe -b babel-node -- test.coffee -b args\n' +
             '    noe -w \'lib/*.js\' -w \'src/*.js\' test.js\n'
         );
     })
