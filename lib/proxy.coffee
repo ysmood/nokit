@@ -121,7 +121,7 @@ proxy =
                 else # https or websocket
                     rawHeaders = "#{req.method} #{req.url} HTTP/#{req.httpVersion}\r\n"
                     headers = opts.handleReqHeaders(req.headers)
-                    for k, v in headers
+                    for k, v of headers
                         rawHeaders += "#{k}: #{v}\r\n"
 
                     rawHeaders += '\r\n'

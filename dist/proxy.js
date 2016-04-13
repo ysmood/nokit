@@ -141,14 +141,14 @@ proxy = {
       ms = isTransparentProxy ? req.url.match(regConnectHost) : req.headers.host.match(regConnectHost);
       psock = new Socket;
       psock.connect(port || ms[2] || 80, host || ms[1], function() {
-        var headers, j, k, len, rawHeaders, v;
+        var headers, k, rawHeaders, v;
         if (isTransparentProxy) {
           sock.write("HTTP/" + req.httpVersion + " 200 Connection established\r\n\r\n");
         } else {
           rawHeaders = req.method + " " + req.url + " HTTP/" + req.httpVersion + "\r\n";
           headers = opts.handleReqHeaders(req.headers);
-          for (v = j = 0, len = headers.length; j < len; v = ++j) {
-            k = headers[v];
+          for (k in headers) {
+            v = headers[k];
             rawHeaders += k + ": " + v + "\r\n";
           }
           rawHeaders += '\r\n';
