@@ -758,12 +758,12 @@ _.extend kit, fs, yutils,
             if opts.log
                 opts.log str, action
             else
-                console[action] str
+                try console[action] str
 
             if opts.logTrace
                 err = br.grey (new Error).stack
                     .replace(/.+\n.+\n.+/, '\nStack trace:')
-                console.log err
+                try console.log err
 
         if _.isObject msg
             if opts.isShowTime
@@ -782,7 +782,7 @@ _.extend kit, fs, yutils,
                 log msg, timeDelta
 
         if action == 'error'
-            process.stdout.write "\u0007"
+            try process.stderr.write "\u0007"
 
         return
 
@@ -899,9 +899,10 @@ _.extend kit, fs, yutils,
                 br.red 'Process closed. Edit and save
                 the watched file to restart.'
             sepLine: ->
-                process.stdout.write br.yellow _.repeat(
-                    '*', process.stdout.columns
-                )
+                if process.stdout and process.stdout.writable
+                    process.stdout.write br.yellow _.repeat(
+                        '*', process.stdout.columns
+                    )
         }
 
         opts.watchList ?= opts.args

@@ -66,7 +66,7 @@ loadNofile = ->
 				try
 					require _.trim r.replace('nofile-pre-require:', '')
 				catch err
-					console.error "nofile-pre-require error in file #{path}"
+					try console.error "nofile-pre-require error in file #{path}"
 					throw err
 
 	load = (path) ->
@@ -74,7 +74,7 @@ loadNofile = ->
 
 		preRequire path
 
-		console.log br.grey("# #{path}")
+		try console.log br.grey("# #{path}")
 
 		tasker = require path
 		tasker = tasker.default if tasker and tasker.default
@@ -104,7 +104,7 @@ loadNofile = ->
 
 		rdir = kit.path.relative '.', dir
 		if rdir
-			console.log br.cyan('change working direcoty to: ') + br.green rdir
+			try console.log br.cyan('change working direcoty to: ') + br.green rdir
 
 		process.chdir dir
 
