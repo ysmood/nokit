@@ -851,11 +851,15 @@ _.extend(kit, fs, yutils, {
       if (opts.log) {
         opts.log(str, action);
       } else {
-        console[action](str);
+        try {
+          console[action](str);
+        } catch (undefined) {}
       }
       if (opts.logTrace) {
         err = br.grey((new Error).stack).replace(/.+\n.+\n.+/, '\nStack trace:');
-        return console.log(err);
+        try {
+          return console.log(err);
+        } catch (undefined) {}
       }
     };
     if (_.isObject(msg)) {
@@ -877,7 +881,9 @@ _.extend(kit, fs, yutils, {
       }
     }
     if (action === 'error') {
-      process.stdout.write("\u0007");
+      try {
+        process.stderr.write("\u0007");
+      } catch (undefined) {}
     }
   },
 
@@ -1007,7 +1013,9 @@ _.extend(kit, fs, yutils, {
         return kit.err(br.yellow('EXIT') + (" code: " + (br.cyan(code)) + " ") + ("signal: " + (br.cyan(signal)) + "\n") + br.red('Process closed. Edit and save the watched file to restart.'));
       },
       sepLine: function() {
-        return process.stdout.write(br.yellow(_.repeat('*', process.stdout.columns)));
+        if (process.stdout && process.stdout.writable) {
+          return process.stdout.write(br.yellow(_.repeat('*', process.stdout.columns)));
+        }
       }
     });
     if (opts.watchList == null) {

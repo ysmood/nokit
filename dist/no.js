@@ -87,7 +87,9 @@ loadNofile = function() {
           results.push(require(_.trim(r.replace('nofile-pre-require:', ''))));
         } catch (error1) {
           err = error1;
-          console.error("nofile-pre-require error in file " + path);
+          try {
+            console.error("nofile-pre-require error in file " + path);
+          } catch (undefined) {}
           throw err;
         }
       }
@@ -98,7 +100,9 @@ loadNofile = function() {
     var tasker;
     kit.Promise.enableLongStackTrace();
     preRequire(path);
-    console.log(br.grey("# " + path));
+    try {
+      console.log(br.grey("# " + path));
+    } catch (undefined) {}
     tasker = require(path);
     if (tasker && tasker["default"]) {
       tasker = tasker["default"];
@@ -130,7 +134,9 @@ loadNofile = function() {
     dir = kit.path.dirname(path);
     rdir = kit.path.relative('.', dir);
     if (rdir) {
-      console.log(br.cyan('change working direcoty to: ') + br.green(rdir));
+      try {
+        console.log(br.cyan('change working direcoty to: ') + br.green(rdir));
+      } catch (undefined) {}
     }
     process.chdir(dir);
     return load(path);
