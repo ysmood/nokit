@@ -794,7 +794,7 @@ proxy = {
    */
   "static": function(opts) {
     var send;
-    send = kit.requireOptional('send', __dirname, '^0.13.0');
+    send = kit.requireOptional('send', __dirname, '^0.14.0');
     if (_.isString(opts)) {
       opts = {
         root: opts

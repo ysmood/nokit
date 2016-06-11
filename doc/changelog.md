@@ -1,5 +1,10 @@
 # Changelog
 
+- v0.21
+
+  - upd: deps
+  - **API CHANGE** see `yaku`
+
 - v0.20
 
   - **API CHANGE** `kit.async` now renamed to `kit.all`
