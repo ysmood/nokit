@@ -758,12 +758,12 @@ _.extend kit, fs, yutils,
             if opts.log
                 opts.log str, action
             else
-                try console[action] str
+                console[action] str
 
             if opts.logTrace
                 err = br.grey (new Error).stack
                     .replace(/.+\n.+\n.+/, '\nStack trace:')
-                try console.log err
+                console.log err
 
         if _.isObject msg
             if opts.isShowTime
@@ -782,7 +782,7 @@ _.extend kit, fs, yutils,
                 log msg, timeDelta
 
         if action == 'error'
-            try process.stderr.write "\u0007"
+            process.stderr.write "\u0007"
 
         return
 
