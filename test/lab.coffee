@@ -1,19 +1,16 @@
-kit = require '../lib/kit'
-{ _, Promise } = kit
-proxy = kit.require 'proxy'
-kit.require 'url'
-http = require 'http'
-{ Promise } = kit
+yaml = require('js-yaml');
 
-app = proxy.flow()
+yamlify = require('../lib/yamlify')
 
+str = yamlify({
+    b: {
+        a: 1,
+        b: 'asdfk\nasl\ndjkf'
+        c: [1, 2, 3]
+    }
+})
+str = yamlify('asdfk\nasl\ndjkf')
 
-h = proxy.url()
+# console.log(str)
 
-app.push ($) ->
-    h($)
-
-
-app.server.on('connect', proxy.connect())
-
-app.listen(8123)
+console.dir(yaml.load('|4\n    asd\n    asd'))
