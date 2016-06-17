@@ -6,11 +6,12 @@ str = yamlify({
     b: {
         a: 1,
         b: 'asdfk\nasl\ndjkf'
-        c: [1, 2, 3]
+        c: ['-', 2, 3, true],
+        d: 'asdflj'
     }
 })
-str = yamlify('asdfk\nasl\ndjkf')
+# str = yamlify('asdfk\nasl\ndjkf')
 
-# console.log(str)
+console.log(str)
 
-console.dir(yaml.load('|4\n    asd\n    asd'))
+console.dir(yaml.load(str))
