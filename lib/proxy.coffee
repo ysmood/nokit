@@ -25,8 +25,23 @@ proxy =
      * It will append a property `reqBody` to `ctx`.
      * It will append a property `body` to `ctx.req`.
      * @return {Function} `(ctx) -> Promise`
+     * @example
+     * ```
+     * let kit = require('nokit');
+     * let proxy = kit.require('proxy');
+     *
+     * let app = proxy.flow();
+     *
+     * app.push(proxy.body());
+     *
+     * app.push(($) => {
+     *     kit.logs($.reqBody);
+     * });
+     *
+     * app.listen(8123);
+     * ```
     ###
-    body: (opts) ->
+    body: () ->
         (ctx) ->
             if (!ctx.req.readable)
                 return ctx.next()
@@ -50,9 +65,9 @@ proxy =
     van: (ctx) ->
         ctx.van = ->
             if arguments.length == 0
-                ctx.body
+                ctx.req.body
             else
-                ctx.body = arguments[0]
+                ctx.req.body = arguments[0]
         ctx.next()
 
     ###*
@@ -448,168 +463,31 @@ proxy =
                     return
 
     ###*
-     * Create a conditional middleware that only works when the pattern matches.
-     * @param  {Object} sel The selector. Members:
-     * ```js
-     * {
-     *  url: String | Regex | Function,
-     *  method: String | Regex | Function,
-     *  headers: Object
-     * }
-     * ```
-     * When it's not an object, it will be convert via `sel = { url: sel }`.
-     * The `url`, `method` and `headers` are act as selectors. If current
-     * request matches the selector, the `middleware` will be called with the
-     * captured result. If the selector is a function, it should return a
-     * `non-undefined, non-null` value when matches, it will be assigned to the `ctx`.
-     * When the `url` is a string, if `req.url` starts with the `url`, the rest
-     * of the string will be captured.
-     * @param  {Function} middleware
-     * @return {Function}
-    ###
-    select: (sel, middleware) ->
-        sel = { url: sel } if not _.isPlainObject(sel)
-
-        matchKey = (ctx, obj, key, pattern) ->
-            return true if pattern == undefined
-
-            str = obj[key]
-
-            return false if not _.isString str
-
-            ret = if _.isString(pattern)
-                if key == 'url' and _.startsWith(str, pattern)
-                    str = str.slice pattern.length
-                    str = '/' if str == ''
-                    str
-                else if str == pattern
-                    str
-            else if _.isRegExp pattern
-                str.match pattern
-            else if _.isFunction pattern
-                pattern str
-
-            if ret?
-                ctx[key] = ret
-                true
-
-        matchHeaders = (ctx, headers) ->
-            headers = headers
-            return true if headers == undefined
-
-            ret = {}
-
-            for k, v of headers
-                if not matchKey(ret, ctx.req.headers, k, v)
-                    return false
-
-            ctx.headers = ret
-            return true
-
-        (ctx) ->
-            if matchKey(ctx, ctx.req, 'method', sel.method) and
-            matchHeaders(ctx, sel.headers) and
-            matchKey(ctx, ctx.req, 'url', sel.url)
-                if _.isFunction middleware
-                    middleware ctx
-                else
-                    ctx.body = middleware
-            else
-                ctx.next()
-
-    ###*
-     * Create a http request middleware.
-     * @param  {Object} opts Same as the sse.
-     * @return {Function} `(req, res, next) ->`.
-     * It has some extra properties:
-     * ```js
-     * {
-     *  ssePrefix: '/nokit-sse',
-     *  logPrefix: '/nokit-log',
-     *  sse: kit.sse,
-     *  watch: (filePath, reqUrl) => {}
-     * }
-     * ```
+     * A simple url parser middleware.
+     * It will append a `url` object to `ctx`
+     * @return {[type]} [description]
      * @example
-     * Visit 'http://127.0.0.1:80123', every 3 sec, the page will be reloaded.
-     * If the `./static/default.css` is modified, the page will also be reloaded.
-     * ```js
+     * ```
      * let kit = require('nokit');
-     * let http = require('http');
      * let proxy = kit.require('proxy');
-     * let handler = kit.serverHelper();
      *
      * let app = proxy.flow();
      *
-     * handler.watch('./static/default.css', '/st/default.css');
+     * app.push(proxy.parseUrl());
      *
-     * app.use(handler);
+     * app.push(($) => {
+     *     kit.logs($.url.path);
+     * });
      *
      * app.listen(8123);
-     *
-     * setInterval(() =>
-     *     handler.sse.emit('fileModified', 'changed-file-path.js')
-     * ), 3000);
-     * ```
-     * You can also use the `nokit.log` on the browser to log to the remote server.
-     * ```js
-     * nokit.log({ any: 'thing' });
      * ```
     ###
-    serverHelper: (opts = {}) ->
-        br = kit.require 'brush'
+    parseUrl: (parseQueryString, slashesDenoteHost) ->
+        kit.require 'url'
 
-        opts = _.defaults opts, {
-            ssePrefix: '/nokit-sse'
-            logPrefix: '/nokit-log'
-        }
-
-        handler = (ctx) ->
-            { req, res } = ctx
-            switch req.url
-                when opts.ssePrefix
-                    kit.logs br.cyan('sse connected: ') + req.url
-                    handler.sse req, res
-                    new Promise(->)
-                when opts.logPrefix
-                    data = ''
-
-                    req.on 'data', (chunk) ->
-                        data += chunk
-
-                    req.on 'end', ->
-                        try
-                            kit.log br.cyan('client') + br.grey(' | ') +
-                            if data
-                                kit.xinspect JSON.parse(data)
-                            else
-                                data
-                            res.end()
-                        catch e
-                            res.statusCode = 500
-                            res.end(e.stack)
-                    new Promise(->)
-                else
-                    ctx.next()
-
-        handler.sse = kit.require('sse')(opts)
-
-        watchList = []
-        handler.watch = (path, url) ->
-            return if _.includes watchList, path
-
-            kit.fileExists(path).then (exists) ->
-                return if not exists
-
-                kit.logs br.cyan('watch:'), path
-                watchList.push path
-                kit.watchPath path, {
-                    handler: ->
-                        kit.logs br.cyan('changed:'), path
-                        handler.sse.emit 'fileModified', url
-                }
-
-        handler
+        ($) ->
+            $.url = kit.url.parse url, parseQueryString, slashesDenoteHost
+            $.next();
 
     ###*
      * A helper for http server port tunneling.
@@ -694,6 +572,182 @@ proxy =
 
         kit.promisify(server.listen, server)(hostPort, hostHost)
         .then -> server
+
+    ###*
+     * Create a conditional middleware that only works when the pattern matches.
+     * @param  {Object} sel The selector. Members:
+     * ```js
+     * {
+     *  url: String | Regex | Function,
+     *  method: String | Regex | Function,
+     *  headers: Object
+     * }
+     * ```
+     * When it's not an object, it will be convert via `sel = { url: sel }`.
+     * The `url`, `method` and `headers` are act as selectors. If current
+     * request matches the selector, the `middleware` will be called with the
+     * captured result. If the selector is a function, it should return a
+     * `non-undefined, non-null` value when matches, it will be assigned to the `ctx`.
+     * When the `url` is a string, if `req.url` starts with the `url`, the rest
+     * of the string will be captured.
+     * @param  {Function} middleware
+     * @return {Function}
+    ###
+    select: (sel, middleware) ->
+        sel = { url: sel } if not _.isPlainObject(sel)
+
+        matchKey = (ctx, obj, key, pattern) ->
+            return true if pattern == undefined
+
+            str = obj[key]
+
+            return false if not _.isString str
+
+            ret = if _.isString(pattern)
+                if key == 'url' and _.startsWith(str, pattern)
+                    str = str.slice pattern.length
+                    str = '/' if str == ''
+                    str
+                else if str == pattern
+                    str
+            else if _.isRegExp pattern
+                str.match pattern
+            else if _.isFunction pattern
+                pattern str
+
+            if ret?
+                ctx[key] = ret
+                true
+
+        matchHeaders = (ctx, headers) ->
+            headers = headers
+            return true if headers == undefined
+
+            ret = {}
+
+            for k, v of headers
+                if not matchKey(ret, ctx.req.headers, k, v)
+                    return false
+
+            ctx.headers = ret
+            return true
+
+        (ctx) ->
+            if matchKey(ctx, ctx.req, 'method', sel.method) and
+            matchHeaders(ctx, sel.headers) and
+            matchKey(ctx, ctx.req, 'url', sel.url)
+                if _.isFunction middleware
+                    middleware ctx
+                else
+                    ctx.body = middleware
+            else
+                ctx.next()
+
+    ###*
+     * Create a http request middleware.
+     * @param  {Object} opts Same as the sse.
+     * @return {Function} `(req, res, next) ->`.
+     * It has some extra properties:
+     * ```js
+     * {
+     *  ssePrefix: '/nokit-sse',
+     *  logPrefix: '/nokit-log',
+     *  sse: kit.sse,
+     *  watch: (filePath, reqUrl) => {},
+     *  host: '', // The host of the event source.
+     *  useJs: false // By default the browserHelper will be a html string
+     * }
+     * ```
+     * @example
+     * Visit 'http://127.0.0.1:80123', every 3 sec, the page will be reloaded.
+     * If the `./static/default.css` is modified, the page `a.html` will also be reloaded.
+     * ```js
+     * let kit = require('nokit');
+     * let http = require('http');
+     * let proxy = kit.require('proxy');
+     * let handler = kit.serverHelper();
+     *
+     * let app = proxy.flow();
+     *
+     * handler.watch('./static/default.css', '/st/default.css');
+     *
+     * app.use(handler);
+     *
+     * app.use(proxy.select(/a\.html$/, proxy.url({
+     *     handleResBody: (body) => body + handler.browserHelper
+     * })));
+     *
+     * app.listen(8123);
+     *
+     * setInterval(() =>
+     *     handler.sse.emit('fileModified', 'changed-file-path.js')
+     * ), 3000);
+     * ```
+     * You can also use the `nokit.log` on the browser to log to the remote server.
+     * ```js
+     * nokit.log({ any: 'thing' });
+     * ```
+    ###
+    serverHelper: (opts = {}) ->
+        br = kit.require 'brush'
+        kit.require('url');
+
+        opts = _.defaults opts, {
+            ssePrefix: '/nokit-sse'
+            logPrefix: '/nokit-log'
+        }
+
+        handler = (ctx) ->
+            { req, res, url } = ctx
+
+            url ?= kit.url.parse(req.url);
+
+            switch url.path
+                when opts.ssePrefix
+                    kit.logs br.cyan('sse connected: ') + req.url
+                    handler.sse req, res
+                    new Promise(->)
+                when opts.logPrefix
+                    data = ''
+
+                    req.on 'data', (chunk) ->
+                        data += chunk
+
+                    req.on 'end', ->
+                        try
+                            kit.log br.cyan('client') + br.grey(' | ') +
+                            if data
+                                kit.xinspect JSON.parse(data)
+                            else
+                                data
+                            res.end()
+                        catch e
+                            res.statusCode = 500
+                            res.end(e.stack)
+                    new Promise(->)
+                else
+                    ctx.next()
+
+        handler.sse = kit.require('sse')(opts)
+
+        handler.browserHelper = kit.browserHelper(opts);
+
+        watchList = []
+        handler.watch = (path, url) ->
+            return if _.includes watchList, path
+
+            kit.fileExists(path).then (exists) ->
+                return if not exists
+
+                kit.logs br.cyan('watch:'), path
+                watchList.push path
+                kit.watchPath path, {
+                    handler: ->
+                        kit.logs br.cyan('changed:'), path
+                        handler.sse.emit 'fileModified', url
+                }
+
+        handler
 
     ###*
      * Create a static file middleware for `proxy.flow`.

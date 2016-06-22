@@ -51,10 +51,10 @@ _.extend kit, fs, yutils,
      * @param {Object} opts The options of the client, defaults:
      * ```js
      * {
-     *  host: '' // The host of the event source.
+     *  host: '', // The host of the event source.
+     *  useJs: false // By default the function will return html string
      * }
      * ```
-     * @param {Boolean} useJs By default use html. Default is false.
      * @return {String} The code of client helper.
      * @example
      * When the client code is loaded on the browser, you can use
@@ -70,7 +70,7 @@ _.extend kit, fs, yutils,
      * );
      * ```
     ###
-    browserHelper: (opts = {}, useJs = false) ->
+    browserHelper: (opts = {}) ->
         helper = kit.browserHelper.cache or
             kit.require('./browserHelper', __dirname).toString()
 
@@ -82,7 +82,7 @@ _.extend kit, fs, yutils,
             window.nokit = (#{helper})(#{optsStr});\n
         """
 
-        if useJs
+        if opts.useJs
             js
         else
             """

@@ -17,6 +17,10 @@
  * let sse = kit.require('sse');
  * let sseHandler = sse();
  *
+ * sseHandler.onConnect = ({ req }) => {
+ *     console.log('client connected: ', req.url)
+ * }
+ *
  * http.createServer((req, res) => {
  *     if (req.url === '/sse')
  *         sseHandler(req, res);
@@ -40,6 +44,8 @@
 ###
 sse = (opts = {}) ->
 
+    opts.retry ?= 1000
+
     ###*
      * The sse middleware for http handler.
      * @param {http.IncomingMessage} req Also supports Express.js.
@@ -47,9 +53,8 @@ sse = (opts = {}) ->
     ###
     self = (req, res) ->
         session = self.create req, res
+        self.onConnect?(session)
         self.sessions.push session
-
-    opts.retry ?= 1000
 
     ###*
      * The sessions of connected clients.
