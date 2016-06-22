@@ -665,7 +665,7 @@ proxy =
      * let kit = require('nokit');
      * let http = require('http');
      * let proxy = kit.require('proxy');
-     * let handler = kit.serverHelper();
+     * let handler = proxy.serverHelper();
      *
      * let app = proxy.flow();
      *
@@ -791,6 +791,18 @@ proxy =
                     err.statusCode = err.status
                     reject err
             .pipe ctx.res
+
+    debugJs: (opts = {}) ->
+        opts.useJs = true;
+
+        handler = proxy.serverHelper(opts)
+
+        if opts.file then handler.watch opts.file
+
+        flow handler, proxy.select(opts.url, ($) ->
+            kit.readFile(opts.file).then (js) ->
+                $.body = handler.browserHelper + js
+        ), proxy.url()
 
     ###*
      * Send any size of package as you with a socket.

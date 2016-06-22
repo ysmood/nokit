@@ -1,17 +1,17 @@
-yaml = require('js-yaml');
 
-yamlify = require('../lib/yamlify')
+kit = require("../lib/kit");
+proxy = kit.require("proxy");
+flow = proxy.flow;
+app = flow();
+async = kit.async;
 
-str = yamlify({
-    b: {
-        a: 1,
-        b: 'asdfk\nasl\ndjkf'
-        c: ['-', 2, 3, true],
-        d: 'asdflj'
-    }
-})
-# str = yamlify('asdfk\nasl\ndjkf')
+mobilePath = '/Users/ys/cradle/nokit/test/test.js';
 
-console.log(str)
+app.push(proxy.debugJs({
+    url: /\/mobile.js?/,
+    file: mobilePath
+}))
 
-console.dir(yaml.load(str))
+app.server.on("connect", proxy.connect());
+
+app.listen(8081);
