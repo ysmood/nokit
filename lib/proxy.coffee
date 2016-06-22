@@ -539,17 +539,17 @@ proxy =
      * let proxy = kit.require('proxy');
      * let handler = kit.serverHelper();
      *
-     * http.createServer(proxy.flow([handler]))
-     * .listen(8123).then(() => {
-     *     kit.log('listen ' + 8123);
+     * let app = proxy.flow();
      *
-     *     handler.watch('./static/default.css', '/st/default.css');
+     * handler.watch('./static/default.css', '/st/default.css');
      *
-     *     setInterval(() =>
-     *         handler.sse.emit('fileModified', 'changed-file-path.js')
-     *     ), 3000);
-     * });
+     * app.use(handler);
      *
+     * app.listen(8123);
+     *
+     * setInterval(() =>
+     *     handler.sse.emit('fileModified', 'changed-file-path.js')
+     * ), 3000);
      * ```
      * You can also use the `nokit.log` on the browser to log to the remote server.
      * ```js
@@ -568,6 +568,7 @@ proxy =
             { req, res } = ctx
             switch req.url
                 when opts.ssePrefix
+                    kit.logs br.cyan('sse connected: ') + req.url
                     handler.sse req, res
                     new Promise(->)
                 when opts.logPrefix
