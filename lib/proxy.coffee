@@ -537,7 +537,7 @@ proxy =
      * let kit = require('nokit');
      * let http = require('http');
      * let proxy = kit.require('proxy');
-     * let handler = kit.browserHelper();
+     * let handler = kit.serverHelper();
      *
      * http.createServer(proxy.flow([handler]))
      * .listen(8123).then(() => {
