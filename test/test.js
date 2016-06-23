@@ -1,1 +1,0 @@
-nokit.log(location.href)

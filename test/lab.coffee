@@ -5,11 +5,15 @@ flow = proxy.flow;
 app = flow();
 async = kit.async;
 
-mobilePath = '/Users/ys/cradle/nokit/test/test.js';
+path = '/Users/ys/cradle/nokit/test/test.js';
+
+app.push ($) ->
+    kit.logs($.req.url)
+    $.next()
 
 app.push(proxy.debugJs({
-    url: /\/mobile.js?/,
-    file: mobilePath
+    url: /\/index.min.3qtAdh.js/,
+    file: path
 }))
 
 app.server.on("connect", proxy.connect());

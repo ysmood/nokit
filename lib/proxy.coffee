@@ -58,19 +58,6 @@ proxy =
                     ctx.next().then resolve, reject
 
     ###*
-     * Add a `van` method to flow context object. It's a helper to set
-     * and get the context body.
-     * @param  {FlowContext} ctx
-    ###
-    van: (ctx) ->
-        ctx.van = ->
-            if arguments.length == 0
-                ctx.req.body
-            else
-                ctx.req.body = arguments[0]
-        ctx.next()
-
-    ###*
      * Http CONNECT method tunneling proxy helper.
      * Most times it is used to proxy https and websocket.
      * @param {Object} opts Defaults:
@@ -153,6 +140,48 @@ proxy =
                 opts.onError err, req, sock
             psock.on 'error', (err) ->
                 opts.onError err, req, psock
+
+    ###*
+     * Proxy and replace a single js file with a local one.
+     * @param  {Object} opts
+     * ```js
+     * {
+     *     url: Regex, // The url pattern to match
+     *     file: String // The local js file path
+     * }
+     * ```
+     * @return {Function} noflow middleware
+     * @example
+     * ```js
+     * let kit = require('nokit');
+     * let http = require('http');
+     * let proxy = kit.require('proxy');
+     *
+     * let app = proxy.flow();
+     *
+     * app.use(proxy.debugJs({
+     *     url: /main.js$/,
+     *     file: './main.js'
+     * }));
+     *
+     * app.listen(8123);
+     * ```
+    ###
+    debugJs: (opts = {}) ->
+        opts.useJs = true;
+
+        handler = proxy.serverHelper(opts)
+
+        if opts.file then handler.watch opts.file
+
+        flow(
+            handler
+            proxy.select(opts.url, ($) ->
+                kit.readFile(opts.file).then (js) ->
+                    $.body = handler.browserHelper + js
+            )
+            proxy.url()
+        )
 
     ###*
      * Create a etag middleware.
@@ -792,18 +821,6 @@ proxy =
                     reject err
             .pipe ctx.res
 
-    debugJs: (opts = {}) ->
-        opts.useJs = true;
-
-        handler = proxy.serverHelper(opts)
-
-        if opts.file then handler.watch opts.file
-
-        flow handler, proxy.select(opts.url, ($) ->
-            kit.readFile(opts.file).then (js) ->
-                $.body = handler.browserHelper + js
-        ), proxy.url()
-
     ###*
      * Send any size of package as you with a socket.
      * Add a `writeFrame` method and a `frame` event to `net.Socket` object.
@@ -865,7 +882,7 @@ proxy =
      * let proxy = kit.require('proxy');
      * let http = require('http');
      *
-     * http.createServer(proxy.flow [
+     * http.createServer(proxy.flow(
      *     // Transparent proxy
      *     proxy.select({ url: '/a' }, proxy.url()),
      *
@@ -888,7 +905,7 @@ proxy =
      *             }
      *         })
      *     )
-     * ]).listen(8123);
+     * ).listen(8123);
      * ```
     ###
     url: (opts) ->
@@ -990,6 +1007,7 @@ proxy =
 
                     ctx.body = opts.handleResBody proxyRes.body, req, proxyRes
                     hs = opts.handleResHeaders proxyRes.headers, req, proxyRes
+                    kit.logs(ctx.body)
                     for k, v of hs
                         res.setHeader k, v
                     res.statusCode = proxyRes.statusCode
@@ -1003,5 +1021,18 @@ proxy =
             p.catch (e) -> opts.error e, req
 
             p
+
+    ###*
+     * Add a `van` method to flow context object. It's a helper to set
+     * and get the context body.
+     * @param  {FlowContext} ctx
+    ###
+    van: (ctx) ->
+        ctx.van = ->
+            if arguments.length == 0
+                ctx.req.body
+            else
+                ctx.req.body = arguments[0]
+        ctx.next()
 
 module.exports = proxy
