@@ -8,6 +8,7 @@ Overview = 'proxy'
 kit = require './kit'
 { _, Promise } = kit
 http = require 'http'
+https = require 'https'
 { default: flow } = require 'noflow'
 tcpFrame = require './tcpFrame'
 net = kit.require 'net', __dirname
@@ -19,6 +20,8 @@ regTunnelBegin = /^\w+\:\/\//
 proxy =
 
     agent: new http.Agent
+
+    httpsAgent: new https.Agent
 
     ###*
      * A simple request body middleware.
@@ -919,7 +922,8 @@ proxy =
 
         _.defaults opts, {
             globalBps: false
-            agent: proxy.agent
+            # agent: if opts.protocol == 'https:' then proxy.httpsAgent else proxy.agent
+            protocol: 'http:'
             isForceHeaderHost: false
             handleReqData: (req) -> req.body || req
             handleReqHeaders: (headers) -> headers
@@ -943,7 +947,7 @@ proxy =
                     # such as url is '/get/page'
                     when 0
                         {
-                            protocol: 'http:'
+                            protocol: opts.protocol
                             host: req.headers.host
                             path: url
                         }
@@ -951,7 +955,7 @@ proxy =
                     # such as url is 'test.com'
                     when -1
                         {
-                            protocol: 'http:'
+                            protocol: opts.protocol
                             host: url
                             path: kit.url.parse(req.url).path
                         }
