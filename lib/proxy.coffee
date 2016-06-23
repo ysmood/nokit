@@ -1036,7 +1036,7 @@ proxy =
             if arguments.length == 0
                 ctx.req.body
             else
-                ctx.req.body = arguments[0]
+                ctx.body = arguments[0]
         ctx.next()
 
 module.exports = proxy
