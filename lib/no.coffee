@@ -91,11 +91,15 @@ loadNofile = ->
 	nofileReg = /^nofile\.\w+$/i
 	findPath = (dir) ->
 		name = _.find kit.readdirSync(dir), (n) -> nofileReg.test n
+		parent = kit.path.dirname(dir);
+
+		if parent == dir
+			return null
 
 		if name
 			return kit.path.join dir, name
 		else
-			return findPath kit.path.dirname(dir)
+			return findPath parent
 
 	path = findPath process.cwd()
 

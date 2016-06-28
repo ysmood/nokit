@@ -18,6 +18,10 @@
  * let sse = kit.require('sse');
  * let sseHandler = sse();
  *
+ * sseHandler.onConnect = ({ req }) => {
+ *     console.log('client connected: ', req.url)
+ * }
+ *
  * http.createServer((req, res) => {
  *     if (req.url === '/sse')
  *         sseHandler(req, res);
@@ -46,6 +50,9 @@ sse = function(opts) {
   if (opts == null) {
     opts = {};
   }
+  if (opts.retry == null) {
+    opts.retry = 1000;
+  }
 
   /**
    * The sse middleware for http handler.
@@ -55,11 +62,11 @@ sse = function(opts) {
   self = function(req, res) {
     var session;
     session = self.create(req, res);
+    if (typeof self.onConnect === "function") {
+      self.onConnect(session);
+    }
     return self.sessions.push(session);
   };
-  if (opts.retry == null) {
-    opts.retry = 1000;
-  }
 
   /**
    * The sessions of connected clients.

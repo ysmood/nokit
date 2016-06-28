@@ -15,18 +15,9 @@ cmder
     .option('--production', 'start as production mode, default is development mode')
 .parse(process.argv);
 
-
-var serveIndex, serveStatic;
-
 Promise.resolve().then(function () {
-    serveIndex = require('serve-index');
-    serveStatic = require('serve-static');
-}).catch(function () {
-    return kit.spawn('npm', ['i', 'serve-index', 'serve-static']).then(function () {
-        serveIndex = require('serve-index');
-        serveStatic = require('serve-static');
-    });
-}).then(function () {
+    var serveIndex = kit.require('serve-index', __dirname);
+    var serveStatic = kit.require('serve-static', __dirname);
     var proxy = kit.require('proxy');
 
     var app = proxy.flow();
@@ -53,7 +44,7 @@ Promise.resolve().then(function () {
 
     return app.listen(cmder.port, cmder.host);
 }).then(function () {
-    var url = 'http://' + cmder.host + ':' + cmder.port;
+    var url = 'http://127.0.0.1:' + cmder.port;
     kit.logs('Serve: ' + br.cyan(url));
 
     return kit.xopen(url);

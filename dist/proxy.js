@@ -4,7 +4,7 @@
  * A cross-platform programmable Fiddler alternative.
  * You can even replace express.js with it's `flow` function.
  */
-var Overview, Promise, Socket, _, flow, http, kit, net, proxy, regConnectHost, regTunnelBegin, tcpFrame;
+var Overview, Promise, Socket, _, flow, http, https, kit, net, proxy, regConnectHost, regTunnelBegin, tcpFrame;
 
 Overview = 'proxy';
 
@@ -13,6 +13,8 @@ kit = require('./kit');
 _ = kit._, Promise = kit.Promise;
 
 http = require('http');
+
+https = require('https');
 
 flow = require('noflow')["default"];
 
@@ -28,14 +30,30 @@ regTunnelBegin = /^\w+\:\/\//;
 
 proxy = {
   agent: new http.Agent,
+  httpsAgent: new https.Agent,
 
   /**
    * A simple request body middleware.
    * It will append a property `reqBody` to `ctx`.
    * It will append a property `body` to `ctx.req`.
    * @return {Function} `(ctx) -> Promise`
+   * @example
+   * ```
+   * let kit = require('nokit');
+   * let proxy = kit.require('proxy');
+   *
+   * let app = proxy.flow();
+   *
+   * app.push(proxy.body());
+   *
+   * app.push(($) => {
+   *     kit.logs($.reqBody);
+   * });
+   *
+   * app.listen(8123);
+   * ```
    */
-  body: function(opts) {
+  body: function() {
     return function(ctx) {
       if (!ctx.req.readable) {
         return ctx.next();
@@ -56,22 +74,6 @@ proxy = {
         });
       });
     };
-  },
-
-  /**
-   * Add a `van` method to flow context object. It's a helper to set
-   * and get the context body.
-   * @param  {FlowContext} ctx
-   */
-  van: function(ctx) {
-    ctx.van = function() {
-      if (arguments.length === 0) {
-        return ctx.body;
-      } else {
-        return ctx.body = arguments[0];
-      }
-    };
-    return ctx.next();
   },
 
   /**
@@ -167,6 +169,49 @@ proxy = {
         return opts.onError(err, req, psock);
       });
     };
+  },
+
+  /**
+   * Proxy and replace a single js file with a local one.
+   * @param  {Object} opts
+   * ```js
+   * {
+   *     url: Regex, // The url pattern to match
+   *     file: String // The local js file path
+   * }
+   * ```
+   * @return {Function} noflow middleware
+   * @example
+   * ```js
+   * let kit = require('nokit');
+   * let http = require('http');
+   * let proxy = kit.require('proxy');
+   *
+   * let app = proxy.flow();
+   *
+   * app.use(proxy.debugJs({
+   *     url: /main.js$/,
+   *     file: './main.js'
+   * }));
+   *
+   * app.listen(8123);
+   * ```
+   */
+  debugJs: function(opts) {
+    var handler;
+    if (opts == null) {
+      opts = {};
+    }
+    opts.useJs = true;
+    handler = proxy.serverHelper(opts);
+    if (opts.file) {
+      handler.watch(opts.file);
+    }
+    return flow(handler, proxy.select(opts.url, function($) {
+      return kit.readFile(opts.file).then(function(js) {
+        return $.body = handler.browserHelper + js;
+      });
+    }), proxy.url());
   },
 
   /**
@@ -514,174 +559,31 @@ proxy = {
   },
 
   /**
-   * Create a conditional middleware that only works when the pattern matches.
-   * @param  {Object} sel The selector. Members:
-   * ```js
-   * {
-   *  url: String | Regex | Function,
-   *  method: String | Regex | Function,
-   *  headers: Object
-   * }
-   * ```
-   * When it's not an object, it will be convert via `sel = { url: sel }`.
-   * The `url`, `method` and `headers` are act as selectors. If current
-   * request matches the selector, the `middleware` will be called with the
-   * captured result. If the selector is a function, it should return a
-   * `non-undefined, non-null` value when matches, it will be assigned to the `ctx`.
-   * When the `url` is a string, if `req.url` starts with the `url`, the rest
-   * of the string will be captured.
-   * @param  {Function} middleware
-   * @return {Function}
-   */
-  select: function(sel, middleware) {
-    var matchHeaders, matchKey;
-    if (!_.isPlainObject(sel)) {
-      sel = {
-        url: sel
-      };
-    }
-    matchKey = function(ctx, obj, key, pattern) {
-      var ret, str;
-      if (pattern === void 0) {
-        return true;
-      }
-      str = obj[key];
-      if (!_.isString(str)) {
-        return false;
-      }
-      ret = _.isString(pattern) ? key === 'url' && _.startsWith(str, pattern) ? (str = str.slice(pattern.length), str === '' ? str = '/' : void 0, str) : str === pattern ? str : void 0 : _.isRegExp(pattern) ? str.match(pattern) : _.isFunction(pattern) ? pattern(str) : void 0;
-      if (ret != null) {
-        ctx[key] = ret;
-        return true;
-      }
-    };
-    matchHeaders = function(ctx, headers) {
-      var k, ret, v;
-      headers = headers;
-      if (headers === void 0) {
-        return true;
-      }
-      ret = {};
-      for (k in headers) {
-        v = headers[k];
-        if (!matchKey(ret, ctx.req.headers, k, v)) {
-          return false;
-        }
-      }
-      ctx.headers = ret;
-      return true;
-    };
-    return function(ctx) {
-      if (matchKey(ctx, ctx.req, 'method', sel.method) && matchHeaders(ctx, sel.headers) && matchKey(ctx, ctx.req, 'url', sel.url)) {
-        if (_.isFunction(middleware)) {
-          return middleware(ctx);
-        } else {
-          return ctx.body = middleware;
-        }
-      } else {
-        return ctx.next();
-      }
-    };
-  },
-
-  /**
-   * Create a http request middleware.
-   * @param  {Object} opts Same as the sse.
-   * @return {Function} `(req, res, next) ->`.
-   * It has some extra properties:
-   * ```js
-   * {
-   *  ssePrefix: '/nokit-sse',
-   *  logPrefix: '/nokit-log',
-   *  sse: kit.sse,
-   *  watch: (filePath, reqUrl) => {}
-   * }
-   * ```
+   * A simple url parser middleware.
+   * It will append a `url` object to `ctx`
+   * @return {[type]} [description]
    * @example
-   * Visit 'http://127.0.0.1:80123', every 3 sec, the page will be reloaded.
-   * If the `./static/default.css` is modified, the page will also be reloaded.
-   * ```js
+   * ```
    * let kit = require('nokit');
-   * let http = require('http');
    * let proxy = kit.require('proxy');
-   * let handler = kit.browserHelper();
    *
-   * http.createServer(proxy.flow([handler]))
-   * .listen(8123).then(() => {
-   *     kit.log('listen ' + 8123);
+   * let app = proxy.flow();
    *
-   *     handler.watch('./static/default.css', '/st/default.css');
+   * app.push(proxy.parseUrl());
    *
-   *     setInterval(() =>
-   *         handler.sse.emit('fileModified', 'changed-file-path.js')
-   *     ), 3000);
+   * app.push(($) => {
+   *     kit.logs($.url.path);
    * });
    *
-   * ```
-   * You can also use the `nokit.log` on the browser to log to the remote server.
-   * ```js
-   * nokit.log({ any: 'thing' });
+   * app.listen(8123);
    * ```
    */
-  serverHelper: function(opts) {
-    var br, handler, watchList;
-    if (opts == null) {
-      opts = {};
-    }
-    br = kit.require('brush');
-    opts = _.defaults(opts, {
-      ssePrefix: '/nokit-sse',
-      logPrefix: '/nokit-log'
-    });
-    handler = function(ctx) {
-      var data, req, res;
-      req = ctx.req, res = ctx.res;
-      switch (req.url) {
-        case opts.ssePrefix:
-          handler.sse(req, res);
-          return new Promise(function() {});
-        case opts.logPrefix:
-          data = '';
-          req.on('data', function(chunk) {
-            return data += chunk;
-          });
-          req.on('end', function() {
-            var e, error1;
-            try {
-              kit.log(br.cyan('client') + br.grey(' | ') + (data ? kit.xinspect(JSON.parse(data)) : data));
-              return res.end();
-            } catch (error1) {
-              e = error1;
-              res.statusCode = 500;
-              return res.end(e.stack);
-            }
-          });
-          return new Promise(function() {});
-        default:
-          return ctx.next();
-      }
+  parseUrl: function(parseQueryString, slashesDenoteHost) {
+    kit.require('url');
+    return function($) {
+      $.url = kit.url.parse(url, parseQueryString, slashesDenoteHost);
+      return $.next();
     };
-    handler.sse = kit.require('sse')(opts);
-    watchList = [];
-    handler.watch = function(path, url) {
-      if (_.includes(watchList, path)) {
-        return;
-      }
-      return kit.fileExists(path).then(function(exists) {
-        if (!exists) {
-          return;
-        }
-        kit.logs(br.cyan('watch:'), path);
-        watchList.push(path);
-        return kit.watchPath(path, {
-          handler: function() {
-            kit.logs(br.cyan('changed:'), path);
-            return handler.sse.emit('fileModified', url);
-          }
-        });
-      });
-    };
-    return handler;
   },
 
   /**
@@ -776,6 +678,189 @@ proxy = {
     return kit.promisify(server.listen, server)(hostPort, hostHost).then(function() {
       return server;
     });
+  },
+
+  /**
+   * Create a conditional middleware that only works when the pattern matches.
+   * @param  {Object} sel The selector. Members:
+   * ```js
+   * {
+   *  url: String | Regex | Function,
+   *  method: String | Regex | Function,
+   *  headers: Object
+   * }
+   * ```
+   * When it's not an object, it will be convert via `sel = { url: sel }`.
+   * The `url`, `method` and `headers` are act as selectors. If current
+   * request matches the selector, the `middleware` will be called with the
+   * captured result. If the selector is a function, it should return a
+   * `non-undefined, non-null` value when matches, it will be assigned to the `ctx`.
+   * When the `url` is a string, if `req.url` starts with the `url`, the rest
+   * of the string will be captured.
+   * @param  {Function} middleware
+   * @return {Function}
+   */
+  select: function(sel, middleware) {
+    var matchHeaders, matchKey;
+    if (!_.isPlainObject(sel)) {
+      sel = {
+        url: sel
+      };
+    }
+    matchKey = function(ctx, obj, key, pattern) {
+      var ret, str;
+      if (pattern === void 0) {
+        return true;
+      }
+      str = obj[key];
+      if (!_.isString(str)) {
+        return false;
+      }
+      ret = _.isString(pattern) ? key === 'url' && _.startsWith(str, pattern) ? (str = str.slice(pattern.length), str === '' ? str = '/' : void 0, str) : str === pattern ? str : void 0 : _.isRegExp(pattern) ? str.match(pattern) : _.isFunction(pattern) ? pattern(str) : void 0;
+      if (ret != null) {
+        ctx[key] = ret;
+        return true;
+      }
+    };
+    matchHeaders = function(ctx, headers) {
+      var k, ret, v;
+      headers = headers;
+      if (headers === void 0) {
+        return true;
+      }
+      ret = {};
+      for (k in headers) {
+        v = headers[k];
+        if (!matchKey(ret, ctx.req.headers, k, v)) {
+          return false;
+        }
+      }
+      ctx.headers = ret;
+      return true;
+    };
+    return function(ctx) {
+      if (matchKey(ctx, ctx.req, 'method', sel.method) && matchHeaders(ctx, sel.headers) && matchKey(ctx, ctx.req, 'url', sel.url)) {
+        if (_.isFunction(middleware)) {
+          return middleware(ctx);
+        } else {
+          return ctx.body = middleware;
+        }
+      } else {
+        return ctx.next();
+      }
+    };
+  },
+
+  /**
+   * Create a http request middleware.
+   * @param  {Object} opts Same as the sse.
+   * @return {Function} `(req, res, next) ->`.
+   * It has some extra properties:
+   * ```js
+   * {
+   *  ssePrefix: '/nokit-sse',
+   *  logPrefix: '/nokit-log',
+   *  sse: kit.sse,
+   *  watch: (filePath, reqUrl) => {},
+   *  host: '', // The host of the event source.
+   *  useJs: false // By default the browserHelper will be a html string
+   * }
+   * ```
+   * @example
+   * Visit 'http://127.0.0.1:80123', every 3 sec, the page will be reloaded.
+   * If the `./static/default.css` is modified, the page `a.html` will also be reloaded.
+   * ```js
+   * let kit = require('nokit');
+   * let http = require('http');
+   * let proxy = kit.require('proxy');
+   * let handler = proxy.serverHelper();
+   *
+   * let app = proxy.flow();
+   *
+   * handler.watch('./static/default.css', '/st/default.css');
+   *
+   * app.use(handler);
+   *
+   * app.use(proxy.select(/a\.html$/, proxy.url({
+   *     handleResBody: (body) => body + handler.browserHelper
+   * })));
+   *
+   * app.listen(8123);
+   *
+   * setInterval(() =>
+   *     handler.sse.emit('fileModified', 'changed-file-path.js')
+   * ), 3000);
+   * ```
+   * You can also use the `nokit.log` on the browser to log to the remote server.
+   * ```js
+   * nokit.log({ any: 'thing' });
+   * ```
+   */
+  serverHelper: function(opts) {
+    var br, handler, watchList;
+    if (opts == null) {
+      opts = {};
+    }
+    br = kit.require('brush');
+    kit.require('url');
+    opts = _.defaults(opts, {
+      ssePrefix: '/nokit-sse',
+      logPrefix: '/nokit-log'
+    });
+    handler = function(ctx) {
+      var data, req, res, url;
+      req = ctx.req, res = ctx.res, url = ctx.url;
+      if (url == null) {
+        url = kit.url.parse(req.url);
+      }
+      switch (url.path) {
+        case opts.ssePrefix:
+          kit.logs(br.cyan('sse connected: ') + req.url);
+          handler.sse(req, res);
+          return new Promise(function() {});
+        case opts.logPrefix:
+          data = '';
+          req.on('data', function(chunk) {
+            return data += chunk;
+          });
+          req.on('end', function() {
+            var e, error1;
+            try {
+              kit.log(br.cyan('client') + br.grey(' | ') + (data ? kit.xinspect(JSON.parse(data)) : data));
+              return res.end();
+            } catch (error1) {
+              e = error1;
+              res.statusCode = 500;
+              return res.end(e.stack);
+            }
+          });
+          return new Promise(function() {});
+        default:
+          return ctx.next();
+      }
+    };
+    handler.sse = kit.require('sse')(opts);
+    handler.browserHelper = kit.browserHelper(opts);
+    watchList = [];
+    handler.watch = function(path, url) {
+      if (_.includes(watchList, path)) {
+        return;
+      }
+      return kit.fileExists(path).then(function(exists) {
+        if (!exists) {
+          return;
+        }
+        kit.logs(br.cyan('watch:'), path);
+        watchList.push(path);
+        return kit.watchPath(path, {
+          handler: function() {
+            kit.logs(br.cyan('changed:'), path);
+            return handler.sse.emit('fileModified', url);
+          }
+        });
+      });
+    };
+    return handler;
   },
 
   /**
@@ -885,7 +970,7 @@ proxy = {
    * let proxy = kit.require('proxy');
    * let http = require('http');
    *
-   * http.createServer(proxy.flow [
+   * http.createServer(proxy.flow(
    *     // Transparent proxy
    *     proxy.select({ url: '/a' }, proxy.url()),
    *
@@ -908,7 +993,7 @@ proxy = {
    *             }
    *         })
    *     )
-   * ]).listen(8123);
+   * ).listen(8123);
    * ```
    */
   url: function(opts) {
@@ -925,7 +1010,7 @@ proxy = {
     }
     _.defaults(opts, {
       globalBps: false,
-      agent: proxy.agent,
+      protocol: 'http:',
       isForceHeaderHost: false,
       handleReqData: function(req) {
         return req.body || req;
@@ -959,13 +1044,13 @@ proxy = {
           switch (sepIndex) {
             case 0:
               return {
-                protocol: 'http:',
+                protocol: opts.protocol,
                 host: req.headers.host,
                 path: url
               };
             case -1:
               return {
-                protocol: 'http:',
+                protocol: opts.protocol,
                 host: url,
                 path: kit.url.parse(req.url).path
               };
@@ -1025,6 +1110,7 @@ proxy = {
           }
           ctx.body = opts.handleResBody(proxyRes.body, req, proxyRes);
           hs = opts.handleResHeaders(proxyRes.headers, req, proxyRes);
+          kit.logs(ctx.body);
           for (k in hs) {
             v = hs[k];
             res.setHeader(k, v);
@@ -1041,6 +1127,22 @@ proxy = {
       });
       return p;
     };
+  },
+
+  /**
+   * Add a `van` method to flow context object. It's a helper to set
+   * and get the context body.
+   * @param  {FlowContext} ctx
+   */
+  van: function(ctx) {
+    ctx.van = function() {
+      if (arguments.length === 0) {
+        return ctx.req.body;
+      } else {
+        return ctx.body = arguments[0];
+      }
+    };
+    return ctx.next();
   }
 };
 

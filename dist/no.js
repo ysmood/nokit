@@ -87,9 +87,7 @@ loadNofile = function() {
           results.push(require(_.trim(r.replace('nofile-pre-require:', ''))));
         } catch (error1) {
           err = error1;
-          try {
-            console.error("nofile-pre-require error in file " + path);
-          } catch (undefined) {}
+          console.error("nofile-pre-require error in file " + path);
           throw err;
         }
       }
@@ -100,9 +98,7 @@ loadNofile = function() {
     var tasker;
     kit.Promise.enableLongStackTrace();
     preRequire(path);
-    try {
-      console.log(br.grey("# " + path));
-    } catch (undefined) {}
+    console.log(br.grey("# " + path));
     tasker = require(path);
     if (tasker && tasker["default"]) {
       tasker = tasker["default"];
@@ -119,14 +115,18 @@ loadNofile = function() {
   }
   nofileReg = /^nofile\.\w+$/i;
   findPath = function(dir) {
-    var name;
+    var name, parent;
     name = _.find(kit.readdirSync(dir), function(n) {
       return nofileReg.test(n);
     });
+    parent = kit.path.dirname(dir);
+    if (parent === dir) {
+      return null;
+    }
     if (name) {
       return kit.path.join(dir, name);
     } else {
-      return findPath(kit.path.dirname(dir));
+      return findPath(parent);
     }
   };
   path = findPath(process.cwd());
@@ -134,9 +134,7 @@ loadNofile = function() {
     dir = kit.path.dirname(path);
     rdir = kit.path.relative('.', dir);
     if (rdir) {
-      try {
-        console.log(br.cyan('change working direcoty to: ') + br.green(rdir));
-      } catch (undefined) {}
+      console.log(br.cyan('change working direcoty to: ') + br.green(rdir));
     }
     process.chdir(dir);
     return load(path);

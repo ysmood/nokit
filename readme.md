@@ -125,7 +125,7 @@ Goto [changelog](doc/changelog.md)
 - #### kit
   - [Overview](#overview)
   - [_](#_)
-  - [browserHelper(opts, useJs)](#browserhelperopts-usejs)
+  - [browserHelper(opts)](#browserhelperopts)
   - [brush](#brush)
   - [depsCache(info)](#depscacheinfo)
   - [daemonize(opts)](#daemonizeopts)
@@ -174,8 +174,8 @@ Goto [changelog](doc/changelog.md)
 - #### proxy
   - [Overview](#overview)
   - [body()](#body)
-  - [van(ctx)](#vanctx)
   - [connect(opts)](#connectopts)
+  - [debugJs(opts)](#debugjsopts)
   - [etag()](#etag)
   - [file(opts)](#fileopts)
   - [fileRequest(opts)](#filerequestopts)
@@ -183,13 +183,15 @@ Goto [changelog](doc/changelog.md)
   - [flowToMid(fn)](#flowtomidfn)
   - [match(pattern, opts)](#matchpattern-opts)
   - [midToFlow(h)](#midtoflowh)
-  - [select(sel, middleware)](#selectsel-middleware)
-  - [serverHelper(opts)](#serverhelperopts)
+  - [parseUrl()](#parseurl)
   - [relayConnect(opts)](#relayconnectopts)
   - [relayClient(opts)](#relayclientopts)
+  - [select(sel, middleware)](#selectsel-middleware)
+  - [serverHelper(opts)](#serverhelperopts)
   - [static(opts)](#staticopts)
   - [tcpFrame(socket, opts)](#tcpframesocket-opts)
   - [url(opts)](#urlopts)
+  - [van(ctx)](#vanctx)
 
 - #### drives
   - [Overview](#overview)
@@ -255,7 +257,7 @@ Goto [changelog](doc/changelog.md)
         kit._.map([1, 2, 3]);
         ```
 
-- ## **[browserHelper(opts, useJs)](lib/kit.coffee?source#L73)**
+- ## **[browserHelper(opts)](lib/kit.coffee?source#L73)**
 
     The browser helper. It helps you to live reload the page and log remotely.
 
@@ -266,13 +268,10 @@ Goto [changelog](doc/changelog.md)
         The options of the client, defaults:
         ```js
         {
-         host: '' // The host of the event source.
+         host: '', // The host of the event source.
+         useJs: false // By default the function will return html string
         }
         ```
-
-    - **<u>param</u>**: `useJs` { _Boolean_ }
-
-        By default use html. Default is false.
 
     - **<u>return</u>**: { _String_ }
 
@@ -1887,7 +1886,7 @@ kit.warp('src/**/*.coffee')
     A cross-platform programmable Fiddler alternative.
     You can even replace express.js with it's `flow` function.
 
-- ## **[body()](lib/proxy.coffee?source#L29)**
+- ## **[body()](lib/proxy.coffee?source#L47)**
 
     A simple request body middleware.
     It will append a property `reqBody` to `ctx`.
@@ -1897,14 +1896,24 @@ kit.warp('src/**/*.coffee')
 
         `(ctx) -> Promise`
 
-- ## **[van(ctx)](lib/proxy.coffee?source#L50)**
+    - **<u>example</u>**:
 
-    Add a `van` method to flow context object. It's a helper to set
-    and get the context body.
+        ```
+        let kit = require('nokit');
+        let proxy = kit.require('proxy');
 
-    - **<u>param</u>**: `ctx` { _FlowContext_ }
+        let app = proxy.flow();
 
-- ## **[connect(opts)](lib/proxy.coffee?source#L88)**
+        app.push(proxy.body());
+
+        app.push(($) => {
+            kit.logs($.reqBody);
+        });
+
+        app.listen(8123);
+        ```
+
+- ## **[connect(opts)](lib/proxy.coffee?source#L93)**
 
     Http CONNECT method tunneling proxy helper.
     Most times it is used to proxy https and websocket.
@@ -1943,13 +1952,47 @@ kit.warp('src/**/*.coffee')
         app.listen(8123);
         ```
 
-- ## **[etag()](lib/proxy.coffee?source#L146)**
+- ## **[debugJs(opts)](lib/proxy.coffee?source#L173)**
+
+    Proxy and replace a single js file with a local one.
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+        ```js
+        {
+            url: Regex, // The url pattern to match
+            file: String // The local js file path
+        }
+        ```
+
+    - **<u>return</u>**: { _Function_ }
+
+        noflow middleware
+
+    - **<u>example</u>**:
+
+        ```js
+        let kit = require('nokit');
+        let http = require('http');
+        let proxy = kit.require('proxy');
+
+        let app = proxy.flow();
+
+        app.use(proxy.debugJs({
+            url: /main.js$/,
+            file: './main.js'
+        }));
+
+        app.listen(8123);
+        ```
+
+- ## **[etag()](lib/proxy.coffee?source#L193)**
 
     Create a etag middleware.
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[file(opts)](lib/proxy.coffee?source#L188)**
+- ## **[file(opts)](lib/proxy.coffee?source#L235)**
 
     A simple protocol to read, write, chmod, delete file via http.
     The protocol is very simple
@@ -1980,7 +2023,7 @@ kit.warp('src/**/*.coffee')
 
         noflow middleware
 
-- ## **[fileRequest(opts)](lib/proxy.coffee?source#L305)**
+- ## **[fileRequest(opts)](lib/proxy.coffee?source#L352)**
 
     Make a file create request to `proxy.file`.
 
@@ -2002,12 +2045,12 @@ kit.warp('src/**/*.coffee')
 
     - **<u>return</u>**: { _Promise_ }
 
-- ## **[flow](lib/proxy.coffee?source#L374)**
+- ## **[flow](lib/proxy.coffee?source#L421)**
 
     A minimal middleware composer for the future.
     https://github.com/ysmood/noflow
 
-- ## **[flowToMid(fn)](lib/proxy.coffee?source#L381)**
+- ## **[flowToMid(fn)](lib/proxy.coffee?source#L428)**
 
     Convert noflow middleware express middleware.
 
@@ -2019,7 +2062,7 @@ kit.warp('src/**/*.coffee')
 
         express middleware
 
-- ## **[match(pattern, opts)](lib/proxy.coffee?source#L401)**
+- ## **[match(pattern, opts)](lib/proxy.coffee?source#L448)**
 
     Generate an express like unix path selector. See the example of `proxy.flow`.
 
@@ -2042,7 +2085,7 @@ kit.warp('src/**/*.coffee')
         kit.log(match('/items/10')) // output => { id: '10' }
         ```
 
-- ## **[midToFlow(h)](lib/proxy.coffee?source#L439)**
+- ## **[midToFlow(h)](lib/proxy.coffee?source#L486)**
 
     Convert a Express-like middleware to `proxy.flow` middleware.
 
@@ -2067,7 +2110,71 @@ kit.warp('src/**/*.coffee')
         http.createServer(proxy.flow(middlewares)).listen(8123);
         ```
 
-- ## **[select(sel, middleware)](lib/proxy.coffee?source#L470)**
+- ## **[parseUrl()](lib/proxy.coffee?source#L517)**
+
+    A simple url parser middleware.
+    It will append a `url` object to `ctx`
+
+    - **<u>return</u>**: { _[type]_ }
+
+        [description]
+
+    - **<u>example</u>**:
+
+        ```
+        let kit = require('nokit');
+        let proxy = kit.require('proxy');
+
+        let app = proxy.flow();
+
+        app.push(proxy.parseUrl());
+
+        app.push(($) => {
+            kit.logs($.url.path);
+        });
+
+        app.listen(8123);
+        ```
+
+- ## **[relayConnect(opts)](lib/proxy.coffee?source#L536)**
+
+    A helper for http server port tunneling.
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+        ```js
+        {
+            allowedHosts: [],
+            onSocketError: () => {},
+            onRelayError: () => {}
+        }
+        ```
+
+    - **<u>return</u>**: { _Function_ }
+
+        A http connect method helper.
+
+- ## **[relayClient(opts)](lib/proxy.coffee?source#L575)**
+
+    A helper for http server port tunneling.
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+        ```js
+        {
+            host: '0.0.0.0:9970',
+            relayHost: '127.0.0.1:9971',
+            hostTo: '127.0.0.1:8080',
+            onSocketError: () => {},
+            onRelayError: () => {}
+        }
+        ```
+
+    - **<u>return</u>**: { _Promise_ }
+
+        Resolve a tcp server object.
+
+- ## **[select(sel, middleware)](lib/proxy.coffee?source#L628)**
 
     Create a conditional middleware that only works when the pattern matches.
 
@@ -2093,7 +2200,7 @@ kit.warp('src/**/*.coffee')
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[serverHelper(opts)](lib/proxy.coffee?source#L559)**
+- ## **[serverHelper(opts)](lib/proxy.coffee?source#L723)**
 
     Create a http request middleware.
 
@@ -2110,76 +2217,44 @@ kit.warp('src/**/*.coffee')
          ssePrefix: '/nokit-sse',
          logPrefix: '/nokit-log',
          sse: kit.sse,
-         watch: (filePath, reqUrl) => {}
+         watch: (filePath, reqUrl) => {},
+         host: '', // The host of the event source.
+         useJs: false // By default the browserHelper will be a html string
         }
         ```
 
     - **<u>example</u>**:
 
         Visit 'http://127.0.0.1:80123', every 3 sec, the page will be reloaded.
-        If the `./static/default.css` is modified, the page will also be reloaded.
+        If the `./static/default.css` is modified, the page `a.html` will also be reloaded.
         ```js
         let kit = require('nokit');
         let http = require('http');
         let proxy = kit.require('proxy');
-        let handler = kit.browserHelper();
+        let handler = proxy.serverHelper();
 
-        http.createServer(proxy.flow([handler]))
-        .listen(8123).then(() => {
-            kit.log('listen ' + 8123);
+        let app = proxy.flow();
 
-            handler.watch('./static/default.css', '/st/default.css');
+        handler.watch('./static/default.css', '/st/default.css');
 
-            setInterval(() =>
-                handler.sse.emit('fileModified', 'changed-file-path.js')
-            ), 3000);
-        });
+        app.use(handler);
 
+        app.use(proxy.select(/a\.html$/, proxy.url({
+            handleResBody: (body) => body + handler.browserHelper
+        })));
+
+        app.listen(8123);
+
+        setInterval(() =>
+            handler.sse.emit('fileModified', 'changed-file-path.js')
+        ), 3000);
         ```
         You can also use the `nokit.log` on the browser to log to the remote server.
         ```js
         nokit.log({ any: 'thing' });
         ```
 
-- ## **[relayConnect(opts)](lib/proxy.coffee?source#L625)**
-
-    A helper for http server port tunneling.
-
-    - **<u>param</u>**: `opts` { _Object_ }
-
-        ```js
-        {
-            allowedHosts: [],
-            onSocketError: () => {},
-            onRelayError: () => {}
-        }
-        ```
-
-    - **<u>return</u>**: { _Function_ }
-
-        A http connect method helper.
-
-- ## **[relayClient(opts)](lib/proxy.coffee?source#L664)**
-
-    A helper for http server port tunneling.
-
-    - **<u>param</u>**: `opts` { _Object_ }
-
-        ```js
-        {
-            host: '0.0.0.0:9970',
-            relayHost: '127.0.0.1:9971',
-            hostTo: '127.0.0.1:8080',
-            onSocketError: () => {},
-            onRelayError: () => {}
-        }
-        ```
-
-    - **<u>return</u>**: { _Promise_ }
-
-        Resolve a tcp server object.
-
-- ## **[static(opts)](lib/proxy.coffee?source#L711)**
+- ## **[static(opts)](lib/proxy.coffee?source#L798)**
 
     Create a static file middleware for `proxy.flow`.
 
@@ -2200,7 +2275,7 @@ kit.warp('src/**/*.coffee')
         http.createServer(proxy.flow(middlewares)).listen(8123);
         ```
 
-- ## **[tcpFrame(socket, opts)](lib/proxy.coffee?source#L755)**
+- ## **[tcpFrame(socket, opts)](lib/proxy.coffee?source#L842)**
 
     Send any size of package as you with a socket.
     Add a `writeFrame` method and a `frame` event to `net.Socket` object.
@@ -2222,7 +2297,7 @@ kit.warp('src/**/*.coffee')
         }
         ```
 
-- ## **[url(opts)](lib/proxy.coffee?source#L827)**
+- ## **[url(opts)](lib/proxy.coffee?source#L914)**
 
     Use it to proxy one url to another.
 
@@ -2275,7 +2350,7 @@ kit.warp('src/**/*.coffee')
         let proxy = kit.require('proxy');
         let http = require('http');
 
-        http.createServer(proxy.flow [
+        http.createServer(proxy.flow(
             // Transparent proxy
             proxy.select({ url: '/a' }, proxy.url()),
 
@@ -2298,14 +2373,21 @@ kit.warp('src/**/*.coffee')
                     }
                 })
             )
-        ]).listen(8123);
+        ).listen(8123);
         ```
+
+- ## **[van(ctx)](lib/proxy.coffee?source#L1034)**
+
+    Add a `van` method to flow context object. It's a helper to set
+    and get the context body.
+
+    - **<u>param</u>**: `ctx` { _FlowContext_ }
 
 
 
 # sse
 
-- ## **[sse(opts)](lib/sse.coffee?source#L41)**
+- ## **[sse(opts)](lib/sse.coffee?source#L45)**
 
     A Server-Sent Event Manager.
     For more info see [Using server-sent events](https://developer.mozilla.org/en-US/docs/Server-sentEvents/UsingServer-sentEvents).
@@ -2330,6 +2412,10 @@ kit.warp('src/**/*.coffee')
         let sse = kit.require('sse');
         let sseHandler = sse();
 
+        sseHandler.onConnect = ({ req }) => {
+            console.log('client connected: ', req.url)
+        }
+
         http.createServer((req, res) => {
             if (req.url === '/sse')
                 sseHandler(req, res);
@@ -2351,7 +2437,7 @@ kit.warp('src/**/*.coffee')
         });
         ```
 
-- ## **[self(req, res)](lib/sse.coffee?source#L48)**
+- ## **[self(req, res)](lib/sse.coffee?source#L54)**
 
     The sse middleware for http handler.
 
@@ -2363,13 +2449,13 @@ kit.warp('src/**/*.coffee')
 
         Also supports Express.js.
 
-- ## **[sessions](lib/sse.coffee?source#L58)**
+- ## **[sessions](lib/sse.coffee?source#L63)**
 
     The sessions of connected clients.
 
     - **<u>type</u>**: { _Array_ }
 
-- ## **[emit(event, msg, [path])](lib/sse.coffee?source#L67)**
+- ## **[emit(event, msg, [path])](lib/sse.coffee?source#L72)**
 
     Broadcast a event to all clients.
 
@@ -2386,7 +2472,7 @@ kit.warp('src/**/*.coffee')
         The namespace of target sessions. If not set,
         broadcast to all clients.
 
-- ## **[create(req, res)](lib/sse.coffee?source#L80)**
+- ## **[create(req, res)](lib/sse.coffee?source#L85)**
 
     Create a sse session.
 
@@ -2400,7 +2486,7 @@ kit.warp('src/**/*.coffee')
 
     - **<u>return</u>**: { _SSESession_ }
 
-- ## **[session](lib/sse.coffee?source#L90)**
+- ## **[session](lib/sse.coffee?source#L95)**
 
     A session object is something like:
     ```js
@@ -2410,7 +2496,7 @@ kit.warp('src/**/*.coffee')
     }
     ```
 
-- ## **[session.emit(event, msg)](lib/sse.coffee?source#L104)**
+- ## **[session.emit(event, msg)](lib/sse.coffee?source#L109)**
 
     Emit message to client.
 

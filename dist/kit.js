@@ -58,10 +58,10 @@ _.extend(kit, fs, yutils, {
    * @param {Object} opts The options of the client, defaults:
    * ```js
    * {
-   *  host: '' // The host of the event source.
+   *  host: '', // The host of the event source.
+   *  useJs: false // By default the function will return html string
    * }
    * ```
-   * @param {Boolean} useJs By default use html. Default is false.
    * @return {String} The code of client helper.
    * @example
    * When the client code is loaded on the browser, you can use
@@ -77,20 +77,17 @@ _.extend(kit, fs, yutils, {
    * );
    * ```
    */
-  browserHelper: function(opts, useJs) {
+  browserHelper: function(opts) {
     var helper, js, optsStr;
     if (opts == null) {
       opts = {};
-    }
-    if (useJs == null) {
-      useJs = false;
     }
     helper = kit.browserHelper.cache || kit.require('./browserHelper', __dirname).toString();
     optsStr = JSON.stringify(_.defaults(opts, {
       host: ''
     }));
     js = "window.nokit = (" + helper + ")(" + optsStr + ");\n";
-    if (useJs) {
+    if (opts.useJs) {
       return js;
     } else {
       return "\n\n<!-- Nokit Browser Helper -->\n<script type=\"text/javascript\">\n" + js + "\n</script>\n\n";
@@ -851,15 +848,11 @@ _.extend(kit, fs, yutils, {
       if (opts.log) {
         opts.log(str, action);
       } else {
-        try {
-          console[action](str);
-        } catch (undefined) {}
+        console[action](str);
       }
       if (opts.logTrace) {
         err = br.grey((new Error).stack).replace(/.+\n.+\n.+/, '\nStack trace:');
-        try {
-          return console.log(err);
-        } catch (undefined) {}
+        return console.log(err);
       }
     };
     if (_.isObject(msg)) {
@@ -881,9 +874,7 @@ _.extend(kit, fs, yutils, {
       }
     }
     if (action === 'error') {
-      try {
-        process.stderr.write("\u0007");
-      } catch (undefined) {}
+      process.stderr.write("\u0007");
     }
   },
 
