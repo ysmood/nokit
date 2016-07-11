@@ -2361,7 +2361,7 @@ kit.warp('src/**/*.coffee')
             proxy.select({ url: '/c' }, proxy.url({ url: 'c.com/s.js' })),
 
             proxy.select(
-                { url: //$/, method: 'GET' },
+                { url: /$/, method: 'GET' },
                 proxy.url({
                     url: 'd.com',
                     // Inject script to html page.
