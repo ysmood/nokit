@@ -64,7 +64,7 @@ module.exports = (task, option) ->
 			]
 
 	option '-g, --grep <pattern>', 'test pattern', ''
-	task 'test t', 'unit tests', (opts) ->
+	task 'test t', ['build'], 'unit tests', (opts) ->
 		kit.spawn('junit', [
 			'-r', 'coffee-script/register'
 			'-g', opts.grep

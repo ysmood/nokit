@@ -2,7 +2,7 @@ build: false
 
 environment:
   matrix:
-    - nodejs_version: "0.10"
+    - nodejs_version: "0.11"
 
 install:
   - npm install

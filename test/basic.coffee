@@ -19,6 +19,17 @@ createRandomServer = (handler, fn) ->
 		server.close()
 		Promise.reject err
 
+getPort = ->
+	proxy = kit.require 'proxy'
+	app = proxy.flow()
+	port = 0
+
+	app.listen(port).then ->
+		port = app.server.address().port;
+		app.close()
+	.then ->
+		port
+
 unixSep = (p) -> p.replace /\\/g, '\/'
 
 tempPath = ->
@@ -1048,3 +1059,55 @@ module.exports = (it) ->
 			kit.request 'http://127.0.0.1:' + c.address().port
 		.then (data) ->
 			it.eq data, 'ok'
+
+	it 'noe', (after) ->
+		proxy = kit.require 'proxy'
+		defer = kit.Deferred();
+		ps = null;
+		app = proxy.flow();
+
+		after ->
+			app.close();
+			ps.kill('SIGINT')
+
+		app.push () ->
+			defer.resolve()
+
+		app.listen(0).then ->
+			ps = kit.spawn('bin/noe.js', [
+				'--',
+				'test/fixtures/noe/index.js'
+			]).process
+
+			kit.sleep(1000).then ->
+				kit.outputFile 'test/fixtures/noe/index.js', """
+					var kit = require('../../../dist/kit');
+					kit.request('http://127.0.0.1:' + #{app.server.address().port})
+				"""
+
+		defer.promise
+
+	it 'nos', (after) ->
+		proxy = kit.require 'proxy'
+		defer = kit.Deferred();
+		ps = null;
+
+		after ->
+			ps.kill('SIGINT')
+
+		getPort().then (port) ->
+			ps = kit.spawn('bin/nos.js', [
+				'-p', port
+				'--openBrowser', 'off'
+				'test/fixtures'
+			]).process
+
+			kit.sleep 1000, port
+		.then (port) ->
+			kit.request("http://127.0.0.1:#{port}/page").then (body) ->
+				it.eq(body.indexOf('nokit') > 0, true)
+			.then ->
+				kit.request("http://127.0.0.1:#{port}/page/main.js").then (body) ->
+					defer.resolve it.eq(body.indexOf('ok') > 0, true)
+
+		defer.promise
