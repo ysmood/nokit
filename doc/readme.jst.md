@@ -14,7 +14,7 @@ It's one of the core lib of [nobone](https://github.com/ysmood/nobone).
 
 - All async functions will return promise.
 - All functions are highly lazy designed, minimum boot time.
-- Test on Node v0.10+ on Mac, Linux and Windows.
+- Test on Node v0.11+ on Mac, Linux and Windows.
 - Light weight and self-reference.
 
 # Installation
@@ -125,7 +125,7 @@ can do with it.
 ### The `nos` Comamnd
 
 `nos` is a tool to statically serve a folder. Run `nos -h` to see what you
-can do with it. To install optional dependencies with it `npm i nokit serve-index serve-static`
+can do with it.
 
 # Changelog
 
