@@ -16,8 +16,8 @@ cmder
 .parse(process.argv);
 
 Promise.resolve().then(function () {
-    var serveIndex = kit.require('serve-index', __dirname);
-    var serveStatic = kit.require('serve-static', __dirname);
+    var serveIndex = kit.requireOptional('serve-index', __dirname);
+    var serveStatic = kit.requireOptional('serve-static', __dirname);
     var proxy = kit.require('proxy');
 
     var app = proxy.flow();

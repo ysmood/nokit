@@ -636,6 +636,14 @@ _.extend kit, fs, yutils,
         process.env.NODE_ENV == 'development'
 
     ###*
+     * Detect whether the path is under the global module.
+     * @param  {String}  dir Default value is the `__dirname`
+     * @return {Boolean}
+    ###
+    isGlobalMoudle: (dir = __dirname) ->
+        _.startsWith dir, kit.path.resolve(process.execPath, '../../')
+
+    ###*
      * Nokit use it to check the running mode of the app.
      * Overwrite it if you want to control the check logic.
      * By default it returns the `rocess.env.NODE_ENV == 'production'`.
@@ -1487,10 +1495,12 @@ _.extend kit, fs, yutils,
         catch err
             throw err if err.source == 'nokit'
 
+            flag = if kit.isGlobalMoudle(dir) then '-g' else '-S'
+
             br = kit.require 'brush'
             kit.err(
                 (br.red "Optional module required. Please " +
-                br.green "'npm install -S #{name}'" + br.red " first.\n") +
+                br.green "'npm install #{flag} #{name}'" + br.red " first.\n") +
                 err.stack
             , { isShowTime: false })
             process.exit 1
