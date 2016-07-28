@@ -125,7 +125,7 @@ can do with it.
 ### The `nos` Comamnd
 
 `nos` is a tool to statically serve a folder. Run `nos -h` to see what you
-can do with it.
+can do with it. To install optional dependencies with it `npm i nokit serve-index serve-static`
 
 # Changelog
 
