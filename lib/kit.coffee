@@ -641,7 +641,11 @@ _.extend kit, fs, yutils,
      * @return {Boolean}
     ###
     isGlobalMoudle: (dir = __dirname) ->
-        _.startsWith dir, kit.path.resolve(process.execPath, '../../')
+        if !kit.isGlobalMoudle.prefix
+            { execSync } = kit.require 'child_process', __dirname
+            kit.isGlobalMoudle.prefix = execSync 'npm config get prefix'
+
+        _.startsWith dir, kit.isGlobalMoudle.prefix
 
     ###*
      * Nokit use it to check the running mode of the app.
@@ -1493,14 +1497,17 @@ _.extend kit, fs, yutils,
 
             kit.require name, dir
         catch err
-            throw err if err.source == 'nokit'
+            if kit.isGlobalMoudle(dir)
+                { spawnSync } = kit.require 'child_process', __dirname
+                spawnSync 'npm', ['i', '-g', key], { stdio: 'inherit' }
+                return kit.require name, dir
 
-            flag = if kit.isGlobalMoudle(dir) then '-g' else '-S'
+            throw err if err.source == 'nokit'
 
             br = kit.require 'brush'
             kit.err(
                 (br.red "Optional module required. Please " +
-                br.green "'npm install #{flag} #{name}'" + br.red " first.\n") +
+                br.green "'npm install -S #{name}'" + br.red " first.\n") +
                 err.stack
             , { isShowTime: false })
             process.exit 1
