@@ -1074,7 +1074,8 @@ module.exports = (it) ->
 			defer.resolve()
 
 		app.listen(0).then ->
-			ps = kit.spawn('bin/noe.js', [
+			ps = kit.spawn('node', [
+				'bin/noe.js'
 				'--',
 				'test/fixtures/noe/index.js'
 			]).process
@@ -1096,7 +1097,8 @@ module.exports = (it) ->
 			ps.kill('SIGINT')
 
 		getPort().then (port) ->
-			ps = kit.spawn('bin/nos.js', [
+			ps = kit.spawn('node', [
+				'bin/nos.js'
 				'-p', port
 				'--openBrowser', 'off'
 				'test/fixtures'
