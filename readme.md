@@ -32,17 +32,20 @@ Nokit has provided a cli tool like GNU Make. If you install it globally like thi
 ### The `no` Comamnd & nofile
 
 Create a `nofile.js` (or `.coffee`, `.ts`, etc) at your current working directory
-or any of its parents directory. The syntax of `nofile` is almost the same as the Cakefile, only the `option`'s first argument is slightly changed.
+or any of its parents directory.
 
 Assume your file content is:
 
 ```js
-// nofile-pre-require: babel-register
-
 var kit = require('nokit');
 
+/**
+ * Expose a task definition function.
+ * @param  {Function} task `(name, dependencies, description, isSequential, callback) => Function`
+ * @param  {Function} option `(name, description, default || callback) => option`
+ */
 module.exports = (task, option) => {
-    option('-w, --hello [world]', 'Just a test option');
+    option('-w, --hello [world]', 'Just a test option', 'world');
 
     // Define a default task, and it depends on the "clean" task.
     task('default', ['clean'], 'This is a comment info', (opts) => {
@@ -70,7 +73,7 @@ module.exports = (task, option) => {
     });
 
     task('sequential', ['clean', 'build'], true, () => {
-        kit.log('Run clean and build non-concurrently.');
+        kit.log('Run clean and build sequentially.');
     });
 };
 ```
@@ -81,6 +84,10 @@ name, `no` will try to call the `default` task directly.
 You can run `no -h` to display help info.
 
 Call `no build` or `no b` to run the `build` task.
+
+Call with option: `no build -w Life`.
+
+Call `no a b c` to run task `a`, `b`, `c` sequentially.
 
 For real world example, just see the [nofile](nofile.coffee?source) that nokit is using.
 
@@ -112,6 +119,12 @@ Then add comment:
 ### The `noe` Comamnd
 
 `noe` is a dev tool to run / watch / reload program automatically. Run `noe -h` to see what you
+can do with it.
+
+
+### The `nos` Comamnd
+
+`nos` is a tool to statically serve a folder. Run `nos -h` to see what you
 can do with it.
 
 # Changelog

@@ -7,7 +7,7 @@ var _ = kit._;
 var cmder = require('commander');
 
 cmder
-    .description('a tool for static server a folder')
+    .description('a tool to statically serve a folder')
     .usage('[options] [path]')
     .option('-p, --port <num>', 'port of the service [8080]', 8080)
     .option('--host <str>', 'host of the service [0.0.0.0]', '0.0.0.0')
