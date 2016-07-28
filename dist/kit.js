@@ -734,7 +734,7 @@ _.extend(kit, fs, yutils, {
     }
     if (!kit.isGlobalMoudle.prefix) {
       execSync = kit.require('child_process', __dirname).execSync;
-      kit.isGlobalMoudle.prefix = execSync('npm config get prefix');
+      kit.isGlobalMoudle.prefix = execSync('npm config get prefix').toString().trim();
     }
     return _.startsWith(dir, kit.isGlobalMoudle.prefix);
   },
@@ -1621,7 +1621,7 @@ _.extend(kit, fs, yutils, {
    * @return {Any} The required package.
    */
   requireOptional: function(name, dir, semver) {
-    var br, err, error, info, key, spawnSync, version;
+    var br, err, error, info, key, spawnSync, version, whichSync;
     key = semver ? name + '@' + semver : name;
     if (kit.requireCache[key]) {
       return kit.requireCache[key];
@@ -1641,7 +1641,8 @@ _.extend(kit, fs, yutils, {
       err = error;
       if (kit.isGlobalMoudle(dir)) {
         spawnSync = kit.require('child_process', __dirname).spawnSync;
-        spawnSync('npm', ['i', '-g', key], {
+        whichSync = kit.require('whichSync');
+        spawnSync(whichSync('npm'), ['i', '-g', key], {
           stdio: 'inherit'
         });
         return kit.require(name, dir);
