@@ -3,7 +3,6 @@ http = require 'http'
 net = require 'net'
 { _, Promise } = kit
 kit.require 'drives'
-regPattern = new RegExp process.argv[2]
 
 createRandomServer = (handler, fn) ->
 	server = http.createServer handler
@@ -33,7 +32,7 @@ getPort = ->
 unixSep = (p) -> p.replace /\\/g, '\/'
 
 tempPath = ->
-    'test/temp/' + Date.now() + (Math.random() + '').slice(2);
+    'test/temp/' + Date.now() + (Math.random() + '').slice(2)
 
 kit.removeSync('test/temp');
 kit.mkdirsSync('test/temp');
@@ -1065,6 +1064,7 @@ module.exports = (it) ->
 		defer = kit.Deferred();
 		ps = null;
 		app = proxy.flow();
+		path = tempPath() + '.js'
 
 		after ->
 			app.close();
@@ -1073,16 +1073,18 @@ module.exports = (it) ->
 		app.push () ->
 			defer.resolve()
 
+		kit.outputFileSync path, ''
+
 		app.listen(0).then ->
 			ps = kit.spawn('node', [
 				'bin/noe.js'
 				'--',
-				'test/fixtures/noe/index.js'
+				path
 			]).process
 
 			kit.sleep(1000).then ->
-				kit.outputFile 'test/fixtures/noe/index.js', """
-					var kit = require('../../../dist/kit');
+				kit.outputFile path, """
+					var kit = require('../../dist/kit');
 					kit.request('http://127.0.0.1:' + #{app.server.address().port})
 				"""
 
