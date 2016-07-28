@@ -643,7 +643,7 @@ _.extend kit, fs, yutils,
     isGlobalMoudle: (dir = __dirname) ->
         if !kit.isGlobalMoudle.prefix
             { execSync } = kit.require 'child_process', __dirname
-            kit.isGlobalMoudle.prefix = execSync 'npm config get prefix'
+            kit.isGlobalMoudle.prefix = execSync('npm config get prefix').toString().trim()
 
         _.startsWith dir, kit.isGlobalMoudle.prefix
 
