@@ -728,10 +728,15 @@ _.extend(kit, fs, yutils, {
    * @return {Boolean}
    */
   isGlobalMoudle: function(dir) {
+    var execSync;
     if (dir == null) {
       dir = __dirname;
     }
-    return _.startsWith(dir, kit.path.resolve(process.execPath, '../../'));
+    if (!kit.isGlobalMoudle.prefix) {
+      execSync = kit.require('child_process', __dirname).execSync;
+      kit.isGlobalMoudle.prefix = execSync('npm config get prefix');
+    }
+    return _.startsWith(dir, kit.isGlobalMoudle.prefix);
   },
 
   /**
@@ -1616,7 +1621,7 @@ _.extend(kit, fs, yutils, {
    * @return {Any} The required package.
    */
   requireOptional: function(name, dir, semver) {
-    var br, err, error, flag, info, key, version;
+    var br, err, error, info, key, spawnSync, version;
     key = semver ? name + '@' + semver : name;
     if (kit.requireCache[key]) {
       return kit.requireCache[key];
@@ -1634,12 +1639,18 @@ _.extend(kit, fs, yutils, {
       return kit.require(name, dir);
     } catch (error) {
       err = error;
+      if (kit.isGlobalMoudle(dir)) {
+        spawnSync = kit.require('child_process', __dirname).spawnSync;
+        spawnSync('npm', ['i', '-g', key], {
+          stdio: 'inherit'
+        });
+        return kit.require(name, dir);
+      }
       if (err.source === 'nokit') {
         throw err;
       }
-      flag = kit.isGlobalMoudle(dir) ? '-g' : '-S';
       br = kit.require('brush');
-      kit.err((br.red("Optional module required. Please " + br.green(("'npm install " + flag + " " + name + "'") + br.red(" first.\n")))) + err.stack, {
+      kit.err((br.red("Optional module required. Please " + br.green(("'npm install -S " + name + "'") + br.red(" first.\n")))) + err.stack, {
         isShowTime: false
       });
       return process.exit(1);

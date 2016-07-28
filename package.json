@@ -58,6 +58,7 @@
     "lodash-cli": "4.13.1",
     "path-to-regexp": "1.5.3",
     "send": "0.14.1",
+    "serve-index": "1.8.0",
     "stylus": "0.54.5",
     "throttle": "1.0.3",
     "uglify-js": "2.7.0"
