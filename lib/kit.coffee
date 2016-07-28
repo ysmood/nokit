@@ -1499,7 +1499,8 @@ _.extend kit, fs, yutils,
         catch err
             if kit.isGlobalMoudle(dir)
                 { spawnSync } = kit.require 'child_process', __dirname
-                spawnSync 'npm', ['i', '-g', key], { stdio: 'inherit' }
+                whichSync = kit.require 'whichSync'
+                spawnSync whichSync('npm'), ['i', '-g', key], { stdio: 'inherit' }
                 return kit.require name, dir
 
             throw err if err.source == 'nokit'
