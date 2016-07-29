@@ -745,7 +745,7 @@ _.extend kit, fs, yutils,
 
         if opts.isShowTime
             time = new Date()
-            timeDelta = br.magenta(+time - +kit.lastLogTime) + 'ms'
+            timeDelta = br.grey(+time - +kit.lastLogTime + 'ms')
             kit.lastLogTime = time
             time = br.grey [
                 [

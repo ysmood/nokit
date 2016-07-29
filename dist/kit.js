@@ -86,7 +86,7 @@ _.extend(kit, fs, yutils, {
     optsStr = JSON.stringify(_.defaults(opts, {
       host: ''
     }));
-    js = "window.nokit = (" + helper + ")(" + optsStr + ");\n";
+    js = "if (!window.nokit) window.nokit = (" + helper + ")(" + optsStr + ");\n";
     if (opts.useJs) {
       return js;
     } else {
@@ -844,7 +844,7 @@ _.extend(kit, fs, yutils, {
     }
     if (opts.isShowTime) {
       time = new Date();
-      timeDelta = br.magenta(+time - +kit.lastLogTime) + 'ms';
+      timeDelta = br.grey(+time - +kit.lastLogTime + 'ms');
       kit.lastLogTime = time;
       time = br.grey([
         [[time.getFullYear(), 4, '0'], [time.getMonth() + 1, 2, '0'], [time.getDate(), 2, '0']].map(function(e) {
