@@ -46,9 +46,9 @@ Promise.resolve().then(function () {
                     return kit.readFile(path)
                     .catch(function () {
                         path = kit.path.join(path, 'index.html');
-                        devHelper.watch(kit.path.relative(cwd, path));
                         return kit.readFile(path);
                     }).then(function (html) {
+                        devHelper.watch(kit.path.relative(cwd, path));
                         $.body = html + devHelper.browserHelper;
                     }, function () {
                         return $.next();

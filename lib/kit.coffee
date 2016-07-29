@@ -79,7 +79,7 @@ _.extend kit, fs, yutils,
         })
 
         js = """
-            window.nokit = (#{helper})(#{optsStr});\n
+            if (!window.nokit) window.nokit = (#{helper})(#{optsStr});\n
         """
 
         if opts.useJs
