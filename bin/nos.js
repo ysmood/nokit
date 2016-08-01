@@ -6,6 +6,7 @@ var Promise = kit.Promise;
 var _ = kit._;
 var cmder = require('commander');
 var htmlExtList = ['', '.htm', '.html'];
+var proxy = kit.require('proxy');
 
 cmder
     .description('a tool to statically serve a folder')
@@ -18,13 +19,12 @@ cmder
     .option('--production', 'start as production mode, default is development mode')
 .parse(process.argv);
 
+var app = proxy.flow();
+
 Promise.resolve().then(function () {
     kit.requireOptional('send', __dirname, '^0.14.0');
     var serveIndex = kit.requireOptional('serve-index', __dirname, '^1.8.0');
-    var proxy = kit.require('proxy');
     var cwd = process.cwd();
-
-    var app = proxy.flow();
 
     var dir = cmder.args[0] || '.';
     var staticOpts, indexOpts;
@@ -86,9 +86,9 @@ Promise.resolve().then(function () {
         );
     }
 
-    return app.listen(cmder.port, cmder.host);
+    return app.listen(+cmder.port, cmder.host);
 }).then(function () {
-    var url = 'http://127.0.0.1:' + cmder.port;
+    var url = 'http://127.0.0.1:' + app.server.address().port;
     kit.logs('Serve: ' + br.cyan(url));
 
     if (cmder.openBrowser === 'on')
