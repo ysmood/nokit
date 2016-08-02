@@ -7,6 +7,7 @@ var _ = kit._;
 var cmder = require('commander');
 var htmlExtList = ['', '.htm', '.html'];
 var proxy = kit.require('proxy');
+var indexList = 'index.html';
 
 cmder
     .description('a tool to statically serve a folder')
@@ -15,7 +16,12 @@ cmder
     .option('--host <str>', 'host of the service [0.0.0.0]', '0.0.0.0')
     .option('-t, --proxyTo <host:port>', 'proxy the rest traffic to the specific host')
     .option('--openBrowser <on|off>', 'auto open browser [on]', 'on')
-
+    .option('-i, --index <name>', 'the index name, you can provide multiple of it [index.html]', function (p) {
+        if (_.isString(indexList))
+            indexList = [p];
+        else
+            indexList.push(p);
+    })
     .option('--production', 'start as production mode, default is development mode')
 .parse(process.argv);
 
@@ -45,8 +51,12 @@ Promise.resolve().then(function () {
 
                     return kit.readFile(path)
                     .catch(function () {
-                        path = kit.path.join(path, 'index.html');
-                        return kit.readFile(path);
+                        return [].concat(indexList).reduce(function (promise, index) {
+                            return promise.catch(function () {
+                                path = kit.path.join(path, index);
+                                return kit.readFile(path);
+                            })
+                        }, Promise.reject());
                     }).then(function (html) {
                         devHelper.watch(kit.path.relative(cwd, path));
                         $.body = html + devHelper.browserHelper;
@@ -61,6 +71,7 @@ Promise.resolve().then(function () {
 
         staticOpts = {
             dotfiles: 'allow',
+            index: indexList,
             onFile: function (path) {
                 devHelper.watch(kit.path.relative(cwd, path));
             }
