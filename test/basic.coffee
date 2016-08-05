@@ -903,9 +903,9 @@ module.exports = (it) ->
 		frames.push new Buffer(1024 * 128)
 		frames.push new Buffer(37)
 		frames.push new Buffer(10)
-		frames.push new Buffer(0)
+		frames.push new Buffer(1)
 		frames.push new Buffer(1024 * 64) # The max tcp package size
-		frames.push new Buffer(0)
+		frames.push new Buffer(1)
 
 		new Promise (resolve, reject) ->
 			server = net.createServer (sock) ->

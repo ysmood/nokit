@@ -2,41 +2,29 @@
 kit = require("../lib/kit");
 https = require('https');
 proxy = kit.require("proxy");
+net = require('net');
+stream = require('stream')
 flow = proxy.flow;
 async = kit.async;
-
-opts = {
-    key: kit.readFileSync('ca/server/key.pem', 'utf8')
-    cert: kit.readFileSync('ca/server/cert.pem', 'utf8')
-}
-
-routes = [
-    ($) ->
-        return $.body = 'ok';
-
-        kit.logs("https://#{$.req.headers.host}#{$.req.url}")
-        kit.request({
-            url: "https://#{$.req.headers.host}#{$.req.url}"
-            headers: $.req.headers
-            reqData: $.req
-            resPipe: $.res
-        })
-        kit.never()
-    proxy.url({
-        protocol: 'https:'
-    })
-]
-
-https.createServer(opts, flow(routes)).listen(8123);
+_ = kit._
 
 
-app = flow();
+trans = new stream.Duplex({
+    read: (size) ->
+        this.push('hey')
 
-app.push(proxy.url())
+    write: (chunk, encoding, cb) ->
+        console.log 'write', chunk.length
+        cb(null, chunk)
+})
 
-app.server.on('connect', kit.proxy.connect({
-    host: '127.0.0.1',
-    port: 8123
-}));
+server = net.createServer (sock) ->
+    sock.write 'ok'
 
-app.listen(8081);
+server.listen 0, ->
+    sock = net.connect server.address().port, '127.0.0.1', ->
+        trans.pipe sock
+        sock.pipe trans
+
+        trans.on 'data', (data) ->
+            kit.logs 'data', data.length
