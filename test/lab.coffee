@@ -4,27 +4,28 @@ https = require('https');
 proxy = kit.require("proxy");
 net = require('net');
 stream = require('stream')
+crypto = require 'crypto'
 flow = proxy.flow;
 async = kit.async;
 _ = kit._
 
+algorithm = 'rc4'
 
-trans = new stream.Duplex({
-    read: (size) ->
-        this.push('hey')
+server = net.createServer (c) ->
+    cipher = crypto.createCipher(algorithm, '123456')
+    decipher = crypto.createDecipher(algorithm, '123456')
 
-    write: (chunk, encoding, cb) ->
-        console.log 'write', chunk.length
-        cb(null, chunk)
-})
+    c.pipe(decipher).on 'data', (c) ->
+        kit.logs c + ''
 
-server = net.createServer (sock) ->
-    sock.write 'ok'
+    cipher.pipe(c)
 
-server.listen 0, ->
-    sock = net.connect server.address().port, '127.0.0.1', ->
-        trans.pipe sock
-        sock.pipe trans
+server.listen 8080, ->
+    client = net.connect 8080, ->
+        cipher = crypto.createCipher(algorithm, '123456')
+        decipher = crypto.createDecipher(algorithm, '123456')
 
-        trans.on 'data', (data) ->
-            kit.logs 'data', data.length
+        cipher.pipe client
+
+        # cipher.pipe client
+        cipher.write 'new Buffer(64)asdfkjasldfasldfjsalfjasldfasldfjsalkfjsldfjsldfalsdkfalsdfjsakldf'

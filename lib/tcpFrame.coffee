@@ -57,6 +57,11 @@ module.exports = (sock, opts = {}) ->
     sock.setEncoding = (encoding) -> readEncoding = encoding
     sock.setDefaultEncoding = (encoding) -> writeEncoding = encoding
 
+    { cipher, decipher } = opts
+
+    if cipher
+        cipher.pipe sock
+
     sock.writeFrame = (data, encoding, cb) ->
         if typeof encoding == 'function'
             cb = encoding
@@ -69,7 +74,12 @@ module.exports = (sock, opts = {}) ->
 
         sizeBuf = genSizeBuf data.length
 
-        sock.write Buffer.concat([sizeBuf, data]), cb
+        if (cipher)
+            cipher.write sizeBuf, cb
+            cipher.write data, cb
+        else
+            sock.write sizeBuf, cb
+            sock.write data, cb
 
     buf = new Buffer 0
     msgSize = 0 # byte
@@ -123,4 +133,7 @@ module.exports = (sock, opts = {}) ->
     if opts.head && opts.head.length > 0
         frameEvent opts.head
 
-    sock.on 'data', frameEvent
+    if decipher
+        sock.pipe(decipher).on 'data', frameEvent
+    else
+        sock.on 'data', frameEvent

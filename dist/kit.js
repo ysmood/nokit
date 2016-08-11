@@ -985,9 +985,10 @@ _.extend(kit, fs, yutils, {
    * ```
    */
   monitorApp: function(opts) {
-    var br, childPromise, child_process, start, stop, watch, watchPromise, watchedList, watcher;
+    var br, childPromise, child_process, start, stop, treeKill, watch, watchPromise, watchedList, watcher;
     br = kit.require('brush');
     child_process = require('child_process');
+    treeKill = kit.require('treeKill');
     _.defaults(opts, {
       bin: 'node',
       args: ['index.js'],
@@ -1048,20 +1049,13 @@ _.extend(kit, fs, yutils, {
     watcher = _.debounce(function(path) {
       opts.onRestart(path);
       childPromise["catch"](function() {}).then(start);
-      try {
-        child_process.execSync('pkill -P ' + childPromise.process.pid, {
-          stdio: 'ignore'
-        });
-      } catch (undefined) {}
-      return childPromise.process.kill('SIGINT');
+      return treeKill(childPromise.process.pid, 'SIGINT', _.noop);
     }, 50);
-    stop = function() {
-      try {
-        child_process.execSync('pkill -P ' + childPromise.process.pid, {
-          stdio: 'ignore'
-        });
-      } catch (undefined) {}
-      childPromise.process.kill('SIGINT');
+    stop = function(sig) {
+      if (sig == null) {
+        sig = 'SIGINT';
+      }
+      treeKill(childPromise.process.pid, sig, _.noop);
       return watchPromise.then(function() {
         var j, len, results, w;
         results = [];
@@ -1091,7 +1085,7 @@ _.extend(kit, fs, yutils, {
       });
     };
     process.on('SIGINT', function() {
-      stop();
+      stop('SIGKILL');
       return process.exit();
     });
     watchPromise = opts.watchRoot ? kit.watchDir(opts.watchRoot, {
@@ -2266,6 +2260,7 @@ _.extend(kit, fs, yutils, {
       }
     };
   },
+  treeKill: null,
 
   /**
    * The `url` module of node.

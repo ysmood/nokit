@@ -59,7 +59,7 @@ getWeight = function(n) {
 };
 
 module.exports = function(sock, opts) {
-  var buf, frameEvent, headerSize, isContinue, msgSize, parseHeader, readEncoding, writeEncoding;
+  var buf, cipher, decipher, frameEvent, headerSize, isContinue, msgSize, parseHeader, readEncoding, writeEncoding;
   if (opts == null) {
     opts = {};
   }
@@ -71,6 +71,10 @@ module.exports = function(sock, opts) {
   sock.setDefaultEncoding = function(encoding) {
     return writeEncoding = encoding;
   };
+  cipher = opts.cipher, decipher = opts.decipher;
+  if (cipher) {
+    cipher.pipe(sock);
+  }
   sock.writeFrame = function(data, encoding, cb) {
     var sizeBuf;
     if (typeof encoding === 'function') {
@@ -84,7 +88,13 @@ module.exports = function(sock, opts) {
       data = new Buffer(data, encoding);
     }
     sizeBuf = genSizeBuf(data.length);
-    return sock.write(Buffer.concat([sizeBuf, data]), cb);
+    if (cipher) {
+      cipher.write(sizeBuf, cb);
+      return cipher.write(data, cb);
+    } else {
+      sock.write(sizeBuf, cb);
+      return sock.write(data, cb);
+    }
   };
   buf = new Buffer(0);
   msgSize = 0;
@@ -127,5 +137,9 @@ module.exports = function(sock, opts) {
   if (opts.head && opts.head.length > 0) {
     frameEvent(opts.head);
   }
-  return sock.on('data', frameEvent);
+  if (decipher) {
+    return sock.pipe(decipher).on('data', frameEvent);
+  } else {
+    return sock.on('data', frameEvent);
+  }
 };

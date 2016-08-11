@@ -884,6 +884,8 @@ _.extend kit, fs, yutils,
     monitorApp: (opts) ->
         br = kit.require 'brush'
         child_process = require 'child_process'
+        treeKill = kit.require 'treeKill'
+
         _.defaults opts, {
             bin: 'node'
             args: ['index.js']
@@ -944,20 +946,11 @@ _.extend kit, fs, yutils,
             opts.onRestart path
 
             childPromise.catch(->).then start
-            try
-                child_process
-                .execSync 'pkill -P ' + childPromise.process.pid, {
-                    stdio: 'ignore'
-                }
-            childPromise.process.kill 'SIGINT'
+            treeKill childPromise.process.pid, 'SIGINT', _.noop
         , 50
 
-        stop = ->
-            try
-                child_process.execSync 'pkill -P ' + childPromise.process.pid, {
-                    stdio: 'ignore'
-                }
-            childPromise.process.kill 'SIGINT'
+        stop = (sig = 'SIGINT') ->
+            treeKill childPromise.process.pid, sig, _.noop
 
             watchPromise.then ->
                 kit.unwatchFile w.path, w.handler for w in watchedList
@@ -974,7 +967,8 @@ _.extend kit, fs, yutils,
                 watchedList = watchedList.concat ws
 
         process.on 'SIGINT', ->
-            stop()
+            # it will unconditionally terminate Node.js on all platforms
+            stop 'SIGKILL'
             process.exit()
 
         watchPromise = if opts.watchRoot
@@ -2055,6 +2049,8 @@ _.extend kit, fs, yutils,
             else
                 Promise.all names.map (name) ->
                     task(name) opts.init
+
+    treeKill: null
 
     ###*
      * The `url` module of node.
