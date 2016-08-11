@@ -1,42 +1,65 @@
-var _, genSizeBuf, getLen, headerSize, weightList;
+var genSizeBuf, getWeight, weightList;
 
-_ = require('./kit')._;
+weightList = [0, 1, 2, 3, 4, 5].map(function(i) {
+  return Math.pow(2, i * 7);
+});
 
-weightList = [Math.pow(2, 0), Math.pow(2, 8), Math.pow(2, 16), Math.pow(2, 24)];
 
-headerSize = 4;
-
-getLen = function(buf) {
-  var i, len;
-  i = 0;
-  len = 0;
-  while (i < headerSize) {
-    len += buf[i] * weightList[i];
-    i++;
-  }
-  return len;
-};
+/**
+ * The algorithm is supports nearly infinity size message.
+ * Each message has two parts, "header" and "body":
+ *
+ * | header | body |
+ *
+ * The size of the header is dynamically decided by the header itself.
+ * Each byte (8 bits) in the header has two parts, "continue" and "fraction":
+ *
+ * | continue |   fraction    |
+ * |    0     | 1 2 3 4 5 6 7 |
+ *
+ * If the "continue" is 0, the header ends.
+ * If the "continue" is 1, then the followed byte should also be part of the header.
+ *
+ * Sum all the fractions together, we will get the size of the message.
+ *
+ * For example:
+ *
+ * |                      header                         | body |
+ * | continue |   fraction    | continue |   fraction    |      |
+ * |    0     | 1 0 0 0 0 0 0 |    1     | 1 1 0 1 0 0 0 | ...  |
+ *
+ *  So the size of the body is b10000001101000 bytes.
+ *
+ * @param  {Number} len
+ * @return {Buffer}
+ */
 
 genSizeBuf = function(len) {
-  var digit, i, sizeBuf;
-  sizeBuf = new Buffer(headerSize);
+  var digit, sizeList;
+  sizeList = [];
   digit = 0;
-  i = 0;
-  while (i < headerSize) {
+  while (len > 0) {
+    digit = len % 128;
+    len = (len - digit) / 128;
     if (len > 0) {
-      digit = len % 256;
-      len = (len - digit) / 256;
-      sizeBuf[i] = digit;
+      sizeList.push(digit | 0x80);
     } else {
-      sizeBuf[i] = 0;
+      sizeList.push(digit);
     }
-    i++;
   }
-  return sizeBuf;
+  return new Buffer(sizeList);
+};
+
+getWeight = function(n) {
+  if (n < weightList.length) {
+    return weightList[n];
+  } else {
+    return Math.pow(2, n * 7);
+  }
 };
 
 module.exports = function(sock, opts) {
-  var buf, frameEvent, readEncoding, writeEncoding;
+  var buf, frameEvent, headerSize, isContinue, msgSize, parseHeader, readEncoding, writeEncoding;
   if (opts == null) {
     opts = {};
   }
@@ -50,7 +73,7 @@ module.exports = function(sock, opts) {
   };
   sock.writeFrame = function(data, encoding, cb) {
     var sizeBuf;
-    if (_.isFunction(encoding)) {
+    if (typeof encoding === 'function') {
       cb = encoding;
       encoding = void 0;
     }
@@ -64,19 +87,38 @@ module.exports = function(sock, opts) {
     return sock.write(Buffer.concat([sizeBuf, data]), cb);
   };
   buf = new Buffer(0);
+  msgSize = 0;
+  headerSize = 0;
+  isContinue = true;
+  parseHeader = function() {
+    var digit;
+    while (isContinue && headerSize < buf.length) {
+      digit = buf[headerSize];
+      isContinue = (digit & 0x80) === 128;
+      msgSize += (digit & 0x7f) * getWeight(headerSize);
+      headerSize++;
+    }
+  };
   frameEvent = function(chunk) {
-    var len;
     buf = Buffer.concat([buf, chunk]);
-    while (buf.length >= headerSize) {
-      len = getLen(buf);
-      if (buf.length >= len + headerSize) {
-        buf = buf.slice(headerSize);
-        if (readEncoding) {
-          sock.emit('frame', buf.slice(0, len).toString(readEncoding));
-        } else {
-          sock.emit('frame', buf.slice(0, len));
-        }
-        buf = buf.slice(len);
+    if (buf.length > 0) {
+      parseHeader();
+    } else {
+      return;
+    }
+    while (buf.length >= msgSize + headerSize) {
+      buf = buf.slice(headerSize);
+      if (readEncoding) {
+        sock.emit('frame', buf.slice(0, msgSize).toString(readEncoding));
+      } else {
+        sock.emit('frame', buf.slice(0, msgSize));
+      }
+      buf = buf.slice(msgSize);
+      msgSize = 0;
+      headerSize = 0;
+      isContinue = true;
+      if (buf.length > 0) {
+        parseHeader();
       } else {
         return;
       }

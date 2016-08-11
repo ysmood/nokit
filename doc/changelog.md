@@ -1,5 +1,9 @@
 # Changelog
 
+- v0.22
+
+  - **API CHANGE** tcpFrame protocol changed, not backward compatible.
+
 - v0.21
 
   - upd: deps
