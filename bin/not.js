@@ -24,6 +24,10 @@ cmder
     .option('--algorithm <name>', 'the algorithm to secure the transport layer [rc4]', 'rc4')
 .parse(process.argv);
 
+// TODO: fix
+// Because of the crypto padding issue, only rc4 is supported
+cmder.algorithm = 'rc4';
+
 function encode (obj) {
     return msgpack.encode(obj);
 }
