@@ -111,9 +111,16 @@ function runServer () {
         sock.on('close', function () {
             if (name === undefined) return;
 
-            kit.logs('client disconnected:', name);
+            kit.logs('client closed:', name);
 
             rmClient(name);
+
+            for (var k in clientList) {
+                clientList[k].writeFrame(encode({
+                    action: 'clientClosed',
+                    name: name
+                }))
+            }
         });
     }
 
@@ -131,14 +138,10 @@ function runServer () {
 function runClient () {
     var conList = {};
 
-    // keep track of the relation of conId and remote client id.
-    var remoteList = {};
-
     function endCon (id) {
         if (id in conList) {
-            var con = conList[id];
+            conList[id].end();
             delete conList[id];
-            con.end();
         }
     }
 
@@ -166,6 +169,8 @@ function runClient () {
             var toCon = net.connect(cmder.xport, function () {
                 toCon.write(decipher.update(cmd.data));
             });
+
+            toCon.nameFrom = nameFrom;
 
             toCon.on('data', function (data) {
                 client.writeFrame(encode({
@@ -252,6 +257,18 @@ function runClient () {
             case 'error':
                 endCon(cmd.conId);
                 kit.errs('client socket error: ' + cmd.conId);
+                break;
+
+            case 'clientClosed':
+                kit.logs('client closed:', cmd.name);
+
+                // clean up the connections left
+                for (var k in conList) {
+                    if (conList[k].nameFrom === cmd.name) {
+                        conList[k].end();
+                        delete conList[k];
+                    }
+                }
                 break;
 
             default:
