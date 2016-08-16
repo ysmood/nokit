@@ -14,8 +14,8 @@ cmder
     .description('a tcp tunnel tool')
     .usage('[options]')
     .option('-x, --xport <port>', 'the port to expose [8080]', 8080)
-    .option('-t, --token <token>', 'the token of current client')
-    .option('-o, --targetToken <token>', 'the token of target client')
+    .option('-n, --name <name>', 'the name of current client')
+    .option('-t, --targetName <name>', 'the name of target client')
     .option('-p, --port <port>', 'the port to listen to and the port to forward to [7000]', 7000)
     .option('-s, --server', 'start as tunnel server')
     .option('--host <host>', 'the host of the tunnel server [0.0.0.0]', '0.0.0.0')
@@ -44,20 +44,17 @@ function runServer () {
     var clientList = {};
 
     function addClient (sock) {
-        tcpFrame(sock, {
-            cipher: crypto.createCipher(cmder.algorithm, new Buffer(cmder.key)),
-            decipher: crypto.createDecipher(cmder.algorithm, new Buffer(cmder.key))
-        });
+        tcpFrame(sock);
 
-        var token;
+        var name;
 
         sock.on('frame', function (cmd) {
             cmd = decode(cmd);
 
             switch (cmd.type) {
 
-            case 'token':
-                if (clientList[cmd.token]) {
+            case 'name':
+                if (clientList[cmd.name]) {
                     sock.writeFrame(encode({
                         action: 'tokenExists'
                     }));
@@ -65,10 +62,10 @@ function runServer () {
                     break;
                 }
 
-                token = cmd.token;
+                name = cmd.name;
 
-                kit.logs('client connected:', token);
-                clientList[token] = sock;
+                kit.logs('client connected');
+                clientList[name] = sock;
 
                 sock.writeFrame(encode({
                     action: 'tokenGot'
@@ -77,24 +74,24 @@ function runServer () {
 
             // {
             //  type: "to",
-            //  token: "...",
+            //  name: "...",
             //  action: "data" | "end",
             //  conId: String,
             //  data: Buffer
             // }
             case 'to':
-                targetClient = clientList[cmd.token];
+                targetClient = clientList[cmd.name];
 
                 // not equal to itself
                 if (targetClient && targetClient !== sock) {
                     targetClient.writeFrame(encode({
-                        tokenFrom: token,
+                        nameFrom: name,
                         action: cmd.action,
                         conId: cmd.conId,
                         data: cmd.data
                     }));
                 } else {
-                    kit.logs('no such client with the token');
+                    kit.logs('no such client with the name');
                 }
                 break;
 
@@ -104,24 +101,24 @@ function runServer () {
         });
 
         sock.on('error', function () {
-            if (token === undefined) return;
+            if (name === undefined) return;
 
-            kit.logs('client error:', token);
+            kit.logs('client error:', name);
 
-            rmClient(token);
+            rmClient(name);
         });
 
         sock.on('close', function () {
-            if (token === undefined) return;
+            if (name === undefined) return;
 
-            kit.logs('client disconnected:', token);
+            kit.logs('client disconnected:', name);
 
-            rmClient(token);
+            rmClient(name);
         });
     }
 
-    function rmClient (token) {
-        delete clientList[token];
+    function rmClient (name) {
+        delete clientList[name];
     }
 
     var server = net.createServer(addClient);
@@ -159,30 +156,31 @@ function runClient () {
     }
 
     var client = net.connect(cmder.hostPort, cmder.host, function () {
+        var cipher = crypto.createCipher(cmder.algorithm, new Buffer(cmder.key));
+        var decipher = crypto.createDecipher(cmder.algorithm, new Buffer(cmder.key));
 
         function addCon (cmd) {
-            var data = cmd.data;
-            var tokenFrom = cmd.tokenFrom;
+            var nameFrom = cmd.nameFrom;
             var conId = cmd.conId;
 
             var toCon = net.connect(cmder.xport, function () {
-                toCon.write(data);
+                toCon.write(decipher.update(cmd.data));
             });
 
             toCon.on('data', function (data) {
                 client.writeFrame(encode({
                     type: 'to',
-                    token: tokenFrom,
+                    name: nameFrom,
                     action: 'data',
                     conId: conId,
-                    data: data
+                    data: cipher.update(data)
                 }));
             });
 
             toCon.on('end', function () {
                 client.writeFrame(encode({
                     type: 'to',
-                    token: tokenFrom,
+                    name: nameFrom,
                     conId: conId,
                     action: 'end'
                 }));
@@ -192,7 +190,7 @@ function runClient () {
             toCon.on('close', function (had_error) {
                 client.writeFrame(encode({
                     type: 'to',
-                    token: tokenFrom,
+                    name: nameFrom,
                     conId: conId,
                     action: 'close',
                     hadError: had_error
@@ -203,7 +201,7 @@ function runClient () {
             toCon.on('error', function () {
                 client.writeFrame(encode({
                     type: 'to',
-                    token: tokenFrom,
+                    name: nameFrom,
                     conId: conId,
                     action: 'error'
                 }));
@@ -213,8 +211,8 @@ function runClient () {
         }
 
         client.writeFrame(encode({
-            type: 'token',
-            token: cmder.token || getId(8)
+            type: 'name',
+            name: cmder.name || getId(8)
         }));
 
         client.on('frame', function (cmd) {
@@ -226,7 +224,7 @@ function runClient () {
                 break;
 
             case 'tokenExists':
-                kit.errs('token exists');
+                kit.errs('name exists');
                 client.end();
                 break;
 
@@ -234,7 +232,7 @@ function runClient () {
                 var targetCon = conList[cmd.conId];
 
                 if (targetCon) {
-                    targetCon.write(cmd.data);
+                    targetCon.write(decipher.update(cmd.data));
                 } else {
                     addCon(cmd);
                 }
@@ -262,10 +260,7 @@ function runClient () {
         });
     });
 
-    tcpFrame(client, {
-        cipher: crypto.createCipher(cmder.algorithm, new Buffer(cmder.key)),
-        decipher: crypto.createDecipher(cmder.algorithm, new Buffer(cmder.key))
-    });
+    tcpFrame(client);
 
     client.on('end', function () {
         kit.logs('server end');
@@ -278,6 +273,8 @@ function runClient () {
     });
 
     var server = net.createServer(function (con) {
+        var cipher = crypto.createCipher(cmder.algorithm, new Buffer(cmder.key));
+
         var conId = getId();
 
         conList[conId] = con;
@@ -285,17 +282,17 @@ function runClient () {
         con.on('data', function (data) {
             client.writeFrame(encode({
                 type: 'to',
-                token: cmder.targetToken,
+                name: cmder.targetName,
                 action: 'data',
                 conId: conId,
-                data: data
+                data: cipher.update(data)
             }));
         });
 
         con.on('end', function () {
             client.writeFrame(encode({
                 type: 'to',
-                token: cmder.targetToken,
+                name: cmder.targetName,
                 conId: conId,
                 action: 'end'
             }));
@@ -304,7 +301,7 @@ function runClient () {
         con.on('close', function () {
             client.writeFrame(encode({
                 type: 'to',
-                token: cmder.targetToken,
+                name: cmder.targetName,
                 conId: conId,
                 action: 'close'
             }));
@@ -313,7 +310,7 @@ function runClient () {
         con.on('error', function () {
             client.writeFrame(encode({
                 type: 'to',
-                token: cmder.targetToken,
+                name: cmder.targetName,
                 conId: conId,
                 action: 'error'
             }));
@@ -322,7 +319,7 @@ function runClient () {
 
     kit.logs('expose port:', cmder.xport);
 
-    if (cmder.targetToken) {
+    if (cmder.targetName) {
         server.listen(cmder.port, function () {
             kit.logs('listen to port:', cmder.port);
         });
