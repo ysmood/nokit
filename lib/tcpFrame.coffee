@@ -56,6 +56,7 @@ module.exports = (sock, opts = {}) ->
     writeEncoding = undefined
     sock.setEncoding = (encoding) -> readEncoding = encoding
     sock.setDefaultEncoding = (encoding) -> writeEncoding = encoding
+    maxSize = opts.maxSize || 1024 * 1024 # 1MB
 
     { cipher, decipher } = opts
 
@@ -86,6 +87,11 @@ module.exports = (sock, opts = {}) ->
     headerSize = 0 # byte
     isContinue = true
 
+    reset = () ->
+        msgSize = 0
+        headerSize = 0
+        isContinue = true
+
     parseHeader = () ->
         while isContinue && headerSize < buf.length
             digit = buf[headerSize]
@@ -104,6 +110,12 @@ module.exports = (sock, opts = {}) ->
     frameEvent = (chunk) ->
         buf = Buffer.concat [buf, chunk]
 
+        if buf.length > maxSize
+            buf = new Buffer 0
+            reset()
+            sock.emit 'error', new Error('frame exceeded the limit')
+            return;
+
         if buf.length > 0
             parseHeader()
         else
@@ -119,9 +131,7 @@ module.exports = (sock, opts = {}) ->
 
             buf = buf.slice msgSize
 
-            msgSize = 0
-            headerSize = 0
-            isContinue = true
+            reset()
 
             if buf.length > 0
                 parseHeader()

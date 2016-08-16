@@ -934,6 +934,26 @@ module.exports = (it) ->
 
 					sock.writeFrame _.last(frames)
 
+	it 'proxy tcpFrame max size', (after) ->
+		proxy = kit.require 'proxy'
+
+		frame = new Buffer(129)
+
+		new Promise (resolve) ->
+			server = net.createServer (sock) ->
+				proxy.tcpFrame sock, { maxSize: 128 }
+
+				sock.on 'error', (err) ->
+					resolve it.eq(err.message, 'frame exceeded the limit')
+					sock.end()
+
+			after -> server.close()
+
+			server.listen 0, ->
+				sock = net.connect server.address().port, '127.0.0.1', ->
+					proxy.tcpFrame sock
+					sock.writeFrame frame
+
 	it 'proxy file write', (after) ->
 		proxy = kit.require 'proxy'
 		path = tempPath() + '/proxy.file.write.txt'
