@@ -271,17 +271,9 @@ _.extend kit, fs, yutils,
         crypto = kit.require 'crypto', __dirname
         decipher = crypto.createDecipher algorithm, password
 
-        if kit.nodeVersion() < 0.10
-            if Buffer.isBuffer data
-                data = data.toString 'binary'
-            new Buffer(
-                decipher.update(data, 'binary') + decipher.final()
-                'binary'
-            )
-        else
-            if not Buffer.isBuffer data
-                data = new Buffer(data)
-            Buffer.concat [decipher.update(data), decipher.final()]
+        if not Buffer.isBuffer data
+            data = new Buffer(data)
+        Buffer.concat [decipher.update(data), decipher.final()]
 
     ###*
      * The warp drives.
@@ -302,17 +294,9 @@ _.extend kit, fs, yutils,
         crypto = kit.require 'crypto', __dirname
         cipher = crypto.createCipher algorithm, password
 
-        if kit.nodeVersion() < 0.10
-            if Buffer.isBuffer data
-                data = data.toString 'binary'
-            new Buffer(
-                cipher.update(data, 'binary') + cipher.final()
-                'binary'
-            )
-        else
-            if not Buffer.isBuffer data
-                data = new Buffer(data)
-            Buffer.concat [cipher.update(data), cipher.final()]
+        if not Buffer.isBuffer data
+            data = new Buffer(data)
+        Buffer.concat [cipher.update(data), cipher.final()]
 
     ###*
      * A error log shortcut for `kit.log(msg, 'error', opts)`
