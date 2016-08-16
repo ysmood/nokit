@@ -196,6 +196,15 @@ function runClient () {
                 endCon(cmd.conId);
             });
 
+            toCon.on('error', function () {
+                client.writeFrame(encode({
+                    type: 'to',
+                    token: tokenFrom,
+                    conId: conId,
+                    action: 'error'
+                }));
+            })
+
             conList[cmd.conId] = toCon;
         }
 
@@ -236,6 +245,11 @@ function runClient () {
 
                 if (cmd.hadError)
                     kit.errs('client socket error: ' + cmd.conId);
+                break;
+
+            case 'error':
+                endCon(cmd.conId);
+                kit.errs('client socket error: ' + cmd.conId);
                 break;
 
             default:
