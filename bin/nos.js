@@ -103,6 +103,6 @@ Promise.resolve().then(function () {
     kit.logs('Serve: ' + br.cyan(url));
 
     if (cmder.openBrowser === 'on')
-        return kit.xopen(url);
+        kit.xopen(url);
 }).catch(kit.throw);
 

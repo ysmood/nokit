@@ -1,12 +1,13 @@
 {
   "name": "nokit",
-  "version": "0.22.1",
+  "version": "0.22.6",
   "description": "A light weight set of handy tools for real world program.",
   "main": "dist/kit.js",
   "bin": {
     "no": "bin/no.js",
     "noe": "bin/noe.js",
-    "nos": "bin/nos.js"
+    "nos": "bin/nos.js",
+    "not": "bin/not.js"
   },
   "scripts": {
     "no": "bin/no.js",

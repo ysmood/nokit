@@ -2303,8 +2303,8 @@ _.extend kit, fs, yutils,
                 null
             else
                 try
-                    kit.require 'which'
-                    kit.which 'xdg-open'
+                    kit.require 'whichSync'
+                    kit.whichSync 'xdg-open'
                 catch
                     null
         ).then (starter) ->

@@ -2563,8 +2563,8 @@ _.extend(kit, fs, yutils, {
           return null;
         default:
           try {
-            kit.require('which');
-            return kit.which('xdg-open');
+            kit.require('whichSync');
+            return kit.whichSync('xdg-open');
           } catch (error) {
             return null;
           }

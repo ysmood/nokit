@@ -8,7 +8,7 @@ var tcpFrame = require('../dist/tcpFrame');
 var net = require('net');
 var crypto = require('crypto');
 
-var msgpack = kit.requireOptional('msgpack5', __dirname)();
+var msgpack = kit.requireOptional('msgpack5', __dirname, '^3.4.0')();
 
 cmder
     .description('a tcp tunnel tool')
@@ -41,8 +41,8 @@ function runServer () {
 
     function addClient (sock) {
         tcpFrame(sock, {
-            cipher: crypto.createCipher(cmder.algorithm, cmder.key),
-            decipher: crypto.createDecipher(cmder.algorithm, cmder.key)
+            cipher: crypto.createCipher(cmder.algorithm, new Buffer(cmder.key)),
+            decipher: crypto.createDecipher(cmder.algorithm, new Buffer(cmder.key))
         });
 
         var token;
@@ -259,8 +259,8 @@ function runClient () {
     });
 
     tcpFrame(client, {
-        cipher: crypto.createCipher(cmder.algorithm, cmder.key),
-        decipher: crypto.createDecipher(cmder.algorithm, cmder.key)
+        cipher: crypto.createCipher(cmder.algorithm, new Buffer(cmder.key)),
+        decipher: crypto.createDecipher(cmder.algorithm, new Buffer(cmder.key))
     });
 
     client.on('end', function () {
