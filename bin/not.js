@@ -14,7 +14,7 @@ cmder
     .description('a tcp tunnel tool')
     .usage('[options]')
     .option('-x, --xport <port>', 'the port to expose [8080]', 8080)
-    .option('-n, --name <name>', 'the name of current client')
+    .option('-n, --name <name>', 'the name of current client', null)
     .option('-t, --targetName <name>', 'the name of target client')
     .option('-p, --port <port>', 'the port to listen to and the port to forward to [7000]', 7000)
     .option('-s, --server', 'start as tunnel server')
@@ -56,7 +56,7 @@ function runServer () {
             case 'name':
                 if (clientList[cmd.name]) {
                     sock.writeFrame(encode({
-                        action: 'tokenExists'
+                        action: 'nameExists'
                     }));
                     sock.end();
                     break;
@@ -64,7 +64,7 @@ function runServer () {
 
                 name = cmd.name;
 
-                kit.logs('client connected');
+                kit.logs('client connected:', name);
                 clientList[name] = sock;
 
                 sock.writeFrame(encode({
@@ -223,7 +223,7 @@ function runClient () {
                 kit.logs('connected to server');
                 break;
 
-            case 'tokenExists':
+            case 'nameExists':
                 kit.errs('name exists');
                 client.end();
                 break;
@@ -263,7 +263,7 @@ function runClient () {
     tcpFrame(client);
 
     client.on('end', function () {
-        kit.logs('server end');
+        kit.logs('client server end');
         restart();
     })
 
