@@ -5,8 +5,6 @@ var br = kit.require('brush');
 var Promise = kit.Promise;
 var cmder = require('commander');
 var net = require('net');
-var tcpFrame = require('../dist/tcpFrame');
-var spawn = require('child_process').spawn;
 var msgpack = kit.requireOptional('msgpack5', __dirname, '^3.4.0')();
 
 cmder
@@ -24,15 +22,17 @@ function runServer () {
 
     net.createServer(function (socket) {
         var r = repl.start({
-            prompt: br.green('> ')
-            , input: socket
-            , output: socket
-            , terminal: true
-            , useGlobal: false
+            prompt: br.green('> '),
+            input: socket,
+            output: socket,
+            terminal: true,
+            useGlobal: false
         })
+
         r.on('exit', function () {
             socket.end()
         })
+
         r.context.socket = socket
     }).listen(cmder.port, cmder.host)
 }
