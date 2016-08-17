@@ -55,12 +55,12 @@ function runServer () {
                 });
 
                 sock.on('close', function () {
-                    term.kill('SIGKILL');
+                    term.kill();
                     kit.logs('client closed');
                 });
 
                 sock.on('error', function () {
-                    term.kill('SIGKILL');
+                    term.kill();
                     kit.logs('client closed')
                 });
                 break;
