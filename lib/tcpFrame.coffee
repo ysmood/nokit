@@ -2,13 +2,14 @@
 weightList = [0, 1, 2, 3, 4, 5].map (i) -> Math.pow(2, i * 7)
 
 ###*
- * The algorithm is supports nearly infinity size message.
+ * The algorithm is supports nearly infinity size of message.
  * Each message has three parts, "version", "header" and "body":
  *
  * | verion | header | body |
  *
  * The size of version is fixed with 1 byte.
  * The size of the header is dynamically decided by the header itself.
+ * The size of the body is decided by the header.
  *
  * # Version 0 #
  *
@@ -117,8 +118,13 @@ module.exports = (sock, opts = {}) ->
             when 0
                 while isContinue && headerSize < buf.length
                     digit = buf[headerSize]
+
+                    #            |   get continue   |
                     isContinue = (digit & 0b10000000) == 128
+
+                    #          |   get fraction   |
                     msgSize += (digit & 0b01111111) * getWeight(headerSize)
+
                     headerSize++
                 return true
             else
