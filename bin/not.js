@@ -49,6 +49,10 @@ function getId (size) {
     return crypto.randomBytes(size || 4).toString('hex');
 }
 
+/**
+ * We should keep the server as minimal as possible. So I inscrease the
+ * protocol complexity to decrease the code base of the server.
+ */
 function runServer () {
     var clientList = {};
 
