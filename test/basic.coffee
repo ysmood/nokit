@@ -954,6 +954,25 @@ module.exports = (it) ->
 					proxy.tcpFrame sock
 					sock.writeFrame frame
 
+	it 'proxy tcpFrame wrong version', (after) ->
+		proxy = kit.require 'proxy'
+
+		frame = new Buffer(129)
+
+		new Promise (resolve) ->
+			server = net.createServer (sock) ->
+				proxy.tcpFrame sock
+
+				sock.on 'error', (err) ->
+					resolve it.eq(err.message, 'wrong protocol version')
+					sock.end()
+
+			after -> server.close()
+
+			server.listen 0, ->
+				sock = net.connect server.address().port, '127.0.0.1', ->
+					sock.write new Buffer([2, 2, 50, 50])
+
 	it 'proxy file write', (after) ->
 		proxy = kit.require 'proxy'
 		path = tempPath() + '/proxy.file.write.txt'

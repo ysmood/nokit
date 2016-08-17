@@ -3,11 +3,15 @@ weightList = [0, 1, 2, 3, 4, 5].map (i) -> Math.pow(2, i * 7)
 
 ###*
  * The algorithm is supports nearly infinity size message.
- * Each message has two parts, "header" and "body":
+ * Each message has three parts, "version", "header" and "body":
  *
- * | header | body |
+ * | verion | header | body |
  *
+ * The size of version is fixed with 1 byte.
  * The size of the header is dynamically decided by the header itself.
+ *
+ * # Version 0 #
+ *
  * Each byte (8 bits) in the header has two parts, "continue" and "fraction":
  *
  * | continue |   fraction    |
@@ -30,7 +34,10 @@ weightList = [0, 1, 2, 3, 4, 5].map (i) -> Math.pow(2, i * 7)
  * @return {Buffer}
 ###
 genHeader = (len) ->
-    sizeList = []
+    # The first byte is for versioning.
+    # So now is version 0
+    header = [0]
+
     digit = 0
 
     while len > 0
@@ -38,13 +45,15 @@ genHeader = (len) ->
         len = (len - digit) / 128
 
         if (len > 0)
-            sizeList.push(digit | 0b10000000)
+            header.push(digit | 0b10000000)
         else
-            sizeList.push digit
+            header.push digit
 
-    new Buffer sizeList
+    new Buffer header
 
 getWeight = (n) ->
+    n--
+
     if (n < weightList.length)
         weightList[n]
     else
@@ -83,23 +92,40 @@ module.exports = (sock, opts = {}) ->
             sock.write data, cb
 
     buf = new Buffer 0
+    version = null
     msgSize = 0 # byte
     headerSize = 0 # byte
     isContinue = true
 
     reset = () ->
+        version = null
         msgSize = 0
         headerSize = 0
         isContinue = true
 
-    parseHeader = () ->
-        while isContinue && headerSize < buf.length
-            digit = buf[headerSize]
-            isContinue = (digit & 0b10000000) == 128
-            msgSize += (digit & 0b01111111) * getWeight(headerSize)
-            headerSize++
+    error = (msg) ->
+        buf = new Buffer 0
+        reset()
+        sock.emit 'error', new Error(msg)
 
-        return
+    parseHeader = () ->
+        if version == null
+            version = buf[0];
+            headerSize = 1;
+
+        switch version
+            when 0
+                while isContinue && headerSize < buf.length
+                    digit = buf[headerSize]
+                    isContinue = (digit & 0b10000000) == 128
+                    msgSize += (digit & 0b01111111) * getWeight(headerSize)
+                    headerSize++
+                return true
+            else
+                error 'wrong protocol version'
+                return false
+
+        return false
 
     # cases
     # [x x 0 0 0 0 | x x 0 0 0]
@@ -111,13 +137,12 @@ module.exports = (sock, opts = {}) ->
         buf = Buffer.concat [buf, chunk]
 
         if buf.length > maxSize
-            buf = new Buffer 0
-            reset()
-            sock.emit 'error', new Error('frame exceeded the limit')
+            error 'frame exceeded the limit'
             return;
 
         if buf.length > 0
-            parseHeader()
+            if not parseHeader()
+                return
         else
             return
 
