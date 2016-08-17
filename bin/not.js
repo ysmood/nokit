@@ -21,12 +21,20 @@ cmder
     .option('--host <host>', 'the host of the tunnel server [0.0.0.0]', '0.0.0.0')
     .option('--hostPort <port>', 'the port of the tunnel server [8091]', 8091)
     .option('--key <str>', 'the key to secure the transport layer [3.141592]', '3.141592')
-    .option('--algorithm <name>', 'the algorithm to secure the transport layer [rc4]', 'rc4')
+    .option('--algorithm <name>', 'the algorithm to secure the transport layer [aes-128-cfb]', 'aes-128-cfb')
 .parse(process.argv);
 
-// TODO: fix
-// Because of the crypto padding issue, only rc4 is supported
-cmder.algorithm = 'rc4';
+var supportedAlgorithms = [
+    'rc4',
+    'aes-128-cfb',
+    'aes-192-cfb',
+    'aes-256-cfb'
+]
+
+if (supportedAlgorithms.indexOf(cmder.algorithm) < 0) {
+    console.error(br.red('algorithm must be one of:'), supportedAlgorithms);
+    process.exit(1);
+}
 
 function encode (obj) {
     obj.ver = 0;
@@ -160,15 +168,15 @@ function runClient () {
     }
 
     var client = net.connect(cmder.hostPort, cmder.host, function () {
-        var cipher = crypto.createCipher(cmder.algorithm, new Buffer(cmder.key));
-        var decipher = crypto.createDecipher(cmder.algorithm, new Buffer(cmder.key));
-
         function addCon (cmd) {
             var nameFrom = cmd.nameFrom;
             var conId = cmd.conId;
 
             var toCon = net.connect(cmder.xport, function () {
-                toCon.write(decipher.update(cmd.data));
+                toCon.cipher = crypto.createCipher(cmder.algorithm, new Buffer(cmder.key));
+                toCon.decipher = crypto.createDecipher(cmder.algorithm, new Buffer(cmder.key));
+
+                toCon.write(toCon.decipher.update(cmd.data));
             });
 
             toCon.nameFrom = nameFrom;
@@ -179,7 +187,7 @@ function runClient () {
                     name: nameFrom,
                     action: 'data',
                     conId: conId,
-                    data: cipher.update(data)
+                    data: toCon.cipher.update(data)
                 }));
             });
 
@@ -238,7 +246,7 @@ function runClient () {
                 var targetCon = conList[cmd.conId];
 
                 if (targetCon) {
-                    targetCon.write(decipher.update(cmd.data));
+                    targetCon.write(targetCon.decipher.update(cmd.data));
                 } else {
                     addCon(cmd);
                 }
@@ -291,7 +299,8 @@ function runClient () {
     });
 
     var server = net.createServer(function (con) {
-        var cipher = crypto.createCipher(cmder.algorithm, new Buffer(cmder.key));
+        con.cipher = crypto.createCipher(cmder.algorithm, new Buffer(cmder.key));
+        con.decipher = crypto.createDecipher(cmder.algorithm, new Buffer(cmder.key));
 
         var conId = getId();
 
@@ -303,7 +312,7 @@ function runClient () {
                 name: cmder.targetName,
                 action: 'data',
                 conId: conId,
-                data: cipher.update(data)
+                data: con.cipher.update(data)
             }));
         });
 
