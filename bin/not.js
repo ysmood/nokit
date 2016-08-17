@@ -29,6 +29,7 @@ cmder
 cmder.algorithm = 'rc4';
 
 function encode (obj) {
+    obj.ver = 0;
     return msgpack.encode(obj);
 }
 
