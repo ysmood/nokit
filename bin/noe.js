@@ -5,7 +5,6 @@
 var kit = require('../dist/kit');
 var br = kit.require('brush');
 var _ = kit._;
-var whichSync = kit.require('whichSync');
 var cmder = require('commander');
 
 var argv = process.argv;

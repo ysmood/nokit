@@ -1,6 +1,6 @@
 {
   "name": "nokit",
-  "version": "0.22.6",
+  "version": "0.22.7",
   "description": "A light weight set of handy tools for real world program.",
   "main": "dist/kit.js",
   "bin": {
@@ -58,12 +58,13 @@
     "junit": "1.4.4",
     "less": "2.7.1",
     "lodash-cli": "4.13.1",
-    "msgpack5": "^3.4.0",
+    "msgpack5": "3.4.0",
     "path-to-regexp": "1.5.3",
     "send": "0.14.1",
     "serve-index": "1.8.0",
     "stylus": "0.54.5",
     "throttle": "1.0.3",
+    "pty.js": "0.3.1",
     "uglify-js": "2.7.0"
   }
 }

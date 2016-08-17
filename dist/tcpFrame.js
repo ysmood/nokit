@@ -1,4 +1,4 @@
-var genSizeBuf, getWeight, weightList;
+var genHeader, getWeight, weightList;
 
 weightList = [0, 1, 2, 3, 4, 5].map(function(i) {
   return Math.pow(2, i * 7);
@@ -6,12 +6,17 @@ weightList = [0, 1, 2, 3, 4, 5].map(function(i) {
 
 
 /**
- * The algorithm is supports nearly infinity size message.
- * Each message has two parts, "header" and "body":
+ * The algorithm is supports nearly infinity size of message.
+ * Each message has three parts, "version", "header" and "body":
  *
- * | header | body |
+ * | verion | header | body |
  *
+ * The size of version is fixed with 1 byte.
  * The size of the header is dynamically decided by the header itself.
+ * The size of the body is decided by the header.
+ *
+ * # Version 0 #
+ *
  * Each byte (8 bits) in the header has two parts, "continue" and "fraction":
  *
  * | continue |   fraction    |
@@ -34,23 +39,24 @@ weightList = [0, 1, 2, 3, 4, 5].map(function(i) {
  * @return {Buffer}
  */
 
-genSizeBuf = function(len) {
-  var digit, sizeList;
-  sizeList = [];
+genHeader = function(len) {
+  var digit, header;
+  header = [0];
   digit = 0;
   while (len > 0) {
     digit = len % 128;
     len = (len - digit) / 128;
     if (len > 0) {
-      sizeList.push(digit | 0x80);
+      header.push(digit | 0x80);
     } else {
-      sizeList.push(digit);
+      header.push(digit);
     }
   }
-  return new Buffer(sizeList);
+  return new Buffer(header);
 };
 
 getWeight = function(n) {
+  n--;
   if (n < weightList.length) {
     return weightList[n];
   } else {
@@ -59,7 +65,7 @@ getWeight = function(n) {
 };
 
 module.exports = function(sock, opts) {
-  var buf, cipher, decipher, frameEvent, headerSize, isContinue, msgSize, parseHeader, readEncoding, writeEncoding;
+  var buf, cipher, decipher, error, frameEvent, headerSize, isContinue, maxSize, msgSize, parseHeader, readEncoding, reset, version, writeEncoding;
   if (opts == null) {
     opts = {};
   }
@@ -71,12 +77,13 @@ module.exports = function(sock, opts) {
   sock.setDefaultEncoding = function(encoding) {
     return writeEncoding = encoding;
   };
+  maxSize = opts.maxSize || 1024 * 1024;
   cipher = opts.cipher, decipher = opts.decipher;
   if (cipher) {
     cipher.pipe(sock);
   }
   sock.writeFrame = function(data, encoding, cb) {
-    var sizeBuf;
+    var header;
     if (typeof encoding === 'function') {
       cb = encoding;
       encoding = void 0;
@@ -87,32 +94,62 @@ module.exports = function(sock, opts) {
     if (!Buffer.isBuffer(data)) {
       data = new Buffer(data, encoding);
     }
-    sizeBuf = genSizeBuf(data.length);
+    header = genHeader(data.length);
     if (cipher) {
-      cipher.write(sizeBuf, cb);
+      cipher.write(header, cb);
       return cipher.write(data, cb);
     } else {
-      sock.write(sizeBuf, cb);
+      sock.write(header, cb);
       return sock.write(data, cb);
     }
   };
   buf = new Buffer(0);
+  version = null;
   msgSize = 0;
   headerSize = 0;
   isContinue = true;
+  reset = function() {
+    version = null;
+    msgSize = 0;
+    headerSize = 0;
+    return isContinue = true;
+  };
+  error = function(msg) {
+    buf = new Buffer(0);
+    reset();
+    return sock.emit('error', new Error(msg));
+  };
   parseHeader = function() {
     var digit;
-    while (isContinue && headerSize < buf.length) {
-      digit = buf[headerSize];
-      isContinue = (digit & 0x80) === 128;
-      msgSize += (digit & 0x7f) * getWeight(headerSize);
-      headerSize++;
+    if (version === null) {
+      version = buf[0];
+      headerSize = 1;
     }
+    switch (version) {
+      case 0:
+        while (isContinue && headerSize < buf.length) {
+          digit = buf[headerSize];
+          isContinue = (digit & 0x80) === 128;
+          msgSize += (digit & 0x7f) * getWeight(headerSize);
+          headerSize++;
+        }
+        return true;
+      default:
+        error('wrong protocol version');
+        return false;
+    }
+    return false;
   };
   frameEvent = function(chunk) {
     buf = Buffer.concat([buf, chunk]);
+    if (buf.length > maxSize) {
+      error('frame exceeded the limit');
+      return;
+    }
     if (buf.length > 0) {
-      parseHeader();
+      if (!parseHeader()) {
+        return;
+      }
     } else {
       return;
     }
@@ -124,9 +161,7 @@ module.exports = function(sock, opts) {
         sock.emit('frame', buf.slice(0, msgSize));
       }
       buf = buf.slice(msgSize);
-      msgSize = 0;
-      headerSize = 0;
-      isContinue = true;
+      reset();
       if (buf.length > 0) {
         parseHeader();
       } else {

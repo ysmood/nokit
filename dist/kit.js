@@ -295,17 +295,10 @@ _.extend(kit, fs, yutils, {
     }
     crypto = kit.require('crypto', __dirname);
     decipher = crypto.createDecipher(algorithm, password);
-    if (kit.nodeVersion() < 0.10) {
-      if (Buffer.isBuffer(data)) {
-        data = data.toString('binary');
-      }
-      return new Buffer(decipher.update(data, 'binary') + decipher.final(), 'binary');
-    } else {
-      if (!Buffer.isBuffer(data)) {
-        data = new Buffer(data);
-      }
-      return Buffer.concat([decipher.update(data), decipher.final()]);
+    if (!Buffer.isBuffer(data)) {
+      data = new Buffer(data);
     }
+    return Buffer.concat([decipher.update(data), decipher.final()]);
   },
 
   /**
@@ -330,17 +323,10 @@ _.extend(kit, fs, yutils, {
     }
     crypto = kit.require('crypto', __dirname);
     cipher = crypto.createCipher(algorithm, password);
-    if (kit.nodeVersion() < 0.10) {
-      if (Buffer.isBuffer(data)) {
-        data = data.toString('binary');
-      }
-      return new Buffer(cipher.update(data, 'binary') + cipher.final(), 'binary');
-    } else {
-      if (!Buffer.isBuffer(data)) {
-        data = new Buffer(data);
-      }
-      return Buffer.concat([cipher.update(data), cipher.final()]);
+    if (!Buffer.isBuffer(data)) {
+      data = new Buffer(data);
     }
+    return Buffer.concat([cipher.update(data), cipher.final()]);
   },
 
   /**
