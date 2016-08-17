@@ -64,7 +64,7 @@
     "serve-index": "1.8.0",
     "stylus": "0.54.5",
     "throttle": "1.0.3",
-    "pty.js": "0.3.1",
+    "ptyw.js": "0.4.0",
     "uglify-js": "2.7.0"
   }
 }

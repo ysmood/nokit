@@ -21,7 +21,7 @@ cmder
 
 
 function runServer () {
-    var pty = kit.requireOptional('pty.js', __dirname, '^0.3.1');
+    var pty = kit.requireOptional('ptyw.js', __dirname, '^0.4.0');
 
     var server = net.createServer(function (sock) {
         tcpFrame(sock);
