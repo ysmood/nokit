@@ -29,7 +29,7 @@ weightList = [0, 1, 2, 3, 4, 5].map (i) -> Math.pow(2, i * 7)
  * @param  {Number} len
  * @return {Buffer}
 ###
-genSizeBuf = (len) ->
+genHeader = (len) ->
     sizeList = []
     digit = 0
 
@@ -73,13 +73,13 @@ module.exports = (sock, opts = {}) ->
         if not Buffer.isBuffer(data)
             data = new Buffer data, encoding
 
-        sizeBuf = genSizeBuf data.length
+        header = genHeader data.length
 
         if (cipher)
-            cipher.write sizeBuf, cb
+            cipher.write header, cb
             cipher.write data, cb
         else
-            sock.write sizeBuf, cb
+            sock.write header, cb
             sock.write data, cb
 
     buf = new Buffer 0
