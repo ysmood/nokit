@@ -179,8 +179,6 @@ function runClient () {
             var toCon = net.connect(cmder.xport, function () {
                 toCon.cipher = crypto.createCipher(cmder.algorithm, new Buffer(cmder.key));
                 toCon.decipher = crypto.createDecipher(cmder.algorithm, new Buffer(cmder.key));
-
-                toCon.write(toCon.decipher.update(cmd.data));
             });
 
             toCon.nameFrom = nameFrom;
@@ -237,6 +235,10 @@ function runClient () {
             cmd = decode(cmd);
 
             switch (cmd.action) {
+            case 'start':
+                addCon(cmd);
+                break;
+
             case 'tokenGot':
                 kit.logs('connected to server');
                 break;
@@ -249,11 +251,7 @@ function runClient () {
             case 'data':
                 var targetCon = conList[cmd.conId];
 
-                if (targetCon) {
-                    targetCon.write(targetCon.decipher.update(cmd.data));
-                } else {
-                    addCon(cmd);
-                }
+                targetCon.write(targetCon.decipher.update(cmd.data));
                 break;
 
             case 'end':
@@ -309,6 +307,13 @@ function runClient () {
         var conId = getId();
 
         conList[conId] = con;
+
+        client.writeFrame(encode({
+            type: 'to',
+            name: cmder.targetName,
+            conId: conId,
+            action: 'start'
+        }));
 
         con.on('data', function (data) {
             client.writeFrame(encode({

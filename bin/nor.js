@@ -40,6 +40,8 @@ function runServer () {
 
             switch (cmd.type) {
             case 'init':
+                kit.logs('client init');
+
                 term = pty.spawn(cmd.bin, cmd.args, cmd.options);
 
                 term.on('data', function (data) {
@@ -98,6 +100,8 @@ function runClient () {
 
             switch (cmd.type) {
             case 'init':
+                kit.logs('remote init');
+
                 var bin = cmd.platform === 'win32' ? 'cmd.exe' : '/bin/sh';
 
                 sock.writeFrame(encode({
