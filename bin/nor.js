@@ -2,6 +2,7 @@
 
 var kit = require('../dist/kit');
 var br = kit.require('brush');
+var _ = kit._;
 var Promise = kit.Promise;
 var cmder = require('commander');
 var net = require('net');
@@ -17,12 +18,54 @@ cmder
     .option('-p, --port <port>', 'the port [8080]', 8080)
     .option('-s, --server', 'start as tunnel server')
     .option('-b, --bin <cmd>', 'the init cmd to run')
+    .option('-n, --noPty', 'run server without pty mode')
 .parse(process.argv);
 
+function spawnTerm (cmd) {
+    var spawn = require('child_process').spawn;
+    var events = require('events');
+
+    var term;
+
+    if (cmder.noPty) {
+        var ps = spawn(cmd.bin, cmd.args);
+        term = new events();
+
+        ps.stdout.on('data', function (data) {
+            term.emit('data', data);
+        });
+        ps.stderr.on('data', function (data) {
+            term.emit('data', data);
+        });
+        ps.on('exit', function () {
+            term.emit('exit');
+        });
+        ps.on('close', function () {
+            term.emit('close');
+        });
+        ps.on('error', function () {
+            term.emit('error');
+        });
+
+        term.write = function (data) {
+            ps.stdin.write(data);
+        };
+
+        term.kill = function () {
+            ps.kill();
+        };
+
+        term.resize = _.noop;
+    } else {
+        var pty = kit.requireOptional('ptyw.js', __dirname, '^0.4.0');
+
+        term = pty.spawn(cmd.bin, cmd.args, cmd.options);
+    }
+
+    return term;
+}
 
 function runServer () {
-    var pty = kit.requireOptional('ptyw.js', __dirname, '^0.4.0');
-
     var server = net.createServer(function (sock) {
         tcpFrame(sock);
 
@@ -30,6 +73,7 @@ function runServer () {
 
         sock.writeFrame(encode({
             type: 'init',
+            noPty: cmder.noPty,
             platform: process.platform,
             node: process.version,
             env: process.env
@@ -42,7 +86,7 @@ function runServer () {
             case 'init':
                 kit.logs('client init');
 
-                term = pty.spawn(cmd.bin, cmd.args, cmd.options);
+                term = spawnTerm(cmd);
 
                 term.on('data', function (data) {
                     sock.writeFrame(encode({
@@ -93,8 +137,6 @@ function runClient () {
 
         tcpFrame(sock);
 
-        process.stdin.setRawMode(true);
-
         sock.on('frame', function (cmd) {
             cmd = decode(cmd);
 
@@ -102,7 +144,14 @@ function runClient () {
             case 'init':
                 kit.logs('remote init');
 
-                var bin = cmd.platform === 'win32' ? 'cmd.exe' : '/bin/sh';
+                if (cmd.noPty) {
+                    kit.logs('no pty');
+                    var bin = cmd.platform === 'win32' ? 'tasklist' : 'ps';
+                } else {
+                    process.stdin.setRawMode(true);
+
+                    var bin = cmd.platform === 'win32' ? 'cmd.exe' : '/bin/sh';
+                }
 
                 sock.writeFrame(encode({
                     type: 'init',
