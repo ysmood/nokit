@@ -6,6 +6,8 @@ var _ = kit._;
 var Promise = kit.Promise;
 var cmder = require('commander');
 var net = require('net');
+var spawn = require('child_process').spawn;
+var events = require('events');
 var tcpFrame = require('../dist/tcpFrame');
 var msgpack = kit.requireOptional('msgpack5', __dirname, '^3.4.0')();
 var encode = msgpack.encode;
@@ -22,9 +24,6 @@ cmder
 .parse(process.argv);
 
 function spawnTerm (cmd) {
-    var spawn = require('child_process').spawn;
-    var events = require('events');
-
     var term;
 
     if (cmder.noPty) {
