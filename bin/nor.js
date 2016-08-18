@@ -29,6 +29,7 @@ function spawnTerm (cmd) {
 
     if (cmder.noPty) {
         var ps = spawn(cmd.bin, cmd.args);
+        var treeKill = kit.require('treeKill');
         term = new events();
 
         ps.stdout.on('data', function (data) {
@@ -52,7 +53,7 @@ function spawnTerm (cmd) {
         };
 
         term.kill = function () {
-            ps.kill();
+            treeKill(ps.pid);
         };
 
         term.resize = _.noop;
