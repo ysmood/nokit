@@ -81,7 +81,7 @@ function runServer () {
                 clientList[name] = sock;
 
                 sock.writeFrame(encode({
-                    action: 'tokenGot'
+                    action: 'nameGot'
                 }));
                 break;
 
@@ -177,9 +177,16 @@ function runClient () {
             var conId = cmd.conId;
 
             var toCon = net.connect(cmder.xport, function () {
-                toCon.cipher = crypto.createCipher(cmder.algorithm, new Buffer(cmder.key));
-                toCon.decipher = crypto.createDecipher(cmder.algorithm, new Buffer(cmder.key));
+                client.writeFrame(encode({
+                    type: 'to',
+                    name: nameFrom,
+                    action: 'started',
+                    conId: conId
+                }));
             });
+
+            toCon.cipher = crypto.createCipher(cmder.algorithm, new Buffer(cmder.key));
+            toCon.decipher = crypto.createDecipher(cmder.algorithm, new Buffer(cmder.key));
 
             toCon.nameFrom = nameFrom;
 
@@ -221,7 +228,7 @@ function runClient () {
                     conId: conId,
                     action: 'error'
                 }));
-            })
+            });
 
             conList[cmd.conId] = toCon;
         }
@@ -236,10 +243,18 @@ function runClient () {
 
             switch (cmd.action) {
             case 'start':
+                kit.logs('start connection:', cmd.conId);
+
                 addCon(cmd);
                 break;
 
-            case 'tokenGot':
+            case 'started':
+                kit.logs('connection started:', cmd.conId);
+
+                conList[cmd.conId].resume();
+                break;
+
+            case 'nameGot':
                 kit.logs('connected to server');
                 break;
 
@@ -251,14 +266,20 @@ function runClient () {
             case 'data':
                 var targetCon = conList[cmd.conId];
 
-                targetCon.write(targetCon.decipher.update(cmd.data));
+                if (targetCon) {
+                    targetCon.write(targetCon.decipher.update(cmd.data));
+                }
                 break;
 
             case 'end':
+                kit.logs('connection ended:', cmd.conId);
+
                 endCon(cmd.conId);
                 break;
 
             case 'close':
+                kit.logs('connection closed:', cmd.conId);
+
                 endCon(cmd.conId);
 
                 if (cmd.hadError)
@@ -307,6 +328,8 @@ function runClient () {
         var conId = getId();
 
         conList[conId] = con;
+
+        con.pause();
 
         client.writeFrame(encode({
             type: 'to',
