@@ -18,7 +18,8 @@ cmder
     .option('-x, --xport <port>', 'the port to expose [8080]', 8080)
     .option('-n, --name <name>', 'the name of current client', null)
     .option('-t, --targetName <name>', 'the name of target client')
-    .option('-p, --port <port>', 'the port to listen to and the port to forward to [7000]', 7000)
+    .option('-p, --port <port>', 'the port to listen to [7000]', 7000)
+    .option('--phost <host>', 'the host to listen to [127.0.0.1]', '127.0.0.1')
     .option('-s, --server', 'start as tunnel server')
     .option('--host <host>', 'the host of the tunnel server [0.0.0.0]', '0.0.0.0')
     .option('--hostPort <port>', 'the port of the tunnel server [8091]', 8091)
@@ -146,7 +147,7 @@ function runServer () {
     var server = net.createServer(addClient);
 
     server.listen(cmder.hostPort, cmder.host, function () {
-        kit.logs('listen at', cmder.host + ':' + cmder.hostPort);
+        kit.logs('listening on', cmder.host + ':' + server.address().port);
     });
 }
 
@@ -381,8 +382,8 @@ function runClient () {
     kit.logs('expose port:', cmder.xport);
 
     if (cmder.targetName) {
-        server.listen(cmder.port, function () {
-            kit.logs('listen to port:', cmder.port);
+        server.listen(cmder.port, cmder.phost, function () {
+            kit.logs('listening on', cmder.phost + ':' + server.address().port);
         });
     }
 }

@@ -1608,7 +1608,7 @@ _.extend(kit, fs, yutils, {
         spawnSync = kit.require('child_process', __dirname).spawnSync;
         whichSync = kit.require('whichSync');
         spawnSync(whichSync('npm'), ['i', key], {
-          cwd: __dirname,
+          cwd: kit.path.join(__dirname, '../..'),
           stdio: 'inherit'
         });
         return kit.require(name, dir);
