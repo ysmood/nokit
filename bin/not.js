@@ -1,9 +1,11 @@
 #!/usr/bin/env node
 
 var kit = require('../dist/kit');
+kit.requireOptional.autoInstall = true;
+
 var br = kit.require('brush');
 var Promise = kit.Promise;
-var cmder = require('commander');
+var cmder = kit.requireOptional('commander', __dirname, '^2.9.0');
 var tcpFrame = require('../dist/tcpFrame');
 var net = require('net');
 var crypto = require('crypto');

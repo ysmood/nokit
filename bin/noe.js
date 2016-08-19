@@ -3,9 +3,11 @@
 // Run program automatically
 
 var kit = require('../dist/kit');
+kit.requireOptional.autoInstall = true;
+
 var br = kit.require('brush');
 var _ = kit._;
-var cmder = require('commander');
+var cmder = kit.requireOptional('commander', __dirname, '^2.9.0');
 
 var argv = process.argv;
 var sepIndex = argv.indexOf('--');

@@ -6,9 +6,11 @@ if not process.env.NODE_ENV?
 	process.env.NODE_ENV = 'development'
 
 kit = require './kit'
+kit.requireOptional.autoInstall = true;
+
 br = kit.require 'brush'
 { _ } = kit
-cmder = require 'commander'
+cmder = kit.requireOptional 'commander', __dirname, '^2.9.0'
 
 error = (msg) ->
 	err = new Error msg

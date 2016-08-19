@@ -709,23 +709,6 @@ _.extend(kit, fs, yutils, {
   },
 
   /**
-   * Detect whether the path is under the global module.
-   * @param  {String}  dir Default value is the `__dirname`
-   * @return {Boolean}
-   */
-  isGlobalMoudle: function(dir) {
-    var execSync;
-    if (dir == null) {
-      dir = __dirname;
-    }
-    if (!kit.isGlobalMoudle.prefix) {
-      execSync = kit.require('child_process', __dirname).execSync;
-      kit.isGlobalMoudle.prefix = execSync('npm config get prefix').toString().trim();
-    }
-    return _.startsWith(dir, kit.isGlobalMoudle.prefix);
-  },
-
-  /**
    * Nokit use it to check the running mode of the app.
    * Overwrite it if you want to control the check logic.
    * By default it returns the `rocess.env.NODE_ENV == 'production'`.
@@ -1593,6 +1576,8 @@ _.extend(kit, fs, yutils, {
   /**
    * Require an optional package. If not found, it will
    * warn the user to npm install it, and exit the process.
+   * When `kit.requireOptional.autoInstall` is set to `true`, the package will
+   * be auto installed if it's missed.
    * @param {String} name Package name
    * @param {String} dir Current absolute file path. Not optional.
    * On most times, just pass `__dirname` to it is enough.
@@ -1619,7 +1604,7 @@ _.extend(kit, fs, yutils, {
       return kit.require(name, dir);
     } catch (error) {
       err = error;
-      if (kit.isGlobalMoudle(dir)) {
+      if (kit.requireOptional.autoInstall) {
         spawnSync = kit.require('child_process', __dirname).spawnSync;
         whichSync = kit.require('whichSync');
         spawnSync(whichSync('npm'), ['i', '-g', key], {

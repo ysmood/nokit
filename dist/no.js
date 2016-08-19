@@ -10,11 +10,13 @@ if (process.env.NODE_ENV == null) {
 
 kit = require('./kit');
 
+kit.requireOptional.autoInstall = true;
+
 br = kit.require('brush');
 
 _ = kit._;
 
-cmder = require('commander');
+cmder = kit.requireOptional('commander', __dirname, '^2.9.0');
 
 error = function(msg) {
   var err;
