@@ -1117,7 +1117,7 @@ Goto [changelog](doc/changelog.md)
 
         The required package.
 
-- ## **[request(opts)](lib/kit.coffee?source#L1590)**
+- ## **[request(opts)](lib/kit.coffee?source#L1593)**
 
     A handy extended combination of `http.request` and `https.request`.
 
@@ -1232,14 +1232,14 @@ Goto [changelog](doc/changelog.md)
         );
         ```
 
-- ## **[semver](lib/kit.coffee?source#L1802)**
+- ## **[semver](lib/kit.coffee?source#L1805)**
 
     The semantic versioner for npm, known as [semver](https://github.com/npm/node-semver).
     You must `kit.require 'semver'` before using it.
 
     - **<u>type</u>**: { _Object_ }
 
-- ## **[spawn(cmd, args, opts)](lib/kit.coffee?source#L1833)**
+- ## **[spawn(cmd, args, opts)](lib/kit.coffee?source#L1836)**
 
     A safer version of `child_process.spawn` to cross-platform run
     a process. In some conditions, it may be more convenient
@@ -1283,13 +1283,13 @@ Goto [changelog](doc/changelog.md)
         .then(({code}) => kit.log code);
         ```
 
-- ## **[sse](lib/kit.coffee?source#L1896)**
+- ## **[sse](lib/kit.coffee?source#L1899)**
 
     The `sse` module.
     You must `kit.require 'sse'` before using it.
     For more information goto the `sse` section.
 
-- ## **[task(name, opts, fn)](lib/kit.coffee?source#L1957)**
+- ## **[task(name, opts, fn)](lib/kit.coffee?source#L1960)**
 
     Sequencing and executing tasks and dependencies concurrently.
 
@@ -1369,12 +1369,12 @@ Goto [changelog](doc/changelog.md)
         );
         ```
 
-- ## **[url](lib/kit.coffee?source#L2033)**
+- ## **[url](lib/kit.coffee?source#L2036)**
 
     The `url` module of node.
     You must `kit.require 'url'` before using it.
 
-- ## **[warp(from, opts)](lib/kit.coffee?source#L2148)**
+- ## **[warp(from, opts)](lib/kit.coffee?source#L2151)**
 
     Works much like `gulp.src`, but with Promise instead.
     The warp control and error handling is more pleasant.
@@ -1499,7 +1499,7 @@ Goto [changelog](doc/changelog.md)
         .run('dist');
         ```
 
-- ## **[which(name)](lib/kit.coffee?source#L2225)**
+- ## **[which(name)](lib/kit.coffee?source#L2228)**
 
     Same as the unix `which` command.
     You must `kit.require 'which'` before using it.
@@ -1510,14 +1510,14 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Promise_ }
 
-- ## **[whichSync](lib/kit.coffee?source#L2232)**
+- ## **[whichSync](lib/kit.coffee?source#L2235)**
 
     Sync version of `which`.
     You must `kit.require 'whichSync'` before using it.
 
     - **<u>type</u>**: { _Function_ }
 
-- ## **[xinspect(obj, opts)](lib/kit.coffee?source#L2243)**
+- ## **[xinspect(obj, opts)](lib/kit.coffee?source#L2246)**
 
     For debugging. Dump a colorful object.
 
@@ -1534,7 +1534,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _String_ }
 
-- ## **[xopen(cmds, opts)](lib/kit.coffee?source#L2266)**
+- ## **[xopen(cmds, opts)](lib/kit.coffee?source#L2269)**
 
     Open a thing that your system can recognize.
     Now only support Windows, OSX or system that installed 'xdg-open'.

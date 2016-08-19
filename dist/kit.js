@@ -1607,7 +1607,8 @@ _.extend(kit, fs, yutils, {
       if (kit.requireOptional.autoInstall) {
         spawnSync = kit.require('child_process', __dirname).spawnSync;
         whichSync = kit.require('whichSync');
-        spawnSync(whichSync('npm'), ['i', '-g', key], {
+        spawnSync(whichSync('npm'), ['i', key], {
+          cwd: __dirname,
           stdio: 'inherit'
         });
         return kit.require(name, dir);
