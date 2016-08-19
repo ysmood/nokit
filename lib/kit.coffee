@@ -1468,7 +1468,10 @@ _.extend kit, fs, yutils,
             if kit.requireOptional.autoInstall
                 { spawnSync } = kit.require 'child_process', __dirname
                 whichSync = kit.require 'whichSync'
-                spawnSync whichSync('npm'), ['i', '-g', key], { stdio: 'inherit' }
+                spawnSync whichSync('npm'), ['i', key], {
+                    cwd: __dirname
+                    stdio: 'inherit'
+                }
                 return kit.require name, dir
 
             throw err if err.source == 'nokit'
