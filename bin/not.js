@@ -15,16 +15,16 @@ var msgpack = kit.requireOptional('msgpack5', __dirname, '^3.4.0')();
 cmder
     .description('a tcp tunnel tool')
     .usage('[options]')
-    .option('-x, --xport <port>', 'the port to expose [8080]', 8080)
+    .option('-x, --xport <port>', 'the port to export', null)
     .option('-n, --name <name>', 'the name of current client', null)
     .option('-t, --targetName <name>', 'the name of target client')
     .option('-p, --port <port>', 'the port to listen to [7000]', 7000)
     .option('--phost <host>', 'the host to listen to [127.0.0.1]', '127.0.0.1')
     .option('-s, --server', 'start as tunnel server')
-    .option('--host <host>', 'the host of the tunnel server [0.0.0.0]', '0.0.0.0')
-    .option('--hostPort <port>', 'the port of the tunnel server [8091]', 8091)
-    .option('--key <str>', 'the key to secure the transport layer [3.141592]', '3.141592')
-    .option('--algorithm <name>', 'the algorithm to secure the transport layer [aes-128-cfb]', 'aes-128-cfb')
+    .option('-o, --host <host>', 'the host of the tunnel server [0.0.0.0]', '0.0.0.0')
+    .option('-r, --hostPort <port>', 'the port of the tunnel server [8091]', 8091)
+    .option('-k, --key <str>', 'the key to secure the transport layer [3.141592]', '3.141592')
+    .option('-a, --algorithm <name>', 'the algorithm to secure the transport layer [aes-128-cfb]', 'aes-128-cfb')
 .parse(process.argv);
 
 var supportedAlgorithms = [
@@ -246,9 +246,24 @@ function runClient () {
 
             switch (cmd.action) {
             case 'start':
+                if (cmder.xport === null) {
+                    client.writeFrame(encode({
+                        type: 'to',
+                        name: cmd.nameFrom,
+                        action: 'noPortExported',
+                        conId: cmd.conId
+                    }));
+                    break;
+                }
+
                 kit.logs('start connection:', cmd.conId);
 
                 addCon(cmd);
+                break;
+
+            case 'noPortExported':
+                kit.logs('no port exported, connection ended:', cmd.conId);
+                endCon(cmd.conId);
                 break;
 
             case 'started':
@@ -379,7 +394,8 @@ function runClient () {
         });
     });
 
-    kit.logs('expose port:', cmder.xport);
+    if (cmder.xport)
+        kit.logs('expose port:', cmder.xport);
 
     if (cmder.targetName) {
         server.listen(cmder.port, cmder.phost, function () {

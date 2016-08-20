@@ -18,7 +18,7 @@ var decode = msgpack.decode;
 cmder
     .description('a cross platform remote tty tool')
     .usage('[options] [args_to_bin...]')
-    .option('--host <host>', 'the host [0.0.0.0]', '0.0.0.0')
+    .option('-o, --host <host>', 'the host [0.0.0.0]', '0.0.0.0')
     .option('-p, --port <port>', 'the port [8080]', 8080)
     .option('-s, --server', 'start as tunnel server')
     .option('-b, --bin <cmd>', 'the init cmd to run')
