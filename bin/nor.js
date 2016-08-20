@@ -18,11 +18,14 @@ var decode = msgpack.decode;
 cmder
     .description('a cross platform remote tty tool')
     .usage('[options] [args_to_bin...]')
-    .option('-o, --host <host>', 'the host [0.0.0.0]', '0.0.0.0')
+    .option('-o, --host <host>', 'the host [127.0.0.1]', '127.0.0.1')
     .option('-p, --port <port>', 'the port [8080]', 8080)
     .option('-s, --server', 'start as tunnel server')
     .option('-b, --bin <cmd>', 'the init cmd to run')
-    .option('-n, --noPty', 'run server without pty mode')
+    .option('-y, --noPty', 'run server without pty mode')
+    .option('-t, --tunnel', 'run as not tunnel mode')
+    .option('-n, --name <str>', 'name for the not tunnel mode')
+    .option('-k, --key <str>', 'key for the not tunnel mode')
 .parse(process.argv);
 
 function spawnTerm (cmd) {
@@ -98,7 +101,7 @@ function runServer () {
                 });
 
                 term.on('exit', function () {
-                    kit.logs('task exit')
+                    kit.logs('task exit');
                     sock.end();
                 });
 
@@ -129,7 +132,7 @@ function runServer () {
     })
 
     server.listen(cmder.port, cmder.host, function () {
-        kit.logs('listen port:', server.address().port);
+        kit.logs('listening on:', cmder.host + ':' + server.address().port);
     });
 }
 
@@ -195,14 +198,61 @@ function runClient () {
         sock.on('close', function () {
             kit.logs('remote closed');
             process.exit();
-        })
+        });
+
+    });
+
+    sock.on('error', function (err) {
+        if (err.code === 'ECONNREFUSED')
+            setTimeout(runClient, 100);
+        else
+            throw err;
     });
 }
 
 kit.logs('pid:', process.pid);
 
 if (cmder.server) {
+    if (cmder.tunnel) {
+        var tunnel = kit.spawn('not', [
+            '--name', cmder.name,
+            '--key', cmder.key,
+            '--xport', cmder.port,
+            '--host', cmder.host
+        ]).process;
+
+        process.on('exit', function () {
+            kit.treeKill(tunnel.pid);
+        });
+
+        tunnel.on('exit', function (code) {
+            process.exit(code);
+        });
+
+        cmder.host = '127.0.0.1'
+    }
+
     runServer();
 } else {
+    if (cmder.tunnel) {
+        var tunnel = kit.spawn('not', [
+            '--targetName', cmder.name,
+            '--key', cmder.key,
+            '--port', cmder.port,
+            '--host', cmder.host
+        ]).process;
+
+        process.on('exit', function () {
+            tunnel.kill();
+        });
+
+        tunnel.on('exit', function (code) {
+            process.exit(code);
+        });
+
+        cmder.host = '127.0.0.1';
+    }
+
     runClient();
+
 }
