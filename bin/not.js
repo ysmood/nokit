@@ -4,6 +4,7 @@ var kit = require('../dist/kit');
 kit.requireOptional.autoInstall = true;
 
 var br = kit.require('brush');
+var _ = kit._;
 var Promise = kit.Promise;
 var cmder = kit.requireOptional('commander', __dirname, '^2.9.0');
 var tcpFrame = require('../dist/tcpFrame');
@@ -67,6 +68,12 @@ function runServer () {
         sock.on('frame', function (cmd) {
             cmd = decode(cmd);
 
+            if (!cmd) {
+                kit.logs('unknown cmd type', cmd);
+                sock.end();
+                return;
+            }
+
             switch (cmd.type) {
 
             case 'name':
@@ -113,6 +120,7 @@ function runServer () {
 
             default:
                 kit.logs('unknown cmd type', cmd);
+                sock.end();
             }
         });
 
@@ -258,6 +266,12 @@ function runClient () {
         client.on('frame', function (cmd) {
             cmd = decode(cmd);
 
+            if (!cmd) {
+                kit.logs('unknown client cmd type', cmd);
+                client.end();
+                return;
+            }
+
             switch (cmd.action) {
             case 'start':
                 if (cmder.xport === null) {
@@ -337,6 +351,7 @@ function runClient () {
 
             default:
                 kit.logs('unknown client cmd type', cmd);
+                client.end();
             }
         });
     });
