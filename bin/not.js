@@ -119,7 +119,7 @@ function runServer () {
         sock.on('error', function () {
             if (name === undefined) return;
 
-            kit.logs('client error:', name);
+            kit.errs('client error:', name);
 
             rmClient(name);
         });
@@ -151,8 +151,11 @@ function runServer () {
     });
 }
 
+var isStarting = true;
 function runClient () {
     var conList = {};
+
+    isStarting = false;
 
     function endCon (id) {
         if (id in conList) {
@@ -163,15 +166,24 @@ function runClient () {
 
     function restart () {
         kit.logs('restart client...');
-        setTimeout(function () {
-            if (server) {
-                server.close(function () {
-                    runClient();
-                })
-            } else {
-                runClient();
-            }
-        }, 3000);
+
+        if (isStarting) return;
+
+        isStarting = true;
+
+        // clean all connections
+        for (var k in conList) {
+            conList[k].destroy();
+            delete conList[k];
+        }
+
+        if (server) {
+            server.close(function () {
+                setTimeout(runClient, 3000);
+            });
+        } else {
+            setTimeout(runClient, 3000);
+        }
     }
 
     var client = net.connect(cmder.hostPort, cmder.host, function () {
@@ -224,7 +236,9 @@ function runClient () {
                 endCon(cmd.conId);
             });
 
-            toCon.on('error', function () {
+            toCon.on('error', function (err) {
+                kit.errs('to socket error:', err)
+
                 client.writeFrame(encode({
                     type: 'to',
                     name: nameFrom,
@@ -335,7 +349,7 @@ function runClient () {
     })
 
     client.on('error', function (err) {
-        kit.errs(err);
+        kit.errs('client error:', err);
         restart();
     });
 
