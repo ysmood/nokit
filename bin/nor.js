@@ -8,7 +8,6 @@ var _ = kit._;
 var Promise = kit.Promise;
 var cmder = kit.requireOptional('commander', __dirname, '^2.9.0');
 var net = require('net');
-var spawn = require('child_process').spawn;
 var events = require('events');
 var tcpFrame = require('../dist/tcpFrame');
 var msgpack = kit.requireOptional('msgpack5', __dirname, '^3.4.0')();
@@ -32,7 +31,9 @@ function spawnTerm (cmd) {
     var term;
 
     if (cmder.noPty) {
-        var ps = spawn(cmd.bin, cmd.args);
+        var ps = kit.spawn(cmd.bin, cmd.args, {
+            stdio: 'pipe'
+        }).process;
         var treeKill = kit.require('treeKill');
         term = new events();
 
@@ -204,7 +205,7 @@ function runClient () {
 
     sock.on('error', function (err) {
         if (err.code === 'ECONNREFUSED')
-            setTimeout(runClient, 100);
+            setTimeout(runClient, 300);
         else
             throw err;
     });
@@ -214,7 +215,8 @@ kit.logs('pid:', process.pid);
 
 if (cmder.server) {
     if (cmder.tunnel) {
-        var tunnel = kit.spawn('not', [
+        var tunnel = kit.spawn('node', [
+            kit.path.join(__dirname, 'not'),
             '--name', cmder.name,
             '--key', cmder.key,
             '--xport', cmder.port,
@@ -235,7 +237,8 @@ if (cmder.server) {
     runServer();
 } else {
     if (cmder.tunnel) {
-        var tunnel = kit.spawn('not', [
+        var tunnel = kit.spawn('node', [
+            kit.path.join(__dirname, 'not'),
             '--targetName', cmder.name,
             '--key', cmder.key,
             '--port', cmder.port,
