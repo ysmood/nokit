@@ -17,4 +17,102 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR
  * IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-function which(r,s){if(isAbsolute(r))return s(null,r);var n=(process.env.PATH||"").split(COLON),e=[""];"win32"===process.platform&&(n.push(process.cwd()),e=(process.env.PATHEXT||".EXE").split(COLON),r.indexOf(".")!==-1&&e.unshift("")),function i(t,o){if(t===o)return s(new Error("not found: "+r));var c=path.resolve(n[t],r);!function r(n,u){if(n===u)return i(t+1,o);var f=e[n];fs.stat(c+f,function(e,i){return!e&&i&&i.isFile()&&isExe(i.mode,i.uid,i.gid)?s(null,c+f):r(n+1,u)})}(0,e.length)}(0,n.length)}function whichSync(r){if(isAbsolute(r))return r;var s=(process.env.PATH||"").split(COLON),n=[""];"win32"===process.platform&&(s.push(process.cwd()),n=(process.env.PATHEXT||".EXE").split(COLON),r.indexOf(".")!==-1&&n.unshift(""));for(var e=0,i=s.length;e<i;e++)for(var t=path.join(s[e],r),o=0,c=n.length;o<c;o++){var u,f=t+n[o];try{u=fs.statSync(f)}catch(r){}if(u&&u.isFile()&&isExe(u.mode,u.uid,u.gid))return f}throw new Error("not found: "+r)}function absWin(r){if(absUnix(r))return!0;var s=/^([a-zA-Z]:|[\\\/]{2}[^\\\/]+[\\\/][^\\\/]+)?([\\\/])?/,n=s.exec(r),e=n[1]||"",i=e&&":"!==e.charAt(1),t=!!n[2]||i;return t}function absUnix(r){return"/"===r.charAt(0)||""===r}var fs=require("nofs");module.exports=fs.PromiseUtils.promisify(which),module.exports.sync=whichSync;var path=fs.path,COLON="win32"===process.platform?";":":",isExe;isExe="win32"==process.platform?function(){return!0}:function(r,s,n){var e=1&r||8&r&&process.getgid&&n===process.getgid()||64&r&&process.getuid&&s===process.getuid();return e};var isAbsolute="win32"===process.platform?absWin:absUnix;
+var fs = require("nofs")
+
+module.exports = fs.PromiseUtils.promisify(which)
+module.exports.sync = whichSync
+
+var path = fs.path
+  , COLON = process.platform === "win32" ? ";" : ":"
+  , isExe
+
+if (process.platform == "win32") {
+  // On windows, there is no good way to check that a file is executable
+  isExe = function isExe () { return true }
+} else {
+  isExe = function isExe (mod, uid, gid) {
+    //console.error(mod, uid, gid);
+    //console.error("isExe?", (mod & 0111).toString(8))
+    var ret = (mod & 0001)
+        || (mod & 0010) && process.getgid && gid === process.getgid()
+        || (mod & 0100) && process.getuid && uid === process.getuid()
+    //console.error("isExe?", ret)
+    return ret
+  }
+}
+
+
+
+function which (cmd, cb) {
+  if (isAbsolute(cmd)) return cb(null, cmd)
+  var pathEnv = (process.env.PATH || "").split(COLON)
+    , pathExt = [""]
+  if (process.platform === "win32") {
+    pathEnv.push(process.cwd())
+    pathExt = (process.env.PATHEXT || ".EXE").split(COLON)
+    if (cmd.indexOf(".") !== -1) pathExt.unshift("")
+  }
+  //console.error("pathEnv", pathEnv)
+  ;(function F (i, l) {
+    if (i === l) return cb(new Error("not found: "+cmd))
+    var p = path.resolve(pathEnv[i], cmd)
+    ;(function E (ii, ll) {
+      if (ii === ll) return F(i + 1, l)
+      var ext = pathExt[ii]
+      //console.error(p + ext)
+      fs.stat(p + ext, function (er, stat) {
+        if (!er &&
+            stat &&
+            stat.isFile() &&
+            isExe(stat.mode, stat.uid, stat.gid)) {
+          //console.error("yes, exe!", p + ext)
+          return cb(null, p + ext)
+        }
+        return E(ii + 1, ll)
+      })
+    })(0, pathExt.length)
+  })(0, pathEnv.length)
+}
+
+function whichSync (cmd) {
+  if (isAbsolute(cmd)) return cmd
+  var pathEnv = (process.env.PATH || "").split(COLON)
+    , pathExt = [""]
+  if (process.platform === "win32") {
+    pathEnv.push(process.cwd())
+    pathExt = (process.env.PATHEXT || ".EXE").split(COLON)
+    if (cmd.indexOf(".") !== -1) pathExt.unshift("")
+  }
+  for (var i = 0, l = pathEnv.length; i < l; i ++) {
+    var p = path.join(pathEnv[i], cmd)
+    for (var j = 0, ll = pathExt.length; j < ll; j ++) {
+      var cur = p + pathExt[j]
+      var stat
+      try { stat = fs.statSync(cur) } catch (ex) {}
+      if (stat &&
+          stat.isFile() &&
+          isExe(stat.mode, stat.uid, stat.gid)) return cur
+    }
+  }
+  throw new Error("not found: "+cmd)
+}
+
+var isAbsolute = process.platform === "win32" ? absWin : absUnix
+
+function absWin (p) {
+  if (absUnix(p)) return true
+  // pull off the device/UNC bit from a windows path.
+  // from node's lib/path.js
+  var splitDeviceRe =
+        /^([a-zA-Z]:|[\\\/]{2}[^\\\/]+[\\\/][^\\\/]+)?([\\\/])?/
+    , result = splitDeviceRe.exec(p)
+    , device = result[1] || ''
+    , isUnc = device && device.charAt(1) !== ':'
+    , isAbsolute = !!result[2] || isUnc // UNC paths are always absolute
+
+  return isAbsolute
+}
+
+function absUnix (p) {
+  return p.charAt(0) === "/" || p === ""
+}

@@ -19,7 +19,7 @@ cmder
     .description('a cross platform remote tty tool')
     .usage('[options] [args_to_bin...]')
     .option('-o, --host <host>', 'the host [127.0.0.1]', '127.0.0.1')
-    .option('-p, --port <port>', 'the port [8080]', 8080)
+    .option('-p, --port <port>', 'the port [8080]')
     .option('-s, --server', 'start as tunnel server')
     .option('-b, --bin <cmd>', 'the init cmd to run')
     .option('-y, --noPty', 'run server without pty mode')
@@ -222,15 +222,25 @@ function runClient () {
 
 kit.logs('pid:', process.pid);
 
+
+var notHost = cmder.host;
+var notHostPort = cmder.port;
+
+_.defaults(cmder, {
+    port: 8080
+})
+
 if (cmder.server) {
     if (cmder.tunnel) {
+        cmder.host = '127.0.0.1';
         cmder.port = 0;
         runServer().then(function (ctx) {
             return not({
                 name: cmder.name,
                 key: cmder.key,
                 xport: ctx.server.address().port,
-                host: cmder.host
+                host: notHost,
+                hostPort: notHostPort
             })
         }).catch(kit.throw);
     } else {
@@ -243,7 +253,8 @@ if (cmder.server) {
             targetName: cmder.name,
             key: cmder.key,
             port: 0,
-            host: cmder.host
+            host: notHost,
+            hostPort: notHostPort
         }).then(function (ctx) {
             cmder.host = '127.0.0.1';
             cmder.port = ctx.server.address().port;

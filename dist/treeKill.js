@@ -1,1 +1,113 @@
-"use strict";function killAll(e,r,c){var i={};try{Object.keys(e).forEach(function(c){e[c].forEach(function(e){i[e]||(killPid(e,r),i[e]=1)}),i[c]||(killPid(c,r),i[c]=1)})}catch(e){if(c)return c(e);throw e}if(c)return c()}function killPid(e,r){try{process.kill(parseInt(e,10),r)}catch(e){if("ESRCH"!==e.code)throw e}}function buildProcessTree(e,r,c,i,n){var s=i(e),t="";s.stdout.on("data",function(e){var e=e.toString("ascii");t+=e});var o=function(s){return delete c[e],0!=s?void(0==Object.keys(c).length&&n()):void t.match(/\d+/g).forEach(function(s){s=parseInt(s,10),r[e].push(s),r[s]=[],c[s]=1,buildProcessTree(s,r,c,i,n)})};s.on("close",o)}var childProcess=require("child_process"),whichSync=require("./whichSync"),spawn=childProcess.spawn,exec=childProcess.exec,isPgrep=!1;try{whichSync("pgrep"),isPgrep=!0}catch(e){}module.exports=function(e,r,c){var i={},n={};switch(i[e]=[],n[e]=1,process.platform){case"win32":exec("taskkill /pid "+e+" /T /F",c);break;case"darwin":buildProcessTree(e,i,n,function(e){return spawn("pgrep",["-P",e])},function(){killAll(i,r,c)});break;default:buildProcessTree(e,i,n,function(e){return isPgrep?spawn("pgrep",["-P",e]):spawn("ps",["-o","pid","--no-headers","--ppid",e])},function(){killAll(i,r,c)})}};
+/**
+ * https://github.com/pkrumins/node-tree-kill
+ */
+
+'use strict';
+
+var childProcess = require('child_process');
+var whichSync = require('./whichSync');
+var spawn = childProcess.spawn;
+var exec = childProcess.exec;
+
+var isPgrep = false;
+try {
+    whichSync('pgrep');
+    isPgrep = true;
+} catch (err) {}
+
+module.exports = function (pid, signal, callback) {
+    var tree = {};
+    var pidsToProcess = {};
+    tree[pid] = [];
+    pidsToProcess[pid] = 1;
+
+    switch (process.platform) {
+    case 'win32':
+        exec('taskkill /pid ' + pid + ' /T /F', callback);
+        break;
+    case 'darwin':
+        buildProcessTree(pid, tree, pidsToProcess, function (parentPid) {
+            return spawn('pgrep', ['-P', parentPid]);
+        }, function () {
+            killAll(tree, signal, callback);
+        });
+        break;
+    default: // Linux
+        buildProcessTree(pid, tree, pidsToProcess, function (parentPid) {
+            if (isPgrep)
+                return spawn('pgrep', ['-P', parentPid]);
+            else
+                return spawn('ps', ['-o', 'pid', '--no-headers', '--ppid', parentPid]);
+        }, function () {
+            killAll(tree, signal, callback);
+        });
+        break;
+    }
+};
+
+function killAll (tree, signal, callback) {
+    var killed = {};
+    try {
+        Object.keys(tree).forEach(function (pid) {
+            tree[pid].forEach(function (pidpid) {
+                if (!killed[pidpid]) {
+                    killPid(pidpid, signal);
+                    killed[pidpid] = 1;
+                }
+            });
+            if (!killed[pid]) {
+                killPid(pid, signal);
+                killed[pid] = 1;
+            }
+        });
+    } catch (err) {
+        if (callback) {
+            return callback(err);
+        } else {
+            throw err;
+        }
+    }
+    if (callback) {
+        return callback();
+    }
+}
+
+function killPid(pid, signal) {
+    try {
+        process.kill(parseInt(pid, 10), signal);
+    }
+    catch (err) {
+        if (err.code !== 'ESRCH') throw err;
+    }
+}
+
+function buildProcessTree (parentPid, tree, pidsToProcess, spawnChildProcessesList, cb) {
+    var ps = spawnChildProcessesList(parentPid);
+    var allData = '';
+    ps.stdout.on('data', function (data) {
+        var data = data.toString('ascii');
+        allData += data;
+    });
+
+    var onClose = function (code) {
+        delete pidsToProcess[parentPid];
+
+        if (code != 0) {
+            // no more parent processes
+            if (Object.keys(pidsToProcess).length == 0) {
+                cb();
+            }
+            return;
+        }
+
+        allData.match(/\d+/g).forEach(function (pid) {
+          pid = parseInt(pid, 10);
+          tree[parentPid].push(pid);
+          tree[pid] = [];
+          pidsToProcess[pid] = 1;
+          buildProcessTree(pid, tree, pidsToProcess, spawnChildProcessesList, cb);
+        });
+    };
+
+    ps.on('close', onClose);
+}

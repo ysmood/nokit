@@ -1,1 +1,94 @@
-function genSpaces(e){for(var n="",r=e;r--;)n+=" ";return n}function indentSpaces(e){return e>100?genSpaces(e):spaces.substr(0,e)}function traverse(e,n,r){if(e===nil);else if(null===e)$str+="null";else{var t,s,a=e.constructor;switch(a!==Array&&a!==Object||r!==Array&&r!==Object||(n+=$indent),a){case String:$str+=complexStrReg.test(e)?"|-"+$indent+"\n"+e.replace(beginReg,indentSpaces($indent+n)):"'"+e+"'";break;case Number:$str+=e;break;case Array:for(s=e.length,t=0;t<s;t++)$str+="\n"+indentSpaces(n)+"- ",traverse(e[t],n,a);break;case Boolean:$str+=e;break;default:for(t in e)$str+="\n"+indentSpaces(n)+t+": ",traverse(e[t],n,a)}}}var nil,complexStrReg=/[\n']/,beginReg=/^/gm,spaces=genSpaces(100);module.exports=function(e,n){return e===nil?nil:($str="",$indent=n||4,traverse(e,0),$str)};var $str,$indent;
+var nil;
+var complexStrReg = /[\n']/
+var beginReg =  /^/mg
+var spaces = genSpaces(100);
+
+module.exports = function (obj, indent) {
+    if (obj === nil) return nil;
+
+    $str = '';
+    $indent = indent || 4;
+
+    traverse(obj, 0);
+
+    return $str;
+};
+
+var $str;
+var $indent;
+
+function genSpaces (indent) {
+    var spaces = '';
+    for (var i = indent; i--;) {
+        spaces += ' ';
+    }
+    return spaces;
+}
+
+function indentSpaces (indent) {
+    if (indent > 100) {
+        return genSpaces(indent);
+    } else {
+        return spaces.substr(0, indent);
+    }
+}
+
+function traverse (node, indent, parent) {
+    if (node === nil) {
+    } else if (node === null) {
+        $str += 'null';
+    } else {
+        var i, len;
+        var con = node.constructor;
+
+        if ((con === Array || con === Object) &&
+            (parent === Array || parent === Object)) {
+            indent += $indent;
+        }
+
+        switch (con) {
+        case String:
+            if (complexStrReg.test(node)) {
+                $str += '|-' + $indent + '\n' +
+                    node.replace(beginReg, indentSpaces($indent + indent));
+            } else {
+                $str += "'" + node + "'";
+            }
+            break;
+
+        case Number:
+            $str += node;
+            break;
+
+        case Array:
+            len = node.length
+
+            for (i = 0; i < len; i++) {
+                $str += '\n' + indentSpaces(indent) + '- ';
+                traverse(node[i], indent, con);
+            }
+            break;
+
+        case Boolean:
+            $str += node;
+            break;
+
+        default: // Object
+            for (i in node) {
+                $str += '\n' + indentSpaces(indent) + i + ': ';
+                traverse(node[i], indent, con);
+            }
+            break;
+        }
+    }
+}
+
+/*
+a: 10
+b:
+    c: 10
+    d: 1
+
+-
+    - 10
+ */

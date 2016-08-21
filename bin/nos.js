@@ -36,7 +36,7 @@ Promise.resolve().then(function () {
     var cwd = process.cwd();
 
     var dir = cmder.args[0] || '.';
-    var staticOpts, indexOpts;
+    var staticOpts = {}, indexOpts = {};
 
     app.push(function ($) {
         kit.logs(br.grey('access: ' + $.req.url));
