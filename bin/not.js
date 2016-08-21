@@ -28,6 +28,10 @@ cmder
     .option('-a, --algorithm <name>', 'the algorithm to secure the transport layer [aes-128-cfb]', 'aes-128-cfb')
 .parse(process.argv);
 
+if (cmder.name === null) {
+    cmder.name = getId(8);
+}
+
 var supportedAlgorithms = [
     'rc4',
     'aes-128-cfb',
@@ -62,6 +66,8 @@ function runServer () {
 
     function addClient (sock) {
         tcpFrame(sock);
+
+        sock.clientNames = {};
 
         var name;
 
@@ -107,6 +113,8 @@ function runServer () {
 
                 // not equal to itself
                 if (targetClient && targetClient !== sock) {
+                    targetClient.clientNames[name] = true;
+
                     targetClient.writeFrame(encode({
                         nameFrom: name,
                         action: cmd.action,
@@ -114,7 +122,7 @@ function runServer () {
                         data: cmd.data
                     }));
                 } else {
-                    kit.logs('no such client with the name');
+                    kit.logs('no such client with the name', cmd.name, cmd.action);
                 }
                 break;
 
@@ -137,14 +145,16 @@ function runServer () {
 
             kit.logs('client closed:', name);
 
-            rmClient(name);
-
-            for (var k in clientList) {
-                clientList[k].writeFrame(encode({
-                    action: 'clientClosed',
-                    name: name
-                }))
+            for (var n in sock.clientNames) {
+                if (clientList[n]) {
+                    clientList[n].writeFrame(encode({
+                        action: 'clientClosed',
+                        name: name
+                    }));
+                }
             }
+
+            rmClient(name);
         });
     }
 
@@ -260,7 +270,7 @@ function runClient () {
 
         client.writeFrame(encode({
             type: 'name',
-            name: cmder.name || getId(8)
+            name: cmder.name
         }));
 
         client.on('frame', function (cmd) {
@@ -307,6 +317,7 @@ function runClient () {
             case 'nameExists':
                 kit.errs('name exists');
                 client.end();
+                process.exit();
                 break;
 
             case 'data':
@@ -376,6 +387,8 @@ function runClient () {
 
         conList[conId] = con;
 
+        con.nameFrom = cmder.targetName;
+
         con.pause();
 
         client.writeFrame(encode({
@@ -422,6 +435,8 @@ function runClient () {
             }));
         });
     });
+
+    kit.logs('name:', cmder.name);
 
     if (cmder.xport)
         kit.logs('expose port:', cmder.xport);
