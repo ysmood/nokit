@@ -10,6 +10,7 @@ var cmder = kit.requireOptional('commander', __dirname, '^2.9.0');
 var net = require('net');
 var events = require('events');
 var tcpFrame = require('../dist/tcpFrame');
+var not = require('../dist/not');
 var msgpack = kit.requireOptional('msgpack5', __dirname, '^3.4.0')();
 var encode = msgpack.encode;
 var decode = msgpack.decode;
@@ -72,6 +73,8 @@ function spawnTerm (cmd) {
 }
 
 function runServer () {
+    var defer = kit.Deferred();
+
     var server = net.createServer(function (sock) {
         tcpFrame(sock);
 
@@ -133,8 +136,14 @@ function runServer () {
     })
 
     server.listen(cmder.port, cmder.host, function () {
+        defer.resolve({
+            server: server
+        });
+
         kit.logs('listening on:', cmder.host + ':' + server.address().port);
     });
+
+    return defer.promise;
 }
 
 function runClient () {
@@ -215,47 +224,33 @@ kit.logs('pid:', process.pid);
 
 if (cmder.server) {
     if (cmder.tunnel) {
-        var tunnel = kit.spawn('node', [
-            kit.path.join(__dirname, 'not'),
-            '--name', cmder.name,
-            '--key', cmder.key,
-            '--xport', cmder.port,
-            '--host', cmder.host
-        ]).process;
-
-        process.on('exit', function () {
-            kit.treeKill(tunnel.pid);
-        });
-
-        tunnel.on('exit', function (code) {
-            process.exit(code);
-        });
-
-        cmder.host = '127.0.0.1'
+        cmder.port = 0;
+        runServer().then(function (ctx) {
+            return not({
+                name: cmder.name,
+                key: cmder.key,
+                xport: ctx.server.address().port,
+                host: cmder.host
+            })
+        }).catch(kit.throw);
+    } else {
+        runServer();
     }
 
-    runServer();
 } else {
     if (cmder.tunnel) {
-        var tunnel = kit.spawn('node', [
-            kit.path.join(__dirname, 'not'),
-            '--targetName', cmder.name,
-            '--key', cmder.key,
-            '--port', cmder.port,
-            '--host', cmder.host
-        ]).process;
+        not({
+            targetName: cmder.name,
+            key: cmder.key,
+            port: 0,
+            host: cmder.host
+        }).then(function (ctx) {
+            cmder.host = '127.0.0.1';
+            cmder.port = ctx.server.address().port;
 
-        process.on('exit', function () {
-            tunnel.kill();
-        });
-
-        tunnel.on('exit', function (code) {
-            process.exit(code);
-        });
-
-        cmder.host = '127.0.0.1';
+            runClient();
+        }, kit.throw);
+    } else {
+        runClient();
     }
-
-    runClient();
-
 }
