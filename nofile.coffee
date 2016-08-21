@@ -21,7 +21,6 @@ module.exports = (task, option) ->
 
 		buildJs = ->
 			kit.warp 'lib/**/*.js'
-			.load kit.drives.auto 'compress'
 			.run 'dist'
 
 		buildCoffee = ->
