@@ -10,8 +10,8 @@ var not = require('../dist/not');
 cmder
     .description('a tcp tunnel tool')
     .usage('[options]')
-    .option('-x, --xport <port>', 'the port to export', undefined)
-    .option('-n, --name <name>', 'the name of current client', undefined)
+    .option('-x, --xport <port>', 'the port to export')
+    .option('-n, --name <name>', 'the name of current client')
     .option('-t, --targetName <name>', 'the name of target client')
     .option('-p, --port <port>', 'the port to listen to [7000]', 7000)
     .option('--phost <host>', 'the host to listen to [127.0.0.1]', '127.0.0.1')

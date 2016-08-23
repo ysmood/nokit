@@ -6,6 +6,7 @@ var Promise = kit.Promise;
 var tcpFrame = require('./tcpFrame');
 var net = require('net');
 var crypto = require('crypto');
+var os = require('os');
 
 var msgpack = kit.requireOptional('msgpack5', __dirname, '^3.4.0')();
 
@@ -38,6 +39,8 @@ function runServer (opts) {
 
     function addClient (sock) {
         tcpFrame(sock);
+
+        sock.setKeepAlive(true, 10 * 1000);
 
         sock.clientNames = {};
 
@@ -307,7 +310,7 @@ function runClient (opts) {
             case 'nameExists':
                 kit.errs('name exists');
                 client.end();
-                defer.reject();
+                defer.reject(new Error('name exists'));
                 break;
 
             case 'data':
@@ -356,6 +359,8 @@ function runClient (opts) {
             }
         });
     });
+
+    client.setKeepAlive(true, 10 * 1000);
 
     tcpFrame(client);
 
@@ -447,7 +452,7 @@ function runClient (opts) {
 module.exports = function (opts) {
     _.defaults(opts, {
         xport: null,
-        name: getId(8),
+        name: opts.xport ? os.hostname() : getId(8),
         port: 7000,
         phost: '127.0.0.1',
         host: '0.0.0.0',
@@ -458,7 +463,7 @@ module.exports = function (opts) {
 
     if (supportedAlgorithms.indexOf(opts.algorithm) < 0) {
         console.error(br.red('algorithm must be one of:'), supportedAlgorithms);
-        return Promise.reject();
+        return Promise.reject(new Error('algorithm not supported'));
     }
 
     if (opts.server) {
