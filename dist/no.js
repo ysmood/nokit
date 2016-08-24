@@ -131,16 +131,18 @@ loadNofile = function() {
       return findPath(parent);
     }
   };
-  path = findPath(process.cwd());
-  if (path) {
-    dir = kit.path.dirname(path);
-    rdir = kit.path.relative('.', dir);
-    if (rdir) {
-      console.log(br.cyan('change working direcoty to: ') + br.green(rdir));
+  try {
+    path = findPath(process.cwd());
+    if (path) {
+      dir = kit.path.dirname(path);
+      rdir = kit.path.relative('.', dir);
+      if (rdir) {
+        console.log(br.cyan('change working direcoty to: ') + br.green(rdir));
+      }
+      process.chdir(dir);
+      return load(path);
     }
-    process.chdir(dir);
-    return load(path);
-  }
+  } catch (undefined) {}
   return error('Cannot find nofile');
 };
 
