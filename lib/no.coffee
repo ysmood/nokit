@@ -103,18 +103,19 @@ loadNofile = ->
 		else
 			return findPath parent
 
-	path = findPath process.cwd()
+	try
+		path = findPath process.cwd()
 
-	if path
-		dir = kit.path.dirname path
+		if path
+			dir = kit.path.dirname path
 
-		rdir = kit.path.relative '.', dir
-		if rdir
-			console.log br.cyan('change working direcoty to: ') + br.green rdir
+			rdir = kit.path.relative '.', dir
+			if rdir
+				console.log br.cyan('change working direcoty to: ') + br.green rdir
 
-		process.chdir dir
+			process.chdir dir
 
-		return load path
+			return load path
 
 	error 'Cannot find nofile'
 
