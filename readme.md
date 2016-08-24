@@ -177,6 +177,7 @@ Goto [changelog](doc/changelog.md)
   - [spawn(cmd, args, opts)](#spawncmd-args-opts)
   - [sse](#sse)
   - [task(name, opts, fn)](#taskname-opts-fn)
+  - [treeKill(pid, signal, callback)](#treekillpid-signal-callback)
   - [url](#url)
   - [warp(from, opts)](#warpfrom-opts)
   - [which(name)](#whichname)
@@ -1369,12 +1370,24 @@ Goto [changelog](doc/changelog.md)
         );
         ```
 
-- ## **[url](lib/kit.coffee?source#L2036)**
+- ## **[treeKill(pid, signal, callback)](lib/kit.coffee?source#L2036)**
+
+    Cross-platform kill process tree by root process id.
+
+    - **<u>param</u>**: `pid` { _Number_ }
+
+    - **<u>param</u>**: `signal` { _String | Number_ }
+
+        Such as 'SIGINT'
+
+    - **<u>param</u>**: `callback` { _Function_ }
+
+- ## **[url](lib/kit.coffee?source#L2042)**
 
     The `url` module of node.
     You must `kit.require 'url'` before using it.
 
-- ## **[warp(from, opts)](lib/kit.coffee?source#L2151)**
+- ## **[warp(from, opts)](lib/kit.coffee?source#L2157)**
 
     Works much like `gulp.src`, but with Promise instead.
     The warp control and error handling is more pleasant.
@@ -1499,7 +1512,7 @@ Goto [changelog](doc/changelog.md)
         .run('dist');
         ```
 
-- ## **[which(name)](lib/kit.coffee?source#L2228)**
+- ## **[which(name)](lib/kit.coffee?source#L2234)**
 
     Same as the unix `which` command.
     You must `kit.require 'which'` before using it.
@@ -1510,14 +1523,14 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _Promise_ }
 
-- ## **[whichSync](lib/kit.coffee?source#L2235)**
+- ## **[whichSync](lib/kit.coffee?source#L2241)**
 
     Sync version of `which`.
     You must `kit.require 'whichSync'` before using it.
 
     - **<u>type</u>**: { _Function_ }
 
-- ## **[xinspect(obj, opts)](lib/kit.coffee?source#L2246)**
+- ## **[xinspect(obj, opts)](lib/kit.coffee?source#L2252)**
 
     For debugging. Dump a colorful object.
 
@@ -1534,7 +1547,7 @@ Goto [changelog](doc/changelog.md)
 
     - **<u>return</u>**: { _String_ }
 
-- ## **[xopen(cmds, opts)](lib/kit.coffee?source#L2269)**
+- ## **[xopen(cmds, opts)](lib/kit.coffee?source#L2275)**
 
     Open a thing that your system can recognize.
     Now only support Windows, OSX or system that installed 'xdg-open'.

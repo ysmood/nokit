@@ -2027,6 +2027,12 @@ _.extend kit, fs, yutils,
                 Promise.all names.map (name) ->
                     task(name) opts.init
 
+    ###*
+     * Cross-platform kill process tree by root process id.
+     * @param  {Number} pid
+     * @param  {String | Number} signal Such as 'SIGINT'
+     * @param  {Function} callback
+    ###
     treeKill: null
 
     ###*

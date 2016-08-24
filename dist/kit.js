@@ -2232,6 +2232,13 @@ _.extend(kit, fs, yutils, {
       }
     };
   },
+
+  /**
+   * Cross-platform kill process tree by root process id.
+   * @param  {Number} pid
+   * @param  {String | Number} signal Such as 'SIGINT'
+   * @param  {Function} callback
+   */
   treeKill: null,
 
   /**
