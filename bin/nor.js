@@ -28,6 +28,10 @@ cmder
     .option('-k, --key <str>', 'key for the not tunnel mode')
 .parse(process.argv);
 
+if (_.isFunction(cmder.name)) {
+    cmder.name = undefined;
+}
+
 function spawnTerm (cmd) {
     var term;
 
@@ -114,9 +118,9 @@ function runServer () {
                     kit.logs('client closed');
                 });
 
-                sock.on('error', function () {
+                sock.on('error', function (err) {
                     term.kill();
-                    kit.logs('client closed')
+                    kit.logs('client socket error:', err)
                 });
                 break;
 
@@ -249,6 +253,9 @@ if (cmder.server) {
 
 } else {
     if (cmder.tunnel) {
+        if (!cmder.name)
+            throw new Error('name is required');
+
         not({
             targetName: cmder.name,
             key: cmder.key,
