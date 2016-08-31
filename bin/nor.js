@@ -22,7 +22,7 @@ cmder
     .option('-p, --port <port>', 'the port [8080]')
     .option('-s, --server', 'start as tunnel server')
     .option('-b, --bin <cmd>', 'the init cmd to run')
-    .option('-y, --noPty', 'run server without pty mode')
+    .option('-y, --pty', 'run server in pty mode')
     .option('-t, --tunnel', 'run as not tunnel mode')
     .option('-n, --name <str>', 'name for the not tunnel mode')
     .option('-k, --key <str>', 'key for the not tunnel mode')
@@ -35,7 +35,11 @@ if (_.isFunction(cmder.name)) {
 function spawnTerm (cmd) {
     var term;
 
-    if (cmder.noPty) {
+    if (cmder.pty) {
+        var pty = kit.requireOptional('ptyw.js', __dirname, '^0.4.0');
+
+        term = pty.spawn(cmd.bin, cmd.args, cmd.options);
+    } else {
         var ps = kit.spawn(cmd.bin, cmd.args, {
             stdio: 'pipe'
         }).process;
@@ -67,10 +71,6 @@ function spawnTerm (cmd) {
         };
 
         term.resize = _.noop;
-    } else {
-        var pty = kit.requireOptional('ptyw.js', __dirname, '^0.4.0');
-
-        term = pty.spawn(cmd.bin, cmd.args, cmd.options);
     }
 
     return term;
@@ -86,7 +86,7 @@ function runServer () {
 
         sock.writeFrame(encode({
             type: 'init',
-            noPty: cmder.noPty,
+            pty: cmder.pty,
             platform: process.platform,
             node: process.version,
             env: process.env
@@ -163,19 +163,33 @@ function runClient () {
             case 'init':
                 kit.logs('remote init');
 
-                if (cmd.noPty) {
-                    kit.logs('no pty');
-                    var bin = cmd.platform === 'win32' ? 'tasklist' : 'ps';
-                } else {
-                    process.stdin.setRawMode(true);
+                var defaultBin = cmd.platform === 'win32' ? 'cmd.exe' : '/bin/bash';
+                var defaultArgs = cmd.platform === 'win32' ? [] : ['-i'];
 
-                    var bin = cmd.platform === 'win32' ? 'cmd.exe' : '/bin/sh';
+                if (cmd.pty) {
+                    kit.logs('pty mode');
+
+                    process.stdin.setRawMode(true);
+                } else {
+                    process.stdin.on('data', function () {
+                        exitFlag = true;
+                    });
+
+                    var exitFlag = true;
+                    process.on('SIGINT', function () {
+                        if (exitFlag) {
+                            console.log(br.yellow('\nTo exit, press ^C again'));
+                            exitFlag = false;
+                        } else {
+                            sock.end();
+                        }
+                    });
                 }
 
                 sock.writeFrame(encode({
                     type: 'init',
-                    bin: cmder.bin || bin,
-                    args: cmder.args,
+                    bin: cmder.bin || defaultBin,
+                    args: cmder.args.length === 0 ? defaultArgs : cmder.args,
                     options: {
                         name: process.env.TERM,
                         rows: process.stdout.rows,
