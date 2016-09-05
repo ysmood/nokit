@@ -5,8 +5,9 @@ weightList = [0, 1, 2, 3, 4, 5].map (i) -> Math.pow(2, i * 7)
  * The algorithm is supports nearly infinity size of message.
  * Each message has three parts, "version", "header" and "body":
  *
- * | verion | header | body |
+ * | version | header | body |
  *
+ * All the rest part of the doc use big-endian order.
  * The size of version is fixed with 1 byte.
  * The size of the header is dynamically decided by the header itself.
  * The size of the body is decided by the header.

@@ -2303,13 +2303,12 @@ kit.warp('src/**/*.coffee')
         http.createServer(proxy.flow(middlewares)).listen(8123);
         ```
 
-- ## **[tcpFrame(socket, opts)](lib/proxy.coffee?source#L842)**
+- ## **[tcpFrame(socket, opts)](lib/proxy.coffee?source#L841)**
 
-    Send any size of package as you with a socket.
+    Send or receive any size of package over a socket.
     Add a `writeFrame` method and a `frame` event to `net.Socket` object.
-    The `writeFrame`'s signature is the same with the `net.Socket.write`,
-    the max package size is 4GB. The `frame` event is the same with the native
-    `data` event.
+    The `writeFrame`'s signature is same with the `net.Socket.write`.
+    The `frame` event is the same with the native stream's `data` event.
 
     - **<u>param</u>**: `socket` { _net.Socket_ }
 
@@ -2325,7 +2324,7 @@ kit.warp('src/**/*.coffee')
         }
         ```
 
-- ## **[url(opts)](lib/proxy.coffee?source#L914)**
+- ## **[url(opts)](lib/proxy.coffee?source#L913)**
 
     Use it to proxy one url to another.
 
@@ -2404,7 +2403,7 @@ kit.warp('src/**/*.coffee')
         ).listen(8123);
         ```
 
-- ## **[van(ctx)](lib/proxy.coffee?source#L1034)**
+- ## **[van(ctx)](lib/proxy.coffee?source#L1033)**
 
     Add a `van` method to flow context object. It's a helper to set
     and get the context body.

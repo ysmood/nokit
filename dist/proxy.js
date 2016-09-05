@@ -910,11 +910,10 @@ proxy = {
   },
 
   /**
-   * Send any size of package as you with a socket.
+   * Send or receive any size of package over a socket.
    * Add a `writeFrame` method and a `frame` event to `net.Socket` object.
-   * The `writeFrame`'s signature is the same with the `net.Socket.write`,
-   * the max package size is 4GB. The `frame` event is the same with the native
-   * `data` event.
+   * The `writeFrame`'s signature is same with the `net.Socket.write`.
+   * The `frame` event is the same with the native stream's `data` event.
    * @param {net.Socket} socket The nodejs native `net.Socket`.
    * @param {Object} opts Defaults
    * ```js
