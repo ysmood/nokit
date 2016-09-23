@@ -27,9 +27,37 @@ Nokit has provided a cli tool like GNU Make. If you install it globally like thi
 
 , then have fun with your `nofile`, it can be js, coffee, babeljs or livescript. For more information goto the `CLI` section.
 
-## CLI
 
-### The `no` Comamnd & nofile
+# Changelog
+
+Goto [changelog](doc/changelog.md)
+
+# API
+
+### Table of Content
+
+- #### CLI
+
+  - 
+
+- #### kit
+<%= doc['lib/kit.coffee-toc'] %>
+
+- #### proxy
+<%= doc['lib/proxy.coffee-toc'] %>
+
+- #### [drives](#drives-2)
+<%= doc['lib/drives.coffee-toc'] %>
+
+- #### sse
+<%= doc['lib/sse.coffee-toc'] %>
+
+<%= doc['lib/kit.coffee'] %>
+
+
+# CLI
+
+## The `no` Comamnd & nofile
 
 Create a `nofile.js` (or `.coffee`, `.ts`, etc) at your current working directory
 or any of its parents directory.
@@ -116,38 +144,36 @@ Then add comment:
 # nofile-pre-require: coffee-script/register
 ```
 
-### The `noe` Comamnd
+## runner
 
 `noe` is a dev tool to run / watch / reload program automatically. Run `noe -h` to see what you
 can do with it.
 
 
-### The `nos` Comamnd
+##  static file server
 
 `nos` is a tool to statically serve a folder. Run `nos -h` to see what you
 can do with it.
 
-# Changelog
 
-Goto [changelog](doc/changelog.md)
+## tcp tunnel
 
-# API
+`not` is a tcp tunnel tool.
 
-### Table of Content
+### Quick Start
+                                    a.com
+      +----------+  export port  +---------+  request port  +----------+
+      | Client A +-------------->|  Relay  |<---------------+ Client B |
+      +----------+               +---------+                +----------+
+ not -o a.com -x 8080 -n A          not -s                not -o a.com -t A
 
-- #### kit
-<%= doc['lib/kit.coffee-toc'] %>
+- Start a tunnel server to relay tcp from client to client: `not -s`
+  Here we assume the the server's address is a.com
 
-- #### proxy
-<%= doc['lib/proxy.coffee-toc'] %>
 
-- #### drives
-<%= doc['lib/drives.coffee-toc'] %>
+## remote tty
 
-- #### sse
-<%= doc['lib/sse.coffee-toc'] %>
-
-<%= doc['lib/kit.coffee'] %>
+`nor` is a cross platform remote tty tool.
 
 # drives
 
