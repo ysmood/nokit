@@ -167,9 +167,15 @@ can do with it.
       +----------+               +---------+                +----------+
  not -o a.com -x 8080 -n A          not -s                not -o a.com -t A
 
-- Start a tunnel server to relay tcp from client to client: `not -s`
+- Start Relay server to proxy tcp from client A to client B: `not -s`
   Here we assume the the server's address is a.com
 
+- Client A connect to Relay server and export self as A: `not -o a.com -n A`
+
+- Client B connect to Relay server and forword tcp to A: `not -o a.com -t A`
+
+That's all you need. Now your tcp connection to Client B's port 7000, will be the same as
+connection to Client A's port 8080.
 
 ## remote tty
 
