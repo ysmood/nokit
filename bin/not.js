@@ -9,7 +9,7 @@ var not = require('../dist/not');
 var os = require('os');
 
 cmder
-    .description('a tcp tunnel tool')
+    .description('a tcp/udp tunnel tool')
     .usage('[options]')
     .option('-x, --xport <port>', 'the port to export')
     .option('--xhost <host>', 'the host to export [127.0.0.1]')

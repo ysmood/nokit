@@ -5,6 +5,7 @@ var _ = kit._;
 var Promise = kit.Promise;
 var tcpFrame = require('./tcpFrame');
 var net = require('net');
+var dgram = require('dgram');
 var crypto = require('crypto');
 var os = require('os');
 
@@ -195,7 +196,7 @@ function runClient (opts) {
             var nameFrom = cmd.nameFrom;
             var conId = cmd.conId;
 
-            var toCon = net.connect(opts.xport, function () {
+            var toCon = net.connect(opts.xport, opts.xhost, function () {
                 client.writeFrame(encode({
                     type: 'to',
                     name: nameFrom,
@@ -321,6 +322,13 @@ function runClient (opts) {
                 }
                 break;
 
+            case 'udp':
+                udpClient.send(cmd.data, 0, cmd.data.length, opts.xport, opts.xhost, function (err) {
+                    if (err)
+                        kit.errs('client udp socket error: ' + err);
+                });
+                break;
+
             case 'end':
                 kit.logs('connection ended:', cmd.conId);
 
@@ -373,6 +381,8 @@ function runClient (opts) {
         kit.errs('client error:', err);
         restart();
     });
+
+    var udpClient = dgram.createSocket('udp4');
 
     var server = net.createServer(function (con) {
         con.cipher = crypto.createCipher(opts.algorithm, new Buffer(opts.key));
@@ -431,17 +441,31 @@ function runClient (opts) {
         });
     });
 
+    var udpServer = dgram.createSocket('udp4');
+    udpServer.on('message', function (msg) {
+        client.writeFrame(encode({
+            type: 'to',
+            name: opts.targetName,
+            action: 'udp',
+            data: msg
+        }));
+    });
+
     kit.logs('name:', opts.name);
 
     if (opts.xport)
-        kit.logs('expose port:', opts.xport);
+        kit.logs('export:', opts.xhost + ':' + opts.xport);
 
     if (opts.targetName) {
         server.listen(opts.port, opts.phost, function () {
             deferServer.resolve();
 
-            kit.logs('listening on', opts.phost + ':' + server.address().port);
+            kit.logs('tcp listening on', opts.phost + ':' + server.address().port);
         });
+
+        udpServer.bind(opts.port, opts.phost, function () {
+            kit.logs('udp listening on', opts.phost + ':' + udpServer.address().port);
+        })
     } else {
         deferServer.resolve();
     }
@@ -452,6 +476,7 @@ function runClient (opts) {
 module.exports = function (opts) {
     _.defaults(opts, {
         xport: null,
+        xhost: '127.0.0.1',
         name: opts.xport ? os.hostname() : getId(8),
         port: 7000,
         phost: '127.0.0.1',
