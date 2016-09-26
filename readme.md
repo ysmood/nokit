@@ -21,15 +21,133 @@ It's one of the core lib of [nobone](https://github.com/ysmood/nobone).
 
 As a lib dependency, install it locally: `npm i nokit`.
 
+# Changelog
+
+Goto [changelog](doc/changelog.md)
+
+# API
+
+### Table of Content
+
+- #### [CLI](#cli-1)
+
+  - [Task Manager](#task-manager)
+  - [Auto-Runner](auto-runner)
+  - [Static File Server](static-file-server)
+  - [Tunnel](#tunnel)
+  - [Temote TTY](#temote-tty)
+
+- #### kit
+  - [Overview](#overview)
+  - [_](#_)
+  - [browserHelper(opts)](#browserhelperopts)
+  - [brush](#brush)
+  - [depsCache(info)](#depscacheinfo)
+  - [daemonize(opts)](#daemonizeopts)
+  - [decrypt(data, password, algorithm)](#decryptdata-password-algorithm)
+  - [drives](#drives)
+  - [encrypt(data, password, algorithm)](#encryptdata-password-algorithm)
+  - [err(msg, opts)](#errmsg-opts)
+  - [errs(args)](#errsargs)
+  - [exec(cmd, shell)](#execcmd-shell)
+  - [formatComment(comments, opts)](#formatcommentcomments-opts)
+  - [fs](#fs)
+  - [fuzzySearch(keys, list, opts)](#fuzzysearchkeys-list-opts)
+  - [genModulePaths(moduleName, dir, modDir)](#genmodulepathsmodulename-dir-moddir)
+  - [indent(text, num, char, reg)](#indenttext-num-char-reg)
+  - [isDevelopment()](#isdevelopment)
+  - [isProduction()](#isproduction)
+  - [jhash](#jhash)
+  - [log(msg, action, opts)](#logmsg-action-opts)
+  - [logs(args)](#logsargs)
+  - [monitorApp(opts)](#monitorappopts)
+  - [nodeVersion()](#nodeversion)
+  - [defaultArgs(args, defaults)](#defaultargsargs-defaults)
+  - [parseComment(code, opts)](#parsecommentcode-opts)
+  - [parseDependency(entryPaths, opts)](#parsedependencyentrypaths-opts)
+  - [path](#path)
+  - [Promise](#promise)
+  - [proxy](#proxy)
+  - [regexReduce(reg, str, iter, init)](#regexreducereg-str-iter-init)
+  - [regexMap(reg, str, iter)](#regexmapreg-str-iter)
+  - [replace(str, pattern, iter)](#replacestr-pattern-iter)
+  - [replaceSync(str, pattern, iter)](#replacesyncstr-pattern-iter)
+  - [require(moduleName, dir, loaded)](#requiremodulename-dir-loaded)
+  - [requireOptional(name, dir, semver)](#requireoptionalname-dir-semver)
+  - [request(opts)](#requestopts)
+  - [semver](#semver)
+  - [spawn(cmd, args, opts)](#spawncmd-args-opts)
+  - [sse](#sse)
+  - [task(name, opts, fn)](#taskname-opts-fn)
+  - [treeKill(pid, signal, callback)](#treekillpid-signal-callback)
+  - [url](#url)
+  - [warp(from, opts)](#warpfrom-opts)
+  - [which(name)](#whichname)
+  - [whichSync](#whichsync)
+  - [xinspect(obj, opts)](#xinspectobj-opts)
+  - [xopen(cmds, opts)](#xopencmds-opts)
+
+- #### proxy
+  - [Overview](#overview)
+  - [body()](#body)
+  - [connect(opts)](#connectopts)
+  - [debugJs(opts)](#debugjsopts)
+  - [etag()](#etag)
+  - [file(opts)](#fileopts)
+  - [fileRequest(opts)](#filerequestopts)
+  - [flow](#flow)
+  - [flowToMid(fn)](#flowtomidfn)
+  - [match(pattern, opts)](#matchpattern-opts)
+  - [midToFlow(h)](#midtoflowh)
+  - [parseUrl()](#parseurl)
+  - [relayConnect(opts)](#relayconnectopts)
+  - [relayClient(opts)](#relayclientopts)
+  - [select(sel, middleware)](#selectsel-middleware)
+  - [serverHelper(opts)](#serverhelperopts)
+  - [static(opts)](#staticopts)
+  - [tcpFrame(socket, opts)](#tcpframesocket-opts)
+  - [url(opts)](#urlopts)
+  - [van(ctx)](#vanctx)
+
+- #### sse
+  - [sse(opts)](#sseopts)
+  - [self(req, res)](#selfreq-res)
+  - [sessions](#sessions)
+  - [emit(event, msg, [path])](#emitevent-msg-path)
+  - [create(req, res)](#createreq-res)
+  - [session](#session)
+  - [session.emit(event, msg)](#sessionemitevent-msg)
+
+- #### [drives](#drives-2)
+  - [Overview](#overview)
+  - [cleanCss(opts)](#cleancssopts)
+  - [coffee(opts)](#coffeeopts)
+  - [coffeelint(opts)](#coffeelintopts)
+  - [comment2md(path, opts)](#comment2mdpath-opts)
+  - [auto(action, opts)](#autoaction-opts)
+  - [changeDir(dir, filter)](#changedirdir-filter)
+  - [concat(name, dir)](#concatname-dir)
+  - [hashSuffix(hashMapPath)](#hashsuffixhashmappath)
+  - [jshint(opts)](#jshintopts)
+  - [less()](#less)
+  - [livescript(opts)](#livescriptopts)
+  - [reader(opts)](#readeropts)
+  - [stylus(opts)](#stylusopts)
+  - [uglifyjs(opts)](#uglifyjsopts)
+  - [writer()](#writer)
+
+
+# CLI
+
+## Task Manager
+
 Nokit has provided a cli tool like GNU Make. If you install it globally like this:
 
 `npm -g i nokit`
 
-, then have fun with your `nofile`, it can be js, coffee, babeljs or livescript. For more information goto the `CLI` section.
+, you can execute `no` command besides a 'nofile.js' file.
 
-## CLI
-
-### The `no` Comamnd & nofile
+### Quick Start
 
 Create a `nofile.js` (or `.coffee`, `.ts`, etc) at your current working directory
 or any of its parents directory.
@@ -116,123 +234,57 @@ Then add comment:
 # nofile-pre-require: coffee-script/register
 ```
 
-### The `noe` Comamnd
+
+## Auto-Runner
 
 `noe` is a dev tool to run / watch / reload program automatically. Run `noe -h` to see what you
 can do with it.
 
+For more help, run: `noe -h`.
 
-### The `nos` Comamnd
+
+## Static File Server
 
 `nos` is a tool to statically serve a folder. Run `nos -h` to see what you
 can do with it.
 
-# Changelog
+For more help, run: `nos -h`.
 
-Goto [changelog](doc/changelog.md)
 
-# API
+## Tunnel
 
-### Table of Content
+`not` is a tcp/udp tunnel tool. Now the only the tcp packet will be encrypted, upd will sent as raw data.
 
-- #### kit
-  - [Overview](#overview)
-  - [_](#_)
-  - [browserHelper(opts)](#browserhelperopts)
-  - [brush](#brush)
-  - [depsCache(info)](#depscacheinfo)
-  - [daemonize(opts)](#daemonizeopts)
-  - [decrypt(data, password, algorithm)](#decryptdata-password-algorithm)
-  - [drives](#drives)
-  - [encrypt(data, password, algorithm)](#encryptdata-password-algorithm)
-  - [err(msg, opts)](#errmsg-opts)
-  - [errs(args)](#errsargs)
-  - [exec(cmd, shell)](#execcmd-shell)
-  - [formatComment(comments, opts)](#formatcommentcomments-opts)
-  - [fs](#fs)
-  - [fuzzySearch(keys, list, opts)](#fuzzysearchkeys-list-opts)
-  - [genModulePaths(moduleName, dir, modDir)](#genmodulepathsmodulename-dir-moddir)
-  - [indent(text, num, char, reg)](#indenttext-num-char-reg)
-  - [isDevelopment()](#isdevelopment)
-  - [isProduction()](#isproduction)
-  - [jhash](#jhash)
-  - [log(msg, action, opts)](#logmsg-action-opts)
-  - [logs(args)](#logsargs)
-  - [monitorApp(opts)](#monitorappopts)
-  - [nodeVersion()](#nodeversion)
-  - [defaultArgs(args, defaults)](#defaultargsargs-defaults)
-  - [parseComment(code, opts)](#parsecommentcode-opts)
-  - [parseDependency(entryPaths, opts)](#parsedependencyentrypaths-opts)
-  - [path](#path)
-  - [Promise](#promise)
-  - [proxy](#proxy)
-  - [regexReduce(reg, str, iter, init)](#regexreducereg-str-iter-init)
-  - [regexMap(reg, str, iter)](#regexmapreg-str-iter)
-  - [replace(str, pattern, iter)](#replacestr-pattern-iter)
-  - [replaceSync(str, pattern, iter)](#replacesyncstr-pattern-iter)
-  - [require(moduleName, dir, loaded)](#requiremodulename-dir-loaded)
-  - [requireOptional(name, dir, semver)](#requireoptionalname-dir-semver)
-  - [request(opts)](#requestopts)
-  - [semver](#semver)
-  - [spawn(cmd, args, opts)](#spawncmd-args-opts)
-  - [sse](#sse)
-  - [task(name, opts, fn)](#taskname-opts-fn)
-  - [treeKill(pid, signal, callback)](#treekillpid-signal-callback)
-  - [url](#url)
-  - [warp(from, opts)](#warpfrom-opts)
-  - [which(name)](#whichname)
-  - [whichSync](#whichsync)
-  - [xinspect(obj, opts)](#xinspectobj-opts)
-  - [xopen(cmds, opts)](#xopencmds-opts)
+For more help, run: `not -h`.
 
-- #### proxy
-  - [Overview](#overview)
-  - [body()](#body)
-  - [connect(opts)](#connectopts)
-  - [debugJs(opts)](#debugjsopts)
-  - [etag()](#etag)
-  - [file(opts)](#fileopts)
-  - [fileRequest(opts)](#filerequestopts)
-  - [flow](#flow)
-  - [flowToMid(fn)](#flowtomidfn)
-  - [match(pattern, opts)](#matchpattern-opts)
-  - [midToFlow(h)](#midtoflowh)
-  - [parseUrl()](#parseurl)
-  - [relayConnect(opts)](#relayconnectopts)
-  - [relayClient(opts)](#relayclientopts)
-  - [select(sel, middleware)](#selectsel-middleware)
-  - [serverHelper(opts)](#serverhelperopts)
-  - [static(opts)](#staticopts)
-  - [tcpFrame(socket, opts)](#tcpframesocket-opts)
-  - [url(opts)](#urlopts)
-  - [van(ctx)](#vanctx)
+### Quick Start
 
-- #### drives
-  - [Overview](#overview)
-  - [cleanCss(opts)](#cleancssopts)
-  - [coffee(opts)](#coffeeopts)
-  - [coffeelint(opts)](#coffeelintopts)
-  - [comment2md(path, opts)](#comment2mdpath-opts)
-  - [auto(action, opts)](#autoaction-opts)
-  - [changeDir(dir, filter)](#changedirdir-filter)
-  - [concat(name, dir)](#concatname-dir)
-  - [hashSuffix(hashMapPath)](#hashsuffixhashmappath)
-  - [jshint(opts)](#jshintopts)
-  - [less()](#less)
-  - [livescript(opts)](#livescriptopts)
-  - [reader(opts)](#readeropts)
-  - [stylus(opts)](#stylusopts)
-  - [uglifyjs(opts)](#uglifyjsopts)
-  - [writer()](#writer)
+```text
+                                    a.com
+      +----------+  export port  +---------+  connect port  +----------+
+      | Client A +-------------->|  Relay  |<---------------+ Client B |
+      +----------+               +---------+                +----------+
+ not -o a.com -x 8080 -n A          not -s                not -o a.com -t A
+```
 
-- #### sse
-  - [sse(opts)](#sseopts)
-  - [self(req, res)](#selfreq-res)
-  - [sessions](#sessions)
-  - [emit(event, msg, [path])](#emitevent-msg-path)
-  - [create(req, res)](#createreq-res)
-  - [session](#session)
-  - [session.emit(event, msg)](#sessionemitevent-msg)
+0. Start Relay server to proxy tcp/udp: `not -s`,
+  Here we assume the the server's address is a.com
+
+0. Client A connect to Relay server and export self as A: `not -o a.com -n A`
+
+0. Client B connect to Relay server and forward tcp/udp to A: `not -o a.com -t A`
+
+That's all you need. Now your packet to Client B's port 7000, will be transparently forward
+to Client A's port 8080.
+
+
+## Temote TTY
+
+`nor` is a cross platform remote tty tool.
+
+For more help, run: `nor -h`.
+
+# kit
 
 - ## **[Overview](lib/kit.coffee?source#L32)**
 
@@ -1574,337 +1626,6 @@ Goto [changelog](doc/changelog.md)
 
 
 
-# drives
-
-## Quick Start
-
-Here it will automatically lint, compile, compress and cache files by their extensions. You can goto Drives section to see what extensions are supported,
-or write your own.
-
-```js
-let kit = require('nokit');
-let drives = kit.require('drives');
-
-kit.warp('src/**/*.@(jade|less|coffee|ls)')
-    // // To disable cache.
-    // .load drives.reader isCache: false
-    .load(drives.auto('lint'))
-    .load(drives.auto('compile', { '.coffee': { bare: false } }))
-    .load(drives.auto('compress'))
-    .load(concat('main.js'))
-.run('dist/path');
-```
-
-### Write your own drives
-
-Nokit has already provided some handy example drives, you
-can check them in the Drives section. It's fairly easy to
-write your own.
-
-```js
-let kit = require('nokit');
-let coffee = require('coffee-script');
-
-// A drive for coffee, a simple curried function.
-let compiler = (opts) => function () {
-    // Change extension from '.coffee' to '.js'.
-    this.dest.ext = '.js';
-    this.set(coffee.compile(this.contents, opts));
-};
-
-// A drive to prepend lisence to each file.
-// Here "fileInfo.set" is the same with the "@set".
-let lisencer = (lisence) => function (fileInfo) {
-    this.set(lisence + '\n' + this.contents)
-}
-
-// A drive to concat all files. It will override the default writer.
-let concat = (outputFile) => {
-    let all = '';
-
-    // Object.assign
-    return kit._.assign(function () {
-        all += this.contents;
-    }, { isWriter: true, onEnd: function () {
-        // This will enable the auto-cache.
-        this.deps = kit._.pluck(this.list, 'path');
-
-        this.dest = this.to + '/' + outputFile;
-        this.set(all);
-
-        // Call the overrided writer.
-        // Call two times and create two output files.
-        this.super().then(() => {
-            this.dest = this.dest + '.info';
-            this.set = '/* info */\n' + all;
-            this.super();
-        });
-    } });
-};
-
-kit.warp('src/**/*.coffee')
-    .load(compiler(bare: true))
-    .load(lisencer('/* MIT lisence */'))
-    .load(concat('bundle.js'))
-.run('dist')
-.then(() => {
-    kit.log('Build Done');
-});
-```
-
-- ## **[Overview](lib/drives.coffee?source#L10)**
-
-    The built-in plguins for warp. It's more like examples
-    to show how to use nokit efficiently.
-
-- ## **[cleanCss(opts)](lib/drives.coffee?source#L19)**
-
-    clean-css
-
-    - **<u>param</u>**: `opts` { _Object_ }
-
-    - **<u>return</u>**: { _Function_ }
-
-- ## **[coffee(opts)](lib/drives.coffee?source#L33)**
-
-    coffee-script compiler
-
-    - **<u>param</u>**: `opts` { _Object_ }
-
-        Default is `{ bare: true }`.
-
-    - **<u>return</u>**: { _Function_ }
-
-- ## **[coffeelint(opts)](lib/drives.coffee?source#L68)**
-
-    coffeelint processor
-
-    - **<u>param</u>**: `opts` { _Object_ }
-
-        It extends the default config
-        of coffeelint, properties:
-        ```js
-        {
-         colorize: true,
-         reporter: 'default',
-
-         // The json of the "coffeelint.json".
-         // If it's null, coffeelint will try to find
-         // "coffeelint.json" as its content.
-         config: null | JSON | JsonFilePath
-        }
-        ```
-
-    - **<u>return</u>**: { _Function_ }
-
-- ## **[comment2md(path, opts)](lib/drives.coffee?source#L123)**
-
-    Parse commment from a js, coffee, or livescript file,
-    and output a markdown string.
-
-    - **<u>param</u>**: `path` { _String_ }
-
-    - **<u>param</u>**: `opts` { _Object_ }
-
-        Defaults:
-        ```js
-        {
-         // Output doc path.
-         out: 'readme.md',
-
-         // jst template path.
-         tpl: 'readme.jst.md',
-
-         // Init doc info.
-         doc: {},
-
-         // Header size.
-         h: 3,
-
-         parseComment: () => {},
-         formatComment: () => {}
-        }
-        ```
-
-    - **<u>return</u>**: { _Function_ }
-
-    - **<u>example</u>**:
-
-        The nofile of nokit shows how to use it.
-
-- ## **[auto(action, opts)](lib/drives.coffee?source#L187)**
-
-    Auto-compiler file by extension. It will search through
-    `kit.drives`, and find proper drive to run the task.
-    You can extend `kit.drives` to let it support more.
-    For example:
-    ```js
-    kit.drives.myCompiler = kit._.extend(() => {
-        // your compile logic
-    }), { compiler: ['.jsx'] })
-    ```
-
-    - **<u>param</u>**: `action` { _String_ }
-
-        By default, it can be
-        'compile' or 'compress' or 'lint'
-
-    - **<u>param</u>**: `opts` { _Object_ }
-
-        ```js
-        {
-         // If no compiler match.
-         onNotFound: (fileInfo) => {}
-        }
-        ```
-
-    - **<u>return</u>**: { _Function_ }
-
-- ## **[changeDir(dir, filter)](lib/drives.coffee?source#L223)**
-
-    Change dest path with a filter.
-
-    - **<u>param</u>**: `dir` { _String_ }
-
-    - **<u>param</u>**: `filter` { _Function_ }
-
-        `(fileInfo, dir) -> Boolean`
-
-    - **<u>return</u>**: { _Function_ }
-
-- ## **[concat(name, dir)](lib/drives.coffee?source#L238)**
-
-    a batch file concat helper
-
-    - **<u>param</u>**: `name` { _String_ }
-
-        The output file path.
-
-    - **<u>param</u>**: `dir` { _String_ }
-
-        Optional. Override the dest of warp's.
-
-    - **<u>return</u>**: { _Function_ }
-
-- ## **[hashSuffix(hashMapPath)](lib/drives.coffee?source#L258)**
-
-    Suffix file name with the hash value of file content.
-
-    - **<u>param</u>**: `hashMapPath` { _String_ }
-
-        The output file name hash map.
-
-    - **<u>return</u>**: { _Function_ }
-
-- ## **[jshint(opts)](lib/drives.coffee?source#L283)**
-
-    Lint js via `jshint`.
-
-    - **<u>param</u>**: `opts` { _Object_ }
-
-        Properties:
-        ```js
-        {
-         global: null,
-         config: null | JSON | JsonFilePath
-        }
-        ```
-
-    - **<u>return</u>**: { _Function_ }
-
-- ## **[less()](lib/drives.coffee?source#L316)**
-
-    Compile less.
-
-    - **<u>param</u>**: { _Object_ }
-
-    - **<u>return</u>**: { _Function_ }
-
-- ## **[livescript(opts)](lib/drives.coffee?source#L343)**
-
-    LiveScript compiler.
-
-    - **<u>param</u>**: `opts` { _Object_ }
-
-        Default is `{ bare: true }`.
-
-    - **<u>return</u>**: { _Function_ }
-
-- ## **[reader(opts)](lib/drives.coffee?source#L374)**
-
-    read file and set `contents`
-
-    - **<u>param</u>**: `opts` { _Object_ }
-
-        Defaults:
-        ```js
-        {
-         isCache: false,
-         encoding: 'utf8',
-         cacheDir: '.nokit/warp'
-        }
-        ```
-
-    - **<u>return</u>**: { _Function_ }
-
-- ## **[stylus(opts)](lib/drives.coffee?source#L443)**
-
-    Compile stylus.
-
-    - **<u>param</u>**: `opts` { _Object_ }
-
-        It will use `stylus.set` to
-        iterate `opts` and set the key-value, is the value is
-        not a function.
-        ```js
-        {
-         config: (styl) => {}
-        }
-        ```
-
-    - **<u>return</u>**: { _Function_ }
-
-    - **<u>example</u>**:
-
-        ```js
-        kit.drives.stylus({
-         compress: true,
-         config: (styl) =>
-             styl.define('jack', 'a persion')
-        });
-        ```
-
-- ## **[uglifyjs(opts)](lib/drives.coffee?source#L485)**
-
-    uglify-js processor
-
-    - **<u>param</u>**: `opts` { _Object_ }
-
-        Defaults:
-        ```js
-        {
-            output: {
-                comments: (node, comment) => {
-                    let text = comment.value;
-                    let type = comment.type;
-                    if (type === "comment2")
-                        return /@preserve|@license|@cc_on/i.test(text);
-                }
-            }
-        }
-        ```
-
-    - **<u>return</u>**: { _Function_ }
-
-- ## **[writer()](lib/drives.coffee?source#L510)**
-
-    Output file by `contents` and `dest`.
-    If the 'ext' or 'name' is not null,
-    the 'base' will be override by the 'ext' and 'name'.
-
-    - **<u>return</u>**: { _Function_ }
-
-
 
 # proxy
 
@@ -2412,6 +2133,7 @@ kit.warp('src/**/*.coffee')
 
 
 
+
 # sse
 
 - ## **[sse(opts)](lib/sse.coffee?source#L45)**
@@ -2534,6 +2256,339 @@ kit.warp('src/**/*.coffee')
     - **<u>param</u>**: `msg` { _Object | String_ }
 
         The message to send to the client.
+
+
+
+
+# drives
+
+## Quick Start
+
+Here it will automatically lint, compile, compress and cache files by their extensions. You can goto Drives section to see what extensions are supported,
+or write your own.
+
+```js
+let kit = require('nokit');
+let drives = kit.require('drives');
+
+kit.warp('src/**/*.@(jade|less|coffee|ls)')
+    // // To disable cache.
+    // .load drives.reader isCache: false
+    .load(drives.auto('lint'))
+    .load(drives.auto('compile', { '.coffee': { bare: false } }))
+    .load(drives.auto('compress'))
+    .load(concat('main.js'))
+.run('dist/path');
+```
+
+### Write your own drives
+
+Nokit has already provided some handy example drives, you
+can check them in the Drives section. It's fairly easy to
+write your own.
+
+```js
+let kit = require('nokit');
+let coffee = require('coffee-script');
+
+// A drive for coffee, a simple curried function.
+let compiler = (opts) => function () {
+    // Change extension from '.coffee' to '.js'.
+    this.dest.ext = '.js';
+    this.set(coffee.compile(this.contents, opts));
+};
+
+// A drive to prepend lisence to each file.
+// Here "fileInfo.set" is the same with the "@set".
+let lisencer = (lisence) => function (fileInfo) {
+    this.set(lisence + '\n' + this.contents)
+}
+
+// A drive to concat all files. It will override the default writer.
+let concat = (outputFile) => {
+    let all = '';
+
+    // Object.assign
+    return kit._.assign(function () {
+        all += this.contents;
+    }, { isWriter: true, onEnd: function () {
+        // This will enable the auto-cache.
+        this.deps = kit._.pluck(this.list, 'path');
+
+        this.dest = this.to + '/' + outputFile;
+        this.set(all);
+
+        // Call the overrided writer.
+        // Call two times and create two output files.
+        this.super().then(() => {
+            this.dest = this.dest + '.info';
+            this.set = '/* info */\n' + all;
+            this.super();
+        });
+    } });
+};
+
+kit.warp('src/**/*.coffee')
+    .load(compiler(bare: true))
+    .load(lisencer('/* MIT lisence */'))
+    .load(concat('bundle.js'))
+.run('dist')
+.then(() => {
+    kit.log('Build Done');
+});
+```
+
+- ## **[Overview](lib/drives.coffee?source#L10)**
+
+    The built-in plguins for warp. It's more like examples
+    to show how to use nokit efficiently.
+
+- ## **[cleanCss(opts)](lib/drives.coffee?source#L19)**
+
+    clean-css
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+    - **<u>return</u>**: { _Function_ }
+
+- ## **[coffee(opts)](lib/drives.coffee?source#L33)**
+
+    coffee-script compiler
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+        Default is `{ bare: true }`.
+
+    - **<u>return</u>**: { _Function_ }
+
+- ## **[coffeelint(opts)](lib/drives.coffee?source#L68)**
+
+    coffeelint processor
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+        It extends the default config
+        of coffeelint, properties:
+        ```js
+        {
+         colorize: true,
+         reporter: 'default',
+
+         // The json of the "coffeelint.json".
+         // If it's null, coffeelint will try to find
+         // "coffeelint.json" as its content.
+         config: null | JSON | JsonFilePath
+        }
+        ```
+
+    - **<u>return</u>**: { _Function_ }
+
+- ## **[comment2md(path, opts)](lib/drives.coffee?source#L123)**
+
+    Parse commment from a js, coffee, or livescript file,
+    and output a markdown string.
+
+    - **<u>param</u>**: `path` { _String_ }
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+        Defaults:
+        ```js
+        {
+         // Output doc path.
+         out: 'readme.md',
+
+         // jst template path.
+         tpl: 'readme.jst.md',
+
+         // Init doc info.
+         doc: {},
+
+         // Header size.
+         h: 3,
+
+         parseComment: () => {},
+         formatComment: () => {}
+        }
+        ```
+
+    - **<u>return</u>**: { _Function_ }
+
+    - **<u>example</u>**:
+
+        The nofile of nokit shows how to use it.
+
+- ## **[auto(action, opts)](lib/drives.coffee?source#L187)**
+
+    Auto-compiler file by extension. It will search through
+    `kit.drives`, and find proper drive to run the task.
+    You can extend `kit.drives` to let it support more.
+    For example:
+    ```js
+    kit.drives.myCompiler = kit._.extend(() => {
+        // your compile logic
+    }), { compiler: ['.jsx'] })
+    ```
+
+    - **<u>param</u>**: `action` { _String_ }
+
+        By default, it can be
+        'compile' or 'compress' or 'lint'
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+        ```js
+        {
+         // If no compiler match.
+         onNotFound: (fileInfo) => {}
+        }
+        ```
+
+    - **<u>return</u>**: { _Function_ }
+
+- ## **[changeDir(dir, filter)](lib/drives.coffee?source#L223)**
+
+    Change dest path with a filter.
+
+    - **<u>param</u>**: `dir` { _String_ }
+
+    - **<u>param</u>**: `filter` { _Function_ }
+
+        `(fileInfo, dir) -> Boolean`
+
+    - **<u>return</u>**: { _Function_ }
+
+- ## **[concat(name, dir)](lib/drives.coffee?source#L238)**
+
+    a batch file concat helper
+
+    - **<u>param</u>**: `name` { _String_ }
+
+        The output file path.
+
+    - **<u>param</u>**: `dir` { _String_ }
+
+        Optional. Override the dest of warp's.
+
+    - **<u>return</u>**: { _Function_ }
+
+- ## **[hashSuffix(hashMapPath)](lib/drives.coffee?source#L258)**
+
+    Suffix file name with the hash value of file content.
+
+    - **<u>param</u>**: `hashMapPath` { _String_ }
+
+        The output file name hash map.
+
+    - **<u>return</u>**: { _Function_ }
+
+- ## **[jshint(opts)](lib/drives.coffee?source#L283)**
+
+    Lint js via `jshint`.
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+        Properties:
+        ```js
+        {
+         global: null,
+         config: null | JSON | JsonFilePath
+        }
+        ```
+
+    - **<u>return</u>**: { _Function_ }
+
+- ## **[less()](lib/drives.coffee?source#L316)**
+
+    Compile less.
+
+    - **<u>param</u>**: { _Object_ }
+
+    - **<u>return</u>**: { _Function_ }
+
+- ## **[livescript(opts)](lib/drives.coffee?source#L343)**
+
+    LiveScript compiler.
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+        Default is `{ bare: true }`.
+
+    - **<u>return</u>**: { _Function_ }
+
+- ## **[reader(opts)](lib/drives.coffee?source#L374)**
+
+    read file and set `contents`
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+        Defaults:
+        ```js
+        {
+         isCache: false,
+         encoding: 'utf8',
+         cacheDir: '.nokit/warp'
+        }
+        ```
+
+    - **<u>return</u>**: { _Function_ }
+
+- ## **[stylus(opts)](lib/drives.coffee?source#L443)**
+
+    Compile stylus.
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+        It will use `stylus.set` to
+        iterate `opts` and set the key-value, is the value is
+        not a function.
+        ```js
+        {
+         config: (styl) => {}
+        }
+        ```
+
+    - **<u>return</u>**: { _Function_ }
+
+    - **<u>example</u>**:
+
+        ```js
+        kit.drives.stylus({
+         compress: true,
+         config: (styl) =>
+             styl.define('jack', 'a persion')
+        });
+        ```
+
+- ## **[uglifyjs(opts)](lib/drives.coffee?source#L485)**
+
+    uglify-js processor
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+        Defaults:
+        ```js
+        {
+            output: {
+                comments: (node, comment) => {
+                    let text = comment.value;
+                    let type = comment.type;
+                    if (type === "comment2")
+                        return /@preserve|@license|@cc_on/i.test(text);
+                }
+            }
+        }
+        ```
+
+    - **<u>return</u>**: { _Function_ }
+
+- ## **[writer()](lib/drives.coffee?source#L510)**
+
+    Output file by `contents` and `dest`.
+    If the 'ext' or 'name' is not null,
+    the 'base' will be override by the 'ext' and 'name'.
+
+    - **<u>return</u>**: { _Function_ }
 
 
 

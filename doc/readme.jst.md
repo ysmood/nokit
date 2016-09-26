@@ -21,13 +21,6 @@ It's one of the core lib of [nobone](https://github.com/ysmood/nobone).
 
 As a lib dependency, install it locally: `npm i nokit`.
 
-Nokit has provided a cli tool like GNU Make. If you install it globally like this:
-
-`npm -g i nokit`
-
-, then have fun with your `nofile`, it can be js, coffee, babeljs or livescript. For more information goto the `CLI` section.
-
-
 # Changelog
 
 Goto [changelog](doc/changelog.md)
@@ -36,9 +29,13 @@ Goto [changelog](doc/changelog.md)
 
 ### Table of Content
 
-- #### CLI
+- #### [CLI](#cli-1)
 
-  - 
+  - [Task Manager](#task-manager)
+  - [Auto-Runner](auto-runner)
+  - [Static File Server](static-file-server)
+  - [Tunnel](#tunnel)
+  - [Temote TTY](#temote-tty)
 
 - #### kit
 <%= doc['lib/kit.coffee-toc'] %>
@@ -46,18 +43,24 @@ Goto [changelog](doc/changelog.md)
 - #### proxy
 <%= doc['lib/proxy.coffee-toc'] %>
 
-- #### [drives](#drives-2)
-<%= doc['lib/drives.coffee-toc'] %>
-
 - #### sse
 <%= doc['lib/sse.coffee-toc'] %>
 
-<%= doc['lib/kit.coffee'] %>
+- #### [drives](#drives-2)
+<%= doc['lib/drives.coffee-toc'] %>
 
 
 # CLI
 
-## The `no` Comamnd & nofile
+## Task Manager
+
+Nokit has provided a cli tool like GNU Make. If you install it globally like this:
+
+`npm -g i nokit`
+
+, you can execute `no` command besides a 'nofile.js' file.
+
+### Quick Start
 
 Create a `nofile.js` (or `.coffee`, `.ts`, etc) at your current working directory
 or any of its parents directory.
@@ -144,42 +147,70 @@ Then add comment:
 # nofile-pre-require: coffee-script/register
 ```
 
-## runner
+
+## Auto-Runner
 
 `noe` is a dev tool to run / watch / reload program automatically. Run `noe -h` to see what you
 can do with it.
 
+For more help, run: `noe -h`.
 
-##  static file server
+
+## Static File Server
 
 `nos` is a tool to statically serve a folder. Run `nos -h` to see what you
 can do with it.
 
+For more help, run: `nos -h`.
 
-## tcp tunnel
 
-`not` is a tcp tunnel tool.
+## Tunnel
+
+`not` is a tcp/udp tunnel tool. Now the only the tcp packet will be encrypted, upd will sent as raw data.
+
+For more help, run: `not -h`.
 
 ### Quick Start
+
+```text
                                     a.com
-      +----------+  export port  +---------+  request port  +----------+
+      +----------+  export port  +---------+  connect port  +----------+
       | Client A +-------------->|  Relay  |<---------------+ Client B |
       +----------+               +---------+                +----------+
  not -o a.com -x 8080 -n A          not -s                not -o a.com -t A
+```
 
-- Start Relay server to proxy tcp from client A to client B: `not -s`
+0. Start Relay server to proxy tcp/udp: `not -s`,
   Here we assume the the server's address is a.com
 
-- Client A connect to Relay server and export self as A: `not -o a.com -n A`
+0. Client A connect to Relay server and export self as A: `not -o a.com -n A`
 
-- Client B connect to Relay server and forword tcp to A: `not -o a.com -t A`
+0. Client B connect to Relay server and forward tcp/udp to A: `not -o a.com -t A`
 
-That's all you need. Now your tcp connection to Client B's port 7000, will be the same as
-connection to Client A's port 8080.
+That's all you need. Now your packet to Client B's port 7000, will be transparently forward
+to Client A's port 8080.
 
-## remote tty
+
+## Temote TTY
 
 `nor` is a cross platform remote tty tool.
+
+For more help, run: `nor -h`.
+
+# kit
+
+<%= doc['lib/kit.coffee'] %>
+
+
+# proxy
+
+<%= doc['lib/proxy.coffee'] %>
+
+
+# sse
+
+<%= doc['lib/sse.coffee'] %>
+
 
 # drives
 
@@ -260,14 +291,6 @@ kit.warp('src/**/*.coffee')
 ```
 
 <%= doc['lib/drives.coffee'] %>
-
-# proxy
-
-<%= doc['lib/proxy.coffee'] %>
-
-# sse
-
-<%= doc['lib/sse.coffee'] %>
 
 # Contribution
 
