@@ -253,29 +253,38 @@ For more help, run: `nos -h`.
 
 ## Tunnel
 
-`not` is a tcp/udp tunnel tool. Now the only the tcp packet will be encrypted, upd will sent as raw data.
+`not` is a tcp/udp tunnel tool. For example if you want to ssh a machine behind a firewall,
+you can use it to easily reverse proxy port 22 to the outside world.
 
 For more help, run: `not -h`.
+
+> The data is encrypted on the client, so the server can't sniff the data passed between clients,
+> it acts as a router.
+> Now only the tcp packet will be encrypted, upd will sent as raw data.
 
 ### Quick Start
 
 ```text
-                                    a.com
-      +----------+  export port  +---------+  connect port  +----------+
-      | Client A +-------------->|  Relay  |<---------------+ Client B |
-      +----------+               +---------+                +----------+
- not -o a.com -x 8080 -n A          not -s                not -o a.com -t A
+                                      a.com
+      +-----------+  export port  +-----------+  connect port  +-----------+
+      | Machine A +-------------->| Machine R |<---------------+ Machine B |
+      +-----------+               +-----------+                +-----------+
+ not -o a.com -x 8080 -n A            not -s                 not -o a.com -t A
 ```
 
-0. Start Relay server to proxy tcp/udp: `not -s`,
-  Here we assume the the server's address is a.com
+Suppose A and B cannot reach each other via network directly.
+But they both have tcp access to the R (`a.com`).
 
-0. Client A connect to Relay server and export self as A: `not -o a.com -n A`
+0. Start the relay server on R to proxy tcp/udp: `not -s`,
 
-0. Client B connect to Relay server and forward tcp/udp to A: `not -o a.com -t A`
+0. Start a proxy client on A to connect to R and export self as A: `not -o a.com -n A`
 
-That's all you need. Now your packet to Client B's port 7000, will be transparently forward
-to Client A's port 8080.
+0. Start a proxy client on B to connect to R and forward tcp/udp to A: `not -o a.com -t A`
+
+That's all you need. Now your packet to B's port 7000, will be transparently forward
+to A's port 8080 through the R.
+
+IF you want to change the default port, run `not -h` for more options.
 
 
 ## Temote TTY

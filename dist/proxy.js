@@ -302,7 +302,7 @@ proxy = {
       }
     };
     return function($) {
-      var absPath, action, data, err, error, error1, error2;
+      var absPath, action, data, err, error;
       error = function(status, msg) {
         $.res.statusCode = status;
         return $.body = encrypt(msg);
@@ -315,8 +315,8 @@ proxy = {
       }
       try {
         action = JSON.parse(data + '');
-      } catch (error2) {
-        err = error2;
+      } catch (error1) {
+        err = error1;
         return error(400, 'action is not a valid json');
       }
       absPath = kit.path.normalize(kit.path.resolve(action.path));
@@ -824,7 +824,7 @@ proxy = {
             return data += chunk;
           });
           req.on('end', function() {
-            var e, error1;
+            var e;
             try {
               kit.log(br.cyan('client') + br.grey(' | ') + (data ? kit.xinspect(JSON.parse(data)) : data));
               return res.end();

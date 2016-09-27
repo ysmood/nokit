@@ -53,7 +53,7 @@ module.exports = {
     });
     coffee = kit.requireOptional('coffee-script', __dirname, '>=1.8.0');
     return function() {
-      var err, error;
+      var err;
       opts.filename = this.path;
       this.deps = [this.path];
       this.dest.ext = '.js';
@@ -410,7 +410,7 @@ module.exports = {
     });
     LiveScript = kit.requireOptional('LiveScript', __dirname, '>=1.2.0');
     return function() {
-      var err, error;
+      var err;
       this.deps = [this.path];
       opts.filename = this.path;
       this.dest.ext = '.js';
@@ -588,7 +588,7 @@ module.exports = {
       };
     }
     return function() {
-      var err, error;
+      var err;
       this.deps = [this.path];
       try {
         kit.log(br.cyan('uglifyjs: ') + this.dest);
@@ -611,8 +611,8 @@ module.exports = {
   writer: function() {
     var write;
     write = function(file) {
-      var contents, dest;
-      dest = this.dest, contents = this.contents;
+      var contents, dest, ref;
+      ref = this, dest = ref.dest, contents = ref.contents;
       if ((dest == null) || (contents == null)) {
         return;
       }

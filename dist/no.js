@@ -78,7 +78,7 @@ task = function() {
 loadNofile = function() {
   var dir, findPath, load, nofileIndex, nofileReg, path, preRequire, rdir;
   preRequire = function(path) {
-    var code, err, error1, i, len, r, requires, results;
+    var code, err, i, len, r, requires, results;
     code = kit.readFileSync(path, 'utf8');
     requires = code.match(/nofile-pre-require:\s*[^\s]+/g);
     if (requires) {
@@ -142,7 +142,7 @@ loadNofile = function() {
       process.chdir(dir);
       return load(path);
     }
-  } catch (undefined) {}
+  } catch (error1) {}
   return error('Cannot find nofile');
 };
 

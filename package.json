@@ -1,6 +1,6 @@
 {
   "name": "nokit",
-  "version": "0.22.29",
+  "version": "0.22.30",
   "description": "A light weight set of handy tools for real world program.",
   "main": "dist/kit.js",
   "bin": {
@@ -37,33 +37,33 @@
   },
   "homepage": "https://github.com/ysmood/nokit",
   "dependencies": {
-    "jhash": "0.1.7",
-    "noflow": "0.7.17",
-    "nofs": "0.11.17",
-    "semver": "5.2.0",
-    "yaku": "0.16.2"
+    "jhash": "0.1.10",
+    "noflow": "0.7.18",
+    "nofs": "0.11.18",
+    "semver": "5.3.0",
+    "yaku": "0.16.7"
   },
   "devDependencies": {
     "commander": "2.9.0",
     "LiveScript": "1.3.1",
     "body-parser": "1.15.2",
-    "clean-css": "3.4.18",
-    "coffee-script": "1.10.0",
+    "clean-css": "3.4.20",
+    "coffee-script": "1.11.0",
     "coffeelint": "1.15.7",
     "express": "4.14.0",
-    "form-data": "1.0.0-rc4",
+    "form-data": "2.1.0",
     "formidable": "1.0.17",
     "iconv-lite": "0.4.13",
-    "jshint": "2.9.2",
-    "junit": "1.4.4",
+    "jshint": "2.9.3",
+    "junit": "1.4.5",
     "less": "2.7.1",
-    "lodash-cli": "4.13.1",
+    "lodash-cli": "4.16.2",
     "msgpack5": "3.4.0",
     "path-to-regexp": "1.5.3",
     "send": "0.14.1",
     "serve-index": "1.8.0",
     "stylus": "0.54.5",
     "throttle": "1.0.3",
-    "uglify-js": "2.7.0"
+    "uglify-js": "2.7.3"
   }
 }

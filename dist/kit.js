@@ -587,10 +587,10 @@ _.extend(kit, fs, yutils, {
         return list.minBy('distance').words;
       },
       threshold: function(cOffset, keyLen, cIndex) {
-        return Infinity;
+        return 2e308;
       },
       notFound: function(cOffset, keyLen, cIndex) {
-        return Infinity;
+        return 2e308;
       },
       span: function(cOffset, keyLen, cIndex) {
         return cOffset;
@@ -613,14 +613,14 @@ _.extend(kit, fs, yutils, {
         distance += opts.span(cOffset, keyLen, cIndex);
         if (distance >= opts.threshold(cOffset, keyLen, cIndex)) {
           return {
-            distance: Infinity
+            distance: 2e308
           };
         }
       }
       distance += opts.tail(cOffset, keyLen, cIndex, words.slice(cOffset).length);
       if (distance >= opts.threshold(cOffset, keyLen, cIndex)) {
         return {
-          distance: Infinity
+          distance: 2e308
         };
       }
       return {
@@ -1502,7 +1502,7 @@ _.extend(kit, fs, yutils, {
    * ```
    */
   require: function(moduleName, dir, loaded) {
-    var e, err, error, error1, j, key, len, modPath, name, names, p;
+    var e, err, j, key, len, modPath, name, names, p;
     if (_.isFunction(dir)) {
       loaded = dir;
       dir = null;
@@ -1548,8 +1548,8 @@ _.extend(kit, fs, yutils, {
       name = names[j];
       try {
         modPath = require.resolve(name);
-      } catch (error1) {
-        e = error1;
+      } catch (error) {
+        e = error;
         if (e.code === 'MODULE_NOT_FOUND') {
           modPath = null;
         } else {
@@ -1586,7 +1586,7 @@ _.extend(kit, fs, yutils, {
    * @return {Any} The required package.
    */
   requireOptional: function(name, dir, semver) {
-    var br, err, error, info, key, spawnSync, version, whichSync;
+    var br, err, info, key, spawnSync, version, whichSync;
     key = semver ? name + '@' + semver : name;
     if (kit.requireCache[key]) {
       return kit.requireCache[key];
@@ -1894,7 +1894,7 @@ _.extend(kit, fs, yutils, {
                 encoding = opts.resEncoding;
               }
               decode = function(buf) {
-                var err, error;
+                var err;
                 if (!encoding) {
                   return buf;
                 }
@@ -2058,7 +2058,7 @@ _.extend(kit, fs, yutils, {
       }
     }
     promise = new Promise(function(resolve, reject) {
-      var err, error;
+      var err;
       try {
         ps = spawn(cmd, args, opts);
       } catch (error) {
@@ -2533,7 +2533,6 @@ _.extend(kit, fs, yutils, {
       cmds = [cmds];
     }
     return (Promise.resolve((function() {
-      var error;
       switch (process.platform) {
         case 'darwin':
           return 'open';
