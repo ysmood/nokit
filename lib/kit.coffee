@@ -1722,21 +1722,15 @@ _.extend kit, fs, yutils,
 
                         if opts.resEncoding
                             if opts.resEncoding == 'auto'
-                                encoding = 'utf8'
+                                encoding = null
                                 cType = res.headers['content-type']
-                                if _.isString cType
-                                    m = cType.match(/charset=(.+);?/i)
-                                    if m and m[1]
-                                        encoding = m[1].toLowerCase()
-                                        if encoding == 'utf-8'
-                                            encoding = 'utf8'
-                                    if !/^(text)|(application)\//.test(cType)
-                                        encoding = null
+                                if /text|javascript|css|json|xml/.test(cType)
+                                    encoding = 'utf8'
                             else
                                 encoding = opts.resEncoding
 
                             decode = (buf) ->
-                                if not encoding
+                                if not encoding || not buf
                                     return buf
                                 try
                                     if encoding == 'utf8'

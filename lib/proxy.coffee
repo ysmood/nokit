@@ -16,6 +16,7 @@ net = kit.require 'net', __dirname
 
 regConnectHost = /([^:]+)(?::(\d+))?/
 regTunnelBegin = /^\w+\:\/\//
+regGzipDeflat = /gzip|deflate/i
 
 proxy =
 
@@ -1017,6 +1018,24 @@ proxy =
                     for k, v of hs
                         res.setHeader k, v
                     res.statusCode = proxyRes.statusCode
+
+                    encoding = proxyRes.headers['content-encoding']
+
+                    if opts.autoUnzip && _.isString(ctx.body) && regGzipDeflat.test(encoding)
+                        if (encoding == 'gzip' || encoding == 'deflate')
+                            res.removeHeader('content-length')
+                            res.removeHeader('Content-Length')
+                            res.setHeader('transfer-encoding', 'chunked')
+
+                            zlib = kit.require 'zlib', __dirname
+
+                            zip = if encoding == 'gzip'
+                                zlib.createGzip()
+                            else
+                                zlib.createDeflate()
+
+                            zip.end ctx.body
+                            ctx.body = zip
             else
                 p.req.on 'response', (proxyRes) ->
                     res.writeHead(
