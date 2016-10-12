@@ -38,7 +38,7 @@
   "homepage": "https://github.com/ysmood/nokit",
   "dependencies": {
     "jhash": "0.1.10",
-    "noflow": "0.7.18",
+    "noflow": "0.8.0",
     "nofs": "0.11.18",
     "semver": "5.3.0",
     "yaku": "0.16.7"
