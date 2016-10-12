@@ -1520,6 +1520,9 @@ _.extend kit, fs, yutils,
      *  // For more info, see https://github.com/ashtuchkin/iconv-lite
      *  resEncoding: 'auto',
      *
+     *  // Whether to unzip gzip / deflate.
+     *  autoUnzip: true,
+     *
      *  // It's string, object, stream or buffer, it's optional. When it's an object,
      *  // The request will be 'application/x-www-form-urlencoded'.
      *  reqData: null,

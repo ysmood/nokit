@@ -924,6 +924,8 @@ proxy =
             # agent: if opts.protocol == 'https:' then proxy.httpsAgent else proxy.agent
             protocol: 'http:'
             isForceHeaderHost: false
+            resEncoding: 'auto'
+            autoUnzip: true
             handleReqData: (req) -> req.body || req
             handleReqHeaders: (headers) -> headers
             handleResHeaders: (headers) -> headers
@@ -995,8 +997,9 @@ proxy =
                 resPipe: normalizeStream(res)
                 reqData: opts.handleReqData(req)
                 autoTE: false
+                resEncoding: opts.resEncoding
                 handleResPipe: opts.handleResPipe
-                autoUnzip: false
+                autoUnzip: opts.autoUnzip
                 agent: opts.agent
                 body: false
                 resPipeError: ->
