@@ -4,7 +4,7 @@
  * A cross-platform programmable Fiddler alternative.
  * You can even replace express.js with it's `flow` function.
  */
-var Overview, Promise, Socket, _, flow, http, https, kit, net, proxy, regConnectHost, regTunnelBegin, tcpFrame;
+var Overview, Promise, Socket, _, flow, http, https, kit, net, proxy, regConnectHost, regGzipDeflat, regTunnelBegin, tcpFrame;
 
 Overview = 'proxy';
 
@@ -27,6 +27,8 @@ Socket = net.Socket;
 regConnectHost = /([^:]+)(?::(\d+))?/;
 
 regTunnelBegin = /^\w+\:\/\//;
+
+regGzipDeflat = /gzip|deflate/i;
 
 proxy = {
   agent: new http.Agent,
@@ -1011,6 +1013,8 @@ proxy = {
       globalBps: false,
       protocol: 'http:',
       isForceHeaderHost: false,
+      resEncoding: 'auto',
+      autoUnzip: true,
       handleReqData: function(req) {
         return req.body || req;
       },
@@ -1092,8 +1096,9 @@ proxy = {
         resPipe: normalizeStream(res),
         reqData: opts.handleReqData(req),
         autoTE: false,
+        resEncoding: opts.resEncoding,
         handleResPipe: opts.handleResPipe,
-        autoUnzip: false,
+        autoUnzip: opts.autoUnzip,
         agent: opts.agent,
         body: false,
         resPipeError: function() {
@@ -1103,18 +1108,29 @@ proxy = {
       });
       if (opts.handleResBody) {
         p = p.then(function(proxyRes) {
-          var hs, k, v;
+          var encoding, hs, k, v, zip, zlib;
           if (_.isUndefined(proxyRes.body)) {
             return;
           }
           ctx.body = opts.handleResBody(proxyRes.body, req, proxyRes);
           hs = opts.handleResHeaders(proxyRes.headers, req, proxyRes);
-          kit.logs(ctx.body);
           for (k in hs) {
             v = hs[k];
             res.setHeader(k, v);
           }
-          return res.statusCode = proxyRes.statusCode;
+          res.statusCode = proxyRes.statusCode;
+          encoding = proxyRes.headers['content-encoding'];
+          if (opts.autoUnzip && _.isString(ctx.body) && regGzipDeflat.test(encoding)) {
+            if (encoding === 'gzip' || encoding === 'deflate') {
+              res.removeHeader('content-length');
+              res.removeHeader('Content-Length');
+              res.setHeader('transfer-encoding', 'chunked');
+              zlib = kit.require('zlib', __dirname);
+              zip = encoding === 'gzip' ? zlib.createGzip() : zlib.createDeflate();
+              zip.end(ctx.body);
+              return ctx.body = zip;
+            }
+          }
         });
       } else {
         p.req.on('response', function(proxyRes) {

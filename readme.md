@@ -1179,7 +1179,7 @@ For more help, run: `nor -h`.
 
         The required package.
 
-- ## **[request(opts)](lib/kit.coffee?source#L1593)**
+- ## **[request(opts)](lib/kit.coffee?source#L1596)**
 
     A handy extended combination of `http.request` and `https.request`.
 
@@ -1218,6 +1218,9 @@ For more help, run: `nor -h`.
          // It supports GBK, ShiftJIS etc.
          // For more info, see https://github.com/ashtuchkin/iconv-lite
          resEncoding: 'auto',
+
+         // Whether to unzip gzip / deflate.
+         autoUnzip: true,
 
          // It's string, object, stream or buffer, it's optional. When it's an object,
          // The request will be 'application/x-www-form-urlencoded'.
@@ -1294,14 +1297,14 @@ For more help, run: `nor -h`.
         );
         ```
 
-- ## **[semver](lib/kit.coffee?source#L1805)**
+- ## **[semver](lib/kit.coffee?source#L1802)**
 
     The semantic versioner for npm, known as [semver](https://github.com/npm/node-semver).
     You must `kit.require 'semver'` before using it.
 
     - **<u>type</u>**: { _Object_ }
 
-- ## **[spawn(cmd, args, opts)](lib/kit.coffee?source#L1836)**
+- ## **[spawn(cmd, args, opts)](lib/kit.coffee?source#L1833)**
 
     A safer version of `child_process.spawn` to cross-platform run
     a process. In some conditions, it may be more convenient
@@ -1345,13 +1348,13 @@ For more help, run: `nor -h`.
         .then(({code}) => kit.log code);
         ```
 
-- ## **[sse](lib/kit.coffee?source#L1899)**
+- ## **[sse](lib/kit.coffee?source#L1896)**
 
     The `sse` module.
     You must `kit.require 'sse'` before using it.
     For more information goto the `sse` section.
 
-- ## **[task(name, opts, fn)](lib/kit.coffee?source#L1960)**
+- ## **[task(name, opts, fn)](lib/kit.coffee?source#L1957)**
 
     Sequencing and executing tasks and dependencies concurrently.
 
@@ -1431,7 +1434,7 @@ For more help, run: `nor -h`.
         );
         ```
 
-- ## **[treeKill(pid, signal, callback)](lib/kit.coffee?source#L2036)**
+- ## **[treeKill(pid, signal, callback)](lib/kit.coffee?source#L2033)**
 
     Cross-platform kill process tree by root process id.
 
@@ -1443,12 +1446,12 @@ For more help, run: `nor -h`.
 
     - **<u>param</u>**: `callback` { _Function_ }
 
-- ## **[url](lib/kit.coffee?source#L2042)**
+- ## **[url](lib/kit.coffee?source#L2039)**
 
     The `url` module of node.
     You must `kit.require 'url'` before using it.
 
-- ## **[warp(from, opts)](lib/kit.coffee?source#L2157)**
+- ## **[warp(from, opts)](lib/kit.coffee?source#L2154)**
 
     Works much like `gulp.src`, but with Promise instead.
     The warp control and error handling is more pleasant.
@@ -1573,7 +1576,7 @@ For more help, run: `nor -h`.
         .run('dist');
         ```
 
-- ## **[which(name)](lib/kit.coffee?source#L2234)**
+- ## **[which(name)](lib/kit.coffee?source#L2231)**
 
     Same as the unix `which` command.
     You must `kit.require 'which'` before using it.
@@ -1584,14 +1587,14 @@ For more help, run: `nor -h`.
 
     - **<u>return</u>**: { _Promise_ }
 
-- ## **[whichSync](lib/kit.coffee?source#L2241)**
+- ## **[whichSync](lib/kit.coffee?source#L2238)**
 
     Sync version of `which`.
     You must `kit.require 'whichSync'` before using it.
 
     - **<u>type</u>**: { _Function_ }
 
-- ## **[xinspect(obj, opts)](lib/kit.coffee?source#L2252)**
+- ## **[xinspect(obj, opts)](lib/kit.coffee?source#L2249)**
 
     For debugging. Dump a colorful object.
 
@@ -1608,7 +1611,7 @@ For more help, run: `nor -h`.
 
     - **<u>return</u>**: { _String_ }
 
-- ## **[xopen(cmds, opts)](lib/kit.coffee?source#L2275)**
+- ## **[xopen(cmds, opts)](lib/kit.coffee?source#L2272)**
 
     Open a thing that your system can recognize.
     Now only support Windows, OSX or system that installed 'xdg-open'.
@@ -1644,7 +1647,7 @@ For more help, run: `nor -h`.
     A cross-platform programmable Fiddler alternative.
     You can even replace express.js with it's `flow` function.
 
-- ## **[body()](lib/proxy.coffee?source#L47)**
+- ## **[body()](lib/proxy.coffee?source#L48)**
 
     A simple request body middleware.
     It will append a property `reqBody` to `ctx`.
@@ -1671,7 +1674,7 @@ For more help, run: `nor -h`.
         app.listen(8123);
         ```
 
-- ## **[connect(opts)](lib/proxy.coffee?source#L93)**
+- ## **[connect(opts)](lib/proxy.coffee?source#L94)**
 
     Http CONNECT method tunneling proxy helper.
     Most times it is used to proxy https and websocket.
@@ -1710,7 +1713,7 @@ For more help, run: `nor -h`.
         app.listen(8123);
         ```
 
-- ## **[debugJs(opts)](lib/proxy.coffee?source#L173)**
+- ## **[debugJs(opts)](lib/proxy.coffee?source#L174)**
 
     Proxy and replace a single js file with a local one.
 
@@ -1744,13 +1747,13 @@ For more help, run: `nor -h`.
         app.listen(8123);
         ```
 
-- ## **[etag()](lib/proxy.coffee?source#L193)**
+- ## **[etag()](lib/proxy.coffee?source#L194)**
 
     Create a etag middleware.
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[file(opts)](lib/proxy.coffee?source#L235)**
+- ## **[file(opts)](lib/proxy.coffee?source#L236)**
 
     A simple protocol to read, write, chmod, delete file via http.
     The protocol is very simple
@@ -1781,7 +1784,7 @@ For more help, run: `nor -h`.
 
         noflow middleware
 
-- ## **[fileRequest(opts)](lib/proxy.coffee?source#L352)**
+- ## **[fileRequest(opts)](lib/proxy.coffee?source#L353)**
 
     Make a file create request to `proxy.file`.
 
@@ -1803,12 +1806,12 @@ For more help, run: `nor -h`.
 
     - **<u>return</u>**: { _Promise_ }
 
-- ## **[flow](lib/proxy.coffee?source#L421)**
+- ## **[flow](lib/proxy.coffee?source#L422)**
 
     A minimal middleware composer for the future.
     https://github.com/ysmood/noflow
 
-- ## **[flowToMid(fn)](lib/proxy.coffee?source#L428)**
+- ## **[flowToMid(fn)](lib/proxy.coffee?source#L429)**
 
     Convert noflow middleware express middleware.
 
@@ -1820,7 +1823,7 @@ For more help, run: `nor -h`.
 
         express middleware
 
-- ## **[match(pattern, opts)](lib/proxy.coffee?source#L448)**
+- ## **[match(pattern, opts)](lib/proxy.coffee?source#L449)**
 
     Generate an express like unix path selector. See the example of `proxy.flow`.
 
@@ -1843,7 +1846,7 @@ For more help, run: `nor -h`.
         kit.log(match('/items/10')) // output => { id: '10' }
         ```
 
-- ## **[midToFlow(h)](lib/proxy.coffee?source#L486)**
+- ## **[midToFlow(h)](lib/proxy.coffee?source#L487)**
 
     Convert a Express-like middleware to `proxy.flow` middleware.
 
@@ -1868,7 +1871,7 @@ For more help, run: `nor -h`.
         http.createServer(proxy.flow(middlewares)).listen(8123);
         ```
 
-- ## **[parseUrl()](lib/proxy.coffee?source#L517)**
+- ## **[parseUrl()](lib/proxy.coffee?source#L518)**
 
     A simple url parser middleware.
     It will append a `url` object to `ctx`
@@ -1894,7 +1897,7 @@ For more help, run: `nor -h`.
         app.listen(8123);
         ```
 
-- ## **[relayConnect(opts)](lib/proxy.coffee?source#L536)**
+- ## **[relayConnect(opts)](lib/proxy.coffee?source#L537)**
 
     A helper for http server port tunneling.
 
@@ -1912,7 +1915,7 @@ For more help, run: `nor -h`.
 
         A http connect method helper.
 
-- ## **[relayClient(opts)](lib/proxy.coffee?source#L575)**
+- ## **[relayClient(opts)](lib/proxy.coffee?source#L576)**
 
     A helper for http server port tunneling.
 
@@ -1932,7 +1935,7 @@ For more help, run: `nor -h`.
 
         Resolve a tcp server object.
 
-- ## **[select(sel, middleware)](lib/proxy.coffee?source#L628)**
+- ## **[select(sel, middleware)](lib/proxy.coffee?source#L629)**
 
     Create a conditional middleware that only works when the pattern matches.
 
@@ -1958,7 +1961,7 @@ For more help, run: `nor -h`.
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[serverHelper(opts)](lib/proxy.coffee?source#L723)**
+- ## **[serverHelper(opts)](lib/proxy.coffee?source#L724)**
 
     Create a http request middleware.
 
@@ -2012,7 +2015,7 @@ For more help, run: `nor -h`.
         nokit.log({ any: 'thing' });
         ```
 
-- ## **[static(opts)](lib/proxy.coffee?source#L798)**
+- ## **[static(opts)](lib/proxy.coffee?source#L799)**
 
     Create a static file middleware for `proxy.flow`.
 
@@ -2033,7 +2036,7 @@ For more help, run: `nor -h`.
         http.createServer(proxy.flow(middlewares)).listen(8123);
         ```
 
-- ## **[tcpFrame(socket, opts)](lib/proxy.coffee?source#L841)**
+- ## **[tcpFrame(socket, opts)](lib/proxy.coffee?source#L842)**
 
     Send or receive any size of package over a socket.
     Add a `writeFrame` method and a `frame` event to `net.Socket` object.
@@ -2054,7 +2057,7 @@ For more help, run: `nor -h`.
         }
         ```
 
-- ## **[url(opts)](lib/proxy.coffee?source#L913)**
+- ## **[url(opts)](lib/proxy.coffee?source#L914)**
 
     Use it to proxy one url to another.
 
@@ -2133,7 +2136,7 @@ For more help, run: `nor -h`.
         ).listen(8123);
         ```
 
-- ## **[van(ctx)](lib/proxy.coffee?source#L1033)**
+- ## **[van(ctx)](lib/proxy.coffee?source#L1055)**
 
     Add a `van` method to flow context object. It's a helper to set
     and get the context body.

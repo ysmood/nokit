@@ -1660,6 +1660,9 @@ _.extend(kit, fs, yutils, {
    *  // For more info, see https://github.com/ashtuchkin/iconv-lite
    *  resEncoding: 'auto',
    *
+   *  // Whether to unzip gzip / deflate.
+   *  autoUnzip: true,
+   *
    *  // It's string, object, stream or buffer, it's optional. When it's an object,
    *  // The request will be 'application/x-www-form-urlencoded'.
    *  reqData: null,
@@ -1865,7 +1868,7 @@ _.extend(kit, fs, yutils, {
             return buf = Buffer.concat([buf, chunk]);
           });
           return res.on('end', function() {
-            var cType, decode, encoding, m, resolver;
+            var cType, decode, encoding, resolver;
             resolver = function(body) {
               if (opts.body) {
                 return resolve(body);
@@ -1876,26 +1879,17 @@ _.extend(kit, fs, yutils, {
             };
             if (opts.resEncoding) {
               if (opts.resEncoding === 'auto') {
-                encoding = 'utf8';
+                encoding = null;
                 cType = res.headers['content-type'];
-                if (_.isString(cType)) {
-                  m = cType.match(/charset=(.+);?/i);
-                  if (m && m[1]) {
-                    encoding = m[1].toLowerCase();
-                    if (encoding === 'utf-8') {
-                      encoding = 'utf8';
-                    }
-                  }
-                  if (!/^(text)|(application)\//.test(cType)) {
-                    encoding = null;
-                  }
+                if (/text|javascript|css|json|xml/.test(cType)) {
+                  encoding = 'utf8';
                 }
               } else {
                 encoding = opts.resEncoding;
               }
               decode = function(buf) {
                 var err;
-                if (!encoding) {
+                if (!encoding || !buf) {
                   return buf;
                 }
                 try {
