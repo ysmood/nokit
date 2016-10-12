@@ -168,7 +168,7 @@ module.exports = (it) ->
 					port: port
 			}
 			.then (body) ->
-				it.eq body, info
+				it.eq body + '', info
 
 	it 'request timeout', ->
 		createRandomServer (req, res) ->
@@ -205,7 +205,7 @@ module.exports = (it) ->
 				reqPipe: file
 			}
 			.then (body) ->
-				it.eq body, info
+				it.eq body + '', info
 
 	it 'request form-data', ->
 		createRandomServer (req, res) ->
@@ -470,7 +470,7 @@ module.exports = (it) ->
 				reqData: now
 			}
 		).then (body) ->
-			it.eq body, now
+			it.eq body + '', now
 
 	it 'proxy flow handler', ->
 		proxy = kit.require 'proxy'
@@ -617,7 +617,7 @@ module.exports = (it) ->
 		, (port) ->
 			kit.request "http://127.0.0.1:#{port}"
 			.then (body) ->
-				it.eq kit.readFileSync('.gitignore', 'utf8'), body
+				it.eq kit.readFileSync('.gitignore', 'utf8'), body + ''
 
 	it 'proxy flow url match', ->
 		proxy = kit.require 'proxy'
@@ -713,7 +713,7 @@ module.exports = (it) ->
 		, (port) ->
 			kit.request "http://127.0.0.1:#{port}/ok"
 			.then (body) ->
-				it.eq body, '/ok'
+				it.eq body + '', '/ok'
 
 	it 'proxy flow midToFlow error', ->
 		proxy = kit.require 'proxy'
@@ -777,7 +777,7 @@ module.exports = (it) ->
 		.then ->
 			kit.request("http://127.0.0.1:#{server.address().port}")
 		.then (data) ->
-			it.eq data, 'ok'
+			it.eq data + '', 'ok'
 
 	it 'proxy flow flowToMid error', (after) ->
 		proxy = kit.require 'proxy'
