@@ -1010,7 +1010,7 @@ proxy =
 
                     ctx.body = opts.handleResBody proxyRes.body, req, proxyRes
                     hs = opts.handleResHeaders proxyRes.headers, req, proxyRes
-                    kit.logs(ctx.body)
+
                     for k, v of hs
                         res.setHeader k, v
                     res.statusCode = proxyRes.statusCode
