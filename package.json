@@ -1,6 +1,6 @@
 {
   "name": "nokit",
-  "version": "0.23.0",
+  "version": "0.23.1",
   "description": "A light weight set of handy tools for real world program.",
   "main": "dist/kit.js",
   "bin": {
@@ -38,7 +38,7 @@
   "homepage": "https://github.com/ysmood/nokit",
   "dependencies": {
     "jhash": "0.1.10",
-    "noflow": "0.8.0",
+    "noflow": "0.8.2",
     "nofs": "0.11.18",
     "semver": "5.3.0",
     "yaku": "0.16.7"
