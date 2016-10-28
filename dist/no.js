@@ -113,7 +113,12 @@ loadNofile = function() {
     return path;
   };
   if ((nofileIndex = process.argv.indexOf('--nofile')) > -1) {
-    return load(kit.path.resolve(process.argv[nofileIndex + 1]));
+    path = kit.path.resolve(process.argv[nofileIndex + 1]);
+    if (kit.fileExistsSync(path)) {
+      return load(path);
+    } else {
+      return error('Cannot find nofile');
+    }
   }
   nofileReg = /^nofile\.\w+$/i;
   findPath = function(dir) {
@@ -133,16 +138,16 @@ loadNofile = function() {
   };
   try {
     path = findPath(process.cwd());
-    if (path) {
-      dir = kit.path.dirname(path);
-      rdir = kit.path.relative('.', dir);
-      if (rdir) {
-        console.log(br.cyan('change working direcoty to: ') + br.green(rdir));
-      }
-      process.chdir(dir);
-      return load(path);
-    }
   } catch (error1) {}
+  if (path) {
+    dir = kit.path.dirname(path);
+    rdir = kit.path.relative('.', dir);
+    if (rdir) {
+      console.log(br.cyan('change working direcoty to: ') + br.green(rdir));
+    }
+    process.chdir(dir);
+    return load(path);
+  }
   return error('Cannot find nofile');
 };
 
