@@ -1015,8 +1015,6 @@ proxy =
                     ctx.body = opts.handleResBody proxyRes.body, req, proxyRes
                     hs = opts.handleResHeaders proxyRes.headers, req, proxyRes
 
-                    for k, v of hs
-                        res.setHeader k, v
                     res.statusCode = proxyRes.statusCode
 
                     encoding = proxyRes.headers['content-encoding']
@@ -1036,6 +1034,10 @@ proxy =
 
                             zip.end ctx.body
                             ctx.body = zip
+
+                    for k, v of hs
+                        res.setHeader k, v
+
             else
                 p.req.on 'response', (proxyRes) ->
                     res.writeHead(
