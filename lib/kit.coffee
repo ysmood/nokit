@@ -1726,6 +1726,9 @@ _.extend kit, fs, yutils,
                                 cType = res.headers['content-type']
                                 if /text|javascript|css|json|xml/.test(cType)
                                     encoding = 'utf8'
+
+                                if !opts.autoUnzip && /gzip|deflate/.test(res.headers['content-encoding'])
+                                    encoding = null
                             else
                                 encoding = opts.resEncoding
 
