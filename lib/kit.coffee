@@ -1663,6 +1663,8 @@ _.extend kit, fs, yutils,
         req = null
         promise = new Promise (resolve, reject) ->
             req = request opts, (res) ->
+                resStream = res;
+
                 if opts.redirect > 0 and res.headers.location
                     opts.redirect--
                     url = kit.url.resolve(
@@ -1678,48 +1680,56 @@ _.extend kit, fs, yutils,
                     do ->
                         total = +res.headers['content-length']
                         complete = 0
-                        res.on 'data', (chunk) ->
+                        resStream.on 'data', (chunk) ->
                             complete += chunk.length
                             opts.resProgress complete, total
 
                 if _.isFunction opts.handleResPipe
                     opts.resPipe = opts.handleResPipe res, opts.resPipe
 
-                if opts.resPipe
-                    if opts.autoUnzip
-                        switch res.headers['content-encoding']
-                            when 'gzip'
-                                unzip = kit.require 'zlib', __dirname
-                                    .createGunzip()
-                            when 'deflate'
-                                unzip = kit.require 'zlib', __dirname
-                                    .createInflat()
+                if opts.autoUnzip
+                    unzip = switch res.headers['content-encoding']
+                        when 'gzip'
+                            unzip = kit.require('zlib', __dirname).createGunzip()
+                        when 'deflate'
+                            unzip = kit.require('zlib', __dirname).createInflateRaw()
+
+                    if unzip
+                        isEmptyZipPipe = true
+                        resStream = res.pipe unzip
+                        unzip.on 'data', () ->
+                            isEmptyZipPipe = false
+                        unzip.on 'error', (err) ->
+                            # Empty pipe to gzip
+                            if isEmptyZipPipe
+                                resolver buf
                             else
-                                unzip = null
-                        if unzip
-                            unzip.on 'error', resPipeError
-                            res.pipe(unzip).pipe(opts.resPipe)
-                        else
-                            res.pipe opts.resPipe
-                    else
-                        res.pipe opts.resPipe
+                                reject err
+
+                if resPipeError
+                    resStream.on 'error', resPipeError
+
+                if opts.resPipe
+                    resStream.pipe opts.resPipe
 
                     opts.resPipe.on 'error', resPipeError
-                    res.on 'error', resPipeError
-                    res.on 'end', -> resolve res
+                    resStream.on 'end', -> resolve res
                 else
                     buf = new Buffer(0)
-                    res.on 'data', (chunk) ->
+
+                    resStream.on 'data', (chunk) ->
                         buf = Buffer.concat [buf, chunk]
 
-                    res.on 'end', ->
-                        resolver = (body) ->
-                            if opts.body
-                                resolve body
-                            else
-                                res.body = body
-                                resolve res
+                    resolver = (body) ->
+                        if opts.body
+                            resolve body
+                        else
+                            res.body = body
+                            resolve res
 
+                    resStream.on 'error', reject
+
+                    resStream.on 'end', ->
                         if opts.resEncoding
                             if opts.resEncoding == 'auto'
                                 encoding = null
@@ -1744,23 +1754,7 @@ _.extend kit, fs, yutils,
                                 catch err
                                     reject err
 
-                            if opts.autoUnzip
-                                switch res.headers['content-encoding']
-                                    when 'gzip'
-                                        unzip = kit.require 'zlib', __dirname
-                                            .gunzip
-                                    when 'deflate'
-                                        unzip = kit.require 'zlib', __dirname
-                                            .inflate
-                                    else
-                                        unzip = null
-                                if unzip
-                                    unzip buf, (err, buf) ->
-                                        resolver decode(buf)
-                                else
-                                    resolver decode(buf)
-                            else
-                                resolver decode(buf)
+                            resolver decode(buf)
                         else
                             resolver buf
 
