@@ -1297,14 +1297,14 @@ For more help, run: `nor -h`.
         );
         ```
 
-- ## **[semver](lib/kit.coffee?source#L1802)**
+- ## **[semver](lib/kit.coffee?source#L1799)**
 
     The semantic versioner for npm, known as [semver](https://github.com/npm/node-semver).
     You must `kit.require 'semver'` before using it.
 
     - **<u>type</u>**: { _Object_ }
 
-- ## **[spawn(cmd, args, opts)](lib/kit.coffee?source#L1833)**
+- ## **[spawn(cmd, args, opts)](lib/kit.coffee?source#L1830)**
 
     A safer version of `child_process.spawn` to cross-platform run
     a process. In some conditions, it may be more convenient
@@ -1348,13 +1348,13 @@ For more help, run: `nor -h`.
         .then(({code}) => kit.log code);
         ```
 
-- ## **[sse](lib/kit.coffee?source#L1896)**
+- ## **[sse](lib/kit.coffee?source#L1893)**
 
     The `sse` module.
     You must `kit.require 'sse'` before using it.
     For more information goto the `sse` section.
 
-- ## **[task(name, opts, fn)](lib/kit.coffee?source#L1957)**
+- ## **[task(name, opts, fn)](lib/kit.coffee?source#L1954)**
 
     Sequencing and executing tasks and dependencies concurrently.
 
@@ -1434,7 +1434,7 @@ For more help, run: `nor -h`.
         );
         ```
 
-- ## **[treeKill(pid, signal, callback)](lib/kit.coffee?source#L2033)**
+- ## **[treeKill(pid, signal, callback)](lib/kit.coffee?source#L2030)**
 
     Cross-platform kill process tree by root process id.
 
@@ -1446,12 +1446,12 @@ For more help, run: `nor -h`.
 
     - **<u>param</u>**: `callback` { _Function_ }
 
-- ## **[url](lib/kit.coffee?source#L2039)**
+- ## **[url](lib/kit.coffee?source#L2036)**
 
     The `url` module of node.
     You must `kit.require 'url'` before using it.
 
-- ## **[warp(from, opts)](lib/kit.coffee?source#L2154)**
+- ## **[warp(from, opts)](lib/kit.coffee?source#L2151)**
 
     Works much like `gulp.src`, but with Promise instead.
     The warp control and error handling is more pleasant.
@@ -1576,7 +1576,7 @@ For more help, run: `nor -h`.
         .run('dist');
         ```
 
-- ## **[which(name)](lib/kit.coffee?source#L2231)**
+- ## **[which(name)](lib/kit.coffee?source#L2228)**
 
     Same as the unix `which` command.
     You must `kit.require 'which'` before using it.
@@ -1587,14 +1587,14 @@ For more help, run: `nor -h`.
 
     - **<u>return</u>**: { _Promise_ }
 
-- ## **[whichSync](lib/kit.coffee?source#L2238)**
+- ## **[whichSync](lib/kit.coffee?source#L2235)**
 
     Sync version of `which`.
     You must `kit.require 'whichSync'` before using it.
 
     - **<u>type</u>**: { _Function_ }
 
-- ## **[xinspect(obj, opts)](lib/kit.coffee?source#L2249)**
+- ## **[xinspect(obj, opts)](lib/kit.coffee?source#L2246)**
 
     For debugging. Dump a colorful object.
 
@@ -1611,7 +1611,7 @@ For more help, run: `nor -h`.
 
     - **<u>return</u>**: { _String_ }
 
-- ## **[xopen(cmds, opts)](lib/kit.coffee?source#L2272)**
+- ## **[xopen(cmds, opts)](lib/kit.coffee?source#L2269)**
 
     Open a thing that your system can recognize.
     Now only support Windows, OSX or system that installed 'xdg-open'.
@@ -2057,7 +2057,7 @@ For more help, run: `nor -h`.
         }
         ```
 
-- ## **[url(opts)](lib/proxy.coffee?source#L914)**
+- ## **[url(opts)](lib/proxy.coffee?source#L917)**
 
     Use it to proxy one url to another.
 
@@ -2067,35 +2067,38 @@ For more help, run: `nor -h`.
         be converted to `{ url: opts }`. Default:
         ```js
         {
-         // The target url forced to. Optional.
-         // Such as proxy 'http://test.com/a' to 'http://test.com/b',
-         // proxy 'http://test.com/a' to 'http://other.com/a',
-         // proxy 'http://test.com' to 'other.com'.
-         // It can also be an url object. Such as
-         // `{ protocol: 'http:', host: 'test.com:8123', pathname: '/a/b', query: 's=1' }`.
-         url: null,
+            // The target url forced to. Optional.
+            // Such as proxy 'http://test.com/a' to 'http://test.com/b',
+            // proxy 'http://test.com/a' to 'http://other.com/a',
+            // proxy 'http://test.com' to 'other.com'.
+            // It can also be an url object. Such as
+            // `{ protocol: 'http:', host: 'test.com:8123', pathname: '/a/b', query: 's=1' }`.
+            url: null,
 
-         agent: customHttpAgent,
+            agent: customHttpAgent,
 
-         // Force the header's host same as the url's.
-         isForceHeaderHost: false,
+            // Force the header's host same as the url's.
+            isForceHeaderHost: false,
 
-         // The request data to use. The return value should be stream, buffer or string.
-         handleReqData: (req) -> req.body || req
+            // The request data to use. The return value should be stream, buffer or string.
+            handleReqData: (req) -> req.body || req
 
-         // You can hack the headers before the proxy send it.
-         handleReqHeaders: (headers, req) => headers
-         handleResHeaders: (headers, req, proxyRes) => headers,
+            // You can hack the headers before the proxy send it.
+            handleReqHeaders: (headers, req) => headers
+            handleResHeaders: (headers, req, proxyRes) => headers,
 
-         // Same option as the `kit.request`'s `handleResPipe`.
-         handleResPipe: (res, stream) => stream,
+            // Same option as the `kit.request`'s `handleResPipe`.
+            handleResPipe: (res, stream) => stream,
 
-         // Manipulate the response body content of the response here,
-         // such as inject script into it. Its return type is same as the `ctx.body`.
-         handleResBody: (body, req, proxyRes) => body,
+            // Manipulate the response body content of the response here,
+            // such as inject script into it. Its return type is same as the `ctx.body`.
+            handleResBody: (body, req, proxyRes) => body,
 
-         // It will log some basic error info.
-         error: (e, req) => {}
+            // Only when the `content-type` matches, handleResBody will work
+            handleResBodyMIME: /text|json|javascript|css|xml/
+
+            // It will log some basic error info.
+            error: (e, req) => {}
         }
         ```
 
@@ -2136,7 +2139,7 @@ For more help, run: `nor -h`.
         ).listen(8123);
         ```
 
-- ## **[van(ctx)](lib/proxy.coffee?source#L1055)**
+- ## **[van(ctx)](lib/proxy.coffee?source#L1071)**
 
     Add a `van` method to flow context object. It's a helper to set
     and get the context body.

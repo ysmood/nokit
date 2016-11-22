@@ -933,35 +933,38 @@ proxy = {
    * be converted to `{ url: opts }`. Default:
    * ```js
    * {
-   *  // The target url forced to. Optional.
-   *  // Such as proxy 'http://test.com/a' to 'http://test.com/b',
-   *  // proxy 'http://test.com/a' to 'http://other.com/a',
-   *  // proxy 'http://test.com' to 'other.com'.
-   *  // It can also be an url object. Such as
-   *  // `{ protocol: 'http:', host: 'test.com:8123', pathname: '/a/b', query: 's=1' }`.
-   *  url: null,
+   *     // The target url forced to. Optional.
+   *     // Such as proxy 'http://test.com/a' to 'http://test.com/b',
+   *     // proxy 'http://test.com/a' to 'http://other.com/a',
+   *     // proxy 'http://test.com' to 'other.com'.
+   *     // It can also be an url object. Such as
+   *     // `{ protocol: 'http:', host: 'test.com:8123', pathname: '/a/b', query: 's=1' }`.
+   *     url: null,
    *
-   *  agent: customHttpAgent,
+   *     agent: customHttpAgent,
    *
-   *  // Force the header's host same as the url's.
-   *  isForceHeaderHost: false,
+   *     // Force the header's host same as the url's.
+   *     isForceHeaderHost: false,
    *
-   *  // The request data to use. The return value should be stream, buffer or string.
-   *  handleReqData: (req) -> req.body || req
+   *     // The request data to use. The return value should be stream, buffer or string.
+   *     handleReqData: (req) -> req.body || req
    *
-   *  // You can hack the headers before the proxy send it.
-   *  handleReqHeaders: (headers, req) => headers
-   *  handleResHeaders: (headers, req, proxyRes) => headers,
+   *     // You can hack the headers before the proxy send it.
+   *     handleReqHeaders: (headers, req) => headers
+   *     handleResHeaders: (headers, req, proxyRes) => headers,
    *
-   *  // Same option as the `kit.request`'s `handleResPipe`.
-   *  handleResPipe: (res, stream) => stream,
+   *     // Same option as the `kit.request`'s `handleResPipe`.
+   *     handleResPipe: (res, stream) => stream,
    *
-   *  // Manipulate the response body content of the response here,
-   *  // such as inject script into it. Its return type is same as the `ctx.body`.
-   *  handleResBody: (body, req, proxyRes) => body,
+   *     // Manipulate the response body content of the response here,
+   *     // such as inject script into it. Its return type is same as the `ctx.body`.
+   *     handleResBody: (body, req, proxyRes) => body,
    *
-   *  // It will log some basic error info.
-   *  error: (e, req) => {}
+   *     // Only when the `content-type` matches, handleResBody will work
+   *     handleResBodyMIME: /text|json|javascript|css|xml/
+   *
+   *     // It will log some basic error info.
+   *     error: (e, req) => {}
    * }
    * ```
    * @return {Function} `(req, res) => Promise` A middleware.
@@ -1014,7 +1017,6 @@ proxy = {
       protocol: 'http:',
       isForceHeaderHost: false,
       resEncoding: 'auto',
-      autoUnzip: true,
       handleReqData: function(req) {
         return req.body || req;
       },
@@ -1029,7 +1031,8 @@ proxy = {
       },
       error: function(e, req) {
         return kit.logs(e.toString(), '->', br.red(req.url));
-      }
+      },
+      handleResBodyMIME: /text|json|javascript|css|xml/
     });
     if (opts.handleResBody && !opts.handleResPipe) {
       opts.handleResPipe = function(res, resPipe) {
@@ -1067,6 +1070,9 @@ proxy = {
     };
     normalizeStream = function(res) {
       var bps, sockNum, throttle;
+      if (opts.handleResBody) {
+        return;
+      }
       if (_.isNumber(opts.bps)) {
         if (opts.globalBps) {
           sockNum = _.keys(opts.agent.sockets).length;
@@ -1082,13 +1088,14 @@ proxy = {
       }
     };
     return function(ctx) {
-      var headers, p, req, res, url;
+      var autoUnzip, headers, p, req, res, url;
       req = ctx.req, res = ctx.res;
       url = normalizeUrl(req, opts.url);
       headers = opts.handleReqHeaders(req.headers, req);
       if (opts.isForceHeaderHost && opts.url) {
         headers['Host'] = url.host;
       }
+      autoUnzip = !!opts.handleResBody;
       p = kit.request({
         method: req.method,
         url: url,
@@ -1098,7 +1105,7 @@ proxy = {
         autoTE: false,
         resEncoding: opts.resEncoding,
         handleResPipe: opts.handleResPipe,
-        autoUnzip: opts.autoUnzip,
+        autoUnzip: autoUnzip,
         agent: opts.agent,
         body: false,
         resPipeError: function() {
@@ -1106,35 +1113,41 @@ proxy = {
           return res.end('Proxy Error: ' + http.STATUS_CODES[502]);
         }
       });
+      p.req.on('response', function(proxyRes) {
+        if (!opts.handleResBodyMIME.test(proxyRes.headers['content-type'])) {
+          res.writeHead(proxyRes.statusCode, opts.handleResHeaders(proxyRes.headers, req, proxyRes));
+          if (opts.handleResBody) {
+            return proxyRes.pipe(res);
+          }
+        } else if (!opts.handleResBody) {
+          return res.writeHead(proxyRes.statusCode, opts.handleResHeaders(proxyRes.headers, req, proxyRes));
+        }
+      });
       if (opts.handleResBody) {
         p = p.then(function(proxyRes) {
-          var encoding, hs, k, v, zip, zlib;
-          if (_.isUndefined(proxyRes.body)) {
+          var encoding, hs, k, v;
+          if (!opts.handleResBodyMIME.test(proxyRes.headers['content-type'])) {
             return;
           }
-          ctx.body = opts.handleResBody(proxyRes.body, req, proxyRes);
           hs = opts.handleResHeaders(proxyRes.headers, req, proxyRes);
+          res.statusCode = proxyRes.statusCode;
+          encoding = proxyRes.headers['content-encoding'];
           for (k in hs) {
             v = hs[k];
             res.setHeader(k, v);
           }
-          res.statusCode = proxyRes.statusCode;
-          encoding = proxyRes.headers['content-encoding'];
-          if (opts.autoUnzip && _.isString(ctx.body) && regGzipDeflat.test(encoding)) {
-            if (encoding === 'gzip' || encoding === 'deflate') {
+          if (proxyRes.body) {
+            if (autoUnzip && regGzipDeflat.test(encoding)) {
+              res.removeHeader('content-encoding');
+              res.removeHeader('Content-Encoding');
               res.removeHeader('content-length');
               res.removeHeader('Content-Length');
               res.setHeader('transfer-encoding', 'chunked');
-              zlib = kit.require('zlib', __dirname);
-              zip = encoding === 'gzip' ? zlib.createGzip() : zlib.createDeflate();
-              zip.end(ctx.body);
-              return ctx.body = zip;
             }
+            ctx.body = opts.handleResBody(proxyRes.body, req, proxyRes);
+          } else {
+            ctx.body = '';
           }
-        });
-      } else {
-        p.req.on('response', function(proxyRes) {
-          return res.writeHead(proxyRes.statusCode, opts.handleResHeaders(proxyRes.headers, req, proxyRes));
         });
       }
       p["catch"](function(e) {

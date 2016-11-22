@@ -1815,7 +1815,8 @@ _.extend(kit, fs, yutils, {
     promise = new Promise(function(resolve, reject) {
       var resPipeError;
       req = request(opts, function(res) {
-        var buf, unzip;
+        var buf, isEmptyZipPipe, resStream, resolver, unzip;
+        resStream = res;
         if (opts.redirect > 0 && res.headers.location) {
           opts.redirect--;
           url = kit.url.resolve(kit.url.format(opts), res.headers.location);
@@ -1827,7 +1828,7 @@ _.extend(kit, fs, yutils, {
             var complete, total;
             total = +res.headers['content-length'];
             complete = 0;
-            return res.on('data', function(chunk) {
+            return resStream.on('data', function(chunk) {
               complete += chunk.length;
               return opts.resProgress(complete, total);
             });
@@ -1836,53 +1837,64 @@ _.extend(kit, fs, yutils, {
         if (_.isFunction(opts.handleResPipe)) {
           opts.resPipe = opts.handleResPipe(res, opts.resPipe);
         }
-        if (opts.resPipe) {
-          if (opts.autoUnzip) {
+        if (opts.autoUnzip) {
+          unzip = (function() {
             switch (res.headers['content-encoding']) {
               case 'gzip':
-                unzip = kit.require('zlib', __dirname).createGunzip();
-                break;
+                return unzip = kit.require('zlib', __dirname).createGunzip();
               case 'deflate':
-                unzip = kit.require('zlib', __dirname).createInflat();
-                break;
-              default:
-                unzip = null;
+                return unzip = kit.require('zlib', __dirname).createInflateRaw();
             }
-            if (unzip) {
-              unzip.on('error', resPipeError);
-              res.pipe(unzip).pipe(opts.resPipe);
-            } else {
-              res.pipe(opts.resPipe);
-            }
-          } else {
-            res.pipe(opts.resPipe);
+          })();
+          if (unzip) {
+            isEmptyZipPipe = true;
+            resStream = res.pipe(unzip);
+            unzip.on('data', function() {
+              return isEmptyZipPipe = false;
+            });
+            unzip.on('error', function(err) {
+              if (isEmptyZipPipe) {
+                return resolver(buf);
+              } else {
+                return reject(err);
+              }
+            });
           }
+        }
+        if (resPipeError) {
+          resStream.on('error', resPipeError);
+        }
+        if (opts.resPipe) {
+          resStream.pipe(opts.resPipe);
           opts.resPipe.on('error', resPipeError);
-          res.on('error', resPipeError);
-          return res.on('end', function() {
+          return resStream.on('end', function() {
             return resolve(res);
           });
         } else {
           buf = new Buffer(0);
-          res.on('data', function(chunk) {
+          resStream.on('data', function(chunk) {
             return buf = Buffer.concat([buf, chunk]);
           });
-          return res.on('end', function() {
-            var cType, decode, encoding, resolver;
-            resolver = function(body) {
-              if (opts.body) {
-                return resolve(body);
-              } else {
-                res.body = body;
-                return resolve(res);
-              }
-            };
+          resolver = function(body) {
+            if (opts.body) {
+              return resolve(body);
+            } else {
+              res.body = body;
+              return resolve(res);
+            }
+          };
+          resStream.on('error', reject);
+          return resStream.on('end', function() {
+            var cType, decode, encoding;
             if (opts.resEncoding) {
               if (opts.resEncoding === 'auto') {
                 encoding = null;
                 cType = res.headers['content-type'];
                 if (/text|javascript|css|json|xml/.test(cType)) {
                   encoding = 'utf8';
+                }
+                if (!opts.autoUnzip && /gzip|deflate/.test(res.headers['content-encoding'])) {
+                  encoding = null;
                 }
               } else {
                 encoding = opts.resEncoding;
@@ -1903,27 +1915,7 @@ _.extend(kit, fs, yutils, {
                   return reject(err);
                 }
               };
-              if (opts.autoUnzip) {
-                switch (res.headers['content-encoding']) {
-                  case 'gzip':
-                    unzip = kit.require('zlib', __dirname).gunzip;
-                    break;
-                  case 'deflate':
-                    unzip = kit.require('zlib', __dirname).inflate;
-                    break;
-                  default:
-                    unzip = null;
-                }
-                if (unzip) {
-                  return unzip(buf, function(err, buf) {
-                    return resolver(decode(buf));
-                  });
-                } else {
-                  return resolver(decode(buf));
-                }
-              } else {
-                return resolver(decode(buf));
-              }
+              return resolver(decode(buf));
             } else {
               return resolver(buf);
             }
