@@ -51,7 +51,7 @@ module.exports = (task, option) ->
 		args = ['test/lab.coffee']
 
 		if opts.debug
-			args.splice 0, 0, '--nodejs', '--debug-brk=' + opts.port
+			args.splice 0, 0, '--nodejs', 'debug'
 
 		kit.monitorApp { bin: 'coffee', args, watchList: ['test/*', 'lib/**'] }
 

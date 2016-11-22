@@ -451,7 +451,7 @@ module.exports = (it) ->
 		).then ({ headers, body }) ->
 			it.eq 'site-proxy-body-ok', body + headers.x
 
-	it 'proxy url handleReqBody', ->
+	it 'proxy url handleReqData', ->
 		proxy = kit.require 'proxy'
 		now = Date.now() + ''
 
