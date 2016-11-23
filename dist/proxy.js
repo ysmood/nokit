@@ -583,7 +583,7 @@ proxy = {
   parseUrl: function(parseQueryString, slashesDenoteHost) {
     kit.require('url');
     return function($) {
-      $.url = kit.url.parse(url, parseQueryString, slashesDenoteHost);
+      $.url = kit.url.parse($.req.url, parseQueryString, slashesDenoteHost);
       return $.next();
     };
   },

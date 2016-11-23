@@ -519,7 +519,7 @@ proxy =
         kit.require 'url'
 
         ($) ->
-            $.url = kit.url.parse url, parseQueryString, slashesDenoteHost
+            $.url = kit.url.parse $.req.url, parseQueryString, slashesDenoteHost
             $.next();
 
     ###*
