@@ -19,7 +19,7 @@ module.exports = function(opts) {
   initAutoReload = function() {
     self.es = new EventSource(opts.host + '/nokit-sse');
     return self.es.addEventListener('fileModified', function(e) {
-      var each, m, path, reloadElem;
+      var each, isFound, m, path, reloadElem;
       path = JSON.parse(e.data);
       console.log(">> fileModified: " + path);
       reloadElem = function(el, key) {
@@ -54,29 +54,36 @@ module.exports = function(opts) {
         return;
       }
       m = path.match(/\.[^.]+$/);
+      isFound = false;
       switch (m && m[0]) {
         case '.js':
-          return each('script', function(el) {
+          each('script', function(el) {
             if (el.src.indexOf(path) > -1) {
+              isFound = true;
               return location.reload();
             }
           });
+          break;
         case '.css':
-          return each('link', function(el) {
+          each('link', function(el) {
             if (el.href.indexOf(path) > -1) {
+              isFound = true;
               return reloadElem(el, 'href');
             }
           });
+          break;
         case '.jpg':
         case '.gif':
         case '.png':
-          return each('img', function(el) {
+          each('img', function(el) {
             if (el.src.indexOf(path) > -1) {
+              isFound = true;
               return reloadElem(el, 'src');
             }
           });
-        default:
-          return location.reload();
+      }
+      if (!isFound) {
+        return location.reload();
       }
     });
   };

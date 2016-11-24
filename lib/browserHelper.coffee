@@ -56,26 +56,31 @@ module.exports = (opts) ->
 				return
 
 			m = path.match /\.[^.]+$/
+			isFound = false
+
 			switch m and m[0]
 				when '.js'
 					each 'script', (el) ->
 						# Only reload the page if the page has included
 						# the href.
 						if el.src.indexOf(path) > -1
+							isFound = true
 							location.reload()
 
 				when '.css'
 					each 'link', (el) ->
 						if el.href.indexOf(path) > -1
+							isFound = true
 							reloadElem el, 'href'
 
 				when '.jpg', '.gif', '.png'
 					each 'img', (el) ->
 						if el.src.indexOf(path) > -1
+							isFound = true
 							reloadElem el, 'src'
 
-				else
-					location.reload()
+			if !isFound
+				location.reload()
 
 	init()
 
