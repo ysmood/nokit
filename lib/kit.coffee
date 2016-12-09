@@ -374,7 +374,7 @@ _.extend kit, fs, yutils,
 
         paths = ['.in', '.out', '.err']
         .map (type) ->
-            kit.path.join os.tmpDir(), 'nokit-' + randName + type
+            kit.path.join os.tmpdir(), 'nokit-' + randName + type
 
         [ stdinPath, stdoutPath, stderrPath ] = paths
 

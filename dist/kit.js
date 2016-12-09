@@ -412,7 +412,7 @@ _.extend(kit, fs, yutils, {
     }
     randName = Date.now() + Math.random();
     paths = ['.in', '.out', '.err'].map(function(type) {
-      return kit.path.join(os.tmpDir(), 'nokit-' + randName + type);
+      return kit.path.join(os.tmpdir(), 'nokit-' + randName + type);
     });
     stdinPath = paths[0], stdoutPath = paths[1], stderrPath = paths[2];
     fileHandlers = [];
