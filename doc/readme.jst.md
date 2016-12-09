@@ -32,8 +32,8 @@ Goto [changelog](doc/changelog.md)
 - #### [CLI](#cli-1)
 
   - [Task Manager](#task-manager)
-  - [Auto-Runner](auto-runner)
-  - [Static File Server](static-file-server)
+  - [Auto-Runner](#auto-runner)
+  - [Static File Server](#static-file-server)
   - [Tunnel](#tunnel)
   - [Temote TTY](#temote-tty)
 
