@@ -2,7 +2,7 @@
 /*
 	A simplified version of Make.
  */
-var _, br, cmder, error, getOptions, kit, loadNofile, searchTasks, task;
+var _, br, checkEngines, cmder, error, findPath, getOptions, kit, loadNofile, preRequire, readPackageJson, searchTasks, task;
 
 if (process.env.NODE_ENV == null) {
   process.env.NODE_ENV = 'development';
@@ -69,37 +69,78 @@ task = function() {
   return args.fn;
 };
 
+checkEngines = function(engines) {
+  var execSync, npmVer, semver;
+  semver = kit.require('semver');
+  if (engines.node && !semver.satisfies(process.version, engines.node)) {
+    throw new Error(br.red("package.json engines.node requires " + engines.node + ", but get " + process.version));
+  }
+  if (engines.npm) {
+    execSync = kit.require('child_process', __dirname).execSync;
+    npmVer = _.trim('' + execSync('npm -v'));
+    if (!semver.satisfies(npmVer, engines.npm)) {
+      throw new Error(br.red("package.json engines.npm requires " + engines.npm + ", but get " + npmVer));
+    }
+  }
+};
+
+findPath = function(pattern, dir) {
+  var name, parent;
+  if (dir == null) {
+    dir = process.cwd();
+  }
+  name = _.find(kit.readdirSync(dir), function(n) {
+    return pattern.test(n);
+  });
+  parent = kit.path.dirname(dir);
+  if (parent === dir) {
+    return null;
+  }
+  if (name) {
+    return kit.path.join(dir, name);
+  } else {
+    return findPath(pattern, parent);
+  }
+};
+
+readPackageJson = function() {
+  var i, len, p, paths;
+  paths = kit.genModulePaths('package.json', process.cwd(), '');
+  for (i = 0, len = paths.length; i < len; i++) {
+    p = paths[i];
+    if (kit.fileExistsSync(p)) {
+      return kit.readJsonSync(p);
+    }
+  }
+};
+
+preRequire = function(requires) {
+  var err, i, len, path, results;
+  results = [];
+  for (i = 0, len = requires.length; i < len; i++) {
+    path = requires[i];
+    try {
+      results.push(require(path));
+    } catch (error1) {
+      err = error1;
+      console.error("nofile pre-require error in file " + path);
+      throw err;
+    }
+  }
+  return results;
+};
+
 
 /**
  * Load nofile.
  * @return {String} The path of found nofile.
  */
 
-loadNofile = function() {
-  var dir, findPath, load, nofileIndex, nofileReg, path, preRequire, rdir;
-  preRequire = function(path) {
-    var code, err, i, len, r, requires, results;
-    code = kit.readFileSync(path, 'utf8');
-    requires = code.match(/nofile-pre-require:\s*[^\s]+/g);
-    if (requires) {
-      results = [];
-      for (i = 0, len = requires.length; i < len; i++) {
-        r = requires[i];
-        try {
-          results.push(require(_.trim(r.replace('nofile-pre-require:', ''))));
-        } catch (error1) {
-          err = error1;
-          console.error("nofile-pre-require error in file " + path);
-          throw err;
-        }
-      }
-      return results;
-    }
-  };
+loadNofile = function(nofilePath) {
+  var dir, load, path, rdir;
   load = function(path) {
     var tasker;
     kit.Promise.enableLongStackTrace();
-    preRequire(path);
     console.log(br.grey("# " + path));
     tasker = require(path);
     if (tasker && tasker["default"]) {
@@ -112,32 +153,16 @@ loadNofile = function() {
     }
     return path;
   };
-  if ((nofileIndex = process.argv.indexOf('--nofile')) > -1) {
-    path = kit.path.resolve(process.argv[nofileIndex + 1]);
+  if (nofilePath) {
+    path = kit.path.resolve(nofilePath);
     if (kit.fileExistsSync(path)) {
       return load(path);
     } else {
-      return error('Cannot find nofile');
+      return error("package.json nofile.path not found: " + path);
     }
   }
-  nofileReg = /^nofile\.\w+$/i;
-  findPath = function(dir) {
-    var name, parent;
-    name = _.find(kit.readdirSync(dir), function(n) {
-      return nofileReg.test(n);
-    });
-    parent = kit.path.dirname(dir);
-    if (parent === dir) {
-      return null;
-    }
-    if (name) {
-      return kit.path.join(dir, name);
-    } else {
-      return findPath(parent);
-    }
-  };
   try {
-    path = findPath(process.cwd());
+    path = findPath(/^nofile\.\w+$/i);
   } catch (error1) {}
   if (path) {
     dir = kit.path.dirname(path);
@@ -170,10 +195,13 @@ getOptions = function() {
 };
 
 module.exports = function() {
-  var cwd, nofilePath, tasks;
+  var cwd, packageInfo, tasks;
   cwd = process.cwd();
-  nofilePath = loadNofile();
-  cmder.option('--nofile <path>', 'force nofile path').usage('[options] [fuzzy task name]...');
+  packageInfo = readPackageJson();
+  checkEngines(_.get(packageInfo, 'engines', {}));
+  preRequire(_.get(packageInfo, 'nofile.preRequire', []));
+  loadNofile(_.get(packageInfo, 'nofile.path'));
+  cmder.usage('[options] [fuzzy task name]...');
   if (!kit.task.list) {
     return;
   }
