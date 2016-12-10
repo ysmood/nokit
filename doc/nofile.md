@@ -1,5 +1,5 @@
 
-## Nofile Task Manager
+# Nofile Task Manager
 
 Nokit has provided a cli tool like GNU Make. If you install it globally like this:
 
@@ -7,7 +7,7 @@ Nokit has provided a cli tool like GNU Make. If you install it globally like thi
 
 , you can execute `no` command besides a 'nofile.js' file.
 
-### Quick Start
+## Quick Start
 
 Create a `nofile.js` (or `.coffee`, `.ts`, etc) at your current working directory
 or any of its parents directory.
@@ -71,7 +71,56 @@ For real world example, just see the [nofile](nofile.coffee?source) that nokit i
 
 For more doc for the `option` goto [commander.js](https://github.com/tj/commander.js).
 
-### Config the package.json
+## Config the package.json
+
+### auto install missed or outdated dependencies
+
+If you want to let nofile help you to install missed or outdated dependencies,
+you can enable the `nofile.autoInstallDeps`, it will compare the `dependencies` and
+`devDependencies` to current installed dependencies, if any of them is doesn't satisfy
+the semver, it will try to install it properly:
+
+```json
+{
+    "name": "app",
+    "version": "0.23.6",
+    "nofile": {
+      "autoInstallDeps": true
+    }
+}
+```
+
+### lock nodejs and npm version
+
+If you set the `engines` field in the `package.json`,
+Nofile will check the version of nodejs and npm, and abort if the version doesn't match:
+
+```json
+{
+    "name": "app",
+    "version": "0.23.6",
+    "engines": {
+      "node": ">= 0.11.0",
+      "npm": ">= 2.0.0"
+    }
+}
+```
+
+### set nofile path
+
+If you want to config the name of the nofile, the `nofile.path` field is for you:
+
+```json
+{
+    "name": "app",
+    "version": "0.23.6",
+    "nofile": {
+      "path": "my-nofile.js"
+    }
+}
+```
+
+### Preprocessor
 
 By default nofile only supports js, if you want nokit to support babel, you should install nokit like this:
 
@@ -92,30 +141,3 @@ Then you should add a 'nofile.preRequire' array into the `package.json`:
 ```
 
 Here nofile will preload the babel and coffee, right before the actual code execution.
-
-
-If you set the `engines` field in the `package.json`,
-Nofile will check the version of nodejs and npm, and abort if the version doesn't match:
-
-```json
-{
-    "name": "app",
-    "version": "0.23.6",
-    "engines": {
-      "node": ">= 0.11.0",
-      "npm": ">= 2.0.0"
-    }
-}
-```
-
-If you want to config the name of the nofile, the `nofile.path` field is for you:
-
-```json
-{
-    "name": "app",
-    "version": "0.23.6",
-    "nofile": {
-      "path": "my-nofile.js"
-    }
-}
-```

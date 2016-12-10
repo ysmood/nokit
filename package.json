@@ -22,6 +22,7 @@
     "preRequire": [
       "coffee-script/lib/coffee-script/register"
     ],
+    "autoInstallDeps": true,
     "path": "nofile.coffee"
   },
   "repository": {

@@ -11,6 +11,7 @@ kit.requireOptional.autoInstall = true;
 br = kit.require 'brush'
 { _ } = kit
 cmder = kit.requireOptional 'commander', __dirname, '^2.9.0'
+autoInstallDeps = require './autoInstallDeps'
 
 error = (msg) ->
 	err = new Error msg
@@ -84,12 +85,12 @@ findPath = (pattern, dir = process.cwd()) ->
 	else
 		return findPath pattern, parent
 
-readPackageJson = () ->
+getPackageJsonPath = () ->
 	paths = kit.genModulePaths 'package.json', process.cwd(), ''
 
 	for p in paths
 		if kit.fileExistsSync p
-			return kit.readJsonSync p
+			return p
 
 preRequire = (requires) ->
 	for path in requires
@@ -161,9 +162,14 @@ getOptions = ->
 module.exports = ->
 	cwd = process.cwd()
 
-	packageInfo = readPackageJson()
+	packagePath = getPackageJsonPath()
+
+	packageInfo = kit.readJsonSync packagePath
 
 	checkEngines _.get(packageInfo, 'engines', {})
+
+	if (_.get(packageInfo, 'nofile.autoInstallDeps'))
+		autoInstallDeps kit.path.dirname(packagePath), packageInfo
 
 	preRequire _.get(packageInfo, 'nofile.preRequire', [])
 
