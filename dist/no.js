@@ -2,7 +2,7 @@
 /*
 	A simplified version of Make.
  */
-var _, br, checkEngines, cmder, error, findPath, getOptions, kit, loadNofile, preRequire, readPackageJson, searchTasks, task;
+var _, autoInstallDeps, br, checkEngines, cmder, error, findPath, getOptions, getPackageJsonPath, kit, loadNofile, preRequire, searchTasks, task;
 
 if (process.env.NODE_ENV == null) {
   process.env.NODE_ENV = 'development';
@@ -17,6 +17,8 @@ br = kit.require('brush');
 _ = kit._;
 
 cmder = kit.requireOptional('commander', __dirname, '^2.9.0');
+
+autoInstallDeps = require('./autoInstallDeps');
 
 error = function(msg) {
   var err;
@@ -103,13 +105,13 @@ findPath = function(pattern, dir) {
   }
 };
 
-readPackageJson = function() {
+getPackageJsonPath = function() {
   var i, len, p, paths;
   paths = kit.genModulePaths('package.json', process.cwd(), '');
   for (i = 0, len = paths.length; i < len; i++) {
     p = paths[i];
     if (kit.fileExistsSync(p)) {
-      return kit.readJsonSync(p);
+      return p;
     }
   }
 };
@@ -195,10 +197,14 @@ getOptions = function() {
 };
 
 module.exports = function() {
-  var cwd, packageInfo, tasks;
+  var cwd, packageInfo, packagePath, tasks;
   cwd = process.cwd();
-  packageInfo = readPackageJson();
+  packagePath = getPackageJsonPath();
+  packageInfo = kit.readJsonSync(packagePath);
   checkEngines(_.get(packageInfo, 'engines', {}));
+  if (_.get(packageInfo, 'nofile.autoInstallDeps')) {
+    autoInstallDeps(kit.path.dirname(packagePath), packageInfo);
+  }
   preRequire(_.get(packageInfo, 'nofile.preRequire', []));
   loadNofile(_.get(packageInfo, 'nofile.path'));
   cmder.usage('[options] [fuzzy task name]...');
