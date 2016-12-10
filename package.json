@@ -3,6 +3,9 @@
   "version": "0.23.6",
   "description": "A light weight set of handy tools for real world program.",
   "main": "dist/kit.js",
+  "engines": {
+    "node": ">= 0.11.0"
+  },
   "bin": {
     "no": "bin/no.js",
     "noe": "bin/noe.js",
@@ -14,6 +17,12 @@
     "no": "bin/no.js",
     "test": "node bin/no test",
     "prepublish": "node bin/no build -a"
+  },
+  "nofile": {
+    "preRequire": [
+      "coffee-script/lib/coffee-script/register"
+    ],
+    "path": "nofile.coffee"
   },
   "repository": {
     "type": "git",

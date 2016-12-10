@@ -55,26 +55,57 @@ task = ->
 
 	args.fn
 
+checkEngines = (engines) ->
+	semver = kit.require 'semver'
+	if engines.node && not semver.satisfies(process.version, engines.node)
+		throw new Error(br.red(
+			"package.json engines.node requires #{engines.node}, but get #{process.version}"
+		))
+
+	if engines.npm
+		{ execSync } = kit.require 'child_process', __dirname
+		npmVer = _.trim('' + execSync 'npm -v')
+		if not semver.satisfies(npmVer, engines.npm)
+			throw new Error(br.red(
+				"package.json engines.npm requires #{engines.npm}, but get #{npmVer}"
+			))
+
+	# maybe in the future: Microsoft's Chakra
+
+findPath = (pattern, dir = process.cwd()) ->
+	name = _.find kit.readdirSync(dir), (n) -> pattern.test n
+	parent = kit.path.dirname(dir);
+
+	if parent == dir
+		return null
+
+	if name
+		return kit.path.join dir, name
+	else
+		return findPath pattern, parent
+
+readPackageJson = () ->
+	paths = kit.genModulePaths 'package.json', process.cwd(), ''
+
+	for p in paths
+		if kit.fileExistsSync p
+			return kit.readJsonSync p
+
+preRequire = (requires) ->
+	for path in requires
+		try
+			require path
+		catch err
+			console.error "nofile pre-require error in file #{path}"
+			throw err
+
 ###*
  * Load nofile.
  * @return {String} The path of found nofile.
 ###
-loadNofile = ->
-	preRequire = (path) ->
-		code = kit.readFileSync path, 'utf8'
-		requires = code.match /nofile-pre-require:\s*[^\s]+/g
-		if requires
-			for r in requires
-				try
-					require _.trim r.replace('nofile-pre-require:', '')
-				catch err
-					console.error "nofile-pre-require error in file #{path}"
-					throw err
-
+loadNofile = (nofilePath) ->
 	load = (path) ->
 		kit.Promise.enableLongStackTrace()
-
-		preRequire path
 
 		console.log br.grey("# #{path}")
 
@@ -86,28 +117,15 @@ loadNofile = ->
 			error 'no task defined'
 		return path
 
-	if (nofileIndex = process.argv.indexOf('--nofile')) > -1
-		path = kit.path.resolve process.argv[nofileIndex + 1]
+	if nofilePath
+		path = kit.path.resolve nofilePath
 		if kit.fileExistsSync path
 			return load path
 		else
-			return error 'Cannot find nofile'
-
-	nofileReg = /^nofile\.\w+$/i
-	findPath = (dir) ->
-		name = _.find kit.readdirSync(dir), (n) -> nofileReg.test n
-		parent = kit.path.dirname(dir);
-
-		if parent == dir
-			return null
-
-		if name
-			return kit.path.join dir, name
-		else
-			return findPath parent
+			return error "package.json nofile.path not found: #{path}"
 
 	try
-		path = findPath process.cwd()
+		path = findPath /^nofile\.\w+$/i
 
 	if path
 		dir = kit.path.dirname path
@@ -143,10 +161,15 @@ getOptions = ->
 module.exports = ->
 	cwd = process.cwd()
 
-	nofilePath = loadNofile()
+	packageInfo = readPackageJson()
+
+	checkEngines _.get(packageInfo, 'engines', {})
+
+	preRequire _.get(packageInfo, 'nofile.preRequire', [])
+
+	loadNofile _.get(packageInfo, 'nofile.path')
 
 	cmder
-	.option '--nofile <path>', 'force nofile path'
 	.usage '[options] [fuzzy task name]...'
 
 	if not kit.task.list
