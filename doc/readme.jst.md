@@ -31,10 +31,10 @@ Goto [changelog](doc/changelog.md)
 
 - #### [CLI](#cli-1)
 
-  - [Task Manager](#task-manager)
+  - [Nofile](doc/nofile.md)
   - [Auto-Runner](#auto-runner)
   - [Static File Server](#static-file-server)
-  - [Tunnel](#tunnel)
+  - [Tunnel](doc/tunnel.md)
   - [Temote TTY](#temote-tty)
 
 - #### kit
@@ -52,102 +52,6 @@ Goto [changelog](doc/changelog.md)
 
 # CLI
 
-## Task Manager
-
-Nokit has provided a cli tool like GNU Make. If you install it globally like this:
-
-`npm -g i nokit`
-
-, you can execute `no` command besides a 'nofile.js' file.
-
-### Quick Start
-
-Create a `nofile.js` (or `.coffee`, `.ts`, etc) at your current working directory
-or any of its parents directory.
-
-Assume your file content is:
-
-```js
-var kit = require('nokit');
-
-/**
- * Expose a task definition function.
- * @param  {Function} task `(name, dependencies, description, isSequential, callback) => Function`
- * @param  {Function} option `(name, description, default || callback) => option`
- */
-module.exports = (task, option) => {
-    option('-w, --hello [world]', 'Just a test option', 'world');
-
-    // Define a default task, and it depends on the "clean" task.
-    task('default', ['clean'], 'This is a comment info', (opts) => {
-        // Compose a task inside another.
-        printOpts(opts);
-
-        // Use brush.
-        kit.require('brush');
-        kit.log('print red words'.red);
-    });
-
-    let printOpts = task('print-opts', (opts) => { kit.logs(opts); });
-
-    task('clean', () => {
-        return kit.remove('dist');
-    });
-
-    // To add alias to a task, just use space to separate names.
-    // Here 'build' and 'b' are the same task.
-    task('build b', () => {
-        kit.require('drives');
-        return kit.warp('src/**/*.js')
-        .load(kit.drives.auto 'compile')
-        .run('dist');
-    });
-
-    task('sequential', ['clean', 'build'], true, () => {
-        kit.log('Run clean and build sequentially.');
-    });
-};
-```
-
-Then you can run it in command line: `no`. Just that simple, without task
-name, `no` will try to call the `default` task directly.
-
-You can run `no -h` to display help info.
-
-Call `no build` or `no b` to run the `build` task.
-
-Call with option: `no build -w Life`.
-
-Call `no a b c` to run task `a`, `b`, `c` sequentially.
-
-For real world example, just see the [nofile](nofile.coffee?source) that nokit is using.
-
-For more doc for the `option` goto [commander.js](https://github.com/tj/commander.js).
-
-By default nofile only supports js, if you want nokit to support babel, you should install nokit like this:
-
-`npm i -g nokit babel-register`
-
-Then you should add a comment in the nofile:
-
-```js
-// nofile-pre-require: babel-register
-
-// You can also add any others at the same time.
-// nofile-pre-require: babel-polyfill
-```
-
-Same works with coffee or any other languages:
-
-`npm i -g nokit coffee-script`
-
-Then add comment:
-
-```coffee
-# nofile-pre-require: coffee-script/register
-```
-
-
 ## Auto-Runner
 
 `noe` is a dev tool to run / watch / reload program automatically. Run `noe -h` to see what you
@@ -162,42 +66,6 @@ For more help, run: `noe -h`.
 can do with it.
 
 For more help, run: `nos -h`.
-
-
-## Tunnel
-
-`not` is a tcp/udp tunnel tool. For example if you want to ssh a machine behind a firewall,
-you can use it to easily reverse proxy port 22 to the outside world.
-
-For more help, run: `not -h`.
-
-> The data is encrypted on the client, so the server can't sniff the data passed between clients,
-> it acts as a router.
-> Now only the tcp packet will be encrypted, upd will sent as raw data.
-
-### Quick Start
-
-```text
-                                      a.com
-      +-----------+  export port  +-----------+  connect port  +-----------+
-      | Machine A +-------------->| Machine R |<---------------+ Machine B |
-      +-----------+               +-----------+                +-----------+
- not -o a.com -x 8080 -n A            not -s                 not -o a.com -t A
-```
-
-Suppose A and B cannot reach each other via network directly.
-But they both have tcp access to the R (`a.com`).
-
-0. Start the relay server on R to proxy tcp/udp: `not -s`,
-
-0. Start a proxy client on A to connect to R and export self as A: `not -o a.com -n A`
-
-0. Start a proxy client on B to connect to R and forward tcp/udp to A: `not -o a.com -t A`
-
-That's all you need. Now your packet to B's port 7000, will be transparently forward
-to A's port 8080 through the R.
-
-IF you want to change the default port, run `not -h` for more options.
 
 
 ## Temote TTY
