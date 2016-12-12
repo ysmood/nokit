@@ -19,8 +19,6 @@ module.exports = function (root, packInfo) {
                 kit.path.join(root, 'node_modules', name, 'package.json')
             ).version;
 
-            if (!semver.valid(ver)) return;
-
             if (!semver.satisfies(version, ver)) {
                 installList.push(target)
             }
