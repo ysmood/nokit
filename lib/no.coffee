@@ -93,6 +93,9 @@ getPackageJsonPath = () ->
 			return p
 
 preRequire = (requires) ->
+	if not _.isArray requires
+		requires = [requires]
+
 	for path in requires
 		try
 			require path

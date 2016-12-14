@@ -118,6 +118,9 @@ getPackageJsonPath = function() {
 
 preRequire = function(requires) {
   var err, i, len, path, results;
+  if (!_.isArray(requires)) {
+    requires = [requires];
+  }
   results = [];
   for (i = 0, len = requires.length; i < len; i++) {
     path = requires[i];

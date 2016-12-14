@@ -1,6 +1,6 @@
 {
   "name": "nokit",
-  "version": "0.23.10",
+  "version": "0.23.11",
   "description": "A light weight set of handy tools for real world program.",
   "main": "dist/kit.js",
   "engines": {
@@ -19,9 +19,7 @@
     "prepublish": "node bin/no build -a"
   },
   "nofile": {
-    "preRequire": [
-      "coffee-script/lib/coffee-script/register"
-    ],
+    "preRequire": "coffee-script/lib/coffee-script/register",
     "autoInstallDeps": true,
     "path": "nofile.coffee"
   },
