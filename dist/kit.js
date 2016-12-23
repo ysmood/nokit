@@ -1319,7 +1319,7 @@ _.extend(kit, fs, yutils, {
       return _.keys(depPaths);
     });
   },
-  parseDependencyReg: /require\s*\(?['"](.+)['"]\)?|^\s*import.+?from\s+['"](.+)['"]|^\s*import\s+['"](.+)['"]+\s+as|^\s*import\s+['"](.+)['"][;\s]*$/mg,
+  parseDependencyReg: /require\s*\(?['"](.+)['"]\)?|^\s*import\s+['"](.+)['"][;\s]*$|^\s*import[\s\S]+?from\s+['"](.+)['"]/mg,
 
   /**
    * io.js native module `path`. See `nofs` for more information.
