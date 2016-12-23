@@ -1198,9 +1198,8 @@ _.extend kit, fs, yutils,
 
     parseDependencyReg: ///
         require\s*\(?['"](.+)['"]\)?
-        | ^\s*import.+?from\s+['"](.+)['"]
-        | ^\s*import\s+['"](.+)['"]+\s+as
         | ^\s*import\s+['"](.+)['"][;\s]*$
+        | ^\s*import[\s\S]+?from\s+['"](.+)['"]
         ///mg
 
     ###*

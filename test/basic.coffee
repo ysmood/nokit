@@ -250,6 +250,9 @@ module.exports = (it) ->
 				'test/fixtures/depDir/dep4.js'
 				'test/fixtures/depDir/dep5.coffee'
 				'test/fixtures/depDir/dep6.coffee'
+				'test/fixtures/depDir/imported1.coffee'
+				'test/fixtures/depDir/imported2.coffee'
+				'test/fixtures/depDir/imported3.coffee'
 				'test/fixtures/depDir/lib/index.js'
 				'test/fixtures/depMain.coffee'
 			]
