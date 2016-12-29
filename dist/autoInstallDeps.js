@@ -7,7 +7,7 @@ var semver = kit.require('semver');
 var br = kit.require('brush');
 
 module.exports = function (root, packInfo) {
-    var deps = kit._.assign({}, packInfo.dependencies, packInfo.devDependencies);
+    var deps = _.assign({}, packInfo.dependencies, packInfo.devDependencies);
 
     for (var name in deps) {
         var ver = deps[name];
@@ -15,9 +15,10 @@ module.exports = function (root, packInfo) {
         var target = name + '@' + ver;
         var installList = [];
         try {
-            var version = kit.readJsonSync(
-                kit.path.join(root, 'node_modules', name, 'package.json')
-            ).version;
+            var paths = kit.genModulePaths(kit.path.join(name, 'package.json'))
+            var path = _.find(paths, function (p) { return kit.existsSync(p) })
+
+            var version = kit.readJsonSync(path).version;
 
             if (!semver.satisfies(version, ver)) {
                 installList.push(target)
