@@ -203,7 +203,7 @@ module.exports = function() {
   var cwd, packageInfo, packagePath, tasks;
   cwd = process.cwd();
   packagePath = getPackageJsonPath();
-  packageInfo = kit.readJsonSync(packagePath);
+  packageInfo = packagePath ? kit.readJsonSync(packagePath) : null;
   checkEngines(_.get(packageInfo, 'engines', {}));
   if (_.get(packageInfo, 'nofile.autoInstallDeps')) {
     autoInstallDeps(kit.path.dirname(packagePath), packageInfo);
