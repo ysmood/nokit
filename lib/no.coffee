@@ -167,7 +167,10 @@ module.exports = ->
 
 	packagePath = getPackageJsonPath()
 
-	packageInfo = kit.readJsonSync packagePath
+	packageInfo = if packagePath
+		kit.readJsonSync packagePath
+	else
+		null
 
 	checkEngines _.get(packageInfo, 'engines', {})
 
