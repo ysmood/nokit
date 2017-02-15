@@ -1313,7 +1313,7 @@ _.extend(kit, fs, yutils, {
             return entryPaths.push(kit.path.join(dir, p));
           });
           return kit.parseDependency(entryPaths, opts, depPaths);
-        });
+        })["catch"](_.noop);
       }));
     }).then(function() {
       return _.keys(depPaths);
