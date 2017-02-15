@@ -1193,6 +1193,7 @@ _.extend kit, fs, yutils,
                         entryPaths.push kit.path.join(dir, p)
 
                     kit.parseDependency entryPaths, opts, depPaths
+                .catch _.noop
         .then ->
             _.keys depPaths
 
