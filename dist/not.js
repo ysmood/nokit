@@ -473,6 +473,42 @@ function runClient (opts) {
     return defer.promise;
 }
 
+function mapPort (map) {
+    return new Promise(function (resolve) {
+        _.spread(function (srcHost, srcPort, destHost, destPort) {
+            srcHost = srcHost || '0.0.0.0'
+            destHost = destHost || '127.0.0.1'
+
+            if (!srcPort || !destPort)
+                throw new Error('srcPort and destPort should not be empty')
+            
+            function errorLog (err) {
+                console.error(err);
+            }
+
+            var server = net.createServer(function (con) {
+                kit.logs("tcp:", con.address());
+
+                var to = net.connect(destPort, destHost);
+                
+                con.setTimeout(0);
+                
+                con.on("error", errorLog);
+                to.on("error", errorLog);
+
+                con.pipe(to);
+                to.pipe(con);
+            });
+
+            server.on('error', errorLog)
+            server.listen(srcPort, srcHost, function () {
+                kit.logs('map port req ->', srcHost + ':' + srcPort, '->', destHost + ':' + destPort)
+                resolve()
+            });
+        })(map.split(':'))
+    })
+}
+
 module.exports = function (opts) {
     _.defaults(opts, {
         xport: null,
@@ -485,6 +521,10 @@ module.exports = function (opts) {
         key: '3.141592',
         algorithm: 'aes-128-cfb'
     })
+
+    if (opts.mapPort) {
+        return Promise.all(opts.mapPort.map(mapPort))
+    }
 
     if (supportedAlgorithms.indexOf(opts.algorithm) < 0) {
         console.error(br.red('algorithm must be one of:'), supportedAlgorithms);
