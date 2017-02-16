@@ -86,6 +86,10 @@ proxy = {
         ctx.req.on('data', function(chunk) {
           var f;
           len += chunk.length;
+          if (len > opts.limit) {
+            reject(new Error('body exceeds max allowed size'));
+            return;
+          }
           if (len > opts.memoryLimit && !tmpFile) {
             tmpFile = kit.path.join(os.tmpdir(), 'nokit-body-' + crypto.randomBytes(16).toString('hex'));
             f = kit.createWriteStream(tmpFile);
@@ -93,10 +97,6 @@ proxy = {
             f.write(chunk);
             ctx.req.pipe(f);
             buf = void 0;
-            return;
-          }
-          if (len > opts.limit) {
-            reject(new Error('body exceeds max allowed size'));
             return;
           }
           return buf = Buffer.concat([buf, chunk]);

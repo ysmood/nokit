@@ -72,6 +72,10 @@ proxy =
                 ctx.req.on 'data', (chunk) ->
                     len += chunk.length
 
+                    if len > opts.limit
+                        reject(new Error('body exceeds max allowed size'))
+                        return
+
                     if len > opts.memoryLimit && !tmpFile
                         tmpFile = kit.path.join(
                             os.tmpdir()
@@ -83,10 +87,6 @@ proxy =
                         f.write(chunk)
                         ctx.req.pipe f
                         buf = undefined
-                        return
-
-                    if len > opts.limit
-                        reject(new Error('body exceeds max allowed size'))
                         return
 
                     buf = Buffer.concat [buf, chunk]
