@@ -509,7 +509,9 @@ module.exports = (it) ->
 		proxy = kit.require 'proxy'
 
 		routes = [
-			proxy.body(),
+			proxy.body({
+				memoryLimit: 5
+			}),
 			proxy.body(),
 			($) -> $.body = $.reqBody + 'ok'
 		]
@@ -518,10 +520,10 @@ module.exports = (it) ->
 		, (port) ->
 			kit.request {
 				url: "http://127.0.0.1:#{port}"
-				reqData: 'ok'
+				reqData: '12345678901234567890'
 			}
 			.then (body) ->
-				it.eq body, 'okok'
+				it.eq body, '12345678901234567890ok'
 
 	it 'proxy flow van', ->
 		proxy = kit.require 'proxy'

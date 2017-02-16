@@ -9,6 +9,8 @@ kit = require './kit'
 { _, Promise } = kit
 http = require 'http'
 https = require 'https'
+os = require 'os'
+crypto = require 'crypto'
 { default: flow } = require 'noflow'
 tcpFrame = require './tcpFrame'
 net = kit.require 'net', __dirname
@@ -28,6 +30,13 @@ proxy =
      * A simple request body middleware.
      * It will append a property `reqBody` to `ctx`.
      * It will append a property `body` to `ctx.req`.
+     * @params opts {Object} Defaults:
+     * ```js
+     * {
+     *     limit: Infinity,
+     *     memoryLimit: 100 * 1024 // 100KB
+     * }
+     * ```
      * @return {Function} `(ctx) -> Promise`
      * @example
      * ```
@@ -45,21 +54,63 @@ proxy =
      * app.listen(8123);
      * ```
     ###
-    body: () ->
+    body: (opts = {}) ->
+        _.defaults opts, {
+            limit: Infinity
+            memoryLimit: 100 * 1024
+        }
+
         (ctx) ->
             if (!ctx.req.readable)
                 return ctx.next()
 
             new Promise (resolve, reject) ->
                 buf = new Buffer 0
+                len = 0
+                tmpFile = null
+
                 ctx.req.on 'data', (chunk) ->
+                    len += chunk.length
+
+                    if len > opts.memoryLimit && !tmpFile
+                        tmpFile = kit.path.join(
+                            os.tmpdir()
+                            'nokit-body-' + crypto.randomBytes(16).toString('hex')
+                        )
+
+                        f = kit.createWriteStream(tmpFile)
+                        f.write(buf)
+                        f.write(chunk)
+                        ctx.req.pipe f
+                        buf = undefined
+                        return
+
+                    if len > opts.limit
+                        reject(new Error('body exceeds max allowed size'))
+                        return
+
                     buf = Buffer.concat [buf, chunk]
+
                 ctx.req.on 'error', reject
-                ctx.req.on 'end', ->
+
+                end = ->
                     if buf.length > 0
                         ctx.reqBody = buf
                         ctx.req.body = buf
+
                     ctx.next().then resolve, reject
+
+                ctx.req.on 'end', ->
+                    if tmpFile
+                        kit.readFile(tmpFile).then(
+                            (data) ->
+                                buf = data
+                                end()
+                            reject
+                        )
+                    else
+                        end()
+
 
     ###*
      * Http CONNECT method tunneling proxy helper.
@@ -234,8 +285,6 @@ proxy =
      * @return {Function} noflow middleware
     ###
     file: (opts = {}) ->
-        crypto = require 'crypto';
-
         _.defaults opts, {
             password: 'nokit'
             algorithm: 'aes128'
@@ -351,8 +400,6 @@ proxy =
      * @return {Promise}
     ###
     fileRequest: (opts = {}) ->
-        crypto = require 'crypto';
-
         _.defaults opts, {
             action: 'read'
             url: '127.0.0.1'
