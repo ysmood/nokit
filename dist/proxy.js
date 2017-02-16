@@ -4,7 +4,7 @@
  * A cross-platform programmable Fiddler alternative.
  * You can even replace express.js with it's `flow` function.
  */
-var Overview, Promise, Socket, _, flow, http, https, kit, net, proxy, regConnectHost, regGzipDeflat, regTunnelBegin, tcpFrame;
+var Overview, Promise, Socket, _, crypto, flow, http, https, kit, net, os, proxy, regConnectHost, regGzipDeflat, regTunnelBegin, tcpFrame;
 
 Overview = 'proxy';
 
@@ -15,6 +15,10 @@ _ = kit._, Promise = kit.Promise;
 http = require('http');
 
 https = require('https');
+
+os = require('os');
+
+crypto = require('crypto');
 
 flow = require('noflow')["default"];
 
@@ -38,6 +42,13 @@ proxy = {
    * A simple request body middleware.
    * It will append a property `reqBody` to `ctx`.
    * It will append a property `body` to `ctx.req`.
+   * @params opts {Object} Defaults:
+   * ```js
+   * {
+   *     limit: Infinity,
+   *     memoryLimit: 100 * 1024 // 100KB
+   * }
+   * ```
    * @return {Function} `(ctx) -> Promise`
    * @example
    * ```
@@ -55,24 +66,58 @@ proxy = {
    * app.listen(8123);
    * ```
    */
-  body: function() {
+  body: function(opts) {
+    if (opts == null) {
+      opts = {};
+    }
+    _.defaults(opts, {
+      limit: 2e308,
+      memoryLimit: 100 * 1024
+    });
     return function(ctx) {
       if (!ctx.req.readable) {
         return ctx.next();
       }
       return new Promise(function(resolve, reject) {
-        var buf;
+        var buf, end, len, tmpFile;
         buf = new Buffer(0);
+        len = 0;
+        tmpFile = null;
         ctx.req.on('data', function(chunk) {
+          var f;
+          len += chunk.length;
+          if (len > opts.memoryLimit && !tmpFile) {
+            tmpFile = kit.path.join(os.tmpdir(), 'nokit-body-' + crypto.randomBytes(16).toString('hex'));
+            f = kit.createWriteStream(tmpFile);
+            f.write(buf);
+            f.write(chunk);
+            ctx.req.pipe(f);
+            buf = void 0;
+            return;
+          }
+          if (len > opts.limit) {
+            reject(new Error('body exceeds max allowed size'));
+            return;
+          }
           return buf = Buffer.concat([buf, chunk]);
         });
         ctx.req.on('error', reject);
-        return ctx.req.on('end', function() {
+        end = function() {
           if (buf.length > 0) {
             ctx.reqBody = buf;
             ctx.req.body = buf;
           }
           return ctx.next().then(resolve, reject);
+        };
+        return ctx.req.on('end', function() {
+          if (tmpFile) {
+            return kit.readFile(tmpFile).then(function(data) {
+              buf = data;
+              return end();
+            }, reject);
+          } else {
+            return end();
+          }
         });
       });
     };
@@ -270,11 +315,10 @@ proxy = {
    * @return {Function} noflow middleware
    */
   file: function(opts) {
-    var absRoot, crypto, decrypt, encrypt, genCipher, genDecipher;
+    var absRoot, decrypt, encrypt, genCipher, genDecipher;
     if (opts == null) {
       opts = {};
     }
-    crypto = require('crypto');
     _.defaults(opts, {
       password: 'nokit',
       algorithm: 'aes128',
@@ -402,11 +446,10 @@ proxy = {
    * @return {Promise}
    */
   fileRequest: function(opts) {
-    var crypto, data, decrypt, encrypt, genCipher, genDecipher, obj1;
+    var data, decrypt, encrypt, genCipher, genDecipher, obj1;
     if (opts == null) {
       opts = {};
     }
-    crypto = require('crypto');
     _.defaults(opts, {
       action: 'read',
       url: '127.0.0.1',
