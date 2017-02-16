@@ -7,6 +7,7 @@ var _ = kit._;
 var cmder = kit.requireOptional('commander', __dirname, '^2.9.0');
 var not = require('../dist/not');
 var os = require('os');
+var mapPort
 
 cmder
     .description('a tcp/udp tunnel tool')
@@ -20,6 +21,15 @@ cmder
     .option('-s, --server', 'start as tunnel server')
     .option('-o, --host <host>', 'the host of the tunnel server [0.0.0.0]', '0.0.0.0')
     .option('-r, --hostPort <port>', 'the port of the tunnel server [8091]', 8091)
+    .option(
+        '-m, --mapPort <srcHost:srcPort:destHost:destPort>',
+        'map one port to another, if this mode is on, other mode will be off. ' +
+        'req -> srcHost:srcPort -> destHost:destPort',
+        function (p) {
+            if (!mapPort) mapPort = [];
+            mapPort.push(p);
+        }
+    )
     .option('-k, --key <str>', 'the key to secure the transport layer [3.141592]', '3.141592')
     .option('-a, --algorithm <name>', 'the algorithm to secure the transport layer [aes-128-cfb]', 'aes-128-cfb')
 .parse(process.argv);
@@ -27,5 +37,7 @@ cmder
 if (_.isFunction(cmder.name)) {
     cmder.name = undefined;
 }
+
+cmder.mapPort = mapPort
 
 not(cmder).catch(kit.throw);
