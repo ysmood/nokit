@@ -1591,7 +1591,7 @@ For more help, run: `nor -h`.
         app.listen(8123);
         ```
 
-- ## **[debugJs(opts)](lib/proxy.coffee?source#L225)**
+- ## **[debugJs(opts)](lib/proxy.coffee?source#L226)**
 
     Proxy and replace a single js file with a local one.
 
@@ -1625,13 +1625,13 @@ For more help, run: `nor -h`.
         app.listen(8123);
         ```
 
-- ## **[etag()](lib/proxy.coffee?source#L245)**
+- ## **[etag()](lib/proxy.coffee?source#L246)**
 
     Create a etag middleware.
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[file(opts)](lib/proxy.coffee?source#L287)**
+- ## **[file(opts)](lib/proxy.coffee?source#L288)**
 
     A simple protocol to read, write, chmod, delete file via http.
     The protocol is very simple
@@ -1662,7 +1662,7 @@ For more help, run: `nor -h`.
 
         noflow middleware
 
-- ## **[fileRequest(opts)](lib/proxy.coffee?source#L402)**
+- ## **[fileRequest(opts)](lib/proxy.coffee?source#L403)**
 
     Make a file create request to `proxy.file`.
 
@@ -1684,12 +1684,12 @@ For more help, run: `nor -h`.
 
     - **<u>return</u>**: { _Promise_ }
 
-- ## **[flow](lib/proxy.coffee?source#L469)**
+- ## **[flow](lib/proxy.coffee?source#L470)**
 
     A minimal middleware composer for the future.
     https://github.com/ysmood/noflow
 
-- ## **[flowToMid(fn)](lib/proxy.coffee?source#L476)**
+- ## **[flowToMid(fn)](lib/proxy.coffee?source#L477)**
 
     Convert noflow middleware express middleware.
 
@@ -1701,7 +1701,7 @@ For more help, run: `nor -h`.
 
         express middleware
 
-- ## **[match(pattern, opts)](lib/proxy.coffee?source#L496)**
+- ## **[match(pattern, opts)](lib/proxy.coffee?source#L497)**
 
     Generate an express like unix path selector. See the example of `proxy.flow`.
 
@@ -1724,7 +1724,7 @@ For more help, run: `nor -h`.
         kit.log(match('/items/10')) // output => { id: '10' }
         ```
 
-- ## **[midToFlow(h)](lib/proxy.coffee?source#L534)**
+- ## **[midToFlow(h)](lib/proxy.coffee?source#L535)**
 
     Convert a Express-like middleware to `proxy.flow` middleware.
 
@@ -1749,7 +1749,7 @@ For more help, run: `nor -h`.
         http.createServer(proxy.flow(middlewares)).listen(8123);
         ```
 
-- ## **[parseUrl()](lib/proxy.coffee?source#L565)**
+- ## **[parseUrl()](lib/proxy.coffee?source#L566)**
 
     A simple url parser middleware.
     It will append a `url` object to `ctx`
@@ -1775,7 +1775,7 @@ For more help, run: `nor -h`.
         app.listen(8123);
         ```
 
-- ## **[relayConnect(opts)](lib/proxy.coffee?source#L584)**
+- ## **[relayConnect(opts)](lib/proxy.coffee?source#L585)**
 
     A helper for http server port tunneling.
 
@@ -1793,7 +1793,7 @@ For more help, run: `nor -h`.
 
         A http connect method helper.
 
-- ## **[relayClient(opts)](lib/proxy.coffee?source#L623)**
+- ## **[relayClient(opts)](lib/proxy.coffee?source#L624)**
 
     A helper for http server port tunneling.
 
@@ -1813,7 +1813,7 @@ For more help, run: `nor -h`.
 
         Resolve a tcp server object.
 
-- ## **[select(sel, middleware)](lib/proxy.coffee?source#L676)**
+- ## **[select(sel, middleware)](lib/proxy.coffee?source#L677)**
 
     Create a conditional middleware that only works when the pattern matches.
 
@@ -1839,7 +1839,7 @@ For more help, run: `nor -h`.
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[serverHelper(opts)](lib/proxy.coffee?source#L771)**
+- ## **[serverHelper(opts)](lib/proxy.coffee?source#L772)**
 
     Create a http request middleware.
 
@@ -1893,7 +1893,7 @@ For more help, run: `nor -h`.
         nokit.log({ any: 'thing' });
         ```
 
-- ## **[static(opts)](lib/proxy.coffee?source#L846)**
+- ## **[static(opts)](lib/proxy.coffee?source#L847)**
 
     Create a static file middleware for `proxy.flow`.
 
@@ -1914,7 +1914,7 @@ For more help, run: `nor -h`.
         http.createServer(proxy.flow(middlewares)).listen(8123);
         ```
 
-- ## **[tcpFrame(socket, opts)](lib/proxy.coffee?source#L889)**
+- ## **[tcpFrame(socket, opts)](lib/proxy.coffee?source#L890)**
 
     Send or receive any size of package over a socket.
     Add a `writeFrame` method and a `frame` event to `net.Socket` object.
@@ -1935,7 +1935,7 @@ For more help, run: `nor -h`.
         }
         ```
 
-- ## **[url(opts)](lib/proxy.coffee?source#L964)**
+- ## **[url(opts)](lib/proxy.coffee?source#L965)**
 
     Use it to proxy one url to another.
 
@@ -2017,7 +2017,7 @@ For more help, run: `nor -h`.
         ).listen(8123);
         ```
 
-- ## **[van(ctx)](lib/proxy.coffee?source#L1118)**
+- ## **[van(ctx)](lib/proxy.coffee?source#L1119)**
 
     Add a `van` method to flow context object. It's a helper to set
     and get the context body.

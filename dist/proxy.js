@@ -213,6 +213,7 @@ proxy = {
         return opts.onError(err, req, sock);
       });
       return psock.on('error', function(err) {
+        sock.destroy();
         return opts.onError(err, req, psock);
       });
     };

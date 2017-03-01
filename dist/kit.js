@@ -1289,7 +1289,7 @@ _.extend(kit, fs, yutils, {
       if (kit.path.extname(p)) {
         s.push(p);
       } else {
-        s.push(p + '{/index,}.*');
+        s.push(p + '{/index.,}*');
       }
       return s;
     }, []);
