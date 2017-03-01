@@ -194,6 +194,7 @@ proxy =
             sock.on 'error', (err) ->
                 opts.onError err, req, sock
             psock.on 'error', (err) ->
+                sock.destroy()
                 opts.onError err, req, psock
 
     ###*
