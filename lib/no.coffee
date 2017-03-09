@@ -121,6 +121,13 @@ loadNofile = (nofilePath) ->
 			error 'no task defined'
 		return path
 
+	if (nofileIndex = process.argv.indexOf('--nofile')) > -1
+		path = kit.path.resolve process.argv[nofileIndex + 1]
+		if kit.fileExistsSync path
+			return load path
+		else
+			return error 'Cannot find nofile'
+
 	if nofilePath
 		path = kit.path.resolve nofilePath
 		if kit.fileExistsSync path
@@ -182,6 +189,7 @@ module.exports = ->
 	loadNofile _.get(packageInfo, 'nofile.path')
 
 	cmder
+	.option '--nofile <path>', 'force nofile path'
 	.usage '[options] [fuzzy task name]...'
 
 	if not kit.task.list
