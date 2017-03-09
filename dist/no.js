@@ -142,7 +142,7 @@ preRequire = function(requires) {
  */
 
 loadNofile = function(nofilePath) {
-  var dir, load, path, rdir;
+  var dir, load, nofileIndex, path, rdir;
   load = function(path) {
     var tasker;
     kit.Promise.enableLongStackTrace();
@@ -158,6 +158,14 @@ loadNofile = function(nofilePath) {
     }
     return path;
   };
+  if ((nofileIndex = process.argv.indexOf('--nofile')) > -1) {
+    path = kit.path.resolve(process.argv[nofileIndex + 1]);
+    if (kit.fileExistsSync(path)) {
+      return load(path);
+    } else {
+      return error('Cannot find nofile');
+    }
+  }
   if (nofilePath) {
     path = kit.path.resolve(nofilePath);
     if (kit.fileExistsSync(path)) {
@@ -210,7 +218,7 @@ module.exports = function() {
   }
   preRequire(_.get(packageInfo, 'nofile.preRequire', []));
   loadNofile(_.get(packageInfo, 'nofile.path'));
-  cmder.usage('[options] [fuzzy task name]...');
+  cmder.option('--nofile <path>', 'force nofile path').usage('[options] [fuzzy task name]...');
   if (!kit.task.list) {
     return;
   }
