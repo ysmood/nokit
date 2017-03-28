@@ -848,7 +848,7 @@ proxy =
         if _.isString opts
             opts = { root: opts }
 
-        send = kit.requireOptional 'send', __dirname, '^0.14.0'
+        send = kit.requireOptional 'send', __dirname, '^0.15.0'
 
         (ctx) -> new Promise (resolve, reject) ->
             url = if _.isString ctx.url

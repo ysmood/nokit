@@ -930,7 +930,7 @@ proxy = {
         root: opts
       };
     }
-    send = kit.requireOptional('send', __dirname, '^0.14.0');
+    send = kit.requireOptional('send', __dirname, '^0.15.0');
     return function(ctx) {
       return new Promise(function(resolve, reject) {
         var path, query, s, url;
