@@ -985,13 +985,16 @@ proxy = {
    *     // `{ protocol: 'http:', host: 'test.com:8123', pathname: '/a/b', query: 's=1' }`.
    *     url: null,
    *
+   *     // Mutate the url before the proxy take charge of it.
+   *     handleUrl: (url) => url,
+   *
    *     agent: customHttpAgent,
    *
    *     // Force the header's host same as the url's.
    *     isForceHeaderHost: false,
    *
    *     // The request data to use. The return value should be stream, buffer or string.
-   *     handleReqData: (req) -> req.body || req
+   *     handleReqData: (req) => req.body || req
    *
    *     // You can hack the headers before the proxy send it.
    *     handleReqHeaders: (headers, req) => headers
