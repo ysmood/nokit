@@ -826,9 +826,7 @@ _.extend kit, fs, yutils,
      *      kit.err('EXIT' +
      *      ` code: ${code} signal: ${signal}\n` +
      *      'Process closed. Edit and save the watched file to restart.'),
-     *  sepLine: =>
-     *      process.stdout.write(_.repeat('*', process.stdout.columns))
-     * }
+    * }
      * ```
      * @return {Object} Properties:
      * ```js
@@ -879,25 +877,20 @@ _.extend kit, fs, yutils,
             onNormalExit: ({ code, signal }) ->
                 kit.log br.yellow('EXIT') +
                     " code: #{br.cyan code} signal: #{br.cyan signal}"
+                console.log('\n')
             onErrorExit: ({ code, signal }) ->
                 kit.err br.yellow('EXIT') +
                 " code: #{br.cyan code} " +
                 "signal: #{br.cyan signal}\n" +
                 br.red 'Process closed. Edit and save
                 the watched file to restart.'
-            sepLine: ->
-                if process.stdout and process.stdout.writable
-                    process.stdout.write br.yellow _.repeat(
-                        '*', process.stdout.columns
-                    )
+                console.log('\n')
         }
 
         opts.watchList ?= opts.args
 
         childPromise = null
         start = ->
-            opts.sepLine()
-
             childPromise = kit.spawn(
                 opts.bin
                 opts.args

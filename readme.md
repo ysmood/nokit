@@ -681,7 +681,7 @@ For more help, run: `nor -h`.
         // => [2015-02-07 08:31:49] test1 test2 test3
         ```
 
-- ## **[monitorApp(opts)](lib/kit.coffee?source#L857)**
+- ## **[monitorApp(opts)](lib/kit.coffee?source#L855)**
 
     Monitor an application and automatically restart it when file changed.
     Even when the monitored app exit with error, the monitor will still wait
@@ -721,8 +721,6 @@ For more help, run: `nor -h`.
              kit.err('EXIT' +
              ` code: ${code} signal: ${signal}\n` +
              'Process closed. Edit and save the watched file to restart.'),
-         sepLine: =>
-             process.stdout.write(_.repeat('*', process.stdout.columns))
         }
         ```
 
@@ -754,13 +752,13 @@ For more help, run: `nor -h`.
         });
         ```
 
-- ## **[nodeVersion()](lib/kit.coffee?source#L968)**
+- ## **[nodeVersion()](lib/kit.coffee?source#L961)**
 
     Node version. Such as `v0.10.23` is `0.1023`, `v0.10.1` is `0.1001`.
 
     - **<u>return</u>**: { _Float_ }
 
-- ## **[defaultArgs(args, defaults)](lib/kit.coffee?source#L999)**
+- ## **[defaultArgs(args, defaults)](lib/kit.coffee?source#L992)**
 
     A helper for arguments type based function override.
 
@@ -795,7 +793,7 @@ For more help, run: `nor -h`.
         { name: 'test', brush: ['red'], family: null, fn: => 'nothing' }
         ```
 
-- ## **[parseComment(code, opts)](lib/kit.coffee?source#L1049)**
+- ## **[parseComment(code, opts)](lib/kit.coffee?source#L1042)**
 
     A comments parser for javascript and coffee-script.
     Used to generate documentation from source code automatically.
@@ -840,7 +838,7 @@ For more help, run: `nor -h`.
         }
         ```
 
-- ## **[parseDependency(entryPaths, opts)](lib/kit.coffee?source#L1152)**
+- ## **[parseDependency(entryPaths, opts)](lib/kit.coffee?source#L1145)**
 
     Parse dependency tree by regex. The dependency relationships
     is not a tree, but a graph. To avoid dependency cycle, this
@@ -883,11 +881,11 @@ For more help, run: `nor -h`.
         );
         ```
 
-- ## **[path](lib/kit.coffee?source#L1210)**
+- ## **[path](lib/kit.coffee?source#L1203)**
 
     io.js native module `path`. See `nofs` for more information.
 
-- ## **[Promise](lib/kit.coffee?source#L1218)**
+- ## **[Promise](lib/kit.coffee?source#L1211)**
 
     The promise lib. Now, it uses Yaku as ES5 polyfill.
     In the future, the Yaku will be replaced with native
@@ -895,13 +893,13 @@ For more help, run: `nor -h`.
 
     - **<u>type</u>**: { _Object_ }
 
-- ## **[proxy](lib/kit.coffee?source#L1225)**
+- ## **[proxy](lib/kit.coffee?source#L1218)**
 
     The `proxy` module.
     You must `kit.require 'proxy'` before using it.
     For more information goto the `Proxy` section.
 
-- ## **[regexReduce(reg, str, iter, init)](lib/kit.coffee?source#L1244)**
+- ## **[regexReduce(reg, str, iter, init)](lib/kit.coffee?source#L1237)**
 
     Reduce a string via a regex.
 
@@ -928,7 +926,7 @@ For more help, run: `nor -h`.
         kit.log(out); // => [1, 10, 3]
         ```
 
-- ## **[regexMap(reg, str, iter)](lib/kit.coffee?source#L1268)**
+- ## **[regexMap(reg, str, iter)](lib/kit.coffee?source#L1261)**
 
     Map a string via a regex.
 
@@ -950,7 +948,7 @@ For more help, run: `nor -h`.
         kit.log(out) // => [1, 10, 3]
         ```
 
-- ## **[replace(str, pattern, iter)](lib/kit.coffee?source#L1287)**
+- ## **[replace(str, pattern, iter)](lib/kit.coffee?source#L1280)**
 
     An async string replace function.
 
@@ -966,7 +964,7 @@ For more help, run: `nor -h`.
 
     - **<u>return</u>**: { _Promise_ }
 
-- ## **[replaceSync(str, pattern, iter)](lib/kit.coffee?source#L1324)**
+- ## **[replaceSync(str, pattern, iter)](lib/kit.coffee?source#L1317)**
 
     An async string replace function, each replacement process will run in line.
 
@@ -982,7 +980,7 @@ For more help, run: `nor -h`.
 
     - **<u>return</u>**: { _Promise_ }
 
-- ## **[require(moduleName, dir, loaded)](lib/kit.coffee?source#L1376)**
+- ## **[require(moduleName, dir, loaded)](lib/kit.coffee?source#L1369)**
 
     Much faster than the native require of node, but you should
     follow some rules to use it safely.
@@ -1023,7 +1021,7 @@ For more help, run: `nor -h`.
         let jhash = kit.require('jhash', __dirname);
         ```
 
-- ## **[requireOptional(name, dir, semver)](lib/kit.coffee?source#L1453)**
+- ## **[requireOptional(name, dir, semver)](lib/kit.coffee?source#L1446)**
 
     Require an optional package. If not found, it will
     warn the user to npm install it, and exit the process.
@@ -1048,7 +1046,7 @@ For more help, run: `nor -h`.
 
         The required package.
 
-- ## **[request(opts)](lib/kit.coffee?source#L1597)**
+- ## **[request(opts)](lib/kit.coffee?source#L1590)**
 
     A handy extended combination of `http.request` and `https.request`.
 
@@ -1166,14 +1164,14 @@ For more help, run: `nor -h`.
         );
         ```
 
-- ## **[semver](lib/kit.coffee?source#L1800)**
+- ## **[semver](lib/kit.coffee?source#L1793)**
 
     The semantic versioner for npm, known as [semver](https://github.com/npm/node-semver).
     You must `kit.require 'semver'` before using it.
 
     - **<u>type</u>**: { _Object_ }
 
-- ## **[spawn(cmd, args, opts)](lib/kit.coffee?source#L1835)**
+- ## **[spawn(cmd, args, opts)](lib/kit.coffee?source#L1828)**
 
     A safer version of `child_process.spawn` to cross-platform run
     a process. In some conditions, it may be more convenient
@@ -1221,13 +1219,13 @@ For more help, run: `nor -h`.
         .then(({code}) => kit.log code);
         ```
 
-- ## **[sse](lib/kit.coffee?source#L1913)**
+- ## **[sse](lib/kit.coffee?source#L1906)**
 
     The `sse` module.
     You must `kit.require 'sse'` before using it.
     For more information goto the `sse` section.
 
-- ## **[task(name, opts, fn)](lib/kit.coffee?source#L1974)**
+- ## **[task(name, opts, fn)](lib/kit.coffee?source#L1967)**
 
     Sequencing and executing tasks and dependencies concurrently.
 
@@ -1307,7 +1305,7 @@ For more help, run: `nor -h`.
         );
         ```
 
-- ## **[treeKill(pid, signal, callback)](lib/kit.coffee?source#L2050)**
+- ## **[treeKill(pid, signal, callback)](lib/kit.coffee?source#L2043)**
 
     Cross-platform kill process tree by root process id.
 
@@ -1319,12 +1317,12 @@ For more help, run: `nor -h`.
 
     - **<u>param</u>**: `callback` { _Function_ }
 
-- ## **[url](lib/kit.coffee?source#L2056)**
+- ## **[url](lib/kit.coffee?source#L2049)**
 
     The `url` module of node.
     You must `kit.require 'url'` before using it.
 
-- ## **[warp(from, opts)](lib/kit.coffee?source#L2171)**
+- ## **[warp(from, opts)](lib/kit.coffee?source#L2164)**
 
     Works much like `gulp.src`, but with Promise instead.
     The warp control and error handling is more pleasant.
@@ -1449,7 +1447,7 @@ For more help, run: `nor -h`.
         .run('dist');
         ```
 
-- ## **[which(name)](lib/kit.coffee?source#L2248)**
+- ## **[which(name)](lib/kit.coffee?source#L2241)**
 
     Same as the unix `which` command.
     You must `kit.require 'which'` before using it.
@@ -1460,14 +1458,14 @@ For more help, run: `nor -h`.
 
     - **<u>return</u>**: { _Promise_ }
 
-- ## **[whichSync](lib/kit.coffee?source#L2255)**
+- ## **[whichSync](lib/kit.coffee?source#L2248)**
 
     Sync version of `which`.
     You must `kit.require 'whichSync'` before using it.
 
     - **<u>type</u>**: { _Function_ }
 
-- ## **[xinspect(obj, opts)](lib/kit.coffee?source#L2266)**
+- ## **[xinspect(obj, opts)](lib/kit.coffee?source#L2259)**
 
     For debugging. Dump a colorful object.
 
@@ -1484,7 +1482,7 @@ For more help, run: `nor -h`.
 
     - **<u>return</u>**: { _String_ }
 
-- ## **[xopen(cmds, opts)](lib/kit.coffee?source#L2289)**
+- ## **[xopen(cmds, opts)](lib/kit.coffee?source#L2282)**
 
     Open a thing that your system can recognize.
     Now only support Windows, OSX or system that installed 'xdg-open'.

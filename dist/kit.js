@@ -926,9 +926,7 @@ _.extend(kit, fs, yutils, {
    *      kit.err('EXIT' +
    *      ` code: ${code} signal: ${signal}\n` +
    *      'Process closed. Edit and save the watched file to restart.'),
-   *  sepLine: =>
-   *      process.stdout.write(_.repeat('*', process.stdout.columns))
-   * }
+  * }
    * ```
    * @return {Object} Properties:
    * ```js
@@ -984,17 +982,14 @@ _.extend(kit, fs, yutils, {
       onNormalExit: function(arg1) {
         var code, signal;
         code = arg1.code, signal = arg1.signal;
-        return kit.log(br.yellow('EXIT') + (" code: " + (br.cyan(code)) + " signal: " + (br.cyan(signal))));
+        kit.log(br.yellow('EXIT') + (" code: " + (br.cyan(code)) + " signal: " + (br.cyan(signal))));
+        return console.log('\n');
       },
       onErrorExit: function(arg1) {
         var code, signal;
         code = arg1.code, signal = arg1.signal;
-        return kit.err(br.yellow('EXIT') + (" code: " + (br.cyan(code)) + " ") + ("signal: " + (br.cyan(signal)) + "\n") + br.red('Process closed. Edit and save the watched file to restart.'));
-      },
-      sepLine: function() {
-        if (process.stdout && process.stdout.writable) {
-          return process.stdout.write(br.yellow(_.repeat('*', process.stdout.columns)));
-        }
+        kit.err(br.yellow('EXIT') + (" code: " + (br.cyan(code)) + " ") + ("signal: " + (br.cyan(signal)) + "\n") + br.red('Process closed. Edit and save the watched file to restart.'));
+        return console.log('\n');
       }
     });
     if (opts.watchList == null) {
@@ -1002,7 +997,6 @@ _.extend(kit, fs, yutils, {
     }
     childPromise = null;
     start = function() {
-      opts.sepLine();
       childPromise = kit.spawn(opts.bin, opts.args, opts.opts);
       return childPromise.then(function(msg) {
         return opts.onNormalExit(msg);
