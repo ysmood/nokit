@@ -1,4 +1,6 @@
-var codes, genBrush, k, v;
+var _, codes, genBrush, k, v;
+
+_ = require('./lodash');
 
 codes = {
   reset: [0, 0],
@@ -50,3 +52,9 @@ for (k in codes) {
 }
 
 module.exports.isEnabled = process.env.NODE_ENV !== 'production';
+
+module.exports.random = function(str) {
+  var color;
+  color = _.sample(['black', 'red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white', 'gray', 'grey']);
+  return module.exports[color](str);
+};

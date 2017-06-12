@@ -573,8 +573,7 @@ module.exports = {
     if (opts == null) {
       opts = {};
     }
-    uglify = kit.requireOptional('uglify-js', __dirname, '>=2.0.0');
-    opts.fromString = true;
+    uglify = kit.requireOptional('uglify-js', __dirname, '>=3.0.0');
     if (opts.output == null) {
       opts.output = {
         comments: function(node, comment) {

@@ -901,6 +901,7 @@ _.extend(kit, fs, yutils, {
    * {
    *  bin: 'node',
    *  args: ['index.js'],
+   *  prefix: 'string', // see the `kit.spawn` for details
    *  watchList: [], // By default, the same with the "args".
    *  isNodeDeps: true,
    *  opts: {}, // Same as the opts of 'kit.spawn'.
@@ -1983,8 +1984,12 @@ _.extend(kit, fs, yutils, {
    * @param  {Array} args CLI arguments. If any of the item is an object,
    * it will be converted to string by `JSON.stringify`.
    * @param  {Object} opts Process options.
-   * Same with the Node.js official documentation.
-   * Except that it will inherit the parent's stdio.
+   * Almost the same with the Node.js official documentation.
+   * It will inherit the parent's stdio by default.
+   * An extra `prefix` option, if it's enabled, all stdout and stderr
+   * will be prefix with the specified string, you can also specify the
+   * color like `web:red`, `web:blue`, if no color found, a random color
+   * will be used.
    * @return {Promise} The `promise.process` is the spawned child
    * process object.
    * **Resolves** when the process's stdio is drained and the exit
@@ -2003,14 +2008,14 @@ _.extend(kit, fs, yutils, {
    * ```
    */
   spawn: function(cmd, args, opts) {
-    var PATH, cmdSrc, k, m, promise, ps, spawn, v;
+    var PATH, br, cmdSrc, color, k, m, prefix, promise, ps, ref, spawn, v;
     if (args == null) {
       args = [];
     }
     if (opts == null) {
       opts = {};
     }
-    PATH = opts.env && opts.env.PATH ? opts.env.PATH : process.env.PATH || process.env.Path;
+    PATH = (opts.env && opts.env.PATH) ? opts.env.PATH : process.env.PATH || process.env.Path;
     [kit.path.normalize(__dirname + '/../node_modules/.bin'), kit.path.normalize(process.cwd() + '/node_modules/.bin')].forEach(function(path) {
       if (PATH.indexOf(path) < 0 && kit.fs.existsSync(path)) {
         return PATH = [path, PATH].join(kit.path.delimiter);
@@ -2043,6 +2048,16 @@ _.extend(kit, fs, yutils, {
         args[k] = JSON.stringify(v);
       }
     }
+    if (opts.prefix) {
+      br = kit.require('brush');
+      ref = opts.prefix.split(':'), prefix = ref[0], color = ref[1];
+      if (color) {
+        prefix = br[color](prefix);
+      } else {
+        prefix = br.random(prefix);
+      }
+      opts.stdio = [process.stdin, 'pipe', 'pipe'];
+    }
     promise = new Promise(function(resolve, reject) {
       var err;
       try {
@@ -2050,6 +2065,14 @@ _.extend(kit, fs, yutils, {
       } catch (error) {
         err = error;
         reject(err);
+      }
+      if (opts.prefix) {
+        ps.stdout.on('data', function(d) {
+          return process.stdout.write(prefix + " " + d);
+        });
+        ps.stderr.on('data', function(d) {
+          return process.stderr.write(prefix + " " + d);
+        });
       }
       ps.on('error', function(err) {
         return reject(err);
