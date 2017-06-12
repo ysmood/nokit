@@ -483,8 +483,7 @@ module.exports =
      * @return {Function}
     ###
     uglifyjs: _.extend (opts = {}) ->
-        uglify = kit.requireOptional 'uglify-js', __dirname, '>=2.0.0'
-        opts.fromString = true
+        uglify = kit.requireOptional 'uglify-js', __dirname, '>=3.0.0'
         opts.output ?=
             comments: (node, comment) ->
                 text = comment.value
