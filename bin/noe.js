@@ -30,6 +30,7 @@ cmder
         watchList.push(p);
     })
     .option('--root <str>', 'watch directory, treat -w as pattern under the root path', null)
+    .option('-p, --prefix <str>', 'stdout and stderr prefix, such as `web:green`, `web:blue`', null)
     .option('-b, --bin <name>', 'bin to execute, default is [node]', 'node')
     .option('-r, --retry <time | auto>', 'auto restart program after it ends after some milliseconds [Infinity]', function (v) {
         return v === 'auto' ? v : +v;
@@ -85,6 +86,9 @@ function genRetry () {
 kit.monitorApp({
     bin: cmder.bin,
     retry: genRetry(),
+    opts: {
+        prefix: cmder.prefix,
+    },
     args: cmder.args.concat(childArgs),
     watchList: watchList,
     watchRoot: cmder.root,

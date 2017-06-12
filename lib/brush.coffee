@@ -1,3 +1,5 @@
+_ = require './lodash'
+
 codes = {
 	reset: [0, 0],
 
@@ -45,3 +47,8 @@ for k, v of codes
 	}
 
 module.exports.isEnabled = process.env.NODE_ENV != 'production'
+
+module.exports.random = (str) ->
+	color = _.sample(['black', 'red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white', 'gray', 'grey'])
+
+	return module.exports[color](str)
