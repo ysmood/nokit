@@ -1219,13 +1219,13 @@ For more help, run: `nor -h`.
         .then(({code}) => kit.log code);
         ```
 
-- ## **[sse](lib/kit.coffee?source#L1906)**
+- ## **[sse](lib/kit.coffee?source#L1912)**
 
     The `sse` module.
     You must `kit.require 'sse'` before using it.
     For more information goto the `sse` section.
 
-- ## **[task(name, opts, fn)](lib/kit.coffee?source#L1967)**
+- ## **[task(name, opts, fn)](lib/kit.coffee?source#L1973)**
 
     Sequencing and executing tasks and dependencies concurrently.
 
@@ -1305,7 +1305,7 @@ For more help, run: `nor -h`.
         );
         ```
 
-- ## **[treeKill(pid, signal, callback)](lib/kit.coffee?source#L2043)**
+- ## **[treeKill(pid, signal, callback)](lib/kit.coffee?source#L2049)**
 
     Cross-platform kill process tree by root process id.
 
@@ -1317,12 +1317,12 @@ For more help, run: `nor -h`.
 
     - **<u>param</u>**: `callback` { _Function_ }
 
-- ## **[url](lib/kit.coffee?source#L2049)**
+- ## **[url](lib/kit.coffee?source#L2055)**
 
     The `url` module of node.
     You must `kit.require 'url'` before using it.
 
-- ## **[warp(from, opts)](lib/kit.coffee?source#L2164)**
+- ## **[warp(from, opts)](lib/kit.coffee?source#L2170)**
 
     Works much like `gulp.src`, but with Promise instead.
     The warp control and error handling is more pleasant.
@@ -1447,7 +1447,7 @@ For more help, run: `nor -h`.
         .run('dist');
         ```
 
-- ## **[which(name)](lib/kit.coffee?source#L2241)**
+- ## **[which(name)](lib/kit.coffee?source#L2247)**
 
     Same as the unix `which` command.
     You must `kit.require 'which'` before using it.
@@ -1458,14 +1458,14 @@ For more help, run: `nor -h`.
 
     - **<u>return</u>**: { _Promise_ }
 
-- ## **[whichSync](lib/kit.coffee?source#L2248)**
+- ## **[whichSync](lib/kit.coffee?source#L2254)**
 
     Sync version of `which`.
     You must `kit.require 'whichSync'` before using it.
 
     - **<u>type</u>**: { _Function_ }
 
-- ## **[xinspect(obj, opts)](lib/kit.coffee?source#L2259)**
+- ## **[xinspect(obj, opts)](lib/kit.coffee?source#L2265)**
 
     For debugging. Dump a colorful object.
 
@@ -1482,7 +1482,7 @@ For more help, run: `nor -h`.
 
     - **<u>return</u>**: { _String_ }
 
-- ## **[xopen(cmds, opts)](lib/kit.coffee?source#L2282)**
+- ## **[xopen(cmds, opts)](lib/kit.coffee?source#L2288)**
 
     Open a thing that your system can recognize.
     Now only support Windows, OSX or system that installed 'xdg-open'.

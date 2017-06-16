@@ -2050,10 +2050,11 @@ _.extend(kit, fs, yutils, {
       } else {
         prefix = br.random(prefix);
       }
+      prefix += '$&';
       opts.stdio = [process.stdin, 'pipe', 'pipe'];
     }
     promise = new Promise(function(resolve, reject) {
-      var err;
+      var err, prefixReg;
       try {
         ps = spawn(cmd, args, opts);
       } catch (error) {
@@ -2061,11 +2062,12 @@ _.extend(kit, fs, yutils, {
         reject(err);
       }
       if (opts.prefix) {
+        prefixReg = /.*\n/g;
         ps.stdout.on('data', function(d) {
-          return process.stdout.write(prefix + " " + d);
+          return process.stdout.write((d + '').replace(prefixReg, prefix));
         });
         ps.stderr.on('data', function(d) {
-          return process.stderr.write(prefix + " " + d);
+          return process.stderr.write((d + '').replace(prefixReg, prefix));
         });
       }
       ps.on('error', function(err) {
