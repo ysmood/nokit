@@ -1872,6 +1872,7 @@ _.extend kit, fs, yutils,
                 prefix = br[color] prefix
             else
                 prefix = br.random prefix
+            prefix += '$&'
             opts.stdio = [process.stdin, 'pipe', 'pipe']
 
         promise = new Promise (resolve, reject) ->
@@ -1881,10 +1882,15 @@ _.extend kit, fs, yutils,
                 reject err
 
             if opts.prefix
+                prefixReg = /.*\n/g
                 ps.stdout.on 'data', (d) ->
-                    process.stdout.write(prefix + " " + d)
+                    process.stdout.write(
+                        (d + '').replace(prefixReg, prefix)
+                    )
                 ps.stderr.on 'data', (d) ->
-                    process.stderr.write(prefix + " " + d)
+                    process.stderr.write(
+                        (d + '').replace(prefixReg, prefix)
+                    )
 
             ps.on 'error', (err) ->
                 reject err
