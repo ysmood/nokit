@@ -237,7 +237,7 @@ proxy = {
    *
    * let app = proxy.flow();
    *
-   * app.use(proxy.debugJs({
+   * app.push(proxy.debugJs({
    *     url: /main.js$/,
    *     file: './main.js'
    * }));
@@ -825,9 +825,9 @@ proxy = {
    *
    * handler.watch('./static/default.css', '/st/default.css');
    *
-   * app.use(handler);
+   * app.push(handler);
    *
-   * app.use(proxy.select(/a\.html$/, proxy.url({
+   * app.push(proxy.select(/a\.html$/, proxy.url({
    *     handleResBody: (body) => body + handler.browserHelper
    * })));
    *
