@@ -6,16 +6,9 @@ kit = require './lib/kit'
 
 module.exports = (task, option) ->
 
-	option '-a, --all', 'rebuild with dependencies, such as rebuild lodash.'
+	option '-a, --all', 'rebuild with dependencies'
 	task 'default build b', ['clean'], 'build project', (opts) ->
 		kit.require 'drives'
-
-		buildLodash = ->
-			if opts.all
-				kit.spawn 'lodash', [
-					'strict', '-p'
-					'-o', 'lib/lodash.js'
-				]
 
 		buildJs = ->
 			kit.warp 'lib/**/*.js'
@@ -33,7 +26,6 @@ module.exports = (task, option) ->
 			.run()
 
 		start = kit.flow [
-			buildLodash
 			buildJs
 			buildCoffee
 			buildDoc

@@ -1,9 +1,10 @@
 'use strict'
 
-_ = require './lodash'
+_ = require 'lodash'
 fs = require 'nofs'
 Promise = require 'yaku'
 yutils = require 'yaku/lib/utils'
+nodeUrl = require 'url'
 
 kit = {}
 
@@ -1588,8 +1589,6 @@ _.extend kit, fs, yutils,
      * ```
     ###
     request: (opts) ->
-        kit.require 'url'
-
         if _.isString opts
             opts = { url: opts }
 
@@ -1602,7 +1601,7 @@ _.extend kit, fs, yutils,
         else
             if url.indexOf('http') != 0
                 url = 'http://' + url
-            url = kit.url.parse url
+            url = nodeUrl.parse url
             url.protocol ?= 'http:'
             delete url.host
 
@@ -1661,11 +1660,11 @@ _.extend kit, fs, yutils,
 
                 if opts.redirect > 0 and res.headers.location
                     opts.redirect--
-                    url = kit.url.resolve(
-                        kit.url.format opts
+                    url = nodeUrl.resolve(
+                        nodeUrl.format opts
                         res.headers.location
                     )
-                    kit.request _.extend(opts, kit.url.parse(url))
+                    kit.request _.extend(opts, nodeUrl.parse(url))
                     .then resolve
                     .catch reject
                     return

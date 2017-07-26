@@ -46,32 +46,33 @@
   "homepage": "https://github.com/ysmood/nokit",
   "dependencies": {
     "jhash": "0.1.10",
+    "lodash": "4.17.4",
     "noflow": "0.8.10",
     "nofs": "0.11.21",
-    "semver": "5.3.0",
-    "yaku": "0.18.0"
+    "semver": "5.4.1",
+    "stable": "0.1.6",
+    "yaku": "0.18.2"
   },
   "devDependencies": {
     "LiveScript": "1.3.1",
     "body-parser": "1.17.2",
-    "clean-css": "4.1.3",
-    "coffee-script": "1.12.6",
+    "clean-css": "^4.1.7",
+    "coffee-script": "^1.12.7",
     "coffeelint": "1.16.0",
-    "commander": "2.9.0",
+    "commander": "2.11.0",
     "express": "4.15.3",
     "form-data": "2.2.0",
     "formidable": "1.1.1",
-    "iconv-lite": "0.4.17",
-    "jshint": "2.9.4",
+    "iconv-lite": "^0.4.18",
+    "jshint": "^2.9.5",
     "junit": "1.4.9",
     "less": "2.7.2",
-    "lodash-cli": "4.17.4",
-    "msgpack5": "3.4.1",
+    "msgpack5": "^3.5.0",
     "path-to-regexp": "1.7.0",
     "send": "0.15.3",
     "serve-index": "1.9.0",
     "stylus": "0.54.5",
     "throttle": "1.0.3",
-    "uglify-js": "3.0.15"
+    "uglify-js": "^3.0.26"
   }
 }
