@@ -1,15 +1,17 @@
 'use strict';
-var Overview, Promise, _, fs, kit, yutils,
+var Overview, Promise, _, fs, kit, nodeUrl, yutils,
   slice = [].slice,
   indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
-_ = require('./lodash');
+_ = require('lodash');
 
 fs = require('nofs');
 
 Promise = require('yaku');
 
 yutils = require('yaku/lib/utils');
+
+nodeUrl = require('url');
 
 kit = {};
 
@@ -1730,7 +1732,6 @@ _.extend(kit, fs, yutils, {
    */
   request: function(opts) {
     var base, base1, hostSepIndex, promise, req, reqBuf, request, url;
-    kit.require('url');
     if (_.isString(opts)) {
       opts = {
         url: opts
@@ -1749,7 +1750,7 @@ _.extend(kit, fs, yutils, {
       if (url.indexOf('http') !== 0) {
         url = 'http://' + url;
       }
-      url = kit.url.parse(url);
+      url = nodeUrl.parse(url);
       if (url.protocol == null) {
         url.protocol = 'http:';
       }
@@ -1814,8 +1815,8 @@ _.extend(kit, fs, yutils, {
         resStream = res;
         if (opts.redirect > 0 && res.headers.location) {
           opts.redirect--;
-          url = kit.url.resolve(kit.url.format(opts), res.headers.location);
-          kit.request(_.extend(opts, kit.url.parse(url))).then(resolve)["catch"](reject);
+          url = nodeUrl.resolve(nodeUrl.format(opts), res.headers.location);
+          kit.request(_.extend(opts, nodeUrl.parse(url))).then(resolve)["catch"](reject);
           return;
         }
         if (opts.resProgress) {

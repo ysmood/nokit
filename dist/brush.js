@@ -1,6 +1,6 @@
 var _, codes, genBrush, k, v;
 
-_ = require('./lodash');
+_ = require('lodash');
 
 codes = {
   reset: [0, 0],
