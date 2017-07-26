@@ -512,7 +512,6 @@ module.exports = (it) ->
 			proxy.body({
 				memoryLimit: 5
 			}),
-			proxy.body(),
 			($) -> $.body = $.reqBody + 'ok'
 		]
 
