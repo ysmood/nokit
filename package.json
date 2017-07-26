@@ -1,6 +1,6 @@
 {
   "name": "nokit",
-  "version": "0.24.5",
+  "version": "0.25.0",
   "description": "A light weight set of handy tools for real world program.",
   "main": "dist/kit.js",
   "engines": {
@@ -47,8 +47,8 @@
   "dependencies": {
     "jhash": "0.1.10",
     "lodash": "4.17.4",
-    "noflow": "0.8.10",
-    "nofs": "0.11.21",
+    "noflow": "0.8.11",
+    "nofs": "0.11.22",
     "semver": "5.4.1",
     "stable": "0.1.6",
     "yaku": "0.18.2"
