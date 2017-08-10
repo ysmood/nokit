@@ -12,21 +12,21 @@ For more help, run: `not -h`.
 ### Quick Start
 
 ```text
-                                      a.com
+                                      r.com
       +-----------+  export port  +-----------+  connect port  +-----------+
       | Machine A +-------------->| Machine R |<---------------+ Machine B |
       +-----------+               +-----------+                +-----------+
- not -o a.com -x 8080 -n A            not -s                 not -o a.com -t A
+ not -o r.com -x 8080 -n A            not -s                 not -o r.com -t A
 ```
 
 Suppose A and B cannot reach each other via network directly.
-But they both have tcp access to the R (`a.com`).
+But they both have tcp access to the R (`r.com`).
 
 0. Start the relay server on R to proxy tcp/udp: `not -s`,
 
-0. Start a proxy client on A to connect to R and export self as A: `not -o a.com -n A`
+0. Start a proxy client on A to connect to R and export self as A: `not -o r.com -n A`
 
-0. Start a proxy client on B to connect to R and forward tcp/udp to A: `not -o a.com -t A`
+0. Start a proxy client on B to connect to R and forward tcp/udp to A: `not -o r.com -t A`
 
 That's all you need. Now your packet to B's port 7000, will be transparently forward
 to A's port 8080 through the R.
