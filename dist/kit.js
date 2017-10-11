@@ -1113,7 +1113,13 @@ _.extend(kit, fs, yutils, {
   defaultArgs: function(args, defaults) {
     var name, ref, ret, set, type, v, val;
     set = _(args).toArray().groupBy(function(e) {
-      return e != null ? e.constructor.name : void 0;
+      if (e) {
+        if (e.constructor.name === 'AsyncFunction') {
+          return 'Function';
+        } else {
+          return e.constructor.name;
+        }
+      }
     }).value();
     ret = {};
     for (name in defaults) {
