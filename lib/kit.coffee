@@ -992,7 +992,11 @@ _.extend kit, fs, yutils,
     ###
     defaultArgs: (args, defaults) ->
         set = _(args).toArray().groupBy (e) ->
-            e?.constructor.name
+            if e
+                if e.constructor.name == 'AsyncFunction'
+                    'Function'
+                else
+                    e.constructor.name
         .value()
 
         ret = {}
