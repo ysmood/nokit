@@ -1,5 +1,3 @@
-# The NoBone helper for browser
-
 module.exports = (opts) ->
 	'use strict'
 
