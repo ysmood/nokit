@@ -2,7 +2,6 @@ sudo: false
 language: node_js
 node_js:
   - "stable"
-  - "0.11"
 branches:
   only:
     - master
