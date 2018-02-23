@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-var kit = require('../dist/kit');
+var kit = require('../lib/kit');
 kit.requireOptional.autoInstall = true;
 
 var br = kit.require('brush');

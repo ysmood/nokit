@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-var kit = require('../dist/kit');
+var kit = require('../lib/kit');
 kit.requireOptional.autoInstall = true;
 
 var br = kit.require('brush');
@@ -9,8 +9,8 @@ var Promise = kit.Promise;
 var cmder = kit.requireOptional('commander', __dirname, '^2.9.0');
 var net = require('net');
 var events = require('events');
-var tcpFrame = require('../dist/tcpFrame');
-var not = require('../dist/not');
+var tcpFrame = require('../lib/tcpFrame');
+var not = require('../lib/not');
 var msgpack = kit.requireOptional('msgpack5', __dirname, '^3.4.0')();
 var encode = msgpack.encode;
 var decode = msgpack.decode;

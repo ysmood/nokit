@@ -12,7 +12,6 @@ Rather than help you decide what to do, it is designed to create possibilities. 
 
 - All async functions will return promise.
 - All functions are highly lazy designed, minimum boot time.
-- Test on Node v0.11+ on Mac, Linux and Windows.
 - Light weight and self-reference.
 
 # Installation

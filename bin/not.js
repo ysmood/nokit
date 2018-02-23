@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 
-var kit = require('../dist/kit');
+var kit = require('../lib/kit');
 kit.requireOptional.autoInstall = true;
 
 var _ = kit._;
 var cmder = kit.requireOptional('commander', __dirname, '^2.9.0');
-var not = require('../dist/not');
+var not = require('../lib/not');
 var os = require('os');
 var mapPort
 
