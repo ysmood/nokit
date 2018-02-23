@@ -31,7 +31,7 @@ cmder
 var app = proxy.flow();
 
 Promise.resolve().then(function () {
-    kit.requireOptional('send', __dirname, '^0.15.0');
+    kit.requireOptional('send', __dirname, '^0.16.2');
     var serveIndex = kit.requireOptional('serve-index', __dirname, '^1.8.0');
     var cwd = process.cwd();
 
