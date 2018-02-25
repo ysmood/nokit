@@ -16,7 +16,7 @@
   "scripts": {
     "no": "bin/no.js",
     "test": "node bin/no test",
-    "prepublish": "node bin/no build -a"
+    "prepublishOnly": "node bin/no build -a"
   },
   "nofile": {
     "autoInstallDeps": true
@@ -58,6 +58,7 @@
     "coffee-script": "1.12.7",
     "coffeelint": "2.1.0",
     "commander": "2.14.1",
+    "eslint": "^4.18.1",
     "express": "4.16.2",
     "form-data": "2.3.2",
     "formidable": "1.1.1",
@@ -66,11 +67,13 @@
     "junit": "1.4.9",
     "less": "3.0.1",
     "msgpack5": "4.0.1",
+    "node-pty": "^0.7.4",
     "path-to-regexp": "2.1.0",
     "send": "0.16.2",
     "serve-index": "1.9.1",
     "stylus": "0.54.5",
     "throttle": "1.0.3",
-    "uglify-js": "3.3.12"
+    "uglify-js": "3.3.12",
+    "xterm": "^3.1.0"
   }
 }

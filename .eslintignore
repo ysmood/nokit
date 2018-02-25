@@ -1,0 +1,6 @@
+test/fixtures
+test/lab.js
+lib/which.js
+node_modules
+.nobone
+.git

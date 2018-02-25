@@ -5,8 +5,8 @@ try {
 	require('../lib/no')();
 } catch (err) {
 	if (err.source === 'nokit') {
-		kit = require('../lib/kit');
-		br = kit.require('brush');
+		const kit = require('../lib/kit');
+		const br = kit.require('brush');
 		kit.err(br.red('[Error] ' + err.message), { isShowTime: false });
 		process.exit(1);
 	} else {

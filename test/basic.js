@@ -34,7 +34,7 @@ const getPort = function () {
 	}).then(() => port);
 };
 
-const unixSep = p => p.replace(/\\/g, '\/');
+const unixSep = p => p.replace(/\\/g, '/');
 
 const tempPath = () => `test/temp/${Date.now()}${(Math.random() + '').slice(2)}`;
 
@@ -122,7 +122,7 @@ module.exports = function (it) {
 		return kit.readFile(path, 'utf8')
 			.then(function (str) {
 				const parsed = kit.parseComment(str);
-				const [n0, {
+				const [n0, { // eslint-disable-line
 					name
 				}] = Array.from(parsed);
 
@@ -211,10 +211,6 @@ module.exports = function (it) {
 					timeout: 50
 				});
 
-				const {
-					req
-				} = promise;
-
 				return promise.catch(err => it.eq(err.message, 'timeout'));
 			})
 	);
@@ -247,7 +243,7 @@ module.exports = function (it) {
 		createRandomServer(function (req, res) {
 				const form = new require('formidable').IncomingForm();
 
-				return form.parse(req, (err, fields, files) => res.end(fields['f.md'].length.toString()));
+				return form.parse(req, (err, fields) => res.end(fields['f.md'].length.toString()));
 			}
 
 			,
@@ -304,7 +300,6 @@ module.exports = function (it) {
 	it('depsCache cache newer', function () {
 		const cacheDir = tempPath();
 		const file = 'test/fixtures/depsCache.txt';
-		const cacheFile = cacheDir + '/1345816117-depsCache.txt';
 		const dest = tempPath() + '/' + file + '.dest';
 		kit.outputFileSync(dest, 'out');
 		return kit.depsCache({
@@ -345,9 +340,8 @@ module.exports = function (it) {
 
 	it('warp custom reader', function () {
 		const tmp = tempPath();
-		const cacheDir = tempPath();
 
-		const myReader = _.extend(function (info) {
+		const myReader = _.extend(function () {
 			return kit.readFile(this.path, 'utf8')
 				.then(str => {
 					return this.set(str.replace(/\r\n/g, '\n'));
@@ -836,7 +830,7 @@ module.exports = function (it) {
 			$ =>
 			$.next().catch(() => $.body = 'ok'),
 
-			proxy.midToFlow(() => a())
+			proxy.midToFlow(() => a()) // eslint-disable-line
 		];
 
 		return createRandomServer(proxy.flow(routes), port =>
@@ -891,12 +885,12 @@ module.exports = function (it) {
 
 		after(() => server.close());
 
-		const fn = function ($) {
+		const fn = function () {
 			throw 'err';
 		};
 
 		app.use(proxy.flowToMid(fn));
-		app.use((err, req, res, next) => res.end(err));
+		app.use((err, req, res) => res.end(err));
 
 		return kit.promisify(server.listen, server)(0)
 			.then(() => kit.request(`http://127.0.0.1:${server.address().port}`)).then(data => it.eq(data, 'err'));
@@ -911,11 +905,11 @@ module.exports = function (it) {
 
 		after(() => server.close());
 
-		const fn = $ =>
+		const fn = () =>
 			kit.sleep(200).then(() => Promise.reject('err'));
 
 		app.use(proxy.flowToMid(fn));
-		app.use((err, req, res, next) => res.end(err));
+		app.use((err, req, res) => res.end(err));
 
 		return kit.promisify(server.listen, server)(0)
 			.then(() => kit.request(`http://127.0.0.1:${server.address().port}`)).then(data => it.eq(data, 'err'));
@@ -1091,8 +1085,6 @@ module.exports = function (it) {
 	it('proxy tcpFrame wrong version', function (after) {
 		const proxy = kit.require('proxy');
 
-		const frame = new Buffer(129);
-
 		return new Promise(function (resolve) {
 			const server = net.createServer(function (sock) {
 				proxy.tcpFrame(sock);
@@ -1201,7 +1193,7 @@ module.exports = function (it) {
 					type: 'remove',
 					path
 				}))
-			.then(data => it.eq(kit.fileExists(path), false));
+			.then(() => it.eq(kit.fileExists(path), false));
 	});
 
 	it('proxy relay', function (after) {
@@ -1270,7 +1262,6 @@ kit.request('http://127.0.0.1:' + ${app.server.address().port})\
 	});
 
 	return it('nos', function (after) {
-		const proxy = kit.require('proxy');
 		const defer = kit.Deferred();
 		let ps = null;
 

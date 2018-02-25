@@ -15,16 +15,16 @@ var indexList = 'index.html';
 cmder
     .description('a tool to statically serve a folder')
     .usage('[options] [path]')
-    .option('-p, --port <num>', 'port of the service [8080]', 8080)
-    .option('--host <str>', 'host of the service [0.0.0.0]', '0.0.0.0')
+    .option('-p, --port <num>', 'port of the service', 8080)
+    .option('--host <str>', 'host of the service', '0.0.0.0')
     .option('-t, --proxyTo <host:port>', 'proxy the rest traffic to the specific host')
-    .option('--openBrowser <on|off>', 'auto open browser [on]', 'on')
-    .option('-i, --index <name>', 'the index name, you can provide multiple of it [index.html]', function (p) {
+    .option('--openBrowser <on|off>', 'auto open browser', 'on')
+    .option('-i, --index <name>', 'the index name, you can provide multiple of it', function (p) {
         if (_.isString(indexList))
             indexList = [p];
         else
             indexList.push(p);
-    })
+    }, 'index.html')
     .option('--production', 'start as production mode, default is development mode')
 .parse(process.argv);
 

@@ -6,14 +6,12 @@ var kit = require('../lib/kit');
 kit.requireOptional.autoInstall = true;
 
 var br = kit.require('brush');
-var _ = kit._;
 var cmder = kit.requireOptional('commander', __dirname, '^2.9.0');
 
 var argv = process.argv;
 var sepIndex = argv.indexOf('--');
 var childArgs;
 var watchList;
-var babelInstalled;
 
 if (sepIndex > 0) {
     childArgs = argv.slice(sepIndex + 1);
@@ -31,12 +29,12 @@ cmder
     })
     .option('--root <str>', 'watch directory, treat -w as pattern under the root path', null)
     .option('-p, --prefix <str>', 'stdout and stderr prefix, such as `web:green`, `web:blue`', null)
-    .option('-b, --bin <name>', 'bin to execute, default is [node]', 'node')
-    .option('-r, --retry <time | auto>', 'auto restart program after it ends after some milliseconds [Infinity]', function (v) {
+    .option('-b, --bin <name>', 'bin to execute, default is', 'node')
+    .option('-r, --retry <time | auto>', 'auto restart program after it ends after some milliseconds', function (v) {
         return v === 'auto' ? v : +v;
     }, Infinity)
-    .option('--least <time>', 'the least milliseconds for the program to run to trigger a full restart [5000]', parseInt, 5000)
-    .option('--maxTry <count>', 'the max retry before the monitor stops retry [Infinity]', parseInt, Infinity)
+    .option('--least <time>', 'the least milliseconds for the program to run to trigger a full restart', parseInt, 5000)
+    .option('--maxTry <count>', 'the max retry before the monitor stops retry', parseInt, Infinity)
     .option('-n, --noNodeDeps', 'disable parse & watch node dependencies automatically')
     .on('--help', function () {
         console.log(

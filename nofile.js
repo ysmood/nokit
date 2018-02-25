@@ -7,7 +7,7 @@ const kit = require('./lib/kit');
 module.exports = function (task, option) {
 
 	option('-a, --all', 'rebuild with dependencies');
-	task('default build b', ['clean'], 'build project', function (opts) {
+	task('default build b', ['clean', 'lint'], 'build project', function () {
 		kit.require('drives');
 
 		const buildDoc = () =>
@@ -42,6 +42,10 @@ module.exports = function (task, option) {
 			watchList: ['test/*', 'lib/**']
 		});
 	});
+
+	task('lint', () => {
+		return kit.spawn('eslint', ['--cache', '.'])
+	})
 
 	task('clean', 'clean cache', function (opts) {
 		if (opts.all) {

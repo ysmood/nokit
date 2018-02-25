@@ -5,7 +5,7 @@ const serverHelper = kit.serverHelper();
 
 const root = 'test/fixtures/site';
 
-const app = proxy.flow();
+const app = flow();
 
 app.push(
     serverHelper,

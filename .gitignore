@@ -4,3 +4,4 @@ node_modules
 .nokit
 *.log
 test/temp
+.eslintcache
