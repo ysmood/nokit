@@ -10,6 +10,14 @@ cmder
     .description('a cross platform remote shell')
     .option('-o, --host <host>', 'the host', '127.0.0.1')
     .option('-p, --port <port>', 'the port', 8930)
+    .option('-s, --shell <str>', 'the shell name', process.env.SHELL)
+    .option('-c, --client', 'client mode')
 .parse(process.argv);
 
-require('../lib/nor')(cmder);
+const nor = require('../lib/nor')
+
+if (cmder.client) {
+    nor.client(cmder)
+} else {
+    nor.server(cmder)
+}
