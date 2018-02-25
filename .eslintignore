@@ -1,4 +1,5 @@
 test/fixtures
+test/temp
 test/lab.js
 lib/which.js
 node_modules

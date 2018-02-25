@@ -10,21 +10,11 @@ module.exports = function (task, option) {
 	task('default build b', ['clean', 'lint'], 'build project', function () {
 		kit.require('drives');
 
-		const buildDoc = () =>
-			kit.warp('lib/*.js')
-			.load(kit.drives.comment2md({
-				h: 2,
-				tpl: 'doc/readme.jst.md'
-			})).run();
-
-		const start = kit.flow([
-			buildDoc
-		]);
-
-		return start().catch(function (err) {
-			kit.err(err.stack);
-			return process.exit(1);
-		});
+		kit.warp('lib/*.js')
+		.load(kit.drives.comment2md({
+			h: 2,
+			tpl: 'doc/readme.jst.md'
+		})).run()
 	});
 
 	option('-d, --debug', 'enable node debug mode');
