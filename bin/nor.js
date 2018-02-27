@@ -12,6 +12,7 @@ cmder
     .option('-p, --port <port>', 'the port', 8930)
     .option('-s, --shell <str>', 'the shell name', process.env.SHELL)
     .option('-c, --client', 'client mode')
+    .option('-k, --key <str>', 'password to login the shell')
 .parse(process.argv);
 
 const nor = require('../lib/nor')
