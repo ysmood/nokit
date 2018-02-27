@@ -35,16 +35,95 @@ Goto [changelog](doc/changelog.md)
   - [Temote TTY](#temote-tty)
 
 - #### kit
-
+  - [Overview](#overview)
+  - [_](#_)
+  - [browserHelper(opts)](#browserhelperopts)
+  - [brush](#brush)
+  - [depsCache(info)](#depscacheinfo)
+  - [daemonize(opts)](#daemonizeopts)
+  - [decrypt(data, password, algorithm)](#decryptdata-password-algorithm)
+  - [drives](#drives)
+  - [encrypt(data, password, algorithm)](#encryptdata-password-algorithm)
+  - [err(msg, opts)](#errmsg-opts)
+  - [errs(args)](#errsargs)
+  - [exec(cmd, shell)](#execcmd-shell)
+  - [formatComment(comments, opts)](#formatcommentcomments-opts)
+  - [fs](#fs)
+  - [fuzzySearch(keys, list, opts)](#fuzzysearchkeys-list-opts)
+  - [genModulePaths(moduleName, dir, modDir)](#genmodulepathsmodulename-dir-moddir)
+  - [indent(text, num, char, reg)](#indenttext-num-char-reg)
+  - [isDevelopment()](#isdevelopment)
+  - [isProduction()](#isproduction)
+  - [jhash](#jhash)
+  - [log(msg, action, opts)](#logmsg-action-opts)
+  - [logs(args)](#logsargs)
+  - [monitorApp(opts)](#monitorappopts)
+  - [nodeVersion()](#nodeversion)
+  - [defaultArgs(args, defaults)](#defaultargsargs-defaults)
+  - [parseComment(code, opts)](#parsecommentcode-opts)
+  - [parseDependency(entryPaths, opts)](#parsedependencyentrypaths-opts)
+  - [path](#path)
+  - [Promise](#promise)
+  - [proxy](#proxy)
+  - [regexReduce(reg, str, iter, init)](#regexreducereg-str-iter-init)
+  - [regexMap(reg, str, iter)](#regexmapreg-str-iter)
+  - [replace(str, pattern, iter)](#replacestr-pattern-iter)
+  - [replaceSync(str, pattern, iter)](#replacesyncstr-pattern-iter)
+  - [require(moduleName, dir, loaded)](#requiremodulename-dir-loaded)
+  - [requireOptional(name, dir, semver)](#requireoptionalname-dir-semver)
+  - [request(opts)](#requestopts)
+  - [semver](#semver)
+  - [spawn(cmd, args, opts)](#spawncmd-args-opts)
+  - [sse](#sse)
+  - [task(name, opts, fn)](#taskname-opts-fn)
+  - [treeKill(pid, signal, callback)](#treekillpid-signal-callback)
+  - [url](#url)
+  - [warp(from, opts)](#warpfrom-opts)
+  - [which(name)](#whichname)
+  - [whichSync](#whichsync)
+  - [xinspect(obj, opts)](#xinspectobj-opts)
+  - [xopen(cmds, opts)](#xopencmds-opts)
 
 - #### proxy
-
+  - [Overview](#overview)
+  - [body()](#body)
+  - [connect(opts)](#connectopts)
+  - [debugJs(opts)](#debugjsopts)
+  - [etag()](#etag)
+  - [file(opts)](#fileopts)
+  - [fileRequest(opts)](#filerequestopts)
+  - [flow](#flow)
+  - [flowToMid(fn)](#flowtomidfn)
+  - [match(pattern, opts)](#matchpattern-opts)
+  - [midToFlow(h)](#midtoflowh)
+  - [parseUrl()](#parseurl)
+  - [relayConnect(opts)](#relayconnectopts)
+  - [relayClient(opts)](#relayclientopts)
+  - [select(sel, middleware)](#selectsel-middleware)
+  - [serverHelper(opts)](#serverhelperopts)
+  - [static(opts)](#staticopts)
+  - [tcpFrame(socket, opts)](#tcpframesocket-opts)
+  - [url(opts)](#urlopts)
+  - [van(ctx)](#vanctx)
 
 - #### sse
-
+  - [sse(opts)](#sseopts)
+  - [self(req, res)](#selfreq-res)
+  - [sessions](#sessions)
+  - [emit(event, msg, [path])](#emitevent-msg-path)
+  - [create(req, res)](#createreq-res)
+  - [session](#session)
+  - [session.emit(event, msg)](#sessionemitevent-msg)
 
 - #### [drives](#drives-2)
-
+  - [Overview](#overview)
+  - [cleanCss(opts)](#cleancssopts)
+  - [auto(opts, opts, path, opts, action, opts)](#autoopts-opts-path-opts-action-opts)
+  - [changeDir(dir, filter)](#changedirdir-filter)
+  - [concat(name, dir)](#concatname-dir)
+  - [hashSuffix(hashMapPath)](#hashsuffixhashmappath)
+  - [jshint(opts)](#jshintopts)
+  - [stylus(, opts, opts, opts)](#stylus-opts-opts-opts)
 
 
 # CLI
@@ -73,15 +152,1998 @@ For more help, run: `nor -h`.
 
 # kit
 
+- ## **[Overview](lib/kit.js?source#L33)**
+
+    Nokit extends all the functions of [nofs](https://github.com/ysmood/nofs)
+    and [`yaku/lib/utils`](https://github.com/ysmood/yaku#utils).
+    You can use it as same as nofs. For more info, see the doc:
+
+    [Offline Documentation](?gotoDoc=nofs/readme.md)
+
+    - **<u>example</u>**:
+
+        ```js
+        kit.readFile('test.txt', 'utf8').then((str) =>
+            console.log(str)
+        );
+
+        kit.outputFile('a.txt', 'test')
+        .then(() => kit.log('done'));
+
+        kit.writeJSON('b.json', { a: 10 })
+        .then(() => kit.log('done'))
+
+        kit.mkdirs('b.json', { a: 10 })
+        .then(() => kit.log('done'));
+        ```
+
+- ## **[_](lib/kit.js?source#L45)**
+
+    The [lodash](https://lodash.com) lib.
+
+    - **<u>type</u>**: { _Object_ }
+
+    - **<u>example</u>**:
+
+        ```js
+        kit._.map([1, 2, 3]);
+        ```
+
+- ## **[browserHelper(opts)](lib/kit.js?source#L74)**
+
+    The browser helper. It helps you to live reload the page and log remotely.
+
+    - **<u>static</u>**:
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+        The options of the client, defaults:
+        ```js
+        {
+         host: '', // The host of the event source.
+         useJs: false // By default the function will return html string
+        }
+        ```
+
+    - **<u>return</u>**: { _String_ }
+
+        The code of client helper.
+
+    - **<u>example</u>**:
+
+        When the client code is loaded on the browser, you can use
+        the `nb.log` to log anything to server's terminal.
+        The server will auto-format and log the information to the terminal.
+        It's convinient for mobile development when remote debug is not possible.
+        ```js
+        // The nb is assigned to the "window" object.
+        nb.log({ a: 10 });
+        nb.log(10);
+        nb.es.addEventListener('fileModified', () =>
+         console.log('file changed')
+        );
+        ```
+
+- ## **[brush](lib/kit.js?source#L116)**
+
+    Generate styled string for terminal.
+    It's disabled when `process.env.NODE_ENV == 'production'`.
+
+    - **<u>example</u>**:
+
+        ```js
+        let br = kit.require('brush');
+        kit.log(br.red('error info'));
+
+        // Disable color globally.
+        br.isEnabled = false;
+
+        // To see all the available brushes.
+        kit.log(Object.keys(br));
+        ```
+
+- ## **[depsCache(info)](lib/kit.js?source#L167)**
+
+    A fast file cache helper. It uses hard link to cache files.
+
+    - **<u>param</u>**: `info` { _Object_ }
+
+        Not optional.
+        ```js
+        {
+            // The first item is the key path, others are
+            // its dependencies.
+            deps: Array,
+
+            // The path of the output file.
+            // If it's undefined, depsCache will try to get cache.
+            dests: Array,
+
+            cacheDir: '.nokit'
+        }
+        ```
+
+    - **<u>return</u>**: { _Promise_ }
+
+        Resolve a info object.
+        ```js
+        {
+            isNewer: Boolean,
+
+            // { path: mtime }
+            deps: Object,
+
+            // { destPath: cachePath }
+            dests: Object,
+
+            cacheError: undefined || Error
+        }
+        ```
+
+    - **<u>example</u>**:
+
+        ```js
+        // Set cache
+        kit.depsCache({
+         dests: ['index.css'],
+         deps: ['index.less', 'b.less', 'c.less']
+        });
+
+        // Get cache
+        // You don't have to sepecify 'b.less', 'c.less'.
+        kit.depsCache({ deps: ['index.less'] })
+        .then((cache) => {
+            if (cache.isNewer) {
+                kit.log('cache is newer');
+                kit.log(cache.dests);
+            }
+        });
+        ```
+
+- ## **[daemonize(opts)](lib/kit.js?source#L263)**
+
+    Daemonize a program. Just a shortcut usage of `kit.spawn`.
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+        Defaults:
+        ```js
+        {
+         bin: 'node',
+         args: ['app.js'],
+         stdout: 'stdout.log', // Can also be a fd
+         stderr: 'stderr.log'  // Can also be a fd
+        }
+        ```
+
+    - **<u>return</u>**: { _Porcess_ }
+
+        The daemonized process.
+
+- ## **[decrypt(data, password, algorithm)](lib/kit.js?source#L297)**
+
+    A simple decrypt helper. Cross-version of node.
+
+    - **<u>param</u>**: `data` { _Any_ }
+
+    - **<u>param</u>**: `password` { _String | Buffer_ }
+
+    - **<u>param</u>**: `algorithm` { _String_ }
+
+        Default is 'aes128'.
+
+    - **<u>return</u>**: { _Buffer_ }
+
+- ## **[drives](lib/kit.js?source#L316)**
+
+    The warp drives.
+    You must `kit.require 'drives'` before using it.
+    For more information goto the `Drives` section.
+
+    - **<u>type</u>**: { _Object_ }
+
+- ## **[encrypt(data, password, algorithm)](lib/kit.js?source#L325)**
+
+    A simple encrypt helper. Cross-version of node.
+
+    - **<u>param</u>**: `data` { _Any_ }
+
+    - **<u>param</u>**: `password` { _String | Buffer_ }
+
+    - **<u>param</u>**: `algorithm` { _String_ }
+
+        Default is 'aes128'.
+
+    - **<u>return</u>**: { _Buffer_ }
+
+- ## **[err(msg, opts)](lib/kit.js?source#L343)**
+
+    A error log shortcut for `kit.log(msg, 'error', opts)`
+
+    - **<u>param</u>**: `msg` { _Any_ }
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+- ## **[errs(args)](lib/kit.js?source#L359)**
+
+    Shortcut for logging multiple error infos.
+
+    - **<u>param</u>**: `args` { _Any_ }
+
+        ...
+
+    - **<u>example</u>**:
+
+        ```js
+        kit.errs('test1', 'test2', 'test3');
+        // => [2015-02-07 08:31:49] test1 test2 test3
+        ```
+
+- ## **[exec(cmd, shell)](lib/kit.js?source#L411)**
+
+    A better `child_process.exec`. Supports multi-line shell script.
+    For supporting old version of node, it will create 3 temp files,
+    the temp files will be removed after the execution.
+
+    - **<u>param</u>**: `cmd` { _String_ }
+
+        Shell commands.
+
+    - **<u>param</u>**: `shell` { _String_ }
+
+        Shell name. Such as `bash`, `zsh`. Optinal.
+
+    - **<u>return</u>**: { _Promise_ }
+
+        Resolves when the process's stdio is drained.
+        The resolve value is like:
+        ```js
+        {
+            code: 0,
+            signal: null,
+            stdout: 'hello world',
+            stderr: ''
+        }
+        ```
+
+    - **<u>example</u>**:
+
+        ```js
+        kit.exec(`
+            a='hello world'
+            echo $a
+        `).then(({code, stdout}) => {
+            kit.log code   // output => 0
+            kit.log stdout // output => "hello world"
+        });
+
+        // Bash doesn't support "**" recusive match pattern.
+        let p = kit.exec(`
+         echo **/*.css
+        `, 'zsh');
+
+        // Get the child process object.
+        p.process.then((proc) =>
+         kit.log(proc.pid)
+        );
+        ```
+
+- ## **[formatComment(comments, opts)](lib/kit.js?source#L487)**
+
+    Format the parsed comments array to a markdown string.
+
+    - **<u>param</u>**: `comments` { _Array_ }
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+        Defaults:
+        ```js
+        {
+            indent: 0,
+            name: ({ name }) => String,
+            tag: ({ tagName, name, type }) => String
+        }
+        ```
+
+    - **<u>return</u>**: { _String_ }
+
+- ## **[fs](lib/kit.js?source#L560)**
+
+    See my project [nofs](https://github.com/ysmood/nofs).
+
+    [Offline Documentation](?gotoDoc=nofs/readme.md)
+
+- ## **[fuzzySearch(keys, list, opts)](lib/kit.js?source#L601)**
+
+    Fuzzy search a string list by a key word.
+
+    - **<u>param</u>**: `keys` { _String_ }
+
+        The key word.
+
+    - **<u>param</u>**: `list` { _Array_ }
+
+        The list of string to search.
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+        Defaults:
+        ```js
+        {
+            result: (wrappedList) =>
+                wrappedList.minBy('distance').words,
+            threshold: (cOffset, keyLen, cIndex) =>
+                Infinity,
+            notFound: (cOffset, keyLen, cIndex) =>
+                Infinity,
+            span: (cOffset, keyLen, cIndex) =>
+                cOffset,
+            found: (cOffset, keyLen, cIndex) =>
+                (Math.exp(cOffset + 1) - 1) * (keyLen - cIndex),
+            tail: (cOffset, keyLen, cIndex, tailLen) =>
+                tailLen
+        }
+        ```
+
+    - **<u>return</u>**: { _String_ }
+
+        The best matched one. If not found,
+        return undefined.
+
+    - **<u>example</u>**:
+
+        ```js
+        kit.fuzzySearch('hw', ['test', 'hello world', 'hey world'])
+        // output => 'hey world'
+
+        // To get a sortable weighted list.
+        kit.fuzzySearch('hw', ['test', 'hello world', 'hey world'], {
+         result: (wrappedList) => wrappedList.value()
+        });
+        // output => [
+        //  { distance: Infinity }
+        //  { words: 'hello world', distance: 1110.069 }
+        //  { words: 'hey world', distance: 159.849 }
+        // ]
+        ```
+
+- ## **[genModulePaths(moduleName, dir, modDir)](lib/kit.js?source#L678)**
+
+    Generate a list of module paths from a name and a directory.
+
+    - **<u>param</u>**: `moduleName` { _String_ }
+
+        The module name.
+
+    - **<u>param</u>**: `dir` { _String_ }
+
+        The root path. Default is current working dir.
+
+    - **<u>param</u>**: `modDir` { _String_ }
+
+        Default is 'node_modules'.
+
+    - **<u>return</u>**: { _Array_ }
+
+        Paths
+
+    - **<u>example</u>**:
+
+        ```js
+        // Suppose current working directory is '/home/a'
+        kit.genModulePaths('test')
+        // output => ['/home/a/node_modules/test', '/home/node_modules/test', '/node_modules/test']
+        ```
+
+- ## **[indent(text, num, char, reg)](lib/kit.js?source#L717)**
+
+    Indent a text block.
+
+    - **<u>param</u>**: `text` { _String_ }
+
+    - **<u>param</u>**: `num` { _Int_ }
+
+    - **<u>param</u>**: `char` { _String_ }
+
+    - **<u>param</u>**: `reg` { _RegExp_ }
+
+        Default is `/^/mg`.
+
+    - **<u>return</u>**: { _String_ }
+
+        The indented text block.
+
+    - **<u>example</u>**:
+
+        ```js
+        // Increase
+        kit.indent("one\ntwo", 2)
+        // => "  one\n  two"
+
+        // Decrease
+        kit.indent("--one\n--two", 0, '', /^--/mg)
+        // => "one\ntwo"
+        ```
+
+- ## **[isDevelopment()](lib/kit.js?source#L737)**
+
+    Nokit use it to check the running mode of the app.
+    Overwrite it if you want to control the check logic.
+    By default it returns the `rocess.env.NODE_ENV == 'development'`.
+
+    - **<u>return</u>**: { _Boolean_ }
+
+- ## **[isProduction()](lib/kit.js?source#L747)**
+
+    Nokit use it to check the running mode of the app.
+    Overwrite it if you want to control the check logic.
+    By default it returns the `rocess.env.NODE_ENV == 'production'`.
+
+    - **<u>return</u>**: { _Boolean_ }
+
+- ## **[jhash](lib/kit.js?source#L773)**
+
+    A fast helper to hash string or binary file.
+    See my [jhash](https://github.com/ysmood/jhash) project.
+    You must `kit.require 'jhash'` before using it.
+
+    [Offline Documentation](?gotoDoc=jhash/readme.md)
+
+    - **<u>example</u>**:
+
+        ```js
+        kit.require('jhash');
+        kit.jhash.hash('test'); // output => '349o'
+
+        jhash.hash(kit.readFileSync('a.jpg'));
+
+        // Control the hash char set.
+        kit.jhash.setSymbols('abcdef');
+        kit.jhash.hash('test'); // output => 'decfddfe'
+
+        // Control the max length of the result hash value. Unit is bit.
+        jhash.setMaskLen(10);
+        jhash.hash('test'); // output => 'ede'
+        ```
+
+- ## **[log(msg, action, opts)](lib/kit.js?source#L812)**
+
+    A better log for debugging, it uses the `kit.xinspect` to log.
+
+    Use terminal command like `logReg='pattern' node app.js` to
+    filter the log info.
+
+    Use `logTrace='on' node app.js` to force each log end with a
+    stack trace.
+
+    - **<u>param</u>**: `msg` { _Any_ }
+
+        Your log message.
+
+    - **<u>param</u>**: `action` { _String_ }
+
+        'log', 'error', 'warn'.
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+        Default is same with `kit.xinspect`,
+        but with some extra options:
+        ```js
+        {
+         isShowTime: true,
+         logReg: process.env.logReg && new RegExp(process.env.logReg),
+         logTrace: process.env.logTrace === 'on',
+
+         // Custom log method
+         log: (str, action) => console[action](str)
+        }
+        ```
+
+    - **<u>example</u>**:
+
+        ```js
+        kit.log('test');
+        // => '[2015-02-07 08:31:49] test'
+
+        kit.log('test', { isShowTime: false });
+        // => 'test'
+
+        kit.log('test', { logReg: /a/ });
+        // => ''
+
+        kit.log('%s %s %d', ['a', 'b', 10]);
+        // => '[2015-02-07 08:31:49] a b 10'
+        ```
+
+- ## **[logs(args)](lib/kit.js?source#L926)**
+
+    Shortcut for logging multiple infos.
+
+    - **<u>param</u>**: `args` { _Any_ }
+
+        ...
+
+    - **<u>example</u>**:
+
+        ```js
+        kit.logs('test1', 'test2', 'test3');
+        // => [2015-02-07 08:31:49] test1 test2 test3
+        ```
+
+- ## **[monitorApp(opts)](lib/kit.js?source#L1003)**
+
+    Monitor an application and automatically restart it when file changed.
+    Even when the monitored app exit with error, the monitor will still wait
+    for your file change to restart the application. Not only nodejs, but also
+    other programs like ruby or python.
+    It will print useful infomation when it application unexceptedly.
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+        Defaults:
+        ```js
+        {
+         bin: 'node',
+         args: ['index.js'],
+         prefix: 'string', // see the `kit.spawn` for details
+         watchList: [], // By default, the same with the "args".
+         isNodeDeps: true,
+         opts: {}, // Same as the opts of 'kit.spawn'.
+
+         // The option of `kit.parseDependency`
+         parseDependency: {},
+
+         // A hook for restarting the program, run the function "start" to
+         // restart.
+         retry: (start) => {},
+
+         onStart: =>
+             kit.log("Monitor: " + opts.watchList),
+         onRestart: (path) =>
+             kit.log("Reload app, modified: " + path),
+         onWatchFiles: (paths) =>
+             kit.log('Watching:' + paths.join(', ')),
+         onNormalExit: ({ code, signal }) =>
+             kit.log('EXIT' +
+                 ` code: ${code} signal: ${signal}`),
+         onErrorExit: ({ code, signal }) =>
+             kit.err('EXIT' +
+             ` code: ${code} signal: ${signal}\n` +
+             'Process closed. Edit and save the watched file to restart.'),
+        }
+        ```
+
+    - **<u>return</u>**: { _Object_ }
+
+        Properties:
+        ```js
+        {
+         // Call it to stop monitor.
+         stop: => {},
+
+         // Resolve a list of watch handlers.
+         watchPromise: Promise
+        }
+        ```
+
+    - **<u>example</u>**:
+
+        ```js
+        kit.monitorApp({
+         bin: 'coffee',
+         args: ['main.coffee']
+        });
+
+        kit.monitorApp({
+         bin: 'ruby'
+         args: ['app.rb', 'lib/**/*.rb']
+         isNodeDeps: false
+        });
+        ```
+
+- ## **[nodeVersion()](lib/kit.js?source#L1140)**
+
+    Node version. Such as `v0.10.23` is `0.1023`, `v0.10.1` is `0.1001`.
+
+    - **<u>return</u>**: { _Float_ }
+
+- ## **[defaultArgs(args, defaults)](lib/kit.js?source#L1174)**
+
+    A helper for arguments type based function override.
+
+    - **<u>param</u>**: `args` { _Array | Object_ }
+
+        The arguments to set.
+
+    - **<u>param</u>**: `defaults` { _Object_ }
+
+        The default argument settings.
+        The key value of the setting is the argument name, the value
+        is an object, and the key is the type of the argument, the
+        value is the default value of the argument.
+
+    - **<u>return</u>**: { _Object_ }
+
+    - **<u>example</u>**:
+
+        ```js
+        let foo = () => {
+            kit.defaultArgs(arguments, {
+                name: { String: 'A' },
+                brush: { Array: [] },
+                family: { String: null },
+                isReal: { Boolean: false },
+                fn: { Function: => 'callback' }
+            });
+        };
+
+        kit.log(foo('test', false, ['red'], -> 'nothing'));
+        // Here the logged value will deeply equal:
+        { name: 'test', brush: ['red'], family: null, fn: => 'nothing' }
+        ```
+
+- ## **[parseComment(code, opts)](lib/kit.js?source#L1240)**
+
+    A comments parser for javascript and coffee-script.
+    Used to generate documentation from source code automatically.
+    It will traverse through all the comments of a coffee file.
+
+    - **<u>param</u>**: `code` { _String_ }
+
+        Coffee source code.
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+        Parser options:
+        ```js
+        {
+            commentReg: RegExp,
+            splitReg: RegExp,
+            tagNameReg: RegExp,
+            typeReg: RegExp,
+            nameReg: RegExp,
+            nameTags: ['param', 'property'],
+            descriptionReg: RegExp
+        }
+        ```
+
+    - **<u>return</u>**: { _Array_ }
+
+        The parsed comments. Each item is something like:
+        ```js
+        {
+            name: 'parseComment',
+            description: 'A comments parser for coffee-script.',
+            tags: [
+                {
+                    tagName: 'param',
+                    type: 'string',
+                    name: 'code',
+                    description: 'The name of the module it belongs to.',
+                    index: 256, // The target char index in the file.
+                    line: 32 // The line number of the target in the file.
+                }
+            ]
+        }
+        ```
+
+- ## **[parseDependency(entryPaths, opts)](lib/kit.js?source#L1345)**
+
+    Parse dependency tree by regex. The dependency relationships
+    is not a tree, but a graph. To avoid dependency cycle, this
+    function only return an linear array of the dependencies,
+    from which you won't get the detail relationshops between files.
+
+    - **<u>param</u>**: `entryPaths` { _String | Array_ }
+
+        The file to begin with.
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+        Defaults:
+        ```js
+        {
+         // It will match `require`, `import` statements.
+         depReg: RegExp,
+
+         // It will handle all the matched paths.
+         // Return false value if you don't want this match.
+         handle: (path) => path
+        }
+        ```
+
+    - **<u>return</u>**: { _Promise_ }
+
+        It resolves the dependency path array.
+
+    - **<u>example</u>**:
+
+        ```js
+        kit.parseDependency('main.', {
+         depReg: /require\s*\(?['"](.+)['"]\)?/gm,
+         handle: (path) => {
+             if (path.match(/^(?:\.|/|[a-z]:)/i)) return path;
+         }
+        })
+        .then((markdownStr) =>
+         kit.log(markdownStr)
+        );
+        ```
+
+- ## **[path](lib/kit.js?source#L1415)**
+
+    io.js native module `path`. See `nofs` for more information.
+
+- ## **[Promise](lib/kit.js?source#L1423)**
+
+    The promise lib. Now, it uses Yaku as ES5 polyfill.
+    In the future, the Yaku will be replaced with native
+    ES6 Promise. Please don't use any API other than the ES6 spec.
+
+    - **<u>type</u>**: { _Object_ }
+
+- ## **[proxy](lib/kit.js?source#L1430)**
+
+    The `proxy` module.
+    You must `kit.require 'proxy'` before using it.
+    For more information goto the `Proxy` section.
+
+- ## **[regexReduce(reg, str, iter, init)](lib/kit.js?source#L1449)**
+
+    Reduce a string via a regex.
+
+    - **<u>param</u>**: `reg` { _RegExp_ }
+
+    - **<u>param</u>**: `str` { _String_ }
+
+    - **<u>param</u>**: `iter` { _Function_ }
+
+        `(init, matchGroup) -> init`, default is `_.iteratee`.
+
+    - **<u>param</u>**: `init` { _Any_ }
+
+    - **<u>return</u>**: { _Any_ }
+
+    - **<u>example</u>**:
+
+        ```js
+        let out = kit.regexReduce(/\w(\d+)/g, 'a1, b10, c3', (ret, ms) => {
+         ret.push(ms[1]);
+         return ret;
+        }, []);
+
+        kit.log(out); // => [1, 10, 3]
+        ```
+
+- ## **[regexMap(reg, str, iter)](lib/kit.js?source#L1476)**
+
+    Map a string via a regex.
+
+    - **<u>param</u>**: `reg` { _RegExp_ }
+
+    - **<u>param</u>**: `str` { _String_ }
+
+    - **<u>param</u>**: `iter` { _Function_ }
+
+        `(matchGroup) ->`, default is `_.iteratee`.
+
+    - **<u>return</u>**: { _Array_ }
+
+    - **<u>example</u>**:
+
+        ```js
+        let out = kit.regexMap(/\w(\d+)/g, 'a1, b10, c3', 1);
+
+        kit.log(out) // => [1, 10, 3]
+        ```
+
+- ## **[replace(str, pattern, iter)](lib/kit.js?source#L1498)**
+
+    An async string replace function.
+
+    - **<u>param</u>**: `str` { _String_ }
+
+        The string to replace
+
+    - **<u>param</u>**: `pattern` { _String | Regex_ }
+
+    - **<u>param</u>**: `iter` { _Function_ }
+
+        It can return a promise
+
+    - **<u>return</u>**: { _Promise_ }
+
+- ## **[replaceSync(str, pattern, iter)](lib/kit.js?source#L1539)**
+
+    An async string replace function, each replacement process will run in line.
+
+    - **<u>param</u>**: `str` { _String_ }
+
+        The string to replace
+
+    - **<u>param</u>**: `pattern` { _String | Regex_ }
+
+    - **<u>param</u>**: `iter` { _Function_ }
+
+        It can return a promise
+
+    - **<u>return</u>**: { _Promise_ }
+
+- ## **[require(moduleName, dir, loaded)](lib/kit.js?source#L1593)**
+
+    Much faster than the native require of node, but you should
+    follow some rules to use it safely.
+    Use it to load nokit's internal module.
+
+    - **<u>param</u>**: `moduleName` { _String_ }
+
+        The module path or name.
+
+    - **<u>param</u>**: `dir` { _String_ }
+
+        Current absolute file path. Not optional, expect when
+        requiring nokit's internal modules.
+        On most times, just pass `__dirname` to it is enough.
+
+    - **<u>param</u>**: `loaded` { _Function_ }
+
+        Run only the first time after the module loaded.
+
+    - **<u>return</u>**: { _Module_ }
+
+        The module that you require.
+
+    - **<u>example</u>**:
+
+        Use it to load nokit's internal module.
+        ```js
+        kit.require('jhash');
+        // Then you can use the module, or it will be null.
+        kit.jhash.hash('test');
+        ```
+        To load a relative path, or you own module,
+        the second parameter 'dir' is required.
+        ```js
+        let mod = kit.require('./mod', __dirname);
+
+        // Or load your own 'jhash', rather than nokit's.
+        let jhash = kit.require('jhash', __dirname);
+        ```
+
+- ## **[requireOptional(name, dir, semver)](lib/kit.js?source#L1688)**
+
+    Require an optional package. If not found, it will
+    warn the user to npm install it, and exit the process.
+    When `kit.requireOptional.autoInstall` is set to `true`, the package will
+    be auto installed if it's missed.
+
+    - **<u>param</u>**: `name` { _String_ }
+
+        Package name
+
+    - **<u>param</u>**: `dir` { _String_ }
+
+        Current absolute file path. Not optional.
+        On most times, just pass `__dirname` to it is enough.
+
+    - **<u>param</u>**: `semver` { _String_ }
+
+        Specify what version you need,
+        such as `^0.3.1` or `>=1.2.3`, ect.
+
+    - **<u>return</u>**: { _Any_ }
+
+        The required package.
+
+- ## **[request(opts)](lib/kit.js?source#L1856)**
+
+    A handy extended combination of `http.request` and `https.request`.
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+        The same as the [http.request](http://nodejs.org/api/http.html#httpHttpRequestOptionsCallback),
+        but with some extra options:
+        ```js
+        {
+         // String or Url Object.
+         url: String | Object,
+
+         // Other than return `res` with `res.body`,return `body` directly.
+         body: true,
+
+         // Max times of auto redirect. If 0, no auto redirect.
+         redirect: 0,
+
+         // Timeout of the socket of the http connection.
+         // If timeout happens, the promise will reject.
+         // Zero means no timeout.
+         timeout: 0,
+
+         // The key of headers should be lowercased.
+         headers: {},
+
+         protocol: 'http:' or 'https:',
+
+         agent: null,
+
+         // Auto set "transfer-encoding" header to 'chunked' if the `reqData` is
+         // stream and the 'Content-Length' header is not set.
+         autoTE: true,
+
+         // Set null to use buffer, optional.
+         // It supports GBK, ShiftJIS etc.
+         // For more info, see https://github.com/ashtuchkin/iconv-lite
+         resEncoding: 'auto',
+
+         // Whether to unzip gzip / deflate.
+         autoUnzip: true,
+
+         // It's string, object, stream or buffer, it's optional. When it's an object,
+         // The request will be 'application/x-www-form-urlencoded'.
+         reqData: null,
+
+         // auto end the request.
+         autoEndReq: true,
+
+         // Writable stream.
+         resPipe: null,
+
+         // Handle resPipe before it's piped.
+         // Its returned value will be assigned to `opts.resPipe`. So you can return
+         // null to make the request resolve the `body`.
+         handleResPipe: (res, resPipe) => resPipe,
+
+         /// The progress of the request.
+         reqProgress: (complete, total) => {},
+
+         // The progress of the response.
+         resProgress: (complete, total) => {},
+
+         resPipeError: (res) => res.end()
+        }
+        ```
+        And if set opts as string, it will be treated as the url.
+
+    - **<u>return</u>**: { _Promise_ }
+
+        Contains the http response object,
+        it has an extra `body` property.
+        You can also get the request object by using `Promise.req`.
+
+    - **<u>example</u>**:
+
+        ```js
+        let p = kit.request('http://test.com');
+        p.req.on('response', (res) =>
+         kit.log res.headers['content-length']
+        );
+        p.then((body) =>
+         kit.log(body); // html or buffer
+        );
+
+        kit.request({
+         url: {
+             protocol: 'https', hostname: 'test.com',
+             port: 8123, path: '/a.mp3?s=1'
+         },
+         body: false,
+         resProgress: (complete, total) =>
+             kit.log(`Progress: ${complete} / ${total}`)
+        })
+        .then((res) => {
+         kit.log(res.body.length);
+         kit.log(res.headers);
+        });
+
+        // Send form-data.
+        let form = new require('form-data');
+        form.append('image', new Buffer(0), {
+         filename: 'a.jpg', contentType: 'image/jpg'
+        });
+        form.append('key', 'value');
+        kit.request({
+         url: 'a.com',
+         method: 'POST',
+         headers: form.getHeaders(),
+
+         reqData: form
+        })
+        .then((body) =>
+         kit.log(body)
+        );
+        ```
+
+- ## **[semver](lib/kit.js?source#L2124)**
+
+    The semantic versioner for npm, known as [semver](https://github.com/npm/node-semver).
+    You must `kit.require 'semver'` before using it.
+
+    - **<u>type</u>**: { _Object_ }
+
+- ## **[spawn(cmd, args, opts)](lib/kit.js?source#L2159)**
+
+    A safer version of `child_process.spawn` to cross-platform run
+    a process. In some conditions, it may be more convenient
+    to use the `kit.exec`.
+    It will automatically add `node_modules/.bin` to the `PATH`
+    environment variable.
+
+    - **<u>param</u>**: `cmd` { _String_ }
+
+        Path or name of an executable program.
+
+    - **<u>param</u>**: `args` { _Array_ }
+
+        CLI arguments. If any of the item is an object,
+        it will be converted to string by `JSON.stringify`.
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+        Process options.
+        Almost the same with the Node.js official documentation.
+        It will inherit the parent's stdio by default.
+        An extra `prefix` option, if it's enabled, all stdout and stderr
+        will be prefix with the specified string, you can also specify the
+        color like `web:red`, `web:blue`, if no color found, a random color
+        will be used.
+
+    - **<u>return</u>**: { _Promise_ }
+
+        The `promise.process` is the spawned child
+        process object.
+        **Resolves** when the process's stdio is drained and the exit
+        code is either `0` or `130`. The resolve value
+        is like:
+        ```js
+        {
+         code: 0,
+         signal: null
+        }
+        ```
+
+    - **<u>example</u>**:
+
+        ```js
+        kit.spawn('git', ['commit', '-m', '42 is the answer to everything'])
+        .then(({code}) => kit.log code);
+        ```
+
+- ## **[sse](lib/kit.js?source#L2276)**
+
+    The `sse` module.
+    You must `kit.require 'sse'` before using it.
+    For more information goto the `sse` section.
+
+- ## **[task(name, opts, fn)](lib/kit.js?source#L2337)**
+
+    Sequencing and executing tasks and dependencies concurrently.
+
+    - **<u>param</u>**: `name` { _String_ }
+
+        The task name.
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+        Optional. Defaults:
+        ```js
+        {
+         deps: String | Array,
+         description: String,
+         logStart: () => (),
+         logEnd: () => (),
+
+         // Whether to run dependency in a row.
+         isSequential: false
+        }
+        ```
+
+    - **<u>param</u>**: `fn` { _Function_ }
+
+        `(val) -> Promise | Any` The task function.
+        If it is a async task, it should return a promise.
+        It will get its dependency tasks' resolved values.
+
+    - **<u>property</u>**: `run` { _Function_ }
+
+        Use it to start tasks. Each task will only run once.
+        `(names = 'default', opts) ->`. The `names` can be a string or array.
+        The default opts:
+        ```js
+        {
+         isSequential: false,
+
+         // Will be passed as the first task's argument.
+         init: undefined,
+
+         // To stop the run currently in process. Set the `$stop`
+         // reference to true. It will reject a "runStopped" error.
+         warp: { $stop: false }
+        }
+        ```
+
+    - **<u>property</u>**: `list` { _Object_ }
+
+        The defined task functions.
+
+    - **<u>return</u>**: { _Promise_ }
+
+        Resolve with the last task's resolved value.
+        When `isSequential == true`, it resolves a value, else it resolves
+        an array.
+
+    - **<u>example</u>**:
+
+        ```js
+        kit.task('default', { deps: 'build' }, () =>
+         kit.log('run defaults...')
+        );
+
+        kit.task('build', { deps: ['clean'] }, (isFull) =>
+         isFull ? 'do something' : 'do something else'
+        );
+
+        kit.task('clean', (opts) =>
+         opts.isForce ?
+             kit.remove('dist/**', { isForce: true }) :
+             kit.remove('dist/**')
+        );
+
+        kit.task.run()
+        .then(() =>
+         kit.log('All Done!')
+        );
+        ```
+
+- ## **[treeKill(pid, signal, callback)](lib/kit.js?source#L2441)**
+
+    Cross-platform kill process tree by root process id.
+
+    - **<u>param</u>**: `pid` { _Number_ }
+
+    - **<u>param</u>**: `signal` { _String | Number_ }
+
+        Such as 'SIGINT'
+
+    - **<u>param</u>**: `callback` { _Function_ }
+
+- ## **[url](lib/kit.js?source#L2447)**
+
+    The `url` module of node.
+    You must `kit.require 'url'` before using it.
+
+- ## **[warp(from, opts)](lib/kit.js?source#L2562)**
+
+    Works much like `gulp.src`, but with Promise instead.
+    The warp control and error handling is more pleasant.
+
+    - **<u>param</u>**: `from` { _String_ }
+
+        Glob pattern string.
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+        It extends the options of `nofs.glob`, but
+        with some extra proptereis. Defaults:
+        ```js
+        {
+         // The base directory of the pattern.
+         baseDir: String
+        }
+        ```
+
+    - **<u>return</u>**: { _Object_ }
+
+        The returned warp object has these members:
+        ```js
+        {
+         // The drive can also be a promise that will resolve a drive.
+         load: (drive) => fileInfo | null,
+
+         run: (path) => Promise
+        }
+        ```
+        Each piped drive will recieve a
+        object that extends `nofs`'s fileInfo object:
+        ```js
+        {
+         // Set the contents and return self.
+         set: (String | Buffer) => fileInfo,
+
+         // The src file path.
+         path: String,
+
+         // The dest root path.
+         to: String,
+
+         baseDir: String,
+
+         // The destination path.
+         // Alter it if you want to change the output file's location.
+         // You can set it to string, warp will auto-convert it to object.
+         // It's "valueOf" will return "kit.path.join dir, name + ext".
+         dest: { root, dir, base, ext, name },
+
+         // The file content.
+         contents: String | Buffer,
+
+         isDir: Boolean,
+
+         stats: fs.Stats,
+
+         // Alter it to control the left drives dynamically.
+         drives: [Function],
+
+         // All the globbed files.
+         list: Array,
+
+         driveList: Array,
+
+         // The opts you passed to "kit.warp", it will be extended.
+         opts: Object
+        }
+        ```
+
+        Each drive can have a `onEnd: (fileInfo) -> Any | Promise` function,
+        which will be called after a file's whole warp is ended.
+
+        The drive can have a `isReader` property, which will make the drive
+        override the default file reader.
+
+        The drive can have a `isWriter` property, which will make the drive
+        override the default file writer.
+
+        If a drive overrides another, it can call `fileInfo.super()` to use it again.
+
+    - **<u>example</u>**:
+
+        ```js
+        // Define a simple workflow.
+        kit.warp('src/**/*.js')
+        .load((fileInfo) =>
+            fileInfo.set('/* Lisence Info */' + fileInfo.contents)
+        )
+        .load(jslint())
+        .load(minify())
+        .run('build/minified');
+
+        // Override warp's file reader with a custom one.
+        let myReader = kit._.extend((f) =>
+            kit.readFile(f.path, 'hex').then(f.path)
+        ), {
+         // This will tell warp you want use your own reader.
+         isReader: true
+        });
+
+        // Override writer.
+        let myWriter = kit._.extend((f) => {
+         if (f.dest === 'a.js') return;
+
+         // Call the overrided writer.
+         f.super();
+        }, { isWriter: true, onEnd: () => {
+           super();
+           kit.log(this.list);
+        });
+
+        kit.warp('src/**/*.js')
+        .load(myWriter)
+        .run('dist');
+
+        // Use nokit's built-in warp drives.
+        let drives = kit.require('drives');
+        kit.warp('src/**/*.coffee')
+        .load(drives.coffee());
+        .run('dist');
+        ```
+
+- ## **[which(name)](lib/kit.js?source#L2684)**
+
+    Same as the unix `which` command.
+    You must `kit.require 'which'` before using it.
+
+    - **<u>param</u>**: `name` { _String_ }
+
+        The command.
+
+    - **<u>return</u>**: { _Promise_ }
+
+- ## **[whichSync](lib/kit.js?source#L2691)**
+
+    Sync version of `which`.
+    You must `kit.require 'whichSync'` before using it.
+
+    - **<u>type</u>**: { _Function_ }
+
+- ## **[xinspect(obj, opts)](lib/kit.js?source#L2702)**
+
+    For debugging. Dump a colorful object.
+
+    - **<u>param</u>**: `obj` { _Object_ }
+
+        Your target object.
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+        Options. Default:
+        ```js
+        { colors: true, depth: 7 }
+        ```
+
+    - **<u>return</u>**: { _String_ }
+
+- ## **[xopen(cmds, opts)](lib/kit.js?source#L2729)**
+
+    Open a thing that your system can recognize.
+    Now only support Windows, OSX or system that installed 'xdg-open'.
+
+    - **<u>param</u>**: `cmds` { _String | Array_ }
+
+        The thing you want to open.
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+        The options of the node native
+        `child_process.exec`.
+
+    - **<u>return</u>**: { _Promise_ }
+
+        When the child process exists.
+
+    - **<u>example</u>**:
+
+        Open a webpage with the default browser.
+        ```js
+        kit.open('http://ysmood.org');
+        ```
+
 
 
 
 # proxy
 
+- ## **[Overview](lib/proxy.js?source#L6)**
+
+    For test, page injection development.
+    A cross-platform programmable Fiddler alternative.
+    You can even replace express.js with it's `flow` function.
+
+- ## **[body()](lib/proxy.js?source#L63)**
+
+    A simple request body middleware.
+    It will append a property `reqBody` to `ctx`.
+    It will append a property `body` to `ctx.req`.
+
+    - **<u>params</u>**:
+
+        opts {Object} Defaults:
+        ```js
+        {
+            limit: Infinity,
+            memoryLimit: 100 * 1024 // 100KB
+        }
+        ```
+
+    - **<u>return</u>**: { _Function_ }
+
+        `(ctx) -> Promise`
+
+    - **<u>example</u>**:
+
+        ```
+        let kit = require('nokit');
+        let proxy = kit.require('proxy');
+
+        let app = proxy.flow();
+
+        app.push(proxy.body());
+
+        app.push(($) => {
+            kit.logs($.reqBody);
+        });
+
+        app.listen(8123);
+        ```
+
+- ## **[connect(opts)](lib/proxy.js?source#L166)**
+
+    Http CONNECT method tunneling proxy helper.
+    Most times it is used to proxy https and websocket.
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+        Defaults:
+        ```js
+        {
+            // If it returns false, the proxy will be ignored.
+            filter: (req) => true,
+
+            handleReqHeaders: (headers) => headers,
+
+            host: null, // Optional. The target host force to.
+            port: null, // Optional. The target port force to.
+            onError: (err, socket) => {}
+        }
+        ```
+
+    - **<u>return</u>**: { _Function_ }
+
+        The connect request handler.
+
+    - **<u>example</u>**:
+
+        ```js
+        let kit = require('nokit');
+        let proxy = kit.require('proxy');
+
+        let app = proxy.flow();
+
+        // Directly connect to the original site.
+        app.server.on('connect', kit.proxy.connect());
+
+        app.listen(8123);
+        ```
+
+- ## **[debugJs(opts)](lib/proxy.js?source#L269)**
+
+    Proxy and replace a single js file with a local one.
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+        ```js
+        {
+            url: Regex, // The url pattern to match
+            file: String // The local js file path
+        }
+        ```
+
+    - **<u>return</u>**: { _Function_ }
+
+        noflow middleware
+
+    - **<u>example</u>**:
+
+        ```js
+        let kit = require('nokit');
+        let http = require('http');
+        let proxy = kit.require('proxy');
+
+        let app = proxy.flow();
+
+        app.push(proxy.debugJs({
+            url: /main.js$/,
+            file: './main.js'
+        }));
+
+        app.listen(8123);
+        ```
+
+- ## **[etag()](lib/proxy.js?source#L294)**
+
+    Create a etag middleware.
+
+    - **<u>return</u>**: { _Function_ }
+
+- ## **[file(opts)](lib/proxy.js?source#L343)**
+
+    A simple protocol to read, write, chmod, delete file via http.
+    The protocol is very simple
+    ```
+    POST / HTTP/1.1
+    file-action: ${action}
+
+    ${body}
+    ```
+    The `action` is somethine like `{ type: 'create', path: '/home/u/a/b.js', mode: 0o777 }`
+    The `body` is the binary of the file content.
+    Both the `action` and the `body` are encrypt with the password and algorithm specified
+    in the opts.
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+        defaults
+        ```js
+        {
+            password: 'nokit',
+            algorithm: 'aes128',
+            rootAllowed: '/',
+            actionKey: 'file-action'
+        }
+        ```
+
+    - **<u>return</u>**: { _Function_ }
+
+        noflow middleware
+
+- ## **[fileRequest(opts)](lib/proxy.js?source#L471)**
+
+    Make a file create request to `proxy.file`.
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+        Defaults
+        ```js
+        {
+           action: 'read',
+           url: '127.0.0.1',
+           path: String,
+           data: Any,
+           password: 'nokit',
+           algorithm: 'aes128',
+           actionKey: 'file-action',
+           typeKey: 'file-type'
+        }
+        ```
+
+    - **<u>return</u>**: { _Promise_ }
+
+- ## **[flow](lib/proxy.js?source#L550)**
+
+    A minimal middleware composer for the future.
+    https://github.com/ysmood/noflow
+
+- ## **[flowToMid(fn)](lib/proxy.js?source#L557)**
+
+    Convert noflow middleware express middleware.
+
+    - **<u>param</u>**: `fn` { _Function_ }
+
+        noflow middleware
+
+    - **<u>return</u>**: { _FUnction_ }
+
+        express middleware
+
+- ## **[match(pattern, opts)](lib/proxy.js?source#L577)**
+
+    Generate an express like unix path selector. See the example of `proxy.flow`.
+
+    - **<u>param</u>**: `pattern` { _String_ }
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+        Same as the [path-to-regexp](https://github.com/pillarjs/path-to-regexp)'s
+        options.
+
+    - **<u>return</u>**: { _Function_ }
+
+        `(String) -> Object`.
+
+    - **<u>example</u>**:
+
+        ```js
+        let proxy = kit.require('proxy');
+        let match = proxy.match('/items/:id');
+        kit.log(match('/items/10')) // output => { id: '10' }
+        ```
+
+- ## **[midToFlow(h)](lib/proxy.js?source#L620)**
+
+    Convert a Express-like middleware to `proxy.flow` middleware.
+
+    - **<u>param</u>**: `h` { _Function_ }
+
+        `(req, res, next) ->`
+
+    - **<u>return</u>**: { _Function_ }
+
+        `(ctx) -> Promise`
+        ```js
+        let proxy = kit.require('proxy');
+        let http = require('http');
+        let bodyParser = require('body-parser');
+
+        let middlewares = [
+            proxy.midToFlow(bodyParser.json()),
+
+            (ctx) => ctx.body = ctx.req.body
+        ];
+
+        http.createServer(proxy.flow(middlewares)).listen(8123);
+        ```
+
+- ## **[parseUrl()](lib/proxy.js?source#L654)**
+
+    A simple url parser middleware.
+    It will append a `url` object to `ctx`
+
+    - **<u>return</u>**: { _[type]_ }
+
+        [description]
+
+    - **<u>example</u>**:
+
+        ```
+        let kit = require('nokit');
+        let proxy = kit.require('proxy');
+
+        let app = proxy.flow();
+
+        app.push(proxy.parseUrl());
+
+        app.push(($) => {
+            kit.logs($.url.path);
+        });
+
+        app.listen(8123);
+        ```
+
+- ## **[relayConnect(opts)](lib/proxy.js?source#L675)**
+
+    A helper for http server port tunneling.
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+        ```js
+        {
+            allowedHosts: [],
+            onSocketError: () => {},
+            onRelayError: () => {}
+        }
+        ```
+
+    - **<u>return</u>**: { _Function_ }
+
+        A http connect method helper.
+
+- ## **[relayClient(opts)](lib/proxy.js?source#L724)**
+
+    A helper for http server port tunneling.
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+        ```js
+        {
+            host: '0.0.0.0:9970',
+            relayHost: '127.0.0.1:9971',
+            hostTo: '127.0.0.1:8080',
+            onSocketError: () => {},
+            onRelayError: () => {}
+        }
+        ```
+
+    - **<u>return</u>**: { _Promise_ }
+
+        Resolve a tcp server object.
+
+- ## **[select(sel, middleware)](lib/proxy.js?source#L785)**
+
+    Create a conditional middleware that only works when the pattern matches.
+
+    - **<u>param</u>**: `sel` { _Object_ }
+
+        The selector. Members:
+        ```js
+        {
+         url: String | Regex | Function,
+         method: String | Regex | Function,
+         headers: Object
+        }
+        ```
+        When it's not an object, it will be convert via `sel = { url: sel }`.
+        The `url`, `method` and `headers` are act as selectors. If current
+        request matches the selector, the `middleware` will be called with the
+        captured result. If the selector is a function, it should return a
+        `non-undefined, non-null` value when matches, it will be assigned to the `ctx`.
+        When the `url` is a string, if `req.url` starts with the `url`, the rest
+        of the string will be captured.
+
+    - **<u>param</u>**: `middleware` { _Function_ }
+
+    - **<u>return</u>**: { _Function_ }
+
+- ## **[serverHelper(opts)](lib/proxy.js?source#L906)**
+
+    Create a http request middleware.
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+        Same as the sse.
+
+    - **<u>return</u>**: { _Function_ }
+
+        `(req, res, next) ->`.
+        It has some extra properties:
+        ```js
+        {
+         ssePrefix: '/nokit-sse',
+         logPrefix: '/nokit-log',
+         sse: kit.sse,
+         watch: (filePath, reqUrl) => {},
+         host: '', // The host of the event source.
+         useJs: false // By default the browserHelper will be a html string
+        }
+        ```
+
+    - **<u>example</u>**:
+
+        Visit 'http://127.0.0.1:80123', every 3 sec, the page will be reloaded.
+        If the `./static/default.css` is modified, the page `a.html` will also be reloaded.
+        ```js
+        let kit = require('nokit');
+        let http = require('http');
+        let proxy = kit.require('proxy');
+        let handler = proxy.serverHelper();
+
+        let app = proxy.flow();
+
+        handler.watch('./static/default.css', '/st/default.css');
+
+        app.push(handler);
+
+        app.push(proxy.select(/a\.html$/, proxy.url({
+            handleResBody: (body) => body + handler.browserHelper
+        })));
+
+        app.listen(8123);
+
+        setInterval(() =>
+            handler.sse.emit('fileModified', 'changed-file-path.js')
+        ), 3000);
+        ```
+        You can also use the `nokit.log` on the browser to log to the remote server.
+        ```js
+        nokit.log({ any: 'thing' });
+        ```
+
+- ## **[static(opts)](lib/proxy.js?source#L1001)**
+
+    Create a static file middleware for `proxy.flow`.
+
+    - **<u>param</u>**: `opts` { _String | Object_ }
+
+        Same as the [send](https://github.com/pillarjs/send)'s.
+        It has an extra option `{ onFile: (path, stats, ctx) => void }`.
+
+    - **<u>return</u>**: { _Function_ }
+
+        The middleware handler of `porxy.flow`.
+        ```js
+        let proxy = kit.require('proxy');
+        let http = require('http');
+
+        let middlewares = [proxy.select({ url: '/st' }, proxy.static('static'))]
+
+        http.createServer(proxy.flow(middlewares)).listen(8123);
+        ```
+
+- ## **[tcpFrame(socket, opts)](lib/proxy.js?source#L1049)**
+
+    Send or receive any size of package over a socket.
+    Add a `writeFrame` method and a `frame` event to `net.Socket` object.
+    The `writeFrame`'s signature is same with the `net.Socket.write`.
+    The `frame` event is the same with the native stream's `data` event.
+
+    - **<u>param</u>**: `socket` { _net.Socket_ }
+
+        The nodejs native `net.Socket`.
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+        Defaults
+        ```js
+        {
+            // The extra first chunk to be used as part of a frame
+            head: Buffer
+        }
+        ```
+
+- ## **[url(opts)](lib/proxy.js?source#L1127)**
+
+    Use it to proxy one url to another.
+
+    - **<u>param</u>**: `opts` { _Object | String_ }
+
+        Other options, if it is a string, it will
+        be converted to `{ url: opts }`. Default:
+        ```js
+        {
+            // The target url forced to. Optional.
+            // Such as proxy 'http://test.com/a' to 'http://test.com/b',
+            // proxy 'http://test.com/a' to 'http://other.com/a',
+            // proxy 'http://test.com' to 'other.com'.
+            // It can also be an url object. Such as
+            // `{ protocol: 'http:', host: 'test.com:8123', pathname: '/a/b', query: 's=1' }`.
+            url: null,
+
+            // Mutate the url before the proxy take charge of it.
+            handleUrl: (url) => url,
+
+            agent: customHttpAgent,
+
+            // Force the header's host same as the url's.
+            isForceHeaderHost: false,
+
+            // The request data to use. The return value should be stream, buffer or string.
+            handleReqData: (req) => req.body || req
+
+            // You can hack the headers before the proxy send it.
+            handleReqHeaders: (headers, req) => headers
+            handleResHeaders: (headers, req, proxyRes) => headers,
+
+            // Same option as the `kit.request`'s `handleResPipe`.
+            handleResPipe: (res, stream) => stream,
+
+            // Manipulate the response body content of the response here,
+            // such as inject script into it. Its return type is same as the `ctx.body`.
+            handleResBody: (body, req, proxyRes) => body,
+
+            // Only when the `content-type` matches, handleResBody will work
+            handleResBodyMIME: /text|json|javascript|css|xml/
+
+            // It will log some basic error info.
+            error: (e, req) => {}
+        }
+        ```
+
+    - **<u>return</u>**: { _Function_ }
+
+        `(req, res) => Promise` A middleware.
+
+    - **<u>example</u>**:
+
+        ```js
+        let kit = require('nokit');
+        let proxy = kit.require('proxy');
+        let http = require('http');
+
+        http.createServer(proxy.flow(
+            // Transparent proxy
+            proxy.select({ url: '/a' }, proxy.url()),
+
+            // Porxy to `a.com`
+            proxy.select({ url: '/b' }, proxy.url({ url: 'a.com' })),
+
+            // Porxy to a file
+            proxy.select({ url: '/c' }, proxy.url({ url: 'c.com/s.js' })),
+
+            proxy.select(
+                { url: /$/, method: 'GET' },
+                proxy.url({
+                    url: 'd.com',
+                    // Inject script to html page.
+                    handleResBody: (body, req, res) => {
+                        if (res.headers['content-type'].indexOf('text/html') > -1)
+                            return body + '<script>alert("test")</script>';
+                        else
+                            return body;
+                    }
+                })
+            )
+        ).listen(8123);
+        ```
+
+- ## **[van(ctx)](lib/proxy.js?source#L1328)**
+
+    Add a `van` method to flow context object. It's a helper to set
+    and get the context body.
+
+    - **<u>param</u>**: `ctx` { _FlowContext_ }
+
 
 
 
 # sse
+
+- ## **[sse(opts)](lib/sse.js?source#L45)**
+
+    A Server-Sent Event Manager.
+    For more info see [Using server-sent events](https://developer.mozilla.org/en-US/docs/Server-sentEvents/UsingServer-sentEvents).
+    It is used to implement the live-reload of web assets.
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+        Defaults:
+        ```js
+        {
+         // The reconnection time to use when attempting to send the event, unit is ms.
+         retry: 1000
+        }
+        ```
+
+    - **<u>example</u>**:
+
+        Your server side code may look like this:
+        ```js
+        let http = require('http');
+        let kit = require('nokit');
+        let sse = kit.require('sse');
+        let sseHandler = sse();
+
+        sseHandler.onConnect = ({ req }) => {
+            console.log('client connected: ', req.url)
+        }
+
+        http.createServer((req, res) => {
+            if (req.url === '/sse')
+                sseHandler(req, res);
+            else
+                res.end();
+        }).listen(8080, () =>
+            setTimeout(() =>
+                sseHandler.emit('test', { test: 'ok' })
+            );
+        );
+        ```
+
+        You browser code should be something like this:
+        ```js
+        let es = new EventSource('/sse');
+        es.addEventListener('test', (e) => {
+            let msg = JSON.parse(e.data);
+            console.log(msg); // => { test: 'ok' }
+        });
+        ```
+
+- ## **[self(req, res)](lib/sse.js?source#L59)**
+
+    The sse middleware for http handler.
+
+    - **<u>param</u>**: `req` { _http.IncomingMessage_ }
+
+        Also supports Express.js.
+
+    - **<u>param</u>**: `res` { _http.ServerResponse_ }
+
+        Also supports Express.js.
+
+- ## **[sessions](lib/sse.js?source#L71)**
+
+    The sessions of connected clients.
+
+    - **<u>type</u>**: { _Array_ }
+
+- ## **[emit(event, msg, [path])](lib/sse.js?source#L80)**
+
+    Broadcast a event to all clients.
+
+    - **<u>param</u>**: `event` { _String_ }
+
+        The event name.
+
+    - **<u>param</u>**: `msg` { _Object | String_ }
+
+        The data you want to emit to session.
+
+    - **<u>param</u>**: `[path]` { _String_ }
+
+        The namespace of target sessions. If not set,
+        broadcast to all clients.
+
+- ## **[create(req, res)](lib/sse.js?source#L105)**
+
+    Create a sse session.
+
+    - **<u>param</u>**: `req` { _http.IncomingMessage_ }
+
+        Also supports Express.js.
+
+    - **<u>param</u>**: `res` { _http.ServerResponse_ }
+
+        Also supports Express.js.
+
+    - **<u>return</u>**: { _SSESession_ }
+
+- ## **[session](lib/sse.js?source#L115)**
+
+    A session object is something like:
+    ```js
+    {
+     req,  // The http req object.
+     res   // The http res object.
+    }
+    ```
+
+- ## **[session.emit(event, msg)](lib/sse.js?source#L132)**
+
+    Emit message to client.
+
+    - **<u>param</u>**: `event` { _String_ }
+
+        The event name.
+
+    - **<u>param</u>**: `msg` { _Object | String_ }
+
+        The message to send to the client.
 
 
 
@@ -163,6 +2225,485 @@ kit.warp('src/**/*.coffee')
     kit.log('Build Done');
 });
 ```
+
+- ## **[Overview](lib/drives.js?source#L13)**
+
+    The built-in plguins for warp. It's more like examples
+    to show how to use nokit efficiently.
+
+- ## **[cleanCss(opts)](lib/drives.js?source#L22)**
+
+    clean-css
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+    - **<u>return</u>**: { _Function_ }
+
+- ## **[auto(opts, opts, path, opts, action, opts)](lib/drives.js?source#L236)**
+
+    coffee-script compiler
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+        Default is `{ bare: true }`.
+
+    - **<u>return</u>**: { _Function_ }
+
+        /
+            }),
+            coffee: _.extend(function (opts) {
+                if (opts == null) {
+                    opts = {};
+                }
+                _.defaults(opts, {
+                    bare: true
+                });
+
+                const coffee = kit.requireOptional('coffee-script', __dirname, '>=1.8.0');
+
+                return function () {
+                    opts.filename = this.path;
+                    this.deps = [this.path];
+                    this.dest.ext = '.js';
+                    try {
+                        this.set(coffee.compile(this.contents + '', opts));
+                        return kit.log(br.cyan('coffee: ') + this.path);
+                    } catch (err) {
+                        kit.err(br.red(err.stack));
+                        return Promise.reject('coffeescriptCompileError');
+                    }
+                };
+            }, {
+                compile: ['.coffee']
+
+                /**
+        coffeelint processor
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+        It extends the default config
+        of coffeelint, properties:
+        ```js
+        {
+         colorize: true,
+         reporter: 'default',
+
+         // The json of the "coffeelint.json".
+         // If it's null, coffeelint will try to find
+         // "coffeelint.json" as its content.
+         config: null | JSON | JsonFilePath
+        }
+        ```
+
+    - **<u>return</u>**: { _Function_ }
+
+        /
+            }),
+            coffeelint: _.extend(function (opts) {
+                if (opts == null) {
+                    opts = {};
+                }
+                _.defaults(opts, {
+                    colorize: true,
+                    reporter: 'default'
+                });
+
+                const coffeelint = kit.requireOptional('coffeelint', __dirname);
+
+                if (!opts.config) {
+                    const configfinder = require('coffeelint/lib/configfinder');
+                    opts.config = configfinder.getConfig();
+                }
+
+                if (_.isString(opts.config)) {
+                    opts.config = kit.readJsonSync(opts.config);
+                }
+
+                const Reporter = require(`coffeelint/lib/reporters/${opts.reporter}`);
+
+                return function () {
+                    this.deps = [this.path];
+                    const errorReport = new coffeelint.getErrorReport();
+                    errorReport.lint(this.path, this.contents, opts.config);
+                    const reporter = new Reporter(errorReport, opts);
+
+                    for (let path in errorReport.paths) {
+                        const errors = errorReport.paths[path];
+                        kit.log(br.cyan('coffeelint: ') + _.trim(reporter.reportPath(path, errors)));
+                        if (errors.length > 0) {
+                            return Promise.reject(errors[0]);
+                        }
+                    }
+                };
+            }, {
+                lint: ['.coffee']
+
+                /**
+        Parse commment from a js, coffee, or livescript file,
+        and output a markdown string.
+
+    - **<u>param</u>**: `path` { _String_ }
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+        Defaults:
+        ```js
+        {
+         // Output doc path.
+         out: 'readme.md',
+
+         // jst template path.
+         tpl: 'readme.jst.md',
+
+         // Init doc info.
+         doc: {},
+
+         // Header size.
+         h: 3,
+
+         parseComment: () => {},
+         formatComment: () => {}
+        }
+        ```
+
+    - **<u>return</u>**: { _Function_ }
+
+    - **<u>example</u>**:
+
+        The nofile of nokit shows how to use it.
+        /
+            }),
+            comment2md(opts) {
+                if (opts == null) {
+                    opts = {};
+                }
+                _.defaults(opts, {
+                    out: 'readme.md',
+                    tpl: 'readme.jst.md',
+                    doc: {},
+                    h: 3,
+                    parseComment: {},
+                    formatComment: {}
+                });
+
+                return _.extend(function (file) {
+                        const toc = [];
+                        opts.formatComment.name = function ({
+                            name,
+                            line
+                        }) {
+                            name = name.replace('self.', '');
+
+                            const tocName = name.toLowerCase()
+                                .replace(/\s/g, '-')
+                                .replace(/[^\w-]/g, '');
+
+                            toc.push(`  - [${name}](#${tocName})`);
+
+                            const link = `${file.path}?source#L${line}`;
+                            return `- ${_.repeat('#', opts.h)} **[${name}](${link})**\n\n`;
+                        };
+
+                        const comments = kit.parseComment(this.contents + '', opts.parseComment);
+                        opts.doc[this.path] = kit.formatComment(comments, opts.formatComment);
+                        return opts.doc[this.path + '-toc'] = toc.join('\n');
+                    }
+
+                    , {
+                        isWriter: true,
+                        onEnd(file) {
+                            if (_.keys(opts.doc).length < this.list.length) {
+                                return;
+                            }
+
+                            this.deps = _.map(this.list, 'path');
+                            this.deps.push(opts.tpl);
+
+                            this.dest = kit.path.join(this.to, opts.out);
+
+                            return kit.readFile(opts.tpl, 'utf8')
+                                .then(tpl => file.set(_.template(tpl)({
+                                    doc: opts.doc
+                                })))
+                                .then(function () {
+                                    kit.log(br.cyan('comment2md: ') +
+                                        kit.path.join(file.to, opts.out)
+                                    );
+                                    return file.super();
+                                });
+                        }
+                    }
+                );
+            },
+
+            /**
+        Auto-compiler file by extension. It will search through
+        `kit.drives`, and find proper drive to run the task.
+        You can extend `kit.drives` to let it support more.
+        For example:
+        ```js
+        kit.drives.myCompiler = kit._.extend(() => {
+            // your compile logic
+        }), { compiler: ['.jsx'] })
+        ```
+
+    - **<u>param</u>**: `action` { _String_ }
+
+        By default, it can be
+        'compile' or 'compress' or 'lint'
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+        ```js
+        {
+         // If no compiler match.
+         onNotFound: (fileInfo) => {}
+        }
+        ```
+
+    - **<u>return</u>**: { _Function_ }
+
+- ## **[changeDir(dir, filter)](lib/drives.js?source#L282)**
+
+    Change dest path with a filter.
+
+    - **<u>param</u>**: `dir` { _String_ }
+
+    - **<u>param</u>**: `filter` { _Function_ }
+
+        `(fileInfo, dir) -> Boolean`
+
+    - **<u>return</u>**: { _Function_ }
+
+- ## **[concat(name, dir)](lib/drives.js?source#L301)**
+
+    a batch file concat helper
+
+    - **<u>param</u>**: `name` { _String_ }
+
+        The output file path.
+
+    - **<u>param</u>**: `dir` { _String_ }
+
+        Optional. Override the dest of warp's.
+
+    - **<u>return</u>**: { _Function_ }
+
+- ## **[hashSuffix(hashMapPath)](lib/drives.js?source#L330)**
+
+    Suffix file name with the hash value of file content.
+
+    - **<u>param</u>**: `hashMapPath` { _String_ }
+
+        The output file name hash map.
+
+    - **<u>return</u>**: { _Function_ }
+
+- ## **[jshint(opts)](lib/drives.js?source#L359)**
+
+    Lint js via `jshint`.
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+        Properties:
+        ```js
+        {
+         global: null,
+         config: null | JSON | JsonFilePath
+        }
+        ```
+
+    - **<u>return</u>**: { _Function_ }
+
+- ## **[stylus(, opts, opts, opts)](lib/drives.js?source#L568)**
+
+    Compile less.
+
+    - **<u>param</u>**: { _Object_ }
+
+    - **<u>return</u>**: { _Function_ }
+
+        /
+                }
+            ),
+            less: _.extend(function (opts) {
+                if (opts == null) {
+                    opts = {};
+                }
+                const less = kit.requireOptional('less', __dirname, '>=2.5.1');
+
+                return function (file) {
+                    this.dest.ext = '.css';
+                    opts.filename = this.path;
+                    return less.render(this.contents + '', opts)
+                        .then(function (output) {
+                            file.deps = [file.path].concat(output.imports);
+                            file.set(output.css);
+                            return kit.log(br.cyan('less: ') + file.path);
+                        }, function (err) {
+                            if ((err.line == null)) {
+                                return Promise.reject(err);
+                            }
+                            // The error message of less is the worst.
+                            err.message = err.filename +
+                                `:${err.line}:${err.column}\n` +
+                                (err.extract != null ? err.extract.join('\n') : undefined) + '\n--------\n' +
+                                err.message;
+                            return Promise.reject(err);
+                        });
+                };
+            }, {
+                compile: ['.less']
+
+                /**
+        LiveScript compiler.
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+        Default is `{ bare: true }`.
+
+    - **<u>return</u>**: { _Function_ }
+
+        /
+            }),
+            livescript: _.extend(function (opts) {
+                if (opts == null) {
+                    opts = {};
+                }
+                _.defaults(opts, {
+                    bare: true
+                });
+
+                const LiveScript = kit.requireOptional('LiveScript', __dirname, '>=1.2.0');
+
+                return function () {
+                    this.deps = [this.path];
+                    opts.filename = this.path;
+                    this.dest.ext = '.js';
+                    try {
+                        this.set(LiveScript.compile(this.contents + '', opts));
+                        return kit.log(br.cyan('livescript: ') + this.path);
+                    } catch (err) {
+                        kit.err(br.red(err));
+                        return Promise.reject('livescriptCompileError');
+                    }
+                };
+            }, {
+                compile: ['.ls']
+
+                /**
+        read file and set `contents`
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+        Defaults:
+        ```js
+        {
+         isCache: false,
+         encoding: 'utf8',
+         cacheDir: '.nokit/warp'
+        }
+        ```
+
+    - **<u>return</u>**: { _Function_ }
+
+        /
+            }),
+            reader(opts) {
+                if (opts == null) {
+                    opts = {};
+                }
+                _.defaults(opts, {
+                    isCache: false,
+                    encoding: 'utf8',
+                    cacheDir: '.nokit/warp'
+                });
+
+                if (jhash == null) {
+                    jhash = new(kit.require('jhash').constructor);
+                }
+
+                // Create a unique id for each workflow.
+                const hashDrives = function (ds) {
+                    const str = _.map(ds, d => d.toString()).join();
+                    return jhash.hash(str, true) + '';
+                };
+
+                const read = function () {
+                    return kit.readFile(this.path, opts.encoding)
+                        .then(this.set);
+                };
+
+                return _.extend(function (file) {
+                    if (!this.list.cacheDir) {
+                        this.list.isCache = opts.isCache;
+                        this.list.cacheDir = kit.path.join(opts.cacheDir,
+                            hashDrives(this.driveList));
+                    }
+
+                    if (this.isDir) {
+                        return;
+                    }
+                    if (opts.isCache) {
+                        return kit.depsCache({
+                            deps: [this.path],
+                            cacheDir: this.list.cacheDir
+                        }).then(function (cache) {
+                            file.deps = cache.deps;
+                            if (cache.isNewer) {
+                                kit.log(br.green('reader cache: ') +
+                                    file.deps.join(br.grey(', '))
+                                );
+                                file.drives.length = 0;
+
+                                return Promise.all(_.map(cache.dests, (cachePath, dest) =>
+                                    kit.mkdirs(kit.path.dirname(dest))
+                                    .then(() =>
+                                        kit.link(cachePath, dest)
+                                        .catch(function (err) {
+                                            if (err.code !== 'EEXIST') {
+                                                return Promise.reject(err);
+                                            }
+                                        })
+                                    )
+                                ));
+                            } else {
+                                return read.call(file);
+                            }
+                        });
+                    } else {
+                        return read.call(file);
+                    }
+                }, {
+                    isReader: true
+                });
+            },
+
+            /**
+        Compile stylus.
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+        It will use `stylus.set` to
+        iterate `opts` and set the key-value, is the value is
+        not a function.
+        ```js
+        {
+         config: (styl) => {}
+        }
+        ```
+
+    - **<u>return</u>**: { _Function_ }
+
+    - **<u>example</u>**:
+
+        ```js
+        kit.drives.stylus({
+         compress: true,
+         config: (styl) =>
+             styl.define('jack', 'a persion')
+        });
+        ```
 
 
 

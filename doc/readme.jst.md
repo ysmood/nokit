@@ -35,16 +35,16 @@ Goto [changelog](doc/changelog.md)
   - [Temote TTY](#temote-tty)
 
 - #### kit
-<%= doc['lib/kit.coffee-toc'] %>
+<%= doc['lib/kit.js-toc'] %>
 
 - #### proxy
-<%= doc['lib/proxy.coffee-toc'] %>
+<%= doc['lib/proxy.js-toc'] %>
 
 - #### sse
-<%= doc['lib/sse.coffee-toc'] %>
+<%= doc['lib/sse.js-toc'] %>
 
 - #### [drives](#drives-2)
-<%= doc['lib/drives.coffee-toc'] %>
+<%= doc['lib/drives.js-toc'] %>
 
 
 # CLI
@@ -73,17 +73,17 @@ For more help, run: `nor -h`.
 
 # kit
 
-<%= doc['lib/kit.coffee'] %>
+<%= doc['lib/kit.js'] %>
 
 
 # proxy
 
-<%= doc['lib/proxy.coffee'] %>
+<%= doc['lib/proxy.js'] %>
 
 
 # sse
 
-<%= doc['lib/sse.coffee'] %>
+<%= doc['lib/sse.js'] %>
 
 
 # drives
@@ -164,7 +164,7 @@ kit.warp('src/**/*.coffee')
 });
 ```
 
-<%= doc['lib/drives.coffee'] %>
+<%= doc['lib/drives.js'] %>
 
 # Contribution
 
