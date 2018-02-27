@@ -1010,7 +1010,7 @@ For more help, run: `nor -h`.
         let jhash = kit.require('jhash', __dirname);
         ```
 
-- ## **[requireOptional(name, dir, semver)](lib/kit.js?source#L1688)**
+- ## **[requireOptional(name, dir, semver)](lib/kit.js?source#L1690)**
 
     Require an optional package. If not found, it will
     warn the user to npm install it, and exit the process.
@@ -1035,7 +1035,7 @@ For more help, run: `nor -h`.
 
         The required package.
 
-- ## **[request(opts)](lib/kit.js?source#L1856)**
+- ## **[request(opts)](lib/kit.js?source#L1858)**
 
     A handy extended combination of `http.request` and `https.request`.
 
@@ -1153,14 +1153,14 @@ For more help, run: `nor -h`.
         );
         ```
 
-- ## **[semver](lib/kit.js?source#L2124)**
+- ## **[semver](lib/kit.js?source#L2126)**
 
     The semantic versioner for npm, known as [semver](https://github.com/npm/node-semver).
     You must `kit.require 'semver'` before using it.
 
     - **<u>type</u>**: { _Object_ }
 
-- ## **[spawn(cmd, args, opts)](lib/kit.js?source#L2159)**
+- ## **[spawn(cmd, args, opts)](lib/kit.js?source#L2161)**
 
     A safer version of `child_process.spawn` to cross-platform run
     a process. In some conditions, it may be more convenient
@@ -1208,13 +1208,13 @@ For more help, run: `nor -h`.
         .then(({code}) => kit.log code);
         ```
 
-- ## **[sse](lib/kit.js?source#L2276)**
+- ## **[sse](lib/kit.js?source#L2278)**
 
     The `sse` module.
     You must `kit.require 'sse'` before using it.
     For more information goto the `sse` section.
 
-- ## **[task(name, opts, fn)](lib/kit.js?source#L2337)**
+- ## **[task(name, opts, fn)](lib/kit.js?source#L2339)**
 
     Sequencing and executing tasks and dependencies concurrently.
 
@@ -1294,7 +1294,7 @@ For more help, run: `nor -h`.
         );
         ```
 
-- ## **[treeKill(pid, signal, callback)](lib/kit.js?source#L2441)**
+- ## **[treeKill(pid, signal, callback)](lib/kit.js?source#L2443)**
 
     Cross-platform kill process tree by root process id.
 
@@ -1306,12 +1306,12 @@ For more help, run: `nor -h`.
 
     - **<u>param</u>**: `callback` { _Function_ }
 
-- ## **[url](lib/kit.js?source#L2447)**
+- ## **[url](lib/kit.js?source#L2449)**
 
     The `url` module of node.
     You must `kit.require 'url'` before using it.
 
-- ## **[warp(from, opts)](lib/kit.js?source#L2562)**
+- ## **[warp(from, opts)](lib/kit.js?source#L2564)**
 
     Works much like `gulp.src`, but with Promise instead.
     The warp control and error handling is more pleasant.
@@ -1436,7 +1436,7 @@ For more help, run: `nor -h`.
         .run('dist');
         ```
 
-- ## **[which(name)](lib/kit.js?source#L2684)**
+- ## **[which(name)](lib/kit.js?source#L2686)**
 
     Same as the unix `which` command.
     You must `kit.require 'which'` before using it.
@@ -1447,14 +1447,14 @@ For more help, run: `nor -h`.
 
     - **<u>return</u>**: { _Promise_ }
 
-- ## **[whichSync](lib/kit.js?source#L2691)**
+- ## **[whichSync](lib/kit.js?source#L2693)**
 
     Sync version of `which`.
     You must `kit.require 'whichSync'` before using it.
 
     - **<u>type</u>**: { _Function_ }
 
-- ## **[xinspect(obj, opts)](lib/kit.js?source#L2702)**
+- ## **[xinspect(obj, opts)](lib/kit.js?source#L2704)**
 
     For debugging. Dump a colorful object.
 
@@ -1471,7 +1471,7 @@ For more help, run: `nor -h`.
 
     - **<u>return</u>**: { _String_ }
 
-- ## **[xopen(cmds, opts)](lib/kit.js?source#L2729)**
+- ## **[xopen(cmds, opts)](lib/kit.js?source#L2731)**
 
     Open a thing that your system can recognize.
     Now only support Windows, OSX or system that installed 'xdg-open'.
