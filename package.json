@@ -1,6 +1,6 @@
 {
   "name": "nokit",
-  "version": "0.26.5",
+  "version": "0.26.6",
   "description": "A light weight set of handy tools for real world program.",
   "main": "lib/kit.js",
   "engines": {
