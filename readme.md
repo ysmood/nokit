@@ -96,7 +96,7 @@ Goto [changelog](doc/changelog.md)
   - [flowToMid(fn)](#flowtomidfn)
   - [match(pattern, opts)](#matchpattern-opts)
   - [midToFlow(h)](#midtoflowh)
-  - [parseUrl()](#parseurl)
+  - [parseUrl(parseQueryString, slashesDenoteHost)](#parseurlparsequerystring-slashesdenotehost)
   - [relayConnect(opts)](#relayconnectopts)
   - [relayClient(opts)](#relayclientopts)
   - [select(sel, middleware)](#selectsel-middleware)
@@ -1741,14 +1741,18 @@ For more help, run: `nor -h`.
         http.createServer(proxy.flow(middlewares)).listen(8123);
         ```
 
-- ## **[parseUrl()](lib/proxy.js?source#L654)**
+- ## **[parseUrl(parseQueryString, slashesDenoteHost)](lib/proxy.js?source#L656)**
 
     A simple url parser middleware.
     It will append a `url` object to `ctx`
 
-    - **<u>return</u>**: { _[type]_ }
+    - **<u>param</u>**: `parseQueryString` { _boolean_ }
 
-        [description]
+    - **<u>param</u>**: `slashesDenoteHost` { _boolean_ }
+
+    - **<u>return</u>**: { _Function_ }
+
+        `(ctx) -> Promise`
 
     - **<u>example</u>**:
 
@@ -1758,16 +1762,16 @@ For more help, run: `nor -h`.
 
         let app = proxy.flow();
 
-        app.push(proxy.parseUrl());
+        app.push(proxy.parseUrl(true));
 
         app.push(($) => {
-            kit.logs($.url.path);
+            kit.logs($.reqUrl.path);
         });
 
         app.listen(8123);
         ```
 
-- ## **[relayConnect(opts)](lib/proxy.js?source#L675)**
+- ## **[relayConnect(opts)](lib/proxy.js?source#L677)**
 
     A helper for http server port tunneling.
 
@@ -1785,7 +1789,7 @@ For more help, run: `nor -h`.
 
         A http connect method helper.
 
-- ## **[relayClient(opts)](lib/proxy.js?source#L724)**
+- ## **[relayClient(opts)](lib/proxy.js?source#L726)**
 
     A helper for http server port tunneling.
 
@@ -1805,7 +1809,7 @@ For more help, run: `nor -h`.
 
         Resolve a tcp server object.
 
-- ## **[select(sel, middleware)](lib/proxy.js?source#L785)**
+- ## **[select(sel, middleware)](lib/proxy.js?source#L787)**
 
     Create a conditional middleware that only works when the pattern matches.
 
@@ -1831,7 +1835,7 @@ For more help, run: `nor -h`.
 
     - **<u>return</u>**: { _Function_ }
 
-- ## **[serverHelper(opts)](lib/proxy.js?source#L906)**
+- ## **[serverHelper(opts)](lib/proxy.js?source#L908)**
 
     Create a http request middleware.
 
@@ -1885,7 +1889,7 @@ For more help, run: `nor -h`.
         nokit.log({ any: 'thing' });
         ```
 
-- ## **[static(opts)](lib/proxy.js?source#L1001)**
+- ## **[static(opts)](lib/proxy.js?source#L1003)**
 
     Create a static file middleware for `proxy.flow`.
 
@@ -1906,7 +1910,7 @@ For more help, run: `nor -h`.
         http.createServer(proxy.flow(middlewares)).listen(8123);
         ```
 
-- ## **[tcpFrame(socket, opts)](lib/proxy.js?source#L1049)**
+- ## **[tcpFrame(socket, opts)](lib/proxy.js?source#L1051)**
 
     Send or receive any size of package over a socket.
     Add a `writeFrame` method and a `frame` event to `net.Socket` object.
@@ -1927,7 +1931,7 @@ For more help, run: `nor -h`.
         }
         ```
 
-- ## **[url(opts)](lib/proxy.js?source#L1127)**
+- ## **[url(opts)](lib/proxy.js?source#L1129)**
 
     Use it to proxy one url to another.
 
@@ -2012,7 +2016,7 @@ For more help, run: `nor -h`.
         ).listen(8123);
         ```
 
-- ## **[van(ctx)](lib/proxy.js?source#L1328)**
+- ## **[van(ctx)](lib/proxy.js?source#L1330)**
 
     Add a `van` method to flow context object. It's a helper to set
     and get the context body.
