@@ -947,7 +947,7 @@ module.exports = function (it) {
 	it('proxy tcpFrame large frame', function (after) {
 		const proxy = kit.require('proxy');
 
-		const frame = new Buffer(1000000);
+		const frame = Buffer.alloc(1000000);
 
 		return new Promise(function (resolve) {
 			const server = net.createServer(function (sock) {
@@ -1010,13 +1010,13 @@ module.exports = function (it) {
 		const proxy = kit.require('proxy');
 
 		const frames = [];
-		frames.push(new Buffer(1024 * 67));
-		frames.push(new Buffer(1024 * 128));
-		frames.push(new Buffer(37));
-		frames.push(new Buffer(10));
-		frames.push(new Buffer(1));
-		frames.push(new Buffer(1024 * 64)); // The max tcp package size
-		frames.push(new Buffer(1));
+		frames.push(Buffer.alloc(1024 * 67));
+		frames.push(Buffer.alloc(1024 * 128));
+		frames.push(Buffer.alloc(37));
+		frames.push(Buffer.alloc(10));
+		frames.push(Buffer.alloc(1));
+		frames.push(Buffer.alloc(1024 * 64)); // The max tcp package size
+		frames.push(Buffer.alloc(1));
 
 		return new Promise(function (resolve, reject) {
 			const server = net.createServer(function (sock) {
@@ -1056,7 +1056,7 @@ module.exports = function (it) {
 	it('proxy tcpFrame max size', function (after) {
 		const proxy = kit.require('proxy');
 
-		const frame = new Buffer(129);
+		const frame = Buffer.alloc(129);
 
 		return new Promise(function (resolve) {
 			const server = net.createServer(function (sock) {
@@ -1099,7 +1099,7 @@ module.exports = function (it) {
 
 			return server.listen(0, function () {
 				let sock;
-				return sock = net.connect(server.address().port, '127.0.0.1', () => sock.write(new Buffer([2, 2, 50, 50])));
+				return sock = net.connect(server.address().port, '127.0.0.1', () => sock.write(Buffer.from([2, 2, 50, 50])));
 			});
 		});
 	});
@@ -1144,7 +1144,7 @@ module.exports = function (it) {
 			.then(data =>
 				it.eq(data, {
 					type: 'file',
-					data: new Buffer('ok')
+					data: Buffer.from('ok')
 				}));
 	});
 

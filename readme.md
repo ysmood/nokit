@@ -1137,7 +1137,7 @@ For more help, run: `nor -h`.
 
         // Send form-data.
         let form = new require('form-data');
-        form.append('image', new Buffer(0), {
+        form.append('image', Buffer.alloc(0), {
          filename: 'a.jpg', contentType: 'image/jpg'
         });
         form.append('key', 'value');
