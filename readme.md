@@ -2016,7 +2016,7 @@ For more help, run: `nor -h`.
         ).listen(8123);
         ```
 
-- ## **[van(ctx)](lib/proxy.js?source#L1330)**
+- ## **[van(ctx)](lib/proxy.js?source#L1331)**
 
     Add a `van` method to flow context object. It's a helper to set
     and get the context body.
