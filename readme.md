@@ -1931,7 +1931,7 @@ For more help, run: `nor -h`.
         }
         ```
 
-- ## **[url(opts)](lib/proxy.js?source#L1129)**
+- ## **[url(opts)](lib/proxy.js?source#L1133)**
 
     Use it to proxy one url to another.
 
@@ -1973,6 +1973,10 @@ For more help, run: `nor -h`.
 
             // Only when the `content-type` matches, handleResBody will work
             handleResBodyMIME: /text|json|javascript|css|xml/
+
+            resPipeError: (res) => void,
+
+            rejectUnauthorized: true,
 
             // It will log some basic error info.
             error: (e, req) => {}
@@ -2016,7 +2020,7 @@ For more help, run: `nor -h`.
         ).listen(8123);
         ```
 
-- ## **[van(ctx)](lib/proxy.js?source#L1331)**
+- ## **[van(ctx)](lib/proxy.js?source#L1337)**
 
     Add a `van` method to flow context object. It's a helper to set
     and get the context body.
