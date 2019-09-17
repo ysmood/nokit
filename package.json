@@ -44,7 +44,7 @@
   "homepage": "https://github.com/ysmood/nokit",
   "dependencies": {
     "jhash": "0.1.10",
-    "lodash": "4.17.11",
+    "lodash": "4.17.15",
     "noflow": "0.8.11",
     "nofs": "0.12.2",
     "path-to-regexp": "3.0.0",
