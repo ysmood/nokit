@@ -69,7 +69,7 @@
     "iconv-lite": "0.4.24",
     "junit": "1.4.9",
     "less": "3.9.0",
-    "msgpack5": "4.2.1",
+    "msgpack5": "4.5.1",
     "serve-index": "1.9.1",
     "stylus": "0.54.5",
     "throttle": "1.0.3"
